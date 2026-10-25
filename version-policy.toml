@@ -1,0 +1,6 @@
+# Design configuration; M0 must implement and verify its actual build/CI caller.
+product = "keida-hub-reborn"
+series = "0.1"
+anchor = "c06c3a03a3be17c4293e77b57fa3063ec65c8ad8"
+counter = "first-parent-distance"
+main_ref = "refs/heads/main"
