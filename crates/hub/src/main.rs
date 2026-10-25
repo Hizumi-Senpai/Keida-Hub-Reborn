@@ -7,12 +7,12 @@ use axum::{
     extract::State,
     http::{HeaderValue, StatusCode, header},
     middleware,
-    response::Response,
+    response::{IntoResponse, Response},
     routing::get,
 };
 use serde::Serialize;
 use sqlx::PgPool;
-use std::{process::ExitCode, time::Duration};
+use std::{future::IntoFuture, process::ExitCode, time::Duration};
 use tower::limit::ConcurrencyLimitLayer;
 
 #[derive(Serialize)]
@@ -71,12 +71,24 @@ async fn run() -> Result<(), String> {
     let listener = tokio::net::TcpListener::bind(config.bind)
         .await
         .map_err(|_| "listener unavailable")?;
-    axum::serve(listener, app)
-        .with_graceful_shutdown(shutdown())
-        .await
-        .map_err(|_| "server failed")?;
+    let (stop, stopped) = tokio::sync::oneshot::channel::<()>();
+    let server = axum::serve(listener, app)
+        .with_graceful_shutdown(async {
+            let _ = stopped.await;
+        })
+        .into_future();
+    tokio::pin!(server);
+    let result = tokio::select! {
+        result = &mut server => result.map_err(|_| "server failed"),
+        _ = shutdown() => {
+            let _ = stop.send(());
+            tokio::time::timeout(Duration::from_secs(5), &mut server)
+                .await.map_err(|_| "shutdown deadline exceeded")?
+                .map_err(|_| "server failed")
+        }
+    };
     pool.close().await;
-    Ok(())
+    result.map_err(Into::into)
 }
 
 async fn readiness(State(pool): State<PgPool>) -> (StatusCode, Json<Readiness>) {
@@ -93,7 +105,10 @@ async fn readiness(State(pool): State<PgPool>) -> (StatusCode, Json<Readiness>) 
 }
 
 async fn headers(request: axum::extract::Request, next: middleware::Next) -> Response {
-    let mut response = next.run(request).await;
+    let mut response = match tokio::time::timeout(Duration::from_secs(4), next.run(request)).await {
+        Ok(response) => response,
+        Err(_) => StatusCode::REQUEST_TIMEOUT.into_response(),
+    };
     let headers = response.headers_mut();
     headers.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
     headers.insert(

@@ -31,7 +31,9 @@ successful migration ledger with matching checksums; absent, dirty, future,
 changed or unavailable schemas return 503/not_ready. Database checks have a
 2-second total deadline. Responses use no-store and contain no database details.
 Unknown/private routes return 404; unsupported methods receive 405. There are no
-accepted durable operations to drain; SIGINT/SIGTERM stop admission and drain HTTP.
+accepted durable operations to drain; SIGINT/SIGTERM stop admission and drain HTTP with a 5-second total shutdown
+deadline; expiry reports failure and the process closes remaining connections.
+Requests admitted to handlers have a 4-second deadline.
 
 The single native SQL migration establishes constrained product/schema metadata.
 The checked literal readiness query is compiled against a recreated PostgreSQL

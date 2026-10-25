@@ -50,5 +50,37 @@ fn main() {
             );
         }
         assert_eq!(values[6].as_deref(), Some("reborn-foundation-v1"));
+        let version = values[1].as_deref().expect("complete");
+        let ordinal = values[4].as_deref().expect("complete");
+        let channel = values[5].as_deref().expect("complete");
+        match channel {
+            "accepted" => {
+                let n = ordinal.parse::<u64>().expect("accepted ordinal");
+                assert_eq!(ordinal, n.to_string());
+                assert_eq!(version, format!("0.1.{n}"));
+            }
+            "preview" => {
+                assert!(ordinal.is_empty());
+                let (base, suffix) = version.split_once("-preview.").expect("preview version");
+                let n = base
+                    .strip_prefix("0.1.")
+                    .expect("preview series")
+                    .parse::<u64>()
+                    .expect("preview ordinal");
+                assert_eq!(base, format!("0.1.{n}"));
+                assert_eq!(suffix, &values[2].as_deref().expect("complete")[..12]);
+            }
+            "development" => {
+                assert!(ordinal.is_empty());
+                assert_eq!(
+                    version,
+                    format!(
+                        "0.1.0-development.{}",
+                        &values[2].as_deref().expect("complete")[..12]
+                    )
+                );
+            }
+            _ => unreachable!(),
+        }
     }
 }

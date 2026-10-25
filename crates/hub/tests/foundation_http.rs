@@ -248,6 +248,38 @@ async fn liveness_is_database_independent_identity_is_compiled_and_private_route
         );
     }
     assert!(identity.get("ordinal").is_some());
+    // The actual CI caller supplies these records from the history tool. Compare
+    // its input to real HTTP output so missing compile injection cannot pass.
+    for (field, suffix) in [
+        ("product", "PRODUCT"),
+        ("version", "VERSION"),
+        ("commit", "COMMIT"),
+        ("tree", "TREE"),
+        ("channel", "CHANNEL"),
+        ("contract", "CONTRACT"),
+    ] {
+        let expected = std::env::var(format!("REBORN_BUILD_{suffix}"));
+        if std::env::var("GITHUB_ACTIONS").as_deref() == Ok("true") {
+            assert!(
+                expected.is_ok(),
+                "CI did not supply compiled identity input"
+            );
+        }
+        if let Ok(expected) = expected {
+            assert_eq!(
+                identity[field], expected,
+                "HTTP identity differs from build caller"
+            );
+        }
+    }
+    if let Ok(ordinal) = std::env::var("REBORN_BUILD_ORDINAL") {
+        let expected = if ordinal.is_empty() {
+            Value::Null
+        } else {
+            serde_json::json!(ordinal.parse::<u64>().expect("build caller ordinal"))
+        };
+        assert_eq!(identity["ordinal"], expected);
+    }
 
     let relabeled = Server::start(true).await;
     assert_eq!(
@@ -298,4 +330,70 @@ async fn liveness_is_database_independent_identity_is_compiled_and_private_route
             .expect("read-only route response");
         assert_eq!(response.status(), StatusCode::METHOD_NOT_ALLOWED);
     }
+}
+
+#[tokio::test]
+async fn sigterm_finishes_with_a_held_incomplete_http_connection() {
+    use std::io::{Read, Write};
+
+    let mut server = Server::start(false).await;
+    let address = server
+        .origin
+        .strip_prefix("http://")
+        .expect("loopback HTTP fixture")
+        .parse()
+        .expect("loopback socket address");
+    let mut held = std::net::TcpStream::connect_timeout(&address, Duration::from_secs(2))
+        .expect("open held HTTP connection");
+    held.set_read_timeout(Some(Duration::from_millis(200)))
+        .expect("bound incomplete-response inspection");
+    held.write_all(b"GET /api/health HTTP/1.1\r\nHost: reborn.example\r\nX-Held: ")
+        .expect("send deliberately incomplete request headers");
+    let mut byte = [0];
+    let incomplete = held
+        .read(&mut byte)
+        .expect_err("incomplete headers unexpectedly completed a response");
+    assert!(matches!(
+        incomplete.kind(),
+        std::io::ErrorKind::WouldBlock | std::io::ErrorKind::TimedOut
+    ));
+    assert_eq!(
+        server.json("/api/health", StatusCode::OK).await["status"],
+        "ok",
+        "held connection disrupted liveness before shutdown"
+    );
+
+    // Signal only this test's directly spawned child, retaining the incomplete
+    // connection until that process reaches its honest terminal outcome.
+    let signaled = Command::new("kill")
+        .args(["-TERM", &server.child.id().to_string()])
+        .status()
+        .expect("signal owned HTTP fixture");
+    assert!(signaled.success());
+    let deadline = Instant::now() + Duration::from_secs(7);
+    let status = loop {
+        if let Some(status) = server.child.try_wait().expect("inspect signaled fixture") {
+            break status;
+        }
+        assert!(
+            Instant::now() < deadline,
+            "SIGTERM did not finish within the bounded drain window"
+        );
+        tokio::time::sleep(Duration::from_millis(20)).await;
+    };
+    let mut stderr = String::new();
+    server
+        .child
+        .stderr
+        .take()
+        .expect("fixture diagnostics")
+        .read_to_string(&mut stderr)
+        .expect("collect terminal diagnostics");
+    match status.code() {
+        Some(0) => assert!(stderr.trim().is_empty()),
+        Some(2) => assert!(stderr.contains("shutdown deadline exceeded")),
+        _ => panic!("signaled fixture did not report a graceful or bounded-drain outcome"),
+    }
+    assert!(!stderr.contains(PASSWORD_MARKER));
+    drop(held);
 }
