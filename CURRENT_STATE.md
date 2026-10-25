@@ -1,9 +1,11 @@
 # Reborn current state
 
 Updated **2026-10-25 America/Chicago**. This repository is a fresh start with a
-locked design and handoff. **Application implementation has not started.**
+locked design and handoff. **M0 implementation is in progress on an isolated CORE branch.**
 No Reborn CI build, container, PostgreSQL installation, live acceptance or speed
-comparison is claimed. The initial documentation bootstrap is the only delivery.
+comparison is claimed. The initial documentation bootstrap remains the only accepted main delivery.
+The first backend foundation slice is under review; see [M0 foundation](docs/M0_FOUNDATION.md).
+Authentication, workspace, release publication and cutover remain pending.
 
 ## Owner decision
 

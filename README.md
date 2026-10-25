@@ -5,7 +5,7 @@ The goal is a fast, reliable, feature-rich self-hosted dashboard and control pla
 with an optional editable 3D room and companion.
 
 **Target URL: https://rewrite.keida.me.** That URL currently serves the independent
-Keida-Hub-Rewrite v0.1.4. Reborn has documentation and a locked architecture only;
+Keida-Hub-Rewrite v0.1.4. Reborn has a locked architecture and an M0 backend foundation slice under review;
 there is no Reborn application, image, database, live deployment or performance
 result yet. Keep https://keida.me live and unchanged. Reuse of the target URL follows
 the [deployment and cutover gates](docs/DEPLOYMENT.md), preserving the working

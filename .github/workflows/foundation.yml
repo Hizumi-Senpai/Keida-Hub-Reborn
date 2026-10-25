@@ -1,0 +1,67 @@
+name: Reborn foundation
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  foundation:
+    name: Rust 1.99.1 / PostgreSQL 16
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16.15-bookworm@sha256:d81f7b51697014367236d07ec58b54153fc28f828b72bf247fe5c7487520bcb0
+        env:
+          POSTGRES_USER: reborn_fixture
+          POSTGRES_PASSWORD: disposable-ci-only
+          POSTGRES_DB: reborn_build
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U reborn_fixture -d reborn_build"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      DATABASE_URL: postgresql://reborn_fixture:disposable-ci-only@127.0.0.1:5432/reborn_build
+      REBORN_TEST_DATABASE_URL: postgresql://reborn_fixture:disposable-ci-only@127.0.0.1:5432/postgres
+      PGPASSWORD: disposable-ci-only
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Pin toolchain and record actual platform
+        run: |
+          rustup toolchain install 1.99.1 --profile minimal --component rustfmt --component clippy
+          rustc +1.99.1 --version
+          uname -a
+          psql --version
+      - name: Format and derive explicit development source identity
+        run: |
+          cargo +1.99.1 fmt --all --check
+          cargo +1.99.1 run -p reborn-source-identity --locked -- --repo . --candidate "$SOURCE_SHA" --channel development --format env >> "$GITHUB_ENV"
+      - name: Recreate compilation schema and check literal queries online
+        run: |
+          psql -h 127.0.0.1 -U reborn_fixture -d reborn_build -v ON_ERROR_STOP=1 -f migrations/0001_foundation.sql
+          mkdir "$RUNNER_TEMP/reborn-sqlx"
+          SQLX_OFFLINE=false SQLX_OFFLINE_DIR="$RUNNER_TEMP/reborn-sqlx" cargo +1.99.1 check --workspace --all-targets --locked
+      - name: Verify checked offline metadata against recreated schema
+        run: |
+          cat "$RUNNER_TEMP/reborn-sqlx/"*.json
+          diff -r .sqlx "$RUNNER_TEMP/reborn-sqlx"
+      - name: Locked offline checks and Clippy
+        env:
+          SQLX_OFFLINE: 'true'
+        run: |
+          cargo +1.99.1 check --workspace --all-targets --locked
+          cargo +1.99.1 clippy --workspace --all-targets --locked -- -D warnings
+      - name: Real HTTP, PostgreSQL and Git-history contracts
+        env:
+          SQLX_OFFLINE: 'true'
+        run: cargo +1.99.1 test --workspace --all-targets --locked
+      - name: Locked release build
+        env:
+          SQLX_OFFLINE: 'true'
+        run: cargo +1.99.1 build --workspace --release --locked
