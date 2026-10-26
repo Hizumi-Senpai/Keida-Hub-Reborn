@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO directory_pins (account_id, revision, ids) VALUES ($1, $2, $3) ON CONFLICT (account_id) DO UPDATE SET revision = EXCLUDED.revision, ids = EXCLUDED.ids",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Int8Array"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3d38c2b1d7e20cfb07013c848fc359b7394ddaba6f358dd88cf4fb17bb75f116"
+}

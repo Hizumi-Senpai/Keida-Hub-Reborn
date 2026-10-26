@@ -2,7 +2,7 @@ use hmac::{Hmac, KeyInit, Mac};
 use reqwest::{Client, Method, RequestBuilder, Response, StatusCode};
 use serde_json::{Value, json};
 use sha2::Sha256;
-use sqlx::{Connection, PgConnection, Row};
+use sqlx::{Connection, Executor, PgConnection, Row};
 use std::{
     collections::BTreeMap,
     fs::{self, DirBuilder, File},
@@ -1626,6 +1626,76 @@ async fn directory_rejects_unsafe_links_unscoped_pins_and_obsolete_authority_bef
         0
     );
     server.private_logs(&[&setup, OWNER_PASSWORD]);
+}
+
+#[tokio::test]
+async fn directory_field_catalog_and_pin_bounds_do_not_change_accepted_data() {
+    let f = Fixture::new().await;
+    let setup = f.prepare().await;
+    let server = Server::start(&f, true).await;
+    let mut owner = claim(&f, &server, &setup).await;
+    let binding = workspace_binding(&mut owner).await;
+    for (field, value) in [
+        ("name", "海".repeat(27)),
+        ("category", String::new()),
+        ("description", "x".repeat(241)),
+        ("name", "Injected\nname".to_owned()),
+    ] {
+        let mut link = directory_link("Rejected");
+        link[field] = json!(value);
+        directory_write(
+            &owner,
+            &binding,
+            "/api/owner/directory",
+            json!({"base_revision":"0","change":{"action":"create","link":link}}),
+            StatusCode::BAD_REQUEST,
+        )
+        .await;
+    }
+    let mut db = f.connect().await;
+    // Only this disposable database is seeded, to exercise the actual bound
+    // without100 repeated API calls or inheriting a production catalog.
+    db.execute("INSERT INTO directory_services (name,category,description,url) SELECT 'Fixture ' || i,'Media','','https://services.example/' FROM generate_series(1,100) i").await.unwrap();
+    let snapshot = workspace_snapshot(&owner, &binding, StatusCode::OK).await;
+    let ids: Vec<_> = snapshot["directory"]["services"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| s["id"].as_str().unwrap().to_owned())
+        .collect();
+    directory_write(
+        &owner,
+        &binding,
+        "/api/owner/directory",
+        json!({"base_revision":"0","change":{"action":"create","link":directory_link("Excess")}}),
+        StatusCode::TOO_MANY_REQUESTS,
+    )
+    .await;
+    directory_write(
+        &owner,
+        &binding,
+        "/api/workspace/pins",
+        json!({"base_directory_revision":"0","base_revision":"0","ids":ids[..25]}),
+        StatusCode::BAD_REQUEST,
+    )
+    .await;
+    let pinned = directory_write(
+        &owner,
+        &binding,
+        "/api/workspace/pins",
+        json!({"base_directory_revision":"0","base_revision":"0","ids":ids[..24]}),
+        StatusCode::OK,
+    )
+    .await;
+    assert_eq!(pinned["directory"]["pins"], json!(ids[..24]));
+    assert_eq!(pinned["directory"]["revision"], "0");
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM directory_services")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        100
+    );
 }
 fn workspace_request(actor: &Actor, method: Method, path: &str, binding: &str) -> RequestBuilder {
     actor

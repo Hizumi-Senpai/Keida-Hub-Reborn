@@ -2871,22 +2871,22 @@ function ea(e, t) {
 }
 br(["click"]);
 // src/Directory.svelte
-var ta = /* @__PURE__ */ J("<button class=\"text-button\">Browse services <span aria-hidden=\"true\">→</span></button>"), na = /* @__PURE__ */ J("<section class=\"notice\"><h3>Review the saved state</h3><p> </p><button class=\"button secondary\">Check saved services</button></section>"), ra = /* @__PURE__ */ J("<option> </option>"), ia = /* @__PURE__ */ J("<div class=\"directory-filters\"><div><label for=\"service-search\">Search services</label><input id=\"service-search\" type=\"search\" maxlength=\"120\" placeholder=\"Name, category or description\"/></div><div><label for=\"service-filter\">Category</label><select id=\"service-filter\"><option>All categories</option><!></select></div></div>"), aa = /* @__PURE__ */ J("<section class=\"card small-card\"><h3> </h3><p> </p></section>"), oa = /* @__PURE__ */ J("<p> </p>"), sa = /* @__PURE__ */ J("<button class=\"text-button move-up\">↑</button><button class=\"text-button move-down\">↓</button>", 1), ca = /* @__PURE__ */ J("<div class=\"notice\"><p> </p><div class=\"button-row\"><button class=\"button secondary confirm-remove\">Remove service</button><button class=\"text-button\">Keep service</button></div></div>"), la = /* @__PURE__ */ J("<div class=\"button-row\"><button class=\"text-button edit-service\"> </button><button class=\"text-button remove-service\">Remove</button></div> <!>", 1), ua = /* @__PURE__ */ J("<article class=\"card small-card service-card\"><p class=\"eyebrow\"> </p><h3><a class=\"service-link\" target=\"_blank\" rel=\"noopener noreferrer\"> <span class=\"sr-only\">(opens in a new tab)</span> <span aria-hidden=\"true\">↗</span></a></h3> <!> <p class=\"field-help service-address\"> </p> <div class=\"button-row\"><button class=\"button secondary pin-service\"> </button> <!></div> <!></article>"), da = /* @__PURE__ */ J("<div class=\"directory-grid\"></div>"), fa = /* @__PURE__ */ J("<p class=\"field-help\">Up to 24 personal pins. Links open the selected service in a new tab; directory links do not check its availability or share your Hub session.</p>"), pa = /* @__PURE__ */ J("<div class=\"notice\"><p>The directory changed after this form was opened. Review the current entries, then choose whether to keep this edit.</p><button class=\"button secondary\" type=\"button\">Keep edit against current directory</button></div>"), ma = /* @__PURE__ */ J("<section class=\"card directory-editor\" aria-label=\"Service editor\"><h2> </h2><p>Add a reviewed HTTPS link without passwords, tokens, query parameters or fragments. These links are visible to signed-in accounts.</p> <form><label for=\"service-name\">Service name</label><input id=\"service-name\" name=\"service-name\" required=\"\" maxlength=\"80\"/> <label for=\"service-category\">Category</label><input id=\"service-category\" name=\"service-category\" required=\"\" maxlength=\"40\"/> <label for=\"service-url\">HTTPS link</label><input id=\"service-url\" name=\"service-url\" type=\"url\" required=\"\" maxlength=\"1024\" placeholder=\"https://service.example/\"/> <label for=\"service-description\">Description, optional</label><textarea id=\"service-description\" name=\"service-description\" maxlength=\"240\" rows=\"2\"></textarea> <!> <div class=\"button-row\"><button class=\"button primary\" type=\"submit\"> </button><button class=\"text-button\" type=\"button\"> </button></div></form></section>"), ha = /* @__PURE__ */ J("<div class=\"directory-heading\"><div><p class=\"eyebrow\"> </p><h2> </h2></div><!></div> <p class=\"directory-status\" role=\"status\"> </p> <!> <!> <!> <!> <!>", 1);
-function ga(e, t) {
+var ta = /* @__PURE__ */ J("<button class=\"text-button\">Browse services <span aria-hidden=\"true\">→</span></button>"), na = /* @__PURE__ */ J("<section class=\"notice\"><h3>Review the saved state</h3><p> </p><button class=\"button secondary\">Check saved services</button></section>"), ra = /* @__PURE__ */ J("<option> </option>"), ia = /* @__PURE__ */ J("<div class=\"directory-filters\"><div><label for=\"service-search\">Search services</label><input id=\"service-search\" type=\"search\" maxlength=\"120\" placeholder=\"Name, category or description\"/></div><div><label for=\"service-filter\">Category</label><select id=\"service-filter\"><option>All categories</option><!></select></div></div>"), aa = /* @__PURE__ */ J("<section class=\"card small-card\"><h3> </h3><p> </p></section>"), oa = /* @__PURE__ */ J("<p> </p>"), sa = /* @__PURE__ */ J("<button class=\"text-button move-up\">↑</button><button class=\"text-button move-down\">↓</button>", 1), ca = /* @__PURE__ */ J("<p>The directory changed. Review the service and choose Remove again.</p>"), la = /* @__PURE__ */ J("<div class=\"notice\"><p> </p><!><div class=\"button-row\"><button class=\"button secondary confirm-remove\">Remove service</button><button class=\"text-button\">Keep service</button></div></div>"), ua = /* @__PURE__ */ J("<div class=\"button-row\"><button class=\"text-button edit-service\"> </button><button class=\"text-button remove-service\">Remove</button></div> <!>", 1), da = /* @__PURE__ */ J("<article class=\"card small-card service-card\"><p class=\"eyebrow\"> </p><h3><a class=\"service-link\" target=\"_blank\" rel=\"noopener noreferrer\"> <span class=\"sr-only\">(opens in a new tab)</span> <span aria-hidden=\"true\">↗</span></a></h3> <!> <p class=\"field-help service-address\"> </p> <div class=\"button-row\"><button class=\"button secondary pin-service\"> </button> <!></div> <!></article>"), fa = /* @__PURE__ */ J("<div class=\"directory-grid\"></div>"), pa = /* @__PURE__ */ J("<p class=\"field-help\">Up to 24 personal pins. Links open the selected service in a new tab; directory links do not check its availability or share your Hub session.</p>"), ma = /* @__PURE__ */ J("<div class=\"notice\"><p>The directory changed after this form was opened. Review the current entries, then choose whether to keep this edit.</p><button class=\"button secondary\" type=\"button\">Keep edit against current directory</button></div>"), ha = /* @__PURE__ */ J("<section class=\"card directory-editor\" aria-label=\"Service editor\"><h2> </h2><p>Add a reviewed HTTPS link without passwords, tokens, query parameters or fragments. These links are visible to signed-in accounts.</p> <form><label for=\"service-name\">Service name</label><input id=\"service-name\" name=\"service-name\" required=\"\" maxlength=\"80\"/> <label for=\"service-category\">Category</label><input id=\"service-category\" name=\"service-category\" required=\"\" maxlength=\"40\"/> <label for=\"service-url\">HTTPS link</label><input id=\"service-url\" name=\"service-url\" type=\"url\" required=\"\" maxlength=\"1024\" placeholder=\"https://service.example/\"/> <label for=\"service-description\">Description, optional</label><textarea id=\"service-description\" name=\"service-description\" maxlength=\"240\" rows=\"2\"></textarea> <!> <div class=\"button-row\"><button class=\"button primary\" type=\"submit\"> </button><button class=\"text-button\" type=\"button\"> </button></div></form></section>"), ga = /* @__PURE__ */ J("<div class=\"directory-heading\"><div><p class=\"eyebrow\"> </p><h2> </h2></div><!></div> <p class=\"directory-status\" role=\"status\"> </p> <!> <!> <!> <!> <!>", 1);
+function _a(e, t) {
 	Ue(t, !1);
-	let n = /* @__PURE__ */ P(), r = /* @__PURE__ */ P(), i = /* @__PURE__ */ P(), a = $(t, "directory", 8), o = $(t, "authorized", 8, !1), s = $(t, "owner", 8, !1), c = $(t, "compact", 8, !1), l = $(t, "state", 8), u = $(t, "message", 8), d = $(t, "browse", 8), f = $(t, "check", 8), p = $(t, "edit", 8), m = $(t, "pin", 8), h = /* @__PURE__ */ P(""), g = /* @__PURE__ */ P(""), _ = /* @__PURE__ */ P(""), v = /* @__PURE__ */ P(""), y = /* @__PURE__ */ P(""), b = /* @__PURE__ */ P(""), x = /* @__PURE__ */ P(""), S = /* @__PURE__ */ P(""), C = /* @__PURE__ */ P(), w = 0;
+	let n = /* @__PURE__ */ P(), r = /* @__PURE__ */ P(), i = /* @__PURE__ */ P(), a = $(t, "directory", 8), o = $(t, "authorized", 8, !1), s = $(t, "owner", 8, !1), c = $(t, "compact", 8, !1), l = $(t, "state", 8), u = $(t, "message", 8), d = $(t, "browse", 8), f = $(t, "check", 8), p = $(t, "edit", 8), m = $(t, "pin", 8), h = /* @__PURE__ */ P(""), g = /* @__PURE__ */ P(""), _ = /* @__PURE__ */ P(""), v = /* @__PURE__ */ P(""), y = /* @__PURE__ */ P(""), b = /* @__PURE__ */ P(""), x = /* @__PURE__ */ P(""), S = /* @__PURE__ */ P(), C = /* @__PURE__ */ P(), w = 0;
 	function ee() {
-		++w, F(h, ""), F(g, ""), F(_, ""), F(v, ""), F(y, ""), F(b, ""), F(x, ""), F(S, ""), F(C, void 0);
+		++w, F(h, ""), F(g, ""), F(_, ""), F(v, ""), F(y, ""), F(b, ""), F(x, ""), F(C, void 0), F(S, void 0);
 	}
 	Ai(ee);
 	function te() {
-		F(_, ""), F(v, ""), F(y, ""), F(b, ""), F(x, ""), F(S, ""), F(C, a()?.revision);
+		F(_, ""), F(v, ""), F(y, ""), F(b, ""), F(x, ""), F(C, void 0), F(S, a()?.revision);
 	}
 	function ne(e) {
-		F(x, e.id), F(_, e.name), F(v, e.description), F(y, e.url), F(b, e.category), F(C, a()?.revision), F(S, ""), document.querySelector("#service-name")?.focus();
+		F(x, e.id), F(_, e.name), F(v, e.description), F(y, e.url), F(b, e.category), F(S, a()?.revision), F(C, void 0), document.querySelector("#service-name")?.focus();
 	}
 	async function re() {
-		if (W(n) || !s() || W(C) === void 0) return;
+		if (W(n) || !s() || W(S) === void 0) return;
 		let e = w, t = {
 			action: W(x) ? "update" : "create",
 			...W(x) ? { id: W(x) } : {},
@@ -2897,7 +2897,7 @@ function ga(e, t) {
 				url: W(y)
 			}
 		};
-		await p()(W(C), t) && o() && e === w && (await lr(), o() && e === w && te());
+		await p()(W(S), t) && o() && e === w && (await lr(), o() && e === w && te());
 	}
 	function T(e) {
 		!W(n) && a() && m()(a().pins.includes(e) ? a().pins.filter((t) => t !== e) : [...a().pins, e]);
@@ -2908,17 +2908,19 @@ function ga(e, t) {
 		i < 0 || o < 0 || o >= r.length || ([r[i], r[o]] = [r[o], r[i]], m()(r));
 	}
 	async function ae(e) {
-		if (W(n) || !a() || !s()) return;
+		if (W(n) || !a() || !s() || W(C)?.id !== e) return;
 		let t = w;
-		await p()(a().revision, {
+		await p()(W(C).base, {
 			action: "delete",
 			id: e
-		}) && o() && t === w && (F(S, ""), W(x) === e && te());
+		}) && o() && t === w && (await lr(), o() && t === w && (F(C, void 0), W(x) === e && te()));
 	}
 	wn(() => (K(l()), K(o())), () => {
 		F(n, l() === "saving" || l() === "uncertain" || !o());
 	}), wn(() => K(a()), () => {
 		F(r, [...new Set(a()?.services.map((e) => e.category) ?? [])].sort());
+	}), wn(() => (W(g), W(r)), () => {
+		W(g) && !W(r).includes(W(g)) && F(g, "");
 	}), wn(() => (K(a()), K(c()), W(g), W(h)), () => {
 		F(i, [...a()?.services ?? []].sort((e, t) => {
 			let n = a()?.pins.indexOf(e.id) ?? -1, r = a()?.pins.indexOf(t.id) ?? -1;
@@ -2926,10 +2928,10 @@ function ga(e, t) {
 		}).filter((e) => c() ? a()?.pins.includes(e.id) : (!W(g) || e.category === W(g)) && `${e.name} ${e.category} ${e.description}`.toLocaleLowerCase().includes(W(h).toLocaleLowerCase())));
 	}), wn(() => K(o()), () => {
 		o() || ee();
-	}), wn(() => (K(o()), K(a()), W(C)), () => {
-		o() && a() && W(C) === void 0 && F(C, a().revision);
+	}), wn(() => (K(o()), K(a()), W(S)), () => {
+		o() && a() && W(S) === void 0 && F(S, a().revision);
 	}), Tn(), vi();
-	var oe = ha(), se = sn(oe), ce = I(se), le = I(ce), ue = L(le, !0), de = L(R(le), !0);
+	var oe = ga(), se = sn(oe), ce = I(se), le = I(ce), ue = L(le, !0), de = L(R(le), !0);
 	A(ce);
 	var fe = R(ce), pe = (e) => {
 		var t = ta();
@@ -2967,10 +2969,10 @@ function ga(e, t) {
 			X(r, (K(c()), K(a()), G(() => c() ? "Keep your favorites close" : a()?.services.length ? "No matching services" : "Your directory starts here"))), X(i, (K(c()), K(a()), K(s()), G(() => c() ? "Pin services from the directory to show them on Home." : a()?.services.length ? "Try another search or category." : s() ? "Add a service below to make it available to signed-in accounts." : "An owner can add reviewed service links.")));
 		}), Y(e, t);
 	}, be = (e) => {
-		var t = da();
+		var t = fa();
 		Hr(t, 5, () => W(i), (e) => e.id, (e, t) => {
 			let r = /* @__PURE__ */ pt(() => (K(a()), W(t), G(() => a()?.pins.includes(W(t).id) ?? !1))), i = /* @__PURE__ */ pt(() => (K(a()), W(t), G(() => a()?.pins.indexOf(W(t).id) ?? -1)));
-			var o = ua(), l = I(o), u = L(l, !0), d = R(l), f = I(d), p = I(f, !0);
+			var o = da(), l = I(o), u = L(l, !0), d = R(l), f = I(d), p = I(f, !0);
 			Se(3), A(f), A(d);
 			var m = R(d, 2), h = (e) => {
 				var n = oa(), r = L(n, !0);
@@ -2979,29 +2981,39 @@ function ga(e, t) {
 			Z(m, (e) => {
 				W(t), G(() => W(t).description) && e(h);
 			});
-			var g = R(m, 2), _ = L(g, !0), v = R(g, 2), y = I(v), b = L(y, !0), x = R(y, 2), C = (e) => {
+			var g = R(m, 2), _ = L(g, !0), v = R(g, 2), y = I(v), b = L(y, !0), x = R(y, 2), S = (e) => {
 				var r = sa(), o = sn(r), s = R(o);
 				z(() => {
 					Q(o, "aria-label", (W(t), G(() => `Move ${W(t).name} up`))), o.disabled = W(n) || W(i) === 0, Q(s, "aria-label", (W(t), G(() => `Move ${W(t).name} down`))), s.disabled = (W(n), K(W(i)), K(a()), G(() => W(n) || W(i) === (a()?.pins.length ?? 0) - 1));
 				}), q("click", o, () => ie(W(t).id, -1)), q("click", s, () => ie(W(t).id, 1)), Y(e, r);
 			};
 			Z(x, (e) => {
-				W(r) && e(C);
+				W(r) && e(S);
 			}), A(v);
 			var w = R(v, 2), ee = (e) => {
-				var r = la(), i = sn(r), a = I(i), o = L(a), s = R(a);
+				var r = ua(), i = sn(r), o = I(i), s = L(o), c = R(o);
 				A(i);
-				var c = R(i, 2), l = (e) => {
-					var r = ca(), i = I(r), a = L(i), o = R(i), s = I(o), c = R(s);
-					A(o), A(r), z(() => {
-						X(a, `Remove ${W(t), G(() => W(t).name) ?? ""} from the directory and everyone’s pins?`), s.disabled = W(n);
-					}), q("click", s, () => void ae(W(t).id)), q("click", c, () => F(S, "")), Y(e, r);
+				var l = R(i, 2), u = (e) => {
+					var r = la(), i = I(r), o = L(i), s = R(i), c = (e) => {
+						Y(e, ca());
+					};
+					Z(s, (e) => {
+						W(C), K(a()), G(() => W(C).base !== a()?.revision) && e(c);
+					});
+					var l = R(s), u = I(l), d = R(u);
+					A(l), A(r), z(() => {
+						X(o, `Remove ${W(C), G(() => W(C).name) ?? ""} from the directory and everyone’s pins?`), u.disabled = (W(n), W(C), K(a()), G(() => W(n) || W(C).base !== a()?.revision));
+					}), q("click", u, () => void ae(W(t).id)), q("click", d, () => F(C, void 0)), Y(e, r);
 				};
-				Z(c, (e) => {
-					W(S), W(t), G(() => W(S) === W(t).id) && e(l);
+				Z(l, (e) => {
+					W(C), W(t), G(() => W(C)?.id === W(t).id) && e(u);
 				}), z(() => {
-					a.disabled = W(n), X(o, `Edit ${W(t), G(() => W(t).name) ?? ""}`), s.disabled = W(n);
-				}), q("click", a, () => ne(W(t))), q("click", s, () => F(S, W(t).id)), Y(e, r);
+					o.disabled = W(n), X(s, `Edit ${W(t), G(() => W(t).name) ?? ""}`), c.disabled = W(n);
+				}), q("click", o, () => ne(W(t))), q("click", c, () => F(C, a() ? {
+					id: W(t).id,
+					base: a().revision,
+					name: W(t).name
+				} : void 0)), Y(e, r);
 			};
 			Z(w, (e) => {
 				s() && !c() && e(ee);
@@ -3014,13 +3026,13 @@ function ga(e, t) {
 		W(i), G(() => W(i).length === 0) ? e(D) : e(be, -1);
 	});
 	var O = R(ye, 2), k = (e) => {
-		Y(e, fa());
+		Y(e, pa());
 	};
 	Z(O, (e) => {
 		c() || e(k);
 	});
 	var xe = R(O, 2), Ce = (e) => {
-		var t = ma(), r = I(t), i = L(r, !0), o = R(r, 3), s = R(I(o));
+		var t = ha(), r = I(t), i = L(r, !0), o = R(r, 3), s = R(I(o));
 		ci(s);
 		var u = R(s, 3);
 		ci(u);
@@ -3029,15 +3041,15 @@ function ga(e, t) {
 		var f = R(d, 3);
 		et(f);
 		var p = R(f, 2), m = (e) => {
-			var t = pa(), r = R(I(t));
-			A(t), z(() => r.disabled = W(n)), q("click", r, () => F(C, a()?.revision)), Y(e, t);
+			var t = ma(), r = R(I(t));
+			A(t), z(() => r.disabled = W(n)), q("click", r, () => F(S, a()?.revision)), Y(e, t);
 		};
 		Z(p, (e) => {
-			W(C), K(a()), G(() => W(C) !== void 0 && a() && W(C) !== a().revision) && e(m);
+			W(S), K(a()), G(() => W(S) !== void 0 && a() && W(S) !== a().revision) && e(m);
 		});
-		var h = R(p, 2), g = I(h), S = L(g, !0), w = R(g), ee = L(w, !0);
+		var h = R(p, 2), g = I(h), C = L(g, !0), w = R(g), ee = L(w, !0);
 		A(h), A(o), A(t), z(() => {
-			Q(t, "hidden", c()), X(i, W(x) ? "Edit service" : "Add a service"), s.disabled = W(n), u.disabled = W(n), d.disabled = W(n), f.disabled = W(n), g.disabled = (W(n), W(C), K(a()), G(() => W(n) || W(C) !== a()?.revision)), X(S, l() === "saving" ? "Saving…" : W(x) ? "Save service" : "Add service"), w.disabled = W(n), X(ee, W(x) ? "Cancel edit" : "Clear form");
+			Q(t, "hidden", c()), X(i, W(x) ? "Edit service" : "Add a service"), s.disabled = W(n), u.disabled = W(n), d.disabled = W(n), f.disabled = W(n), g.disabled = (W(n), W(S), K(a()), G(() => W(n) || W(S) !== a()?.revision)), X(C, l() === "saving" ? "Saving…" : W(x) ? "Save service" : "Add service"), w.disabled = W(n), X(ee, W(x) ? "Cancel edit" : "Clear form");
 		}), yr("submit", o, (e) => {
 			e.preventDefault(), re();
 		}), pi(s, () => W(_), (e) => F(_, e)), pi(u, () => W(b), (e) => F(b, e)), pi(d, () => W(y), (e) => F(y, e)), pi(f, () => W(v), (e) => F(v, e)), q("click", w, te), Y(e, t);
@@ -3050,8 +3062,8 @@ function ga(e, t) {
 }
 br(["click"]);
 // src/App.svelte
-var _a = /* @__PURE__ */ J("<a rel=\"noreferrer\"> </a>"), va = /* @__PURE__ */ J("<section class=\"recovery card\"><p class=\"eyebrow\">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class=\"button-row\"><a class=\"button primary\" href=\"/workspace\">Open workspace again</a><a class=\"button secondary\" href=\"/account\">Your account</a></div></section>"), ya = /* @__PURE__ */ J("<section class=\"notice\" aria-label=\"Draft recovery\"><h2>A draft is waiting</h2><p>This browser session has an unfinished note for this account. Review it before saving.</p><div class=\"button-row\"><button class=\"button secondary\">Recover draft</button><button class=\"text-button\">Discard draft</button></div></section>"), ba = /* @__PURE__ */ J("<p class=\"field-help\">Browser storage is unavailable. Draft recovery is limited to this open page.</p>"), xa = /* @__PURE__ */ J("<p class=\"notice\">Shorten this note to 4096 bytes before saving or leaving this page.</p>"), Sa = /* @__PURE__ */ J("<section class=\"notice\" aria-label=\"Save conflict\"><h2>There’s a newer saved note</h2><p>Your draft is still in the editor. Compare it with the saved version, then choose what to keep.</p><pre> </pre><div class=\"button-row\"><button class=\"button secondary\">Keep my draft</button><button class=\"text-button\">Use saved note</button></div></section>"), Ca = /* @__PURE__ */ J("<section class=\"notice\" aria-label=\"Uncertain save\"><h2>Check before saving again</h2><p>The previous save may have completed. Your draft has not been sent again.</p><button class=\"button secondary\">Check saved note</button></section>"), wa = /* @__PURE__ */ J("<a class=\"skip-link\" href=\"#workspace-content\">Skip to content</a> <div class=\"workspace-shell\"><aside class=\"sidebar\" aria-label=\"Workspace sidebar\"><a class=\"brand\" href=\"/workspace\"><span class=\"brand-mark\" aria-hidden=\"true\">K</span><span>Keida <small>REBORN</small></span></a> <p class=\"nav-label\">YOUR SPACE</p> <nav class=\"main-nav\" aria-label=\"Workspace views\"><button><span aria-hidden=\"true\">⌂</span>Home</button> <button><span aria-hidden=\"true\">▤</span>Workspace note<span aria-hidden=\"true\"></span></button> <button><span aria-hidden=\"true\">◇</span>Connections</button> <button><span aria-hidden=\"true\">▦</span>Services</button></nav> <div class=\"sidebar-bottom\"><a href=\"/account\" class=\"account-link\"><span class=\"avatar\" aria-hidden=\"true\">K</span><span><strong> </strong><small> </small></span></a> <form method=\"post\" action=\"/account/sign-out\"><input type=\"hidden\" name=\"product\" value=\"keida-hub-reborn\"/> <input type=\"hidden\" name=\"contract\" value=\"reborn-account-v1\"/> <input type=\"hidden\" name=\"csrf_token\"/> <button type=\"submit\" class=\"sign-out\">Sign out <span aria-hidden=\"true\">↗</span></button></form> <details class=\"version\"><summary> <span>Build details</span></summary> <dl><dt>Source</dt><dd><!></dd><dt>Tree</dt><dd> </dd><dt>Channel</dt><dd> </dd><dt>Workspace contract</dt><dd>reborn-workspace-v1</dd></dl></details></div></aside> <main id=\"workspace-content\" class=\"workspace-content\"><header class=\"page-header\"><div><p class=\"eyebrow\">YOUR OWN CORNER OF KEIDA</p><h1 tabindex=\"-1\"> </h1></div><span class=\"connection-state\"><span aria-hidden=\"true\">●</span> </span></header> <p class=\"workspace-status\" role=\"status\"> </p> <!> <section class=\"home-view\" aria-label=\"Home\"><div class=\"welcome-card card\"><div><p class=\"eyebrow\">MAKE YOURSELF AT HOME</p><h2>A useful place<br/>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><button class=\"button primary\">Open your note <span aria-hidden=\"true\">↗</span></button></div><div class=\"orb\" aria-hidden=\"true\"><div>K</div></div></div> <div class=\"home-grid\"><section class=\"card small-card\"><span class=\"card-icon\" aria-hidden=\"true\">▤</span><h2>Your workspace note</h2><p> </p><button class=\"text-button\">Keep writing <span aria-hidden=\"true\">→</span></button></section><section class=\"card small-card\"><span class=\"card-icon\" aria-hidden=\"true\">◇</span><h2>Connections</h2><p> </p><button class=\"text-button\">View connections <span aria-hidden=\"true\">→</span></button></section></div></section> <section class=\"note-view\" aria-label=\"Workspace note\"><div class=\"note-heading\"><p>A private note, available each time you sign in.</p><span class=\"quiet-label\"> </span></div> <!> <form class=\"note-card card\"><label for=\"workspace-note\">Workspace note</label> <textarea id=\"workspace-note\" name=\"workspace-note\" maxlength=\"4096\" spellcheck=\"true\" aria-describedby=\"note-help note-size\" placeholder=\"What would you like to come back to?\"></textarea> <p id=\"note-help\" class=\"field-help\">For ordinary notes. Keep passwords, API keys and other secrets out of this space.</p> <div class=\"note-footer\"><span id=\"note-size\"> </span><button class=\"button primary\" type=\"submit\"> </button></div></form> <!> <!> <!> <!></section> <section aria-label=\"Connections\"><!></section> <section aria-label=\"Services\"><!></section> <footer class=\"content-footer\"><span>Keida Reborn</span><a href=\"/account\">Account &amp; recovery</a></footer></main></div>", 1);
-function Ta(e, t) {
+var va = /* @__PURE__ */ J("<a rel=\"noreferrer\"> </a>"), ya = /* @__PURE__ */ J("<section class=\"recovery card\"><p class=\"eyebrow\">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class=\"button-row\"><a class=\"button primary\" href=\"/workspace\">Open workspace again</a><a class=\"button secondary\" href=\"/account\">Your account</a></div></section>"), ba = /* @__PURE__ */ J("<section class=\"notice\" aria-label=\"Draft recovery\"><h2>A draft is waiting</h2><p>This browser session has an unfinished note for this account. Review it before saving.</p><div class=\"button-row\"><button class=\"button secondary\">Recover draft</button><button class=\"text-button\">Discard draft</button></div></section>"), xa = /* @__PURE__ */ J("<p class=\"field-help\">Browser storage is unavailable. Draft recovery is limited to this open page.</p>"), Sa = /* @__PURE__ */ J("<p class=\"notice\">Shorten this note to 4096 bytes before saving or leaving this page.</p>"), Ca = /* @__PURE__ */ J("<section class=\"notice\" aria-label=\"Save conflict\"><h2>There’s a newer saved note</h2><p>Your draft is still in the editor. Compare it with the saved version, then choose what to keep.</p><pre> </pre><div class=\"button-row\"><button class=\"button secondary\">Keep my draft</button><button class=\"text-button\">Use saved note</button></div></section>"), wa = /* @__PURE__ */ J("<section class=\"notice\" aria-label=\"Uncertain save\"><h2>Check before saving again</h2><p>The previous save may have completed. Your draft has not been sent again.</p><button class=\"button secondary\">Check saved note</button></section>"), Ta = /* @__PURE__ */ J("<a class=\"skip-link\" href=\"#workspace-content\">Skip to content</a> <div class=\"workspace-shell\"><aside class=\"sidebar\" aria-label=\"Workspace sidebar\"><a class=\"brand\" href=\"/workspace\"><span class=\"brand-mark\" aria-hidden=\"true\">K</span><span>Keida <small>REBORN</small></span></a> <p class=\"nav-label\">YOUR SPACE</p> <nav class=\"main-nav\" aria-label=\"Workspace views\"><button><span aria-hidden=\"true\">⌂</span>Home</button> <button><span aria-hidden=\"true\">▤</span>Workspace note<span aria-hidden=\"true\"></span></button> <button><span aria-hidden=\"true\">◇</span>Connections</button> <button><span aria-hidden=\"true\">▦</span>Services</button></nav> <div class=\"sidebar-bottom\"><a href=\"/account\" class=\"account-link\"><span class=\"avatar\" aria-hidden=\"true\">K</span><span><strong> </strong><small> </small></span></a> <form method=\"post\" action=\"/account/sign-out\"><input type=\"hidden\" name=\"product\" value=\"keida-hub-reborn\"/> <input type=\"hidden\" name=\"contract\" value=\"reborn-account-v1\"/> <input type=\"hidden\" name=\"csrf_token\"/> <button type=\"submit\" class=\"sign-out\">Sign out <span aria-hidden=\"true\">↗</span></button></form> <details class=\"version\"><summary> <span>Build details</span></summary> <dl><dt>Source</dt><dd><!></dd><dt>Tree</dt><dd> </dd><dt>Channel</dt><dd> </dd><dt>Workspace contract</dt><dd>reborn-workspace-v1</dd></dl></details></div></aside> <main id=\"workspace-content\" class=\"workspace-content\"><header class=\"page-header\"><div><p class=\"eyebrow\">YOUR OWN CORNER OF KEIDA</p><h1 tabindex=\"-1\"> </h1></div><span class=\"connection-state\"><span aria-hidden=\"true\">●</span> </span></header> <p class=\"workspace-status\" role=\"status\"> </p> <!> <section class=\"home-view\" aria-label=\"Home\"><div class=\"welcome-card card\"><div><p class=\"eyebrow\">MAKE YOURSELF AT HOME</p><h2>A useful place<br/>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><button class=\"button primary\">Open your note <span aria-hidden=\"true\">↗</span></button></div><div class=\"orb\" aria-hidden=\"true\"><div>K</div></div></div> <div class=\"home-grid\"><section class=\"card small-card\"><span class=\"card-icon\" aria-hidden=\"true\">▤</span><h2>Your workspace note</h2><p> </p><button class=\"text-button\">Keep writing <span aria-hidden=\"true\">→</span></button></section><section class=\"card small-card\"><span class=\"card-icon\" aria-hidden=\"true\">◇</span><h2>Connections</h2><p> </p><button class=\"text-button\">View connections <span aria-hidden=\"true\">→</span></button></section></div></section> <section class=\"note-view\" aria-label=\"Workspace note\"><div class=\"note-heading\"><p>A private note, available each time you sign in.</p><span class=\"quiet-label\"> </span></div> <!> <form class=\"note-card card\"><label for=\"workspace-note\">Workspace note</label> <textarea id=\"workspace-note\" name=\"workspace-note\" maxlength=\"4096\" spellcheck=\"true\" aria-describedby=\"note-help note-size\" placeholder=\"What would you like to come back to?\"></textarea> <p id=\"note-help\" class=\"field-help\">For ordinary notes. Keep passwords, API keys and other secrets out of this space.</p> <div class=\"note-footer\"><span id=\"note-size\"> </span><button class=\"button primary\" type=\"submit\"> </button></div></form> <!> <!> <!> <!></section> <section aria-label=\"Connections\"><!></section> <section aria-label=\"Services\"><!></section> <footer class=\"content-footer\"><span>Keida Reborn</span><a href=\"/account\">Account &amp; recovery</a></footer></main></div>", 1);
+function Ea(e, t) {
 	Ue(t, !1);
 	let n = () => Ei(l, "$model", r), [r, i] = Di(), a = /* @__PURE__ */ P(), o = /* @__PURE__ */ P(), s = $(t, "binding", 8), c = Hi(s()), l = c.model, u = /* @__PURE__ */ P("home"), d = /* @__PURE__ */ P(), f = document.querySelector("meta[name=\"reborn-version\"]")?.content ?? "development", p = document.querySelector("meta[name=\"reborn-commit\"]")?.content ?? "unqualified", m = document.querySelector("meta[name=\"reborn-tree\"]")?.content ?? "unqualified", h = document.querySelector("meta[name=\"reborn-channel\"]")?.content ?? "development";
 	function g(e) {
@@ -3066,7 +3078,7 @@ function Ta(e, t) {
 			"uncertain"
 		].includes(n().save));
 	}), Tn(), vi();
-	var _ = wa(), v = R(sn(_), 2), y = I(v), b = R(I(y), 4), x = I(b);
+	var _ = Ta(), v = R(sn(_), 2), y = I(v), b = R(I(y), 4), x = I(b);
 	let S;
 	var C = R(x, 2);
 	let w;
@@ -3085,7 +3097,7 @@ function Ta(e, t) {
 	var pe = R(de, 2), me = I(pe), E = I(me, !0);
 	Se(), A(me);
 	var he = R(me, 2), ge = R(I(he)), _e = I(ge), ve = (e) => {
-		var t = _a(), n = L(t, !0);
+		var t = va(), n = L(t, !0);
 		z(() => {
 			Q(t, "href", `https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/commit/${p}`), X(n, p);
 		}), Y(e, t);
@@ -3103,7 +3115,7 @@ function Ta(e, t) {
 	var De = R(we), Oe = R(I(De), 1, !0);
 	A(De), A(Ce);
 	var ke = R(Ce, 2), Ae = L(ke, !0), je = R(ke, 2), Me = (e) => {
-		Y(e, va());
+		Y(e, ya());
 	};
 	Z(je, (e) => {
 		n(), G(() => n().phase !== "ready") && e(Me);
@@ -3117,7 +3129,7 @@ function Ta(e, t) {
 	var qe = R(Ne, 2), Je = I(qe), Ye = L(R(I(Je)), !0);
 	A(Je);
 	var Xe = R(Je, 2), Ze = (e) => {
-		var t = ya(), n = R(I(t), 2), r = I(n), i = R(r);
+		var t = ba(), n = R(I(t), 2), r = I(n), i = R(r);
 		A(n), A(t), q("click", r, function(...e) {
 			c.recover?.apply(this, e);
 		}), q("click", i, () => c.resolve(!0)), Y(e, t);
@@ -3132,26 +3144,26 @@ function Ta(e, t) {
 	var rt = L(tt), it = R(tt), at = L(it, !0);
 	A($e), A(M);
 	var ot = R(M, 2), st = (e) => {
-		Y(e, ba());
+		Y(e, xa());
 	};
 	Z(ot, (e) => {
 		n(), G(() => n().storageLimited) && e(st);
 	});
 	var ct = R(ot, 2), lt = (e) => {
-		Y(e, xa());
+		Y(e, Sa());
 	};
 	Z(ct, (e) => {
 		W(a) > 4096 && e(lt);
 	});
 	var ut = R(ct, 2), dt = (e) => {
-		var t = Sa(), r = R(I(t), 2), i = L(r, !0), a = R(r), o = I(a), s = R(o);
+		var t = Ca(), r = R(I(t), 2), i = L(r, !0), a = R(r), o = I(a), s = R(o);
 		A(a), A(t), z(() => X(i, (n(), G(() => n().snapshot?.note.body)))), q("click", o, () => c.resolve(!1)), q("click", s, () => c.resolve(!0)), Y(e, t);
 	};
 	Z(ut, (e) => {
 		n(), G(() => n().save === "conflict") && e(dt);
 	});
 	var mt = R(ut, 2), ht = (e) => {
-		var t = Ca(), n = R(I(t), 2);
+		var t = wa(), n = R(I(t), 2);
 		A(t), q("click", n, () => c.check()), Y(e, t);
 	};
 	Z(mt, (e) => {
@@ -3182,7 +3194,7 @@ function Ta(e, t) {
 	var vt = R(gt, 2), yt = I(vt);
 	{
 		let e = /* @__PURE__ */ pt(() => (n(), G(() => n().snapshot?.directory))), t = /* @__PURE__ */ pt(() => (n(), G(() => n().phase === "ready"))), r = /* @__PURE__ */ pt(() => (n(), G(() => n().snapshot?.account.role === "owner"))), i = /* @__PURE__ */ pt(() => W(u) === "home");
-		ga(yt, {
+		_a(yt, {
 			get directory() {
 				return W(e);
 			},
@@ -3221,16 +3233,16 @@ function Ta(e, t) {
 }
 br(["click", "input"]);
 // src/main.ts
-var Ea = document.getElementById("workspace-root"), Da = document.querySelector("meta[name=\"reborn-session-binding\"]")?.content, Oa = document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content;
-if (Ea && Da && /^[a-f0-9]{64}$/.test(Da) && Oa === "reborn-workspace-v1") {
-	let e = Array.from(Ea.childNodes);
-	Ea.replaceChildren();
+var Da = document.getElementById("workspace-root"), Oa = document.querySelector("meta[name=\"reborn-session-binding\"]")?.content, ka = document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content;
+if (Da && Oa && /^[a-f0-9]{64}$/.test(Oa) && ka === "reborn-workspace-v1") {
+	let e = Array.from(Da.childNodes);
+	Da.replaceChildren();
 	try {
-		Nr(Ta, {
-			target: Ea,
-			props: { binding: Da }
+		Nr(Ea, {
+			target: Da,
+			props: { binding: Oa }
 		});
 	} catch {
-		Ea.replaceChildren(...e);
+		Da.replaceChildren(...e);
 	}
 }

@@ -463,6 +463,7 @@ mod tests {
         let mut older = newer.clone();
         older.ordinal = 7;
         older.version = "0.1.7".into();
+        older.database_schema = 4;
         publish_qualified(&root.0, &older, &archive).unwrap();
         let channel: Channel =
             serde_json::from_slice(&fs::read(root.0.join("channel.json")).unwrap()).unwrap();

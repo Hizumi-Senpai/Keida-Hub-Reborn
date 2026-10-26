@@ -12,21 +12,23 @@
   export let edit: (base: string, change: unknown) => Promise<boolean>;
   export let pin: (ids: string[]) => Promise<boolean>;
   let query = '', category = '', name = '', description = '', url = '', linkCategory = '';
-  let editing = '', removing = '', base: string | undefined;
+  let editing = '', base: string | undefined;
+  let removing: { id: string; base: string; name: string } | undefined;
   let generation = 0;
   $: locked = state === 'saving' || state === 'uncertain' || !authorized;
   $: categories = [...new Set(directory?.services.map((s) => s.category) ?? [])].sort();
+  $: if (category && !categories.includes(category)) category = '';
   $: services = [...directory?.services ?? []].sort((a, b) => {
     const ai = directory?.pins.indexOf(a.id) ?? -1, bi = directory?.pins.indexOf(b.id) ?? -1;
     return ai >= 0 || bi >= 0 ? (ai < 0 ? 25 : ai) - (bi < 0 ? 25 : bi) : a.name.localeCompare(b.name) || Number(BigInt(a.id) - BigInt(b.id));
   }).filter((s) => compact ? directory?.pins.includes(s.id) : (!category || s.category === category) && `${s.name} ${s.category} ${s.description}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
   $: if (!authorized) clear();
   $: if (authorized && directory && base === undefined) base = directory.revision;
-  function clear(): void { ++generation; query = ''; category = ''; name = ''; description = ''; url = ''; linkCategory = ''; editing = ''; removing = ''; base = undefined; }
+  function clear(): void { ++generation; query = ''; category = ''; name = ''; description = ''; url = ''; linkCategory = ''; editing = ''; removing = undefined; base = undefined; }
   onDestroy(clear);
-  function reset(): void { name = ''; description = ''; url = ''; linkCategory = ''; editing = ''; removing = ''; base = directory?.revision; }
+  function reset(): void { name = ''; description = ''; url = ''; linkCategory = ''; editing = ''; removing = undefined; base = directory?.revision; }
   function choose(s: ServiceLink): void {
-    editing = s.id; name = s.name; description = s.description; url = s.url; linkCategory = s.category; base = directory?.revision; removing = '';
+    editing = s.id; name = s.name; description = s.description; url = s.url; linkCategory = s.category; base = directory?.revision; removing = undefined;
     document.querySelector<HTMLInputElement>('#service-name')?.focus();
   }
   async function submit(): Promise<void> {
@@ -46,9 +48,9 @@
     [ids[i], ids[j]] = [ids[j], ids[i]]; void pin(ids);
   }
   async function remove(id: string): Promise<void> {
-    if (locked || !directory || !owner) return;
+    if (locked || !directory || !owner || removing?.id !== id) return;
     const epoch = generation;
-    if (await edit(directory.revision, { action: 'delete', id }) && authorized && epoch === generation) { removing = ''; if (editing === id) reset(); }
+    if (await edit(removing.base, { action: 'delete', id }) && authorized && epoch === generation) { await tick(); if (authorized && epoch === generation) { removing = undefined; if (editing === id) reset(); } }
   }
 </script>
 
@@ -73,8 +75,8 @@
           {#if pinned}<button class="text-button move-up" aria-label={`Move ${service.name} up`} disabled={locked || index === 0} onclick={() => move(service.id, -1)}>↑</button><button class="text-button move-down" aria-label={`Move ${service.name} down`} disabled={locked || index === (directory?.pins.length ?? 0) - 1} onclick={() => move(service.id, 1)}>↓</button>{/if}
         </div>
         {#if owner && !compact}
-          <div class="button-row"><button class="text-button edit-service" disabled={locked} onclick={() => choose(service)}>Edit {service.name}</button><button class="text-button remove-service" disabled={locked} onclick={() => removing = service.id}>Remove</button></div>
-          {#if removing === service.id}<div class="notice"><p>Remove {service.name} from the directory and everyone’s pins?</p><div class="button-row"><button class="button secondary confirm-remove" disabled={locked} onclick={() => void remove(service.id)}>Remove service</button><button class="text-button" onclick={() => removing = ''}>Keep service</button></div></div>{/if}
+          <div class="button-row"><button class="text-button edit-service" disabled={locked} onclick={() => choose(service)}>Edit {service.name}</button><button class="text-button remove-service" disabled={locked} onclick={() => removing = directory ? { id: service.id, base: directory.revision, name: service.name } : undefined}>Remove</button></div>
+          {#if removing?.id === service.id}<div class="notice"><p>Remove {removing.name} from the directory and everyone’s pins?</p>{#if removing.base !== directory?.revision}<p>The directory changed. Review the service and choose Remove again.</p>{/if}<div class="button-row"><button class="button secondary confirm-remove" disabled={locked || removing.base !== directory?.revision} onclick={() => void remove(service.id)}>Remove service</button><button class="text-button" onclick={() => removing = undefined}>Keep service</button></div></div>{/if}
         {/if}
       </article>
     {/each}
