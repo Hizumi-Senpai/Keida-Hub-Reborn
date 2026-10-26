@@ -69,16 +69,19 @@ async fn lifetime_and_recovery() -> Check<()> {
     claim(&f, &b).await?;
     workspace(&f, &b).await?;
     note(&b).await?;
-    b.fill("#workspace-note", "A private fictional note 海")
-        .await?;
-    b.evaluate("window.__editor=document.querySelector('#workspace-note'); window.__editor.setSelectionRange(2,7); return true",json!([])).await?;
+    let note_text = format!(
+        "A private fictional note 海\n{}",
+        "A line to preserve scrolling.\n".repeat(35)
+    );
+    b.fill("#workspace-note", &note_text).await?;
+    b.evaluate("window.__editor=document.querySelector('#workspace-note'); window.__editor.setSelectionRange(2,7); window.__editor.scrollTop=120; window.__scroll=window.__editor.scrollTop; return window.__scroll>0",json!([])).await?;
     let reads = f.reads();
     for _ in 0..4 {
         b.click(".main-nav button:first-child").await?;
         note(&b).await?;
     }
-    check(b.evaluate("return window.__editor === document.querySelector('#workspace-note') && window.__editor.selectionStart === 2 && window.__editor.selectionEnd === 7",json!([])).await?==true,"view navigation preserves actual editor and selection")?;
-    body(&b, "A private fictional note 海").await?;
+    check(b.evaluate("return window.__editor === document.querySelector('#workspace-note') && window.__editor.selectionStart === 2 && window.__editor.selectionEnd === 7 && Math.abs(window.__editor.scrollTop-window.__scroll)<=1",json!([])).await?==true,"view navigation preserves actual editor, selection and scroll")?;
+    body(&b, &note_text).await?;
     tokio::time::sleep(Duration::from_secs(16)).await;
     check(
         f.reads() > reads && f.reads() <= reads + 2,
@@ -93,12 +96,16 @@ async fn lifetime_and_recovery() -> Check<()> {
     check(b.evaluate("window.dispatchEvent(new Event('pagehide')); return document.querySelector('#workspace-note').value === '' && !document.body.textContent.includes(arguments[0])",json!([&f.username])).await?==true,"pagehide clears private DOM synchronously")?;
     workspace(&f, &b).await?;
     note(&b).await?;
-    body(&b, "A private fictional note 海").await?;
+    body(&b, &note_text).await?;
     b.click("section[aria-label='Draft recovery'] button:first-of-type")
         .await?;
     body(&b, "An unfinished draft after saving").await?;
     b.click(".note-card button[type=submit]").await?;
     saved(&b).await?;
+    b.click(".version summary").await?;
+    let expected = std::env::var("REBORN_BROWSER_EXPECT_COMMIT")
+        .map_err(|_| "exact browser source prerequisite")?;
+    check(b.evaluate("return document.querySelector('meta[name=reborn-commit]').content === arguments[0] && document.querySelector('.version a').href.endsWith('/commit/'+arguments[0])",json!([expected])).await?==true,"loaded workspace identifies exact compiled source")?;
     accessibility(&b).await?;
     b.mobile().await?;
     check(

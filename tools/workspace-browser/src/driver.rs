@@ -31,11 +31,7 @@ impl Browser {
             .port();
         drop(listener);
         let child = Command::new(driver)
-            .args([
-                format!("--port={port}"),
-                "--silent".into(),
-                "--log-level=OFF".into(),
-            ])
+            .args([format!("--port={port}"), "--log-level=OFF".into()])
             .process_group(0)
             .env("HOME", home)
             .env("XDG_DATA_HOME", home.join(".local/share"))

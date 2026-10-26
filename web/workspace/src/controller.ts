@@ -116,7 +116,7 @@ export function workspace(binding: string) {
           save: conflict ? 'conflict' : before.save === 'uncertain' ? 'idle' : before.save,
           message: conflict ? 'A newer saved note is available. Your draft is unchanged.' : 'Workspace checked.' });
         if (before.dirty && before.draft === next.note.body) {
-          model.update((m) => ({ ...m, dirty: false, base: next.note.revision, save: 'saved' })); removeDraft();
+          model.update((m) => ({ ...m, dirty: false, base: next.note.revision, save: 'saved', message: 'The current note is saved.' })); removeDraft();
         }
       } else {
         let draft = held?.key === key ? held.draft : undefined;

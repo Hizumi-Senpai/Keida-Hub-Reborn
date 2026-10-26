@@ -8,6 +8,8 @@
   let heading: HTMLHeadingElement;
   const version = document.querySelector<HTMLMetaElement>('meta[name="reborn-version"]')?.content ?? 'development';
   const commit = document.querySelector<HTMLMetaElement>('meta[name="reborn-commit"]')?.content ?? 'unqualified';
+  const tree = document.querySelector<HTMLMetaElement>('meta[name="reborn-tree"]')?.content ?? 'unqualified';
+  const channel = document.querySelector<HTMLMetaElement>('meta[name="reborn-channel"]')?.content ?? 'development';
   $: bytes = new TextEncoder().encode($model.draft).length;
   $: canSave = $model.phase === 'ready' && $model.dirty && bytes <= 4096
     && !['saving', 'conflict', 'uncertain'].includes($model.save);
@@ -22,7 +24,7 @@
     <p class="nav-label">YOUR SPACE</p>
     <nav class="main-nav" aria-label="Workspace views">
       <button class:active={view === 'home'} aria-current={view === 'home' ? 'page' : undefined} onclick={() => navigate('home')}><span aria-hidden="true">⌂</span>Home</button>
-      <button class:active={view === 'note'} aria-current={view === 'note' ? 'page' : undefined} onclick={() => navigate('note')}><span aria-hidden="true">▤</span>Workspace note<span class="draft-dot" class:visible={$model.dirty} aria-label={$model.dirty ? 'Unsaved draft' : undefined}></span></button>
+      <button class:active={view === 'note'} aria-current={view === 'note' ? 'page' : undefined} onclick={() => navigate('note')}><span aria-hidden="true">▤</span>Workspace note<span class="draft-dot" class:visible={$model.dirty} aria-hidden="true"></span></button>
     </nav>
     <div class="sidebar-bottom">
       <a href="/account" class="account-link"><span class="avatar" aria-hidden="true">K</span><span><strong>{$model.snapshot?.account.username ?? 'Your account'}</strong><small>{$model.snapshot?.account.role === 'owner' ? 'Owner' : $model.snapshot?.account.role === 'member' ? 'Member' : 'Check account access'}</small></span></a>
@@ -32,11 +34,13 @@
         <input type="hidden" name="csrf_token" value={binding}>
         <button type="submit" class="sign-out">Sign out <span aria-hidden="true">↗</span></button>
       </form>
-      <details class="version"><summary>{version}<span>Build details</span></summary><p>{commit}</p><p>Source build · Reborn</p></details>
+      <details class="version"><summary>{version}<span>Build details</span></summary>
+        <dl><dt>Source</dt><dd>{#if /^[a-f0-9]{40}$/.test(commit)}<a href={`https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/commit/${commit}`} rel="noreferrer">{commit}</a>{:else}{commit}{/if}</dd><dt>Tree</dt><dd>{tree}</dd><dt>Channel</dt><dd>{channel}</dd><dt>Workspace contract</dt><dd>reborn-workspace-v1</dd></dl>
+      </details>
     </div>
   </aside>
   <main id="workspace-content" class="workspace-content">
-    <header class="page-header"><div><p class="eyebrow">YOUR OWN CORNER OF KEIDA</p><h1 tabindex="-1" bind:this={heading}>{view === 'home' ? 'Welcome home.' : 'A little space to think.'}</h1></div><span class="connection-state"><span aria-hidden="true">●</span>{$model.phase === 'ready' ? 'Session checked' : 'Checking access'}</span></header>
+    <header class="page-header"><div><p class="eyebrow">YOUR OWN CORNER OF KEIDA</p><h1 tabindex="-1" bind:this={heading}>{view === 'home' ? 'Welcome home.' : 'A little space to think.'}</h1></div><span class="connection-state"><span aria-hidden="true">●</span>{$model.phase === 'ready' ? 'Session checked' : $model.phase === 'checking' ? 'Checking access' : 'Access paused'}</span></header>
     <p class="workspace-status" role="status">{$model.message}</p>
     {#if $model.phase !== 'ready'}
       <section class="recovery card"><p class="eyebrow">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class="button-row"><a class="button primary" href="/workspace">Open workspace again</a><a class="button secondary" href="/account">Your account</a></div></section>

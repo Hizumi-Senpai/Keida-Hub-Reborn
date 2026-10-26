@@ -53,7 +53,8 @@ async fn document(State(service): State<Service>, headers: HeaderMap) -> Respons
             .replace("{{BINDING}}", &binding)
             .replace("{{VERSION}}", identity.version)
             .replace("{{COMMIT}}", identity.commit)
-            .replace("{{TREE}}", identity.tree);
+            .replace("{{TREE}}", identity.tree)
+            .replace("{{CHANNEL}}", identity.channel);
         Ok::<_, ApiError>(Html(html).into_response())
     }
     .await;

@@ -654,3 +654,7 @@ textarea::placeholder {
   }
 
 }
+
+.version dl { margin: 12px 0 0; }
+.version dt { margin-top: 10px; color: #b8c9cf; }
+.version dd { margin: 3px 0 0; overflow-wrap: anywhere; }
