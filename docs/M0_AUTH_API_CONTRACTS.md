@@ -112,6 +112,30 @@ they do not duplicate password verification or authentication policy.
   conflicts and deliberate fresh login recovers the same owner. This is response
   loss after known commit, not proof about a commit racing the HTTP timeout.
 
+The four direct phase scenarios are implemented in
+[`store_contracts.rs`](../crates/hub/src/auth/store_contracts.rs); the cap and
+known-commit lost-response scenarios join the retained HTTP tests. Phase tests
+call the actual public store functions and actual migrations against uniquely
+owned local databases. Their two fixed PHCs were generated once with libargon2
+at the frozen profile; no verification helper or copied store policy supplies
+the expected admission results. Execution and exact-source CI remain separate
+evidence, not implied by this source inventory.
+
+## Schema boundary expectations frozen before the drift test
+
+Authentication admission must check the exact compiled schema after startup,
+not merely report unhealthy readiness while continuing auth effects. A staged
+unknown future migration ledger entry makes valid form/session/login/member-
+creation/revoke-all requests unavailable (503), preserving users, sessions,
+generation and throttle counters. Product/contract and Origin admission retain
+their earlier precedence. Public liveness remains 200 and readiness becomes 503.
+Removing only the owned future-ledger fixture restores ordinary operation using
+the same database, key and session; no reset or replacement key is allowed.
+
+The durable owner reference must also reject assigning the auth singleton to an
+existing member. With the fixed owner-role composite foreign key this is a real
+PostgreSQL foreign-key violation (23503), preserving the actual owner reference.
+
 Record actual exact-source CI execution separately. These tests establish no
 Askama/Svelte workflow, native browser/iPhone behavior, packaged artifact, live
 deployment, provider-secret enrollment, backup/restore or game ownership transfer.

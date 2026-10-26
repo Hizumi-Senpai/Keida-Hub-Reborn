@@ -1627,6 +1627,338 @@ async fn concurrent_login_and_revoke_all_cannot_authorize_an_obsolete_generation
 }
 
 #[tokio::test]
+async fn thirty_two_session_http_cap_requires_rotation_and_preserves_other_devices() {
+    let fixture = Fixture::new().await;
+    let (server, owner, setup) = claimed(&fixture).await;
+    let account_id = owner.account["id"]
+        .as_str()
+        .expect("owner ID")
+        .parse::<i64>()
+        .expect("numeric owner ID");
+    let mut connection = fixture.connect().await;
+    let key = fs::read(&fixture.key_file).expect("fixture CSRF signing key");
+    let mut other_device = None;
+    for index in 1..=31 {
+        let token = format!("{:064x}", 5000 + index);
+        let verifier = Sha256::digest(token.as_bytes()).to_vec();
+        sqlx::query("INSERT INTO sessions (verifier,account_id,generation,created_at,expires_at) SELECT $1,id,generation,floor(extract(epoch FROM clock_timestamp()))::BIGINT,floor(extract(epoch FROM clock_timestamp()))::BIGINT + 43200 FROM users WHERE id = $2")
+            .bind(verifier).bind(account_id).execute(&mut connection).await.expect("seed valid owned session records");
+        if index == 1 {
+            other_device = Some(Session {
+                cookie: format!("{SESSION_COOKIE}={token}"),
+                csrf: protocol_mac(&key, b"reborn/session-csrf/v1\0", &token),
+                account: owner.account.clone(),
+            });
+        }
+    }
+    let other_device = other_device.expect("independent device fixture");
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>(
+            "SELECT COUNT(*) FROM sessions WHERE account_id = $1 AND revoked = FALSE"
+        )
+        .bind(account_id)
+        .fetch_one(&mut connection)
+        .await
+        .expect("full session fixture"),
+        32
+    );
+    let _ = server.session_status(&other_device, StatusCode::OK).await;
+    error(
+        server.login_response("keida_owner", OWNER_PASSWORD).await,
+        StatusCode::TOO_MANY_REQUESTS,
+        &[OWNER_PASSWORD, &owner.cookie],
+    )
+    .await;
+    let _ = server.session_status(&owner, StatusCode::OK).await;
+    let form = server.form(false).await;
+    let response = server
+        .admitted(Method::POST, "/api/auth/login")
+        .header("Cookie", format!("{}; {}", form.cookie, owner.cookie))
+        .header("X-CSRF-Token", &form.csrf)
+        .json(&json!({"username":"keida_owner","password":OWNER_PASSWORD}))
+        .send()
+        .await
+        .expect("rotation at HTTP session cap");
+    let rotated = Session::from_response(response, StatusCode::OK).await;
+    assert!(rotated.cookie != owner.cookie);
+    let _ = server
+        .session_status(&owner, StatusCode::UNAUTHORIZED)
+        .await;
+    let _ = server.session_status(&rotated, StatusCode::OK).await;
+    let _ = server.session_status(&other_device, StatusCode::OK).await;
+    assert_eq!(sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sessions s JOIN users u ON u.id = s.account_id WHERE u.id = $1 AND s.revoked = FALSE AND s.generation = u.generation AND s.expires_at > floor(extract(epoch FROM clock_timestamp()))::BIGINT")
+        .bind(account_id).fetch_one(&mut connection).await.expect("active count after HTTP rotation"), 32);
+    server.assert_logs_private(&[
+        &setup,
+        OWNER_PASSWORD,
+        &owner.cookie,
+        &rotated.cookie,
+        &other_device.cookie,
+    ]);
+}
+
+#[tokio::test]
+async fn unread_claim_response_after_observed_commit_recovers_by_deliberate_fresh_login() {
+    use std::io::Write;
+
+    let fixture = Fixture::new().await;
+    fixture.init_key().await;
+    let secret = fixture.prepare().await;
+    let server = Server::start(&fixture, Some(&fixture.key_file)).await;
+    let form = server.form(true).await;
+    let address = server
+        .origin
+        .strip_prefix("http://")
+        .expect("loopback HTTP fixture")
+        .parse::<std::net::SocketAddr>()
+        .expect("loopback socket address");
+    let mut socket = std::net::TcpStream::connect_timeout(&address, Duration::from_secs(2))
+        .expect("raw response-loss fixture connection");
+    socket
+        .set_write_timeout(Some(Duration::from_secs(1)))
+        .expect("bounded fixture write");
+    let body = serde_json::to_string(
+        &json!({"setup_secret":secret,"username":"lost_reply_owner","password":OWNER_PASSWORD}),
+    )
+    .expect("encode raw claim body");
+    let request = format!(
+        "POST /api/auth/claim HTTP/1.1\r\nHost: {address}\r\nOrigin: {ORIGIN}\r\nX-Reborn-Product: {PRODUCT}\r\nX-Reborn-Contract: {CONTRACT}\r\nX-CSRF-Token: {}\r\nCookie: {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: keep-alive\r\n\r\n{body}",
+        form.csrf,
+        form.cookie,
+        body.len(),
+    );
+    socket
+        .write_all(request.as_bytes())
+        .expect("send raw claim without reading its response");
+    socket.flush().expect("flush complete raw request");
+    let mut connection = fixture.connect().await;
+    let deadline = Instant::now() + Duration::from_secs(3);
+    let owner_id = loop {
+        let owner_id: Option<i64> =
+            sqlx::query_scalar("SELECT owner_id FROM auth_state WHERE singleton = TRUE")
+                .fetch_one(&mut connection)
+                .await
+                .expect("observe only owned claim commit");
+        if let Some(owner_id) = owner_id {
+            break owner_id;
+        }
+        assert!(
+            Instant::now() < deadline,
+            "claim commit was not observed before the recovery deadline"
+        );
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    };
+    // Commit has been observed independently. Discarding an unread response here
+    // tests recovery from response loss, not cancellation during database commit.
+    drop(socket);
+    let fresh_form = server.form(false).await;
+    error(
+        server
+            .claim(&fresh_form, &secret, "lost_reply_owner", OWNER_PASSWORD)
+            .await,
+        StatusCode::CONFLICT,
+        &[&secret, OWNER_PASSWORD],
+    )
+    .await;
+    let recovered = server.login("lost_reply_owner", OWNER_PASSWORD).await;
+    assert!(
+        recovered.account["id"]
+            .as_str()
+            .expect("recovered owner ID")
+            == owner_id.to_string()
+    );
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM users WHERE role = 'owner'")
+            .fetch_one(&mut connection)
+            .await
+            .expect("one owner after lost response"),
+        1
+    );
+    let _ = server.session_status(&recovered, StatusCode::OK).await;
+    server.assert_logs_private(&[&secret, OWNER_PASSWORD, &form.cookie, &recovered.cookie]);
+}
+
+async fn auth_durable_snapshot(
+    connection: &mut PgConnection,
+    account_id: i64,
+) -> (i64, i64, i64, i64) {
+    let row = sqlx::query("SELECT (SELECT COUNT(*) FROM users) AS users, (SELECT COUNT(*) FROM sessions) AS sessions, u.generation, (SELECT COALESCE(SUM(attempts), 0)::BIGINT FROM auth_throttles) AS attempts FROM users u WHERE u.id = $1")
+        .bind(account_id).fetch_one(connection).await.expect("snapshot owned durable auth state");
+    (
+        row.get("users"),
+        row.get("sessions"),
+        row.get("generation"),
+        row.get("attempts"),
+    )
+}
+
+#[tokio::test]
+async fn schema_drift_fences_live_auth_effects_and_restoration_preserves_existing_authority() {
+    let fixture = Fixture::new().await;
+    let (server, owner, setup) = claimed(&fixture).await;
+    let owner_id = owner.account["id"]
+        .as_str()
+        .expect("owner ID")
+        .parse::<i64>()
+        .expect("numeric owner ID");
+    let form = server.form(false).await;
+    let key_before = fs::read(&fixture.key_file).expect("read unchanged fixture key");
+    let mut connection = fixture.connect().await;
+    let before = auth_durable_snapshot(&mut connection, owner_id).await;
+    sqlx::query("INSERT INTO _sqlx_migrations (version,description,success,checksum,execution_time) VALUES (999,'owned-future-auth-fixture',TRUE,decode('00','hex'),0)")
+        .execute(&mut connection).await.expect("stage owned future schema after startup");
+
+    let response = server
+        .client
+        .get(server.url("/api/health"))
+        .send()
+        .await
+        .expect("liveness during schema drift");
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_no_store(&response);
+    let response = server
+        .client
+        .get(server.url("/api/ready"))
+        .send()
+        .await
+        .expect("readiness during schema drift");
+    assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+    assert_no_store(&response);
+    assert!(
+        response.json::<Value>().await.expect("unready schema JSON")
+            == json!({"status":"not_ready"})
+    );
+
+    let response = server
+        .client
+        .get(server.url("/api/auth/form"))
+        .send()
+        .await
+        .expect("form under schema fence");
+    error(response, StatusCode::SERVICE_UNAVAILABLE, &[&setup]).await;
+    let response = server
+        .session_status(&owner, StatusCode::SERVICE_UNAVAILABLE)
+        .await;
+    error(response, StatusCode::SERVICE_UNAVAILABLE, &[&owner.cookie]).await;
+    let response = server
+        .admitted(Method::POST, "/api/auth/login")
+        .header("Cookie", &form.cookie)
+        .header("X-CSRF-Token", &form.csrf)
+        .json(&json!({"username":"keida_owner","password":OWNER_PASSWORD}))
+        .send()
+        .await
+        .expect("login under schema fence");
+    error(
+        response,
+        StatusCode::SERVICE_UNAVAILABLE,
+        &[OWNER_PASSWORD, &form.cookie],
+    )
+    .await;
+    let response = server
+        .authorized(Method::POST, "/api/owner/members", &owner)
+        .json(&json!({"username":"schema_blocked_member","password":MEMBER_PASSWORD}))
+        .send()
+        .await
+        .expect("member creation under schema fence");
+    error(
+        response,
+        StatusCode::SERVICE_UNAVAILABLE,
+        &[MEMBER_PASSWORD, &owner.cookie],
+    )
+    .await;
+    let response = server
+        .authorized(Method::POST, "/api/auth/revoke-all", &owner)
+        .send()
+        .await
+        .expect("revocation under schema fence");
+    error(response, StatusCode::SERVICE_UNAVAILABLE, &[&owner.cookie]).await;
+
+    // Admission precedence remains meaningful even when the data schema is fenced.
+    let response = server
+        .client
+        .get(server.url("/api/auth/session"))
+        .header("Cookie", &owner.cookie)
+        .send()
+        .await
+        .expect("unqualified fenced session");
+    error(response, StatusCode::UPGRADE_REQUIRED, &[&owner.cookie]).await;
+    let response = server
+        .client
+        .post(server.url("/api/auth/revoke-all"))
+        .header("X-Reborn-Product", PRODUCT)
+        .header("X-Reborn-Contract", CONTRACT)
+        .header("Origin", "https://untrusted.example")
+        .header("Cookie", &owner.cookie)
+        .header("X-CSRF-Token", &owner.csrf)
+        .send()
+        .await
+        .expect("wrong-origin fenced mutation");
+    error(response, StatusCode::FORBIDDEN, &[&owner.cookie]).await;
+    assert_eq!(
+        auth_durable_snapshot(&mut connection, owner_id).await,
+        before,
+        "schema-fenced requests changed durable auth state"
+    );
+
+    sqlx::query("DELETE FROM _sqlx_migrations WHERE version = 999")
+        .execute(&mut connection)
+        .await
+        .expect("restore only owned future-ledger fixture");
+    let _ = server.session_status(&owner, StatusCode::OK).await;
+    let _ = server.form(false).await;
+    let response = server
+        .client
+        .get(server.url("/api/ready"))
+        .send()
+        .await
+        .expect("restored schema readiness");
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(
+        fs::read(&fixture.key_file).expect("read preserved key") == key_before,
+        "schema recovery replaced the instance key"
+    );
+    let response = server
+        .authorized(Method::POST, "/api/owner/members", &owner)
+        .json(&json!({"username":"schema_recovered_member","password":MEMBER_PASSWORD}))
+        .send()
+        .await
+        .expect("normal operation after schema restoration");
+    assert_eq!(response.status(), StatusCode::CREATED);
+    let created: Value = response.json().await.expect("restored member result");
+    let member_id = created["account"]["id"]
+        .as_str()
+        .expect("member ID")
+        .parse::<i64>()
+        .expect("numeric member ID");
+    let rejection = sqlx::query("UPDATE auth_state SET owner_id = $1 WHERE singleton = TRUE")
+        .bind(member_id)
+        .execute(&mut connection)
+        .await
+        .expect_err("composite owner reference accepted a member");
+    assert_eq!(
+        rejection
+            .as_database_error()
+            .and_then(|error| error.code())
+            .as_deref(),
+        Some("23503")
+    );
+    let preserved: Option<i64> =
+        sqlx::query_scalar("SELECT owner_id FROM auth_state WHERE singleton = TRUE")
+            .fetch_one(&mut connection)
+            .await
+            .expect("preserved true owner reference");
+    assert_eq!(preserved, Some(owner_id));
+    let _ = server.session_status(&owner, StatusCode::OK).await;
+    server.assert_logs_private(&[
+        &setup,
+        OWNER_PASSWORD,
+        MEMBER_PASSWORD,
+        &owner.cookie,
+        &form.cookie,
+    ]);
+}
+
+#[tokio::test]
 async fn password_scalar_boundaries_and_no_unicode_normalization_are_real_http_contracts() {
     let fixture = Fixture::new().await;
     fixture.init_key().await;

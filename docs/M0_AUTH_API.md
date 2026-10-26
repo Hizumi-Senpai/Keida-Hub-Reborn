@@ -144,3 +144,12 @@ response is reconciled through the authorized member list and unique username.
 Revocations recheck current authority; no automatic credential or POST replay is
 implemented. Native phase contracts test stale state directly, while actual HTTP
 concurrency/response-loss cases remain separate evidence.
+
+Exact schema readiness is enforced at every actual auth HTTP entrypoint and before
+CLI owner preparation, rather than being only a diagnostic. Header/client
+admission precedes that database read. Controlled concurrent upgrades still need
+the documented single migration owner and a held write fence; the schema probe is
+not a replacement for deployment coordination. Unknown future ledger/schema state
+after startup refuses auth reads/writes until the matched schema is restored.
+The owner singleton additionally has a composite foreign key requiring owner_role
+to be owner; it cannot point at a member row.

@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE auth_throttles SET window_start = $2, attempts = $3 WHERE scope = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int2",
+        "Int8",
+        "Int2"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "db325b502d8dfc4ba0c0a86eea77ac0767b317b5fbe3a8793f86038abdf8ae14"
+}

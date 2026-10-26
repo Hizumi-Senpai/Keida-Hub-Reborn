@@ -14,7 +14,8 @@ CREATE TABLE users (
         CHECK (password_phc LIKE '$argon2id$v=19$m=19456,t=2,p=1$%'),
     role text NOT NULL CHECK (role IN ('owner', 'member')),
     active boolean NOT NULL DEFAULT TRUE,
-    generation bigint NOT NULL DEFAULT 0 CHECK (generation >= 0)
+    generation bigint NOT NULL DEFAULT 0 CHECK (generation >= 0),
+    UNIQUE (id, role)
 );
 -- A second owner is forbidden even if application concurrency admission regresses.
 CREATE UNIQUE INDEX users_single_owner ON users (role) WHERE role = 'owner';
@@ -24,7 +25,9 @@ CREATE TABLE auth_state (
     key_id bytea CHECK (key_id IS NULL OR octet_length(key_id) = 32),
     setup_hash bytea CHECK (setup_hash IS NULL OR octet_length(setup_hash) = 32),
     setup_expires_at bigint CHECK (setup_expires_at IS NULL OR setup_expires_at >= 0),
-    owner_id bigint REFERENCES users (id),
+    owner_id bigint,
+    owner_role text NOT NULL DEFAULT 'owner' CHECK (owner_role = 'owner'),
+    FOREIGN KEY (owner_id, owner_role) REFERENCES users (id, role),
     CHECK ((setup_hash IS NULL) = (setup_expires_at IS NULL)),
     CHECK (owner_id IS NULL OR (key_id IS NOT NULL AND setup_hash IS NULL)),
     CHECK (key_id IS NOT NULL OR (setup_hash IS NULL AND owner_id IS NULL))

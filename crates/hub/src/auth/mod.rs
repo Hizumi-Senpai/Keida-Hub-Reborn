@@ -1,5 +1,7 @@
 pub mod crypto;
 pub mod store;
+#[cfg(test)]
+mod store_contracts;
 
 use axum::{
     Json, Router,
@@ -7,7 +9,8 @@ use axum::{
         DefaultBodyLimit, Path, State,
         rejection::{JsonRejection, PathRejection},
     },
-    http::{HeaderMap, HeaderValue, StatusCode, header},
+    http::{HeaderMap, HeaderValue, Method, StatusCode, header},
+    middleware::{self, Next},
     response::{IntoResponse, Response},
     routing::{get, post},
 };
@@ -78,7 +81,42 @@ pub fn router(service: Service) -> Router {
         .route("/api/owner/members", get(members).post(create_member))
         .route("/api/owner/members/{id}/revoke", post(revoke_member))
         .layer(DefaultBodyLimit::max(8192))
+        .layer(middleware::from_fn_with_state(
+            service.clone(),
+            schema_guard,
+        ))
         .with_state(service)
+}
+
+async fn schema_guard(
+    State(service): State<Service>,
+    request: axum::extract::Request,
+    next: Next,
+) -> Response {
+    let method = request.method();
+    let path = request.uri().path();
+    let public_form = method == Method::GET && path == "/api/auth/form";
+    let protected_read =
+        method == Method::GET && matches!(path, "/api/auth/session" | "/api/owner/members");
+    let mutation_request = method == Method::POST;
+    if public_form || protected_read || mutation_request {
+        if !public_form {
+            let admission = if mutation_request {
+                mutation(&service, request.headers()).map(|_| ())
+            } else {
+                client(request.headers())
+            };
+            if let Err(error) = admission {
+                return error.into_response();
+            }
+        }
+        // Readiness is an admission gate, not merely a diagnostic badge. The
+        // separately owned migrator must still fence live writes during upgrades.
+        if !crate::database::ready(&service.pool).await {
+            return ApiError(StatusCode::SERVICE_UNAVAILABLE, "unavailable").into_response();
+        }
+    }
+    next.run(request).await
 }
 
 struct ApiError(StatusCode, &'static str);
