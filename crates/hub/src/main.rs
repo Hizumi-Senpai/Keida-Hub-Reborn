@@ -157,8 +157,17 @@ async fn readiness(State(state): State<AppState>) -> (StatusCode, Json<Readiness
 }
 
 async fn headers(request: axum::extract::Request, next: middleware::Next) -> Response {
+    let account_document = matches!(
+        request.uri().path(),
+        "/account"
+            | "/account/claim"
+            | "/account/sign-in"
+            | "/account/sign-out"
+            | "/account/sign-out-all"
+    );
     let mut response = match tokio::time::timeout(Duration::from_secs(4), next.run(request)).await {
         Ok(response) => response,
+        Err(_) if account_document => auth::account_timeout(),
         Err(_) => (
             StatusCode::REQUEST_TIMEOUT,
             Json(serde_json::json!({"error":"request_timeout"})),
@@ -166,15 +175,18 @@ async fn headers(request: axum::extract::Request, next: middleware::Next) -> Res
             .into_response(),
     };
     let headers = response.headers_mut();
-    headers.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
+    headers
+        .entry(header::CACHE_CONTROL)
+        .or_insert(HeaderValue::from_static("no-store"));
     headers.insert(
         header::X_CONTENT_TYPE_OPTIONS,
         HeaderValue::from_static("nosniff"),
     );
-    headers.insert(
-        header::CONTENT_SECURITY_POLICY,
-        HeaderValue::from_static("default-src 'none'; frame-ancestors 'none'"),
-    );
+    headers
+        .entry(header::CONTENT_SECURITY_POLICY)
+        .or_insert(HeaderValue::from_static(
+            "default-src 'none'; frame-ancestors 'none'",
+        ));
     response
 }
 
