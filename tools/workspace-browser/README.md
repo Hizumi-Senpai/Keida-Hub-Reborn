@@ -18,7 +18,7 @@ CI downloads its exact official Chrome-for-Testing URL and verifies those bytes.
 The existing locked Playwright installer supplies Chromium; Node does not run
 this browser driver. Svelte's compiled application is the code under test.
 
-Four independent workflows cover real native enrollment/TLS, persistent editor
+Five independent workflows cover real native enrollment/TLS, persistent editor
 identity and selection, one poll owner, draft/keyboard/reflow/accessibility,
 concurrent-device409, editing during a held successful save, committed lost
 response/no replay, cross-tab account switch/late response, explicit same-account
@@ -35,7 +35,8 @@ Small WebDriver execute-script primitives inspect DOM identity/selection,
 exercise explicitly named lifecycle/storage fault seams and call the pinned Axe
 checker. Rust owns their input, checks and outcome. A ChromeDriver-supported CDP
 command deliberately blocks only the workspace snapshot URL for one network-fault
-case. Native clicks/keys drive credential and workspace forms. These seams are
+case. A blocked workspace module must leave native account/sign-out recovery
+usable. Native clicks/keys drive credential and workspace forms. These seams are
 not claims about native iPhone/Safari or every bfcache/suspension implementation.
 
 Primary protocol references: [W3C WebDriver](https://www.w3.org/TR/webdriver2/),

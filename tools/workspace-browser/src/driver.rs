@@ -142,10 +142,16 @@ impl Browser {
         let result = self
             .raw(method, &format!("/session/{}{path}", self.session), body)
             .await?;
-        check(
-            result["value"].get("error").is_none(),
-            "WebDriver rejected command; private diagnostics suppressed",
-        )?;
+        if let Some(code) = result["value"]["error"].as_str() {
+            return Err(match code {
+                "no such element" => "WebDriver element absent",
+                "element not interactable" => "WebDriver element not interactable",
+                "element click intercepted" => "WebDriver click intercepted",
+                "javascript error" => "WebDriver browser primitive failed",
+                "timeout" => "WebDriver command timeout",
+                _ => "WebDriver rejected command; private diagnostics suppressed",
+            });
+        }
         Ok(result["value"].clone())
     }
     pub async fn navigate(&self, url: &str) -> Check<()> {
@@ -161,8 +167,33 @@ impl Browser {
                 Some(json!({"url":url})),
             )
             .await?;
+        let value = &result["value"];
+        let protocol = value["error"].as_str() == Some("insecure certificate");
+        let authority = value["message"]
+            .as_str()
+            .is_some_and(|m| m.contains("ERR_CERT_AUTHORITY_INVALID"));
+        let interstitial = if protocol || authority {
+            false
+        } else {
+            self.evaluate(
+                "return document.body.textContent.includes('ERR_CERT_AUTHORITY_INVALID')",
+                json!([]),
+            )
+            .await
+            .unwrap_or(Value::Bool(false))
+                == true
+        };
+        let class = match value["error"].as_str() {
+            Some("insecure certificate") => "certificate",
+            Some("unknown error") => "unknown",
+            None => "none",
+            _ => "other",
+        };
+        println!(
+            "RUST_BROWSER_TLS_NEGATIVE class={class} protocol={protocol} authority={authority} interstitial={interstitial}"
+        );
         check(
-            result["value"]["error"] == "insecure certificate",
+            protocol || authority || interstitial,
             "untrusted Chromium must reject fixture TLS",
         )
     }

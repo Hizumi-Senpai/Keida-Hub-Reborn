@@ -65,6 +65,7 @@ async fn lifetime_and_recovery() -> Check<()> {
         .await?;
     untrusted.close().await?;
     drop(untrusted);
+    step("native claim and workspace entry");
     let mut b = f.browser(true).await?;
     claim(&f, &b).await?;
     workspace(&f, &b).await?;
@@ -75,6 +76,7 @@ async fn lifetime_and_recovery() -> Check<()> {
     );
     b.fill("#workspace-note", &note_text).await?;
     b.evaluate("window.__editor=document.querySelector('#workspace-note'); window.__editor.setSelectionRange(2,7); window.__editor.scrollTop=120; window.__scroll=window.__editor.scrollTop; return window.__scroll>0",json!([])).await?;
+    step("editor lifetime and one observation owner");
     let reads = f.reads();
     for _ in 0..4 {
         b.click(".main-nav button:first-child").await?;
@@ -87,6 +89,7 @@ async fn lifetime_and_recovery() -> Check<()> {
         f.reads() > reads && f.reads() <= reads + 2,
         "navigation must not duplicate observation owners",
     )?;
+    step("native keyboard save and scoped draft recovery");
     b.click("#workspace-note").await?;
     b.keys("\u{e004}\u{e007}").await?;
     saved(&b).await?;
@@ -102,6 +105,7 @@ async fn lifetime_and_recovery() -> Check<()> {
     body(&b, "An unfinished draft after saving").await?;
     b.click(".note-card button[type=submit]").await?;
     saved(&b).await?;
+    step("exact loaded identity, accessibility and narrow viewport");
     b.click(".version summary").await?;
     let expected = std::env::var("REBORN_BROWSER_EXPECT_COMMIT")
         .map_err(|_| "exact browser source prerequisite")?;
@@ -339,13 +343,40 @@ async fn revocation_and_optional_failures() -> Check<()> {
     );
     Ok(())
 }
+async fn startup_failure_keeps_native_recovery() -> Check<()> {
+    step("workspace module failure retains native account recovery");
+    let f = Fixture::new().await?;
+    let mut b = f.browser(true).await?;
+    claim(&f, &b).await?;
+    b.cdp("Network.enable", json!({})).await?;
+    b.cdp(
+        "Network.setBlockedURLs",
+        json!({"urls":[format!("{}/assets/workspace/*.js",f.origin)]}),
+    )
+    .await?;
+    b.navigate(&format!("{}/workspace", f.origin)).await?;
+    check(b.evaluate("return !document.querySelector('#workspace-note') && !!document.querySelector('.startup a[href=\"/account\"]') && !document.body.textContent.includes(arguments[0])",json!([&f.username])).await?==true,"failed workspace startup leaves honest private-free native recovery")?;
+    b.click(".startup a[href='/account']").await?;
+    b.wait("return location.pathname === '/account' && !!document.querySelector('form[action=\"/account/sign-out\"]')",json!([])).await?;
+    b.click("form[action='/account/sign-out'] button").await?;
+    b.wait("return location.pathname === '/account/sign-in'", json!([]))
+        .await?;
+    b.close().await?;
+    drop(b);
+    f.close().await?;
+    println!(
+        "PASS Rust browser: module startup failure preserves native account and sign-out recovery"
+    );
+    Ok(())
+}
 pub async fn run() -> Check<()> {
     lifetime_and_recovery().await?;
     conflicts_and_pending_saves().await?;
     cross_account_late_response().await?;
     revocation_and_optional_failures().await?;
+    startup_failure_keeps_native_recovery().await?;
     println!(
-        "Rust workspace browser acceptance: 4 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+        "Rust workspace browser acceptance: 5 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
     );
     Ok(())
 }

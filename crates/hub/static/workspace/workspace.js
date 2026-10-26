@@ -2434,7 +2434,15 @@ function xi(e, t) {
 sr(["click", "input"]);
 // src/main.ts
 var Si = document.getElementById("workspace-root"), Ci = document.querySelector("meta[name=\"reborn-session-binding\"]")?.content, wi = document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content;
-Si && Ci && /^[a-f0-9]{64}$/.test(Ci) && wi === "reborn-workspace-v1" && (Si.replaceChildren(), Sr(xi, {
-	target: Si,
-	props: { binding: Ci }
-}));
+if (Si && Ci && /^[a-f0-9]{64}$/.test(Ci) && wi === "reborn-workspace-v1") {
+	let e = Array.from(Si.childNodes);
+	Si.replaceChildren();
+	try {
+		Sr(xi, {
+			target: Si,
+			props: { binding: Ci }
+		});
+	} catch {
+		Si.replaceChildren(...e);
+	}
+}
