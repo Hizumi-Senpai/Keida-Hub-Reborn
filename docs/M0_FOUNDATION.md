@@ -57,12 +57,16 @@ preview path have real-Git tests, but protected-main qualification, immutable
 publication, late-publisher monotonic admission and image/runtime agreement remain
 M0 gates. No accepted release is published by this workflow.
 
-Before ordinary integration, main must prohibit direct pushes, force pushes and
-deletion, require the exact foundation check, and use one merge commit or one
-squash per accepted PR (no rebase merging). At this starting checkpoint GitHub
-reports main unprotected and no rulesets. The connected GitHub toolset has no
-administration mutation capability. This slice therefore stays on its PR until a
-supported administration path establishes and verifies those controls.
+Main is protected by active repository ruleset **25845081**, configured through
+GitHub's settings UI after fresh account verification and read back through the
+API. It targets only refs/heads/main, has an empty bypass list and disallows
+deletion and non-fast-forward updates. Updates require a PR, resolved review
+conversations and the GitHub Actions-owned `Rust 1.99.1 / PostgreSQL 16` check
+against up-to-date branches. Only merge commits or squash merges are admitted;
+rebase merging is excluded. No approving-review count is imposed on this solo
+repository. CORE's independent review and exact-head/main checks remain required.
+The connected GitHub tools can read these controls but do not expose settings
+mutations. No direct-main bootstrap exception was reused.
 
 ## Verification and next slice
 
