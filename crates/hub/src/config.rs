@@ -1,10 +1,12 @@
 use sqlx::postgres::PgConnectOptions;
-use std::{env, net::SocketAddr, str::FromStr};
+use std::{env, net::SocketAddr, path::PathBuf, str::FromStr};
 use url::Url;
 
 // Deliberately no Debug: a connection string is secret-bearing configuration.
 pub struct Config {
     pub bind: SocketAddr,
+    pub origin: String,
+    pub key_file: Option<PathBuf>,
     pub database: PgConnectOptions,
     pub max_connections: u32,
 }
@@ -34,7 +36,9 @@ impl Config {
         {
             return Err("DATABASE_URL");
         }
-        let database = PgConnectOptions::from_str(&dsn).map_err(|_| "DATABASE_URL")?;
+        let database = PgConnectOptions::from_str(&dsn)
+            .map_err(|_| "DATABASE_URL")?
+            .options([("statement_timeout", "2000"), ("lock_timeout", "1500")]);
         let bind = env::var("REBORN_BIND")
             .unwrap_or_else(|_| "127.0.0.1:8788".into())
             .parse()
@@ -46,8 +50,14 @@ impl Config {
         if !(1..=16).contains(&max_connections) {
             return Err("REBORN_DB_MAX_CONNECTIONS");
         }
+        let key_file = env::var_os("REBORN_INSTANCE_KEY_FILE").map(PathBuf::from);
+        if key_file.as_ref().is_some_and(|p| !p.is_absolute()) {
+            return Err("REBORN_INSTANCE_KEY_FILE");
+        }
         Ok(Self {
             bind,
+            origin: parsed.origin().ascii_serialization(),
+            key_file,
             database,
             max_connections,
         })

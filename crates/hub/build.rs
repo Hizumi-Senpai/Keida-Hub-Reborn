@@ -24,7 +24,7 @@ fn main() {
         "unqualified",
         "",
         "development",
-        "reborn-foundation-v1",
+        "reborn-auth-v1",
     ];
     for (index, field) in fields.iter().enumerate() {
         let value = values[index].as_deref().unwrap_or(defaults[index]);
@@ -49,7 +49,7 @@ fn main() {
                 "invalid source SHA"
             );
         }
-        assert_eq!(values[6].as_deref(), Some("reborn-foundation-v1"));
+        assert_eq!(values[6].as_deref(), Some("reborn-auth-v1"));
         let version = values[1].as_deref().expect("complete");
         let ordinal = values[4].as_deref().expect("complete");
         let channel = values[5].as_deref().expect("complete");

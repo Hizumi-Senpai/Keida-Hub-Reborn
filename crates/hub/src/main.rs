@@ -1,3 +1,4 @@
+mod auth;
 mod config;
 mod database;
 mod identity;
@@ -12,7 +13,7 @@ use axum::{
 };
 use serde::Serialize;
 use sqlx::PgPool;
-use std::{future::IntoFuture, process::ExitCode, time::Duration};
+use std::{future::IntoFuture, path::Path, process::ExitCode, time::Duration};
 use tower::limit::ConcurrencyLimitLayer;
 
 #[derive(Serialize)]
@@ -37,9 +38,19 @@ async fn main() -> ExitCode {
 }
 
 async fn run() -> Result<(), String> {
-    let command = std::env::args().nth(1).unwrap_or_else(|| "serve".into());
-    if !matches!(command.as_str(), "serve" | "migrate") || std::env::args().len() > 2 {
-        return Err("usage: keida-hub-reborn [serve|migrate]".into());
+    let args: Vec<String> = std::env::args().collect();
+    let command = args.get(1).map(String::as_str).unwrap_or("serve");
+    if command == "init-key" && args.len() == 3 {
+        return auth::crypto::Secrets::init_key(Path::new(&args[2]))
+            .map_err(|_| "private key initialization rejected".into());
+    }
+    if !((matches!(command, "serve" | "migrate") && args.len() <= 2)
+        || (command == "prepare-owner" && args.len() == 3))
+    {
+        return Err(
+            "usage: keida-hub-reborn [serve|migrate|init-key NEW_PATH|prepare-owner NEW_PATH]"
+                .into(),
+        );
     }
     let config =
         config::Config::load().map_err(|field| format!("configuration rejected: {field}"))?;
@@ -52,7 +63,27 @@ async fn run() -> Result<(), String> {
         pool.close().await;
         return Ok(());
     }
-    let app = Router::new()
+    let auth = config
+        .key_file
+        .as_deref()
+        .map(|path| auth::Service::load(pool.clone(), config.origin.clone(), path))
+        .transpose()
+        .map_err(|_| "configuration rejected: REBORN_INSTANCE_KEY_FILE")?;
+    if command == "prepare-owner" {
+        if !database::ready(&pool).await {
+            return Err("schema unavailable".into());
+        }
+        return auth
+            .ok_or("configuration rejected: REBORN_INSTANCE_KEY_FILE")?
+            .prepare_owner(Path::new(&args[2]))
+            .await
+            .map_err(Into::into);
+    }
+    let state = AppState {
+        pool: pool.clone(),
+        auth: auth.clone(),
+    };
+    let mut app = Router::new()
         .route(
             "/api/health",
             get(|| async {
@@ -65,7 +96,11 @@ async fn run() -> Result<(), String> {
         .route("/version", get(|| async { Json(identity::compiled()) }))
         .route("/api/ready", get(readiness))
         .fallback(|| async { StatusCode::NOT_FOUND })
-        .with_state(pool.clone())
+        .with_state(state);
+    if let Some(service) = auth {
+        app = app.merge(auth::router(service));
+    }
+    let app = app
         .layer(ConcurrencyLimitLayer::new(64))
         .layer(middleware::from_fn(headers));
     let listener = tokio::net::TcpListener::bind(config.bind)
@@ -91,8 +126,25 @@ async fn run() -> Result<(), String> {
     result.map_err(Into::into)
 }
 
-async fn readiness(State(pool): State<PgPool>) -> (StatusCode, Json<Readiness>) {
-    if database::ready(&pool).await {
+#[derive(Clone)]
+struct AppState {
+    pool: PgPool,
+    auth: Option<auth::Service>,
+}
+
+async fn readiness(State(state): State<AppState>) -> (StatusCode, Json<Readiness>) {
+    let ready = tokio::time::timeout(Duration::from_secs(2), async {
+        if !database::ready(&state.pool).await {
+            return false;
+        }
+        match state.auth {
+            Some(service) => service.ready().await,
+            None => true,
+        }
+    })
+    .await
+    .unwrap_or(false);
+    if ready {
         (StatusCode::OK, Json(Readiness { status: "ready" }))
     } else {
         (
@@ -107,7 +159,11 @@ async fn readiness(State(pool): State<PgPool>) -> (StatusCode, Json<Readiness>) 
 async fn headers(request: axum::extract::Request, next: middleware::Next) -> Response {
     let mut response = match tokio::time::timeout(Duration::from_secs(4), next.run(request)).await {
         Ok(response) => response,
-        Err(_) => StatusCode::REQUEST_TIMEOUT.into_response(),
+        Err(_) => (
+            StatusCode::REQUEST_TIMEOUT,
+            Json(serde_json::json!({"error":"request_timeout"})),
+        )
+            .into_response(),
     };
     let headers = response.headers_mut();
     headers.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
