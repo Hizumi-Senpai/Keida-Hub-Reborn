@@ -4,6 +4,7 @@
 use sqlx::{PgPool, Postgres, Transaction};
 
 pub(super) mod connections;
+pub(super) mod directory;
 pub(super) mod workspace;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

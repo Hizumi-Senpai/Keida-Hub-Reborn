@@ -4,16 +4,20 @@ A fresh Rust-centered Keida Hub, authorized on **2026-10-25 America/Chicago**.
 The goal is a fast, reliable, feature-rich self-hosted dashboard and control platform
 with an optional editable 3D room and companion.
 
-**Target URL: https://rewrite.keida.me.** That URL currently serves the independent
-Keida-Hub-Rewrite v0.1.4. Reborn has an [M0 backend foundation](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/pull/4)
-and a [private owner/session authentication API](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/pull/5),
-with [separate Askama account documents](docs/M0_ACCOUNT_PAGES.md)
-([API contract](docs/M0_AUTH_API.md)) and a
-[persistent Svelte workspace](docs/M0_WORKSPACE.md) with private revisioned notes;
-there is no Reborn image, production database, live deployment or performance
-result yet. Keep https://keida.me live and unchanged. Reuse of the target URL follows
-the [deployment and cutover gates](docs/DEPLOYMENT.md), preserving the working
-Rewrite installation and its data until Reborn is ready.
+**Reborn0.1.7 is installed at https://rewrite.keida.me.** Exact source, CI,
+artifact, independent PostgreSQL/key recovery and public HTTP receipts are in
+[deployment issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6427420318).
+The owner reports successful sign-in; wider desktop/mobile workflow acceptance and
+real dedicated Crafty enrollment remain separate open gates. The original
+https://keida.me stays live and unchanged, and the independent Rewrite installation
+is preserved for route reversal.
+
+The accepted foundation is Rust/PostgreSQL authentication, separate Askama account
+pages, one persistent Svelte workspace with private revisioned notes, and dedicated
+encrypted GET-only Crafty enrollment/observations. The next daily-use slice is the
+[service directory and personal pins](docs/M2_DIRECTORY.md), tracked in
+[issue10](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/10). Source, packaged
+verification, installation and live acceptance are recorded separately.
 
 ## Start here
 

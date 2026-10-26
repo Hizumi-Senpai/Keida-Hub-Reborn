@@ -1,6 +1,7 @@
 mod auth;
 mod config;
 mod database;
+mod directory;
 mod identity;
 mod providers;
 
@@ -44,7 +45,7 @@ async fn run() -> Result<(), String> {
     if command == "artifact-info" && args.len() == 2 {
         println!(
             "{}",
-            serde_json::json!({"identity":identity::compiled(),"workspace_contract":"reborn-workspace-v1","database_schema":4,"assets":auth::artifact_assets()})
+            serde_json::json!({"identity":identity::compiled(),"workspace_contract":"reborn-workspace-v1","database_schema":5,"assets":auth::artifact_assets()})
         );
         return Ok(());
     }

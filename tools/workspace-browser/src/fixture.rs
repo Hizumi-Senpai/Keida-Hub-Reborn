@@ -74,7 +74,10 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
     if path == "/api/workspace/snapshot" {
         proxy.reads.fetch_add(1, Ordering::SeqCst);
     }
-    if path == "/api/workspace/note" {
+    if matches!(
+        path,
+        "/api/workspace/note" | "/api/owner/directory" | "/api/workspace/pins"
+    ) {
         proxy.writes.fetch_add(1, Ordering::SeqCst);
     }
     let hold = {

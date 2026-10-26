@@ -2,6 +2,7 @@ mod account_pages;
 mod account_view;
 mod connections;
 pub mod crypto;
+mod directory;
 pub mod store;
 #[cfg(test)]
 mod store_contracts;
@@ -101,6 +102,7 @@ pub fn router(service: Service) -> Router {
         .with_state(service.clone())
         .merge(account_pages::router(service.clone()))
         .merge(connections::router(service.clone()))
+        .merge(directory::router(service.clone()))
         .merge(workspace::router(service))
 }
 

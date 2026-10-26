@@ -411,6 +411,29 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         200,
     )
     .await?;
+    let enrolled = value(admitted(&client, &origin, "/api/owner/directory", reqwest::Method::PUT, &session, binding, "reborn-workspace-v1")
+        .json(&json!({"base_revision":"0","change":{"action":"create","link":{"name":"Restorable library","category":"Media","description":"A deliberate fixture link","url":"https://services.example/library"}}}))
+        .send().await.map_err(|_|"packaged directory enrollment failed")?,200).await?;
+    let service_id = enrolled["directory"]["services"][0]["id"]
+        .as_str()
+        .ok_or("packaged service identity missing")?;
+    value(
+        admitted(
+            &client,
+            &origin,
+            "/api/workspace/pins",
+            reqwest::Method::PUT,
+            &session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .json(&json!({"base_directory_revision":"1","base_revision":"0","ids":[service_id]}))
+        .send()
+        .await
+        .map_err(|_| "packaged personal pins failed")?,
+        200,
+    )
+    .await?;
     let initial = value(
         admitted(
             &client,
@@ -564,6 +587,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     if retained["account"]["username"] != "recovery_owner"
         || retained["note"] != json!({"body":"A committed note to restore 海","revision":"1"})
         || retained["crafty"]["servers"][0]["players"] != 0
+        || retained["directory"] != initial["directory"]
         || hash(&restored_root.join("instance.key"))? != key_before
     {
         return Err("matched auth/note/secret restore rejected");
@@ -582,6 +606,23 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         .send()
         .await
         .map_err(|_| "newer restored write failed")?,
+        200,
+    )
+    .await?;
+    value(
+        admitted(
+            &client,
+            &origin,
+            "/api/workspace/pins",
+            reqwest::Method::PUT,
+            &session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .json(&json!({"base_directory_revision":"1","base_revision":"1","ids":[]}))
+        .send()
+        .await
+        .map_err(|_| "newer personal pin write failed")?,
         200,
     )
     .await?;
@@ -619,6 +660,9 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     if preserved["note"]
         != json!({"body":"Newer accepted writes must survive recovery","revision":"2"})
         || hash(&dump)? != dump_sha
+        || preserved["directory"]["pins"] != json!([])
+        || preserved["directory"]["pins_revision"] != "2"
+        || preserved["directory"]["services"] != initial["directory"]["services"]
     {
         return Err("failed candidate lost newer accepted writes");
     }
@@ -629,7 +673,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     {
         return Err("recovery observer attempted mutation");
     }
-    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":4,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
+    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":5,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
     crate::write(
         &out.join("recovery-proof.json"),
         &serde_json::to_vec(&report).map_err(|_| "recovery proof encoding failed")?,
