@@ -4,6 +4,8 @@ use std::sync::OnceLock;
 
 const SCRIPT: &[u8] = include_bytes!("../../static/workspace/workspace.js");
 const STYLE: &[u8] = include_bytes!("../../static/workspace/workspace.css");
+const PREVIOUS_SCRIPT: &[u8] = include_bytes!("../../static/workspace-compat/0.1.6.js");
+const PREVIOUS_STYLE: &[u8] = include_bytes!("../../static/workspace-compat/0.1.6.css");
 fn url(bytes: &[u8], extension: &str) -> String {
     let digest: String = Sha256::digest(bytes)
         .iter()
@@ -24,7 +26,19 @@ pub fn find(path: &str) -> Option<(&'static str, &'static [u8])> {
         Some(("text/javascript; charset=utf-8", SCRIPT))
     } else if path == style() {
         Some(("text/css; charset=utf-8", STYLE))
+    } else if path == url(PREVIOUS_SCRIPT, "js") {
+        Some(("text/javascript; charset=utf-8", PREVIOUS_SCRIPT))
+    } else if path == url(PREVIOUS_STYLE, "css") {
+        Some(("text/css; charset=utf-8", PREVIOUS_STYLE))
     } else {
         None
     }
+}
+pub fn manifest() -> Vec<String> {
+    vec![
+        script().into(),
+        style().into(),
+        url(PREVIOUS_SCRIPT, "js"),
+        url(PREVIOUS_STYLE, "css"),
+    ]
 }

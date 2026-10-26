@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT revision FROM crafty_connection WHERE singleton = TRUE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "revision",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "crafty_connection",
+            "name": "revision"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "6f1da85a8df6693194645f93263fb402b4ae9b3e0052d5e6dc73f77099ad504a"
+}

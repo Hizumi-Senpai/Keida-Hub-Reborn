@@ -6,6 +6,11 @@ rust-version.workspace = true
 build = "build.rs"
 
 [dependencies]
+ring.workspace = true
+chrono.workspace = true
+chrono-tz.workspace = true
+reqwest.workspace = true
+tokio-rustls.workspace = true
 askama.workspace = true
 axum.workspace = true
 tokio.workspace = true
@@ -24,3 +29,5 @@ libc.workspace = true
 
 [dev-dependencies]
 reqwest.workspace = true
+tokio-rustls.workspace = true
+reborn-crafty-fixture = { path = "../../tools/crafty-fixture" }

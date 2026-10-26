@@ -2,6 +2,7 @@ mod auth;
 mod config;
 mod database;
 mod identity;
+mod providers;
 
 use axum::{
     Json, Router,
@@ -40,20 +41,49 @@ async fn main() -> ExitCode {
 async fn run() -> Result<(), String> {
     let args: Vec<String> = std::env::args().collect();
     let command = args.get(1).map(String::as_str).unwrap_or("serve");
+    if command == "artifact-info" && args.len() == 2 {
+        println!(
+            "{}",
+            serde_json::json!({"identity":identity::compiled(),"workspace_contract":"reborn-workspace-v1","database_schema":4,"assets":auth::artifact_assets()})
+        );
+        return Ok(());
+    }
     if command == "init-key" && args.len() == 3 {
         return auth::crypto::Secrets::init_key(Path::new(&args[2]))
             .map_err(|_| "private key initialization rejected".into());
     }
-    if !((matches!(command, "serve" | "migrate") && args.len() <= 2)
+    if !((matches!(command, "serve" | "migrate" | "healthcheck") && args.len() <= 2)
         || (command == "prepare-owner" && args.len() == 3))
     {
         return Err(
-            "usage: keida-hub-reborn [serve|migrate|init-key NEW_PATH|prepare-owner NEW_PATH]"
+            "usage: keida-hub-reborn [serve|migrate|healthcheck|init-key NEW_PATH|prepare-owner NEW_PATH]"
                 .into(),
         );
     }
     let config =
         config::Config::load().map_err(|field| format!("configuration rejected: {field}"))?;
+    if command == "healthcheck" {
+        let client = reqwest::Client::builder()
+            .no_proxy()
+            .timeout(Duration::from_secs(2))
+            .build()
+            .map_err(|_| "health client unavailable")?;
+        let value = client
+            .get(format!("http://127.0.0.1:{}/api/ready", config.bind.port()))
+            .send()
+            .await
+            .map_err(|_| "not ready")?;
+        if value.status() != StatusCode::OK
+            || value
+                .json::<serde_json::Value>()
+                .await
+                .map_err(|_| "not ready")?["status"]
+                != "ready"
+        {
+            return Err("not ready".into());
+        }
+        return Ok(());
+    }
     let pool = database::pool(&config);
     if command == "migrate" {
         tokio::time::timeout(Duration::from_secs(30), database::migrate(&pool))

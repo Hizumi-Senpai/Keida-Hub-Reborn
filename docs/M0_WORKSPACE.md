@@ -88,3 +88,12 @@ draft recovery, conflicts, pending saves, late responses, cross-tab account
 switches, remote revocation, optional failures, keyboard/reflow and accessibility.
 Exact eventual-head and main CI must pass. Source/fixture acceptance does not
 publish an image, enroll a provider, install Reborn or transfer any host/game owner.
+
+## First-alpha extension
+
+The subsequent owner-authorized alpha extends schema3 to4 and adds the concrete
+Crafty caller/owner enrollment described in LIVE_ALPHA.md. The existing note,
+privacy, draft, conflict and uncertainty contracts remain. Source0.1.6's immutable
+JS/CSS are additionally retained; no lazy room chunks exist. New primary Rust
+browser verification adds a sixth workflow and is repeated against the packaged
+image. Exact executed counts/outcomes belong to issues1/3, not this frozen contract.

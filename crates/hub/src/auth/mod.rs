@@ -1,5 +1,6 @@
 mod account_pages;
 mod account_view;
+mod connections;
 pub mod crypto;
 pub mod store;
 #[cfg(test)]
@@ -29,6 +30,9 @@ use std::{
 };
 
 pub const CONTRACT: &str = "reborn-auth-v1";
+pub fn artifact_assets() -> Vec<String> {
+    workspace_assets::manifest()
+}
 pub fn account_timeout() -> Response {
     account_pages::timeout()
 }
@@ -41,6 +45,7 @@ pub struct Service {
     secrets: Arc<Secrets>,
     key_id: Arc<Vec<u8>>,
     origin: Arc<str>,
+    observer: Arc<crate::providers::crafty::Observer>,
 }
 
 impl Service {
@@ -52,6 +57,7 @@ impl Service {
             secrets,
             key_id,
             origin: origin.into(),
+            observer: Arc::new(crate::providers::crafty::Observer::new()),
         })
     }
 
@@ -94,6 +100,7 @@ pub fn router(service: Service) -> Router {
         ))
         .with_state(service.clone())
         .merge(account_pages::router(service.clone()))
+        .merge(connections::router(service.clone()))
         .merge(workspace::router(service))
 }
 

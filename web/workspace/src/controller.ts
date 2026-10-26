@@ -4,7 +4,8 @@ const PRODUCT = 'keida-hub-reborn';
 const CONTRACT = 'reborn-workspace-v1';
 const MAX_REVISION = 9223372036854775807n;
 type Note = { body: string; revision: string };
-type Snapshot = { schema: 1; account: { id: string; username: string; role: 'owner' | 'member' }; session_generation: string; note: Note };
+export type Crafty = { revision: string; configured: boolean; checked_at: number | null; error: string | null; servers: Array<{ name: string; join: string; state: string; players: number | null; capacity: number | null; collected_at: number | null; provider_at: number | null; freshness: string; error: string | null }> };
+type Snapshot = { schema: 1; account: { id: string; username: string; role: 'owner' | 'member' }; session_generation: string; note: Note; crafty?: Crafty | null };
 type Draft = { body: string; base: string };
 export type Model = {
   phase: 'checking' | 'ready' | 'paused' | 'blocked'; message: string;
@@ -22,6 +23,15 @@ function snapshot(value: unknown): Snapshot {
       || typeof value.account.username !== 'string' || !/^[a-z0-9_-]{3,32}$/.test(value.account.username)
       || (value.account.role !== 'owner' && value.account.role !== 'member')
       || !decimal(value.session_generation) || !record(value.note) || !text(value.note.body) || !decimal(value.note.revision)) throw new Error('Invalid workspace response');
+  if (value.crafty != null) {
+    const c = value.crafty;
+    const count = (v: unknown) => v === null || (typeof v === 'number' && Number.isSafeInteger(v) && v >= 0);
+    const message = (v: unknown) => v === null || (typeof v === 'string' && /^[a-z_]{1,40}$/.test(v));
+    if (!record(c) || !decimal(c.revision) || typeof c.configured !== 'boolean' || !count(c.checked_at) || !message(c.error) || !Array.isArray(c.servers) || c.servers.length > 8
+        || c.servers.some((s: unknown) => !record(s) || typeof s.name !== 'string' || s.name.length > 80 || typeof s.join !== 'string' || s.join.length > 253
+          || !['running', 'stopped', 'unknown'].includes(String(s.state)) || !['fresh', 'stale', 'unknown'].includes(String(s.freshness))
+          || !count(s.players) || !count(s.capacity) || !count(s.collected_at) || !count(s.provider_at) || !message(s.error))) throw new Error('Invalid connection response');
+  }
   return value as unknown as Snapshot;
 }
 function stored(value: string | null): Draft | undefined {
@@ -166,7 +176,7 @@ export function workspace(binding: string) {
       } else if (response.status === 200) {
         const next = snapshot(response.value);
         if (!authorized(next) || next.note.body !== submitted.body || BigInt(next.note.revision) !== BigInt(submitted.base) + 1n) throw new Error('Unqualified save result');
-        model.update((m) => ({ ...m, snapshot: next, base: next.note.revision, dirty: m.draft !== next.note.body,
+        model.update((m) => ({ ...m, snapshot: { ...next, crafty: next.crafty ?? m.snapshot?.crafty }, base: next.note.revision, dirty: m.draft !== next.note.body,
           save: 'saved', message: m.draft === next.note.body ? 'Saved to your account.' : 'Submitted version saved. Your newer edits are still unsaved.' })); persist();
       } else throw new Error('Save outcome unavailable');
     } catch {

@@ -14,3 +14,4 @@ reqwest.workspace = true
 getrandom.workspace = true
 url.workspace = true
 tokio-rustls.workspace = true
+reborn-crafty-fixture = { path = "../crafty-fixture" }

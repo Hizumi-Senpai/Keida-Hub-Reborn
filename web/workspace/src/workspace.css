@@ -658,3 +658,16 @@ textarea::placeholder {
 .version dl { margin: 12px 0 0; }
 .version dt { margin-top: 10px; color: #b8c9cf; }
 .version dd { margin: 3px 0 0; overflow-wrap: anywhere; }
+
+.connections-intro { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:1rem; margin:1.5rem 0; }
+.server-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr)); gap:1.25rem; }
+.server-card dl { display:grid; grid-template-columns:1fr; gap:.25rem; overflow-wrap:anywhere; }
+.server-card dt { color:var(--muted); margin-top:.6rem; }
+.server-card dd { margin:0; }
+.connection-setup { margin-top:1.5rem; padding:clamp(1rem,3vw,2rem); }
+.connection-setup form { display:grid; gap:.65rem; }
+.connection-setup input,.connection-setup textarea { width:100%; max-width:100%; min-height:2.8rem; padding:.7rem; border:1px solid #b8b4ac; border-radius:.5rem; background:#fffdf7; color:#252c2a; font:inherit; }
+.connection-setup textarea { resize:vertical; }
+.connection-setup fieldset { min-width:0; display:grid; gap:.6rem; margin:1rem 0; padding:1rem; border:1px solid #b8b4ac; border-radius:.75rem; }
+.connection-setup legend { padding:0 .4rem; font-weight:600; }
+.connection-setup .button-row { flex-wrap:wrap; }

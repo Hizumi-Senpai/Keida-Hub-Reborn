@@ -1,0 +1,16 @@
+[package]
+name = "reborn-release"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+getrandom.workspace = true
+tokio.workspace = true
+reqwest.workspace = true
+libc.workspace = true
+reborn-crafty-fixture = { path = "../crafty-fixture" }

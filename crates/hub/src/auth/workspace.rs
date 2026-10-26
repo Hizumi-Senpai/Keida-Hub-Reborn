@@ -25,7 +25,11 @@ async fn schema(service: &Service) -> Result<(), ApiError> {
         Err(ApiError(StatusCode::SERVICE_UNAVAILABLE, "unavailable"))
     }
 }
-async fn bound(service: &Service, headers: &HeaderMap, write: bool) -> Result<Principal, ApiError> {
+pub(super) async fn bound(
+    service: &Service,
+    headers: &HeaderMap,
+    write: bool,
+) -> Result<Principal, ApiError> {
     if one(headers, "x-reborn-product") != Some("keida-hub-reborn")
         || one(headers, "x-reborn-contract") != Some(CONTRACT)
     {
@@ -95,16 +99,36 @@ async fn asset(Path(file): Path<String>) -> Response {
         None => StatusCode::NOT_FOUND.into_response(),
     }
 }
-fn wire(snapshot: store::workspace::Snapshot) -> Response {
+fn wire(
+    snapshot: store::workspace::Snapshot,
+    overview: Option<crate::providers::crafty::Overview>,
+) -> Response {
+    let waiting = || {
+        let mut v = crate::providers::crafty::empty(snapshot.connection_revision);
+        v.configured = snapshot.connection_configured;
+        v.error = if v.configured { Some("checking") } else { None };
+        v
+    };
+    let overview = overview
+        .map(|value| {
+            if value.revision == snapshot.connection_revision.to_string() {
+                value
+            } else {
+                waiting()
+            }
+        })
+        .unwrap_or_else(waiting);
     Json(json!({"product":"keida-hub-reborn", "contract":CONTRACT, "schema":1,
         "account":account(snapshot.session.account), "session_generation":snapshot.session.generation.to_string(),
-        "note":{"body":snapshot.note.body,"revision":snapshot.note.revision.to_string()}})).into_response()
+        "note":{"body":snapshot.note.body,"revision":snapshot.note.revision.to_string()}, "crafty":overview})).into_response()
 }
 async fn snapshot(State(service): State<Service>, headers: HeaderMap) -> Response {
     let result = async {
         let p = bound(&service, &headers, false).await?;
+        let overview = super::connections::observe(&service, &p.hash).await?;
         Ok::<_, ApiError>(wire(
             store::workspace::snapshot(&service.pool, &service.key_id, &p.hash).await?,
+            Some(overview),
         ))
     }
     .await;
@@ -140,7 +164,7 @@ async fn save(
                         e.into()
                     }
                 })?;
-        Ok::<_, ApiError>(wire(saved))
+        Ok::<_, ApiError>(wire(saved, None))
     }
     .await;
     result.unwrap_or_else(private_error)

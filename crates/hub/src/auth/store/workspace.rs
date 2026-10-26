@@ -9,6 +9,8 @@ pub struct Note {
 pub struct Snapshot {
     pub session: Session,
     pub note: Note,
+    pub connection_revision: i64,
+    pub connection_configured: bool,
 }
 
 pub async fn snapshot(pool: &PgPool, key: &[u8], verifier: &[u8]) -> Result<Snapshot, Error> {
@@ -32,8 +34,18 @@ pub async fn snapshot(pool: &PgPool, key: &[u8], verifier: &[u8]) -> Result<Snap
             revision: r.revision,
         },
     );
+    let connection =
+        sqlx::query!("SELECT revision, sealed FROM crafty_connection WHERE singleton = TRUE")
+            .fetch_one(&mut *tx)
+            .await
+            .map_err(|_| Error::Unavailable)?;
     tx.commit().await.map_err(|_| Error::Unavailable)?;
-    Ok(Snapshot { session, note })
+    Ok(Snapshot {
+        session,
+        note,
+        connection_revision: connection.revision,
+        connection_configured: connection.sealed.is_some(),
+    })
 }
 
 pub async fn save(
@@ -65,8 +77,15 @@ pub async fn save(
         "INSERT INTO workspace_notes (account_id, body, revision) VALUES ($1, $2, $3) ON CONFLICT (account_id) DO UPDATE SET body = EXCLUDED.body, revision = EXCLUDED.revision RETURNING body, revision",
         session.account.id, body, next
     ).fetch_one(&mut *tx).await.map_err(|_| Error::Unavailable)?;
+    let connection =
+        sqlx::query!("SELECT revision, sealed FROM crafty_connection WHERE singleton = TRUE")
+            .fetch_one(&mut *tx)
+            .await
+            .map_err(|_| Error::Unavailable)?;
     tx.commit().await.map_err(|_| Error::Unavailable)?;
     Ok(Snapshot {
+        connection_revision: connection.revision,
+        connection_configured: connection.sealed.is_some(),
         session,
         note: Note {
             body: row.body,

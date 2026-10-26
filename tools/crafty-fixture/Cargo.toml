@@ -1,0 +1,12 @@
+[package]
+name = "reborn-crafty-fixture"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+axum.workspace = true
+tokio.workspace = true
+tokio-rustls.workspace = true
+serde_json.workspace = true
+chrono.workspace = true

@@ -41,6 +41,68 @@ pub struct Secrets {
 }
 
 impl Secrets {
+    /// A fresh256-bit subkey salt per envelope makes each derived AEAD key a
+    /// single-encryption key. A random96-bit nonce provides a second boundary.
+    pub fn seal_connection(&self, revision: i64, plaintext: &[u8]) -> Result<Vec<u8>, CryptoError> {
+        use ring::aead::{Aad, CHACHA20_POLY1305, LessSafeKey, Nonce, UnboundKey};
+        if revision <= 0 || plaintext.is_empty() || plaintext.len() > 30000 {
+            return Err(CryptoError::Invalid);
+        }
+        let mut salt = [0u8; 32];
+        let mut nonce = [0u8; 12];
+        getrandom::fill(&mut salt).map_err(|_| CryptoError::Unavailable)?;
+        getrandom::fill(&mut nonce).map_err(|_| CryptoError::Unavailable)?;
+        let key = Zeroizing::new(self.mac(b"reborn/crafty/encryption-key/v1\0", &salt));
+        let cipher = LessSafeKey::new(
+            UnboundKey::new(&CHACHA20_POLY1305, key.as_ref())
+                .map_err(|_| CryptoError::Unavailable)?,
+        );
+        let aad = connection_aad(revision);
+        let mut body = Zeroizing::new(plaintext.to_vec());
+        cipher
+            .seal_in_place_append_tag(
+                Nonce::assume_unique_for_key(nonce),
+                Aad::from(aad),
+                &mut *body,
+            )
+            .map_err(|_| CryptoError::Unavailable)?;
+        let mut out = Vec::with_capacity(45 + body.len());
+        out.push(1);
+        out.extend_from_slice(&salt);
+        out.extend_from_slice(&nonce);
+        out.extend_from_slice(&body);
+        Ok(out)
+    }
+
+    pub fn open_connection(
+        &self,
+        revision: i64,
+        sealed: &[u8],
+    ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
+        use ring::aead::{Aad, CHACHA20_POLY1305, LessSafeKey, Nonce, UnboundKey};
+        if revision <= 0 || !(62..=30100).contains(&sealed.len()) || sealed[0] != 1 {
+            return Err(CryptoError::Invalid);
+        }
+        let key = Zeroizing::new(self.mac(b"reborn/crafty/encryption-key/v1\0", &sealed[1..33]));
+        let cipher = LessSafeKey::new(
+            UnboundKey::new(&CHACHA20_POLY1305, key.as_ref())
+                .map_err(|_| CryptoError::Unavailable)?,
+        );
+        let nonce: [u8; 12] = sealed[33..45]
+            .try_into()
+            .map_err(|_| CryptoError::Invalid)?;
+        let mut body = Zeroizing::new(sealed[45..].to_vec());
+        let size = cipher
+            .open_in_place(
+                Nonce::assume_unique_for_key(nonce),
+                Aad::from(connection_aad(revision)),
+                &mut body,
+            )
+            .map_err(|_| CryptoError::Invalid)?
+            .len();
+        body.truncate(size);
+        Ok(body)
+    }
     pub fn from_file(path: &Path) -> Result<Arc<Self>, CryptoError> {
         let key = read_key(path)?;
         // Construction occurs before listening. It also observes the same
@@ -194,6 +256,12 @@ impl Secrets {
         mac.update(value);
         mac.finalize().into_bytes().into()
     }
+}
+
+fn connection_aad(revision: i64) -> Vec<u8> {
+    let mut aad = b"keida-hub-reborn/crafty/connection/v1\0".to_vec();
+    aad.extend_from_slice(&revision.to_be_bytes());
+    aad
 }
 
 async fn password_job<T: Send + 'static>(
@@ -367,6 +435,39 @@ fn read_key(path: &Path) -> Result<Zeroizing<[u8; 32]>, CryptoError> {
     Ok(key)
 }
 
+/// File-backed runtime credentials use the same anchored private-file rules as
+/// the instance key. No symlinks, shared parent, inherited permissions or echo.
+pub fn read_private_text(path: &Path, limit: u64) -> Result<Zeroizing<String>, CryptoError> {
+    let (_directory, anchored, uid) = private_parent(path)?;
+    let mut file = OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC | libc::O_NONBLOCK)
+        .open(anchored)
+        .map_err(|_| CryptoError::Unavailable)?;
+    let size = file.metadata().map_err(|_| CryptoError::Unavailable)?.len();
+    if size == 0 || size > limit {
+        return Err(CryptoError::Invalid);
+    }
+    private_regular(&file, uid, size)?;
+    let mut bytes = Zeroizing::new(vec![0u8; size as usize]);
+    file.read_exact(&mut bytes)
+        .map_err(|_| CryptoError::Unavailable)?;
+    let mut extra = [0; 1];
+    if file
+        .read(&mut extra)
+        .map_err(|_| CryptoError::Unavailable)?
+        != 0
+    {
+        return Err(CryptoError::Invalid);
+    }
+    private_regular(&file, uid, size)?;
+    let value = std::str::from_utf8(&bytes).map_err(|_| CryptoError::Invalid)?;
+    if value.contains('\0') || value.trim() != value {
+        return Err(CryptoError::Invalid);
+    }
+    Ok(Zeroizing::new(value.to_string()))
+}
+
 fn create_private(path: &Path, bytes: &[u8]) -> Result<(), CryptoError> {
     let (directory, anchored, uid) = private_parent(path)?;
     let mut file = OpenOptions::new()
@@ -430,6 +531,52 @@ mod tests {
             key: Zeroizing::new([1u8; 32]),
             dummy_phc: Zeroizing::new(String::new()),
         }
+    }
+
+    #[test]
+    fn dedicated_envelopes_authenticate_revision_key_format_and_every_ciphertext_byte() {
+        let first = form_secrets();
+        let second = Secrets {
+            key: Zeroizing::new([2; 32]),
+            dummy_phc: Zeroizing::new(String::new()),
+        };
+        let private = b"{\"token\":\"deliberately-fake-native-token\"}";
+        let a = first.seal_connection(7, private).unwrap();
+        let b = first.seal_connection(7, private).unwrap();
+        assert_ne!(a, b);
+        assert_ne!(&a[1..33], &b[1..33]);
+        assert!(!a.windows(private.len()).any(|w| w == private));
+        assert_eq!(first.open_connection(7, &a).unwrap().as_slice(), private);
+        assert!(first.open_connection(8, &a).is_err());
+        assert!(second.open_connection(7, &a).is_err());
+        for position in 0..a.len() {
+            let mut bad = a.clone();
+            bad[position] ^= 1;
+            assert!(first.open_connection(7, &bad).is_err());
+        }
+        for length in 0..a.len() {
+            assert!(first.open_connection(7, &a[..length]).is_err());
+        }
+        assert!(first.seal_connection(0, private).is_err());
+    }
+
+    #[test]
+    fn file_backed_runtime_configuration_is_private_bounded_and_never_follows_aliases() {
+        let root = PrivateDir::new();
+        let path = root.file("database.url");
+        create_private(&path, b"postgresql://fixture:disposable@127.0.0.1/fixture").unwrap();
+        assert!(read_private_text(&path, 8192).is_ok());
+        assert!(read_private_text(&path, 8).is_err());
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
+        assert!(read_private_text(&path, 8192).is_err());
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
+        let alias = root.file("alias");
+        symlink(&path, &alias).unwrap();
+        assert!(read_private_text(&alias, 8192).is_err());
+        create_private(&root.file("nul"), b"not\0configuration").unwrap();
+        assert!(read_private_text(&root.file("nul"), 8192).is_err());
+        create_private(&root.file("newline"), b"configuration\n").unwrap();
+        assert!(read_private_text(&root.file("newline"), 8192).is_err());
     }
 
     #[test]

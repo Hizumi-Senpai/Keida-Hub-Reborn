@@ -25,7 +25,17 @@ impl Config {
         {
             return Err("REBORN_PUBLIC_ORIGIN");
         }
-        let dsn = env::var("DATABASE_URL").map_err(|_| "DATABASE_URL")?;
+        let dsn = match (
+            env::var("DATABASE_URL").ok(),
+            env::var_os("DATABASE_URL_FILE"),
+        ) {
+            (Some(value), None) => zeroize::Zeroizing::new(value),
+            (None, Some(path)) => {
+                crate::auth::crypto::read_private_text(std::path::Path::new(&path), 8192)
+                    .map_err(|_| "DATABASE_URL_FILE")?
+            }
+            _ => return Err("DATABASE_URL"),
+        };
         let url = Url::parse(&dsn).map_err(|_| "DATABASE_URL")?;
         if !matches!(url.scheme(), "postgres" | "postgresql")
             || url.host_str().is_none()

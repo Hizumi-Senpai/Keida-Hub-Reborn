@@ -51,6 +51,14 @@ async fn accessibility(b: &Browser) -> Check<()> {
     let source = fs::read_to_string(path).map_err(|_| "Axe script read")?;
     check(source.len() < 1024 * 1024, "Axe script bound")?;
     let result=b.evaluate(&format!("{source}\nreturn axe.run(document,{{runOnly:{{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}}}}).then(r=>r.violations.map(v=>v.id));"),json!([])).await?;
+    // Only pinned rule identifiers, never DOM fragments or private page content.
+    if let Some(violations) = result.as_array() {
+        for id in violations.iter().filter_map(serde_json::Value::as_str) {
+            if id.len() <= 80 && id.bytes().all(|b| b.is_ascii_lowercase() || b == b'-') {
+                eprintln!("Accessibility rule failed: {id}");
+            }
+        }
+    }
     check(
         result.as_array().is_some_and(Vec::is_empty),
         "workspace accessibility rules",
@@ -375,8 +383,107 @@ pub async fn run() -> Check<()> {
     cross_account_late_response().await?;
     revocation_and_optional_failures().await?;
     startup_failure_keeps_native_recovery().await?;
+    dedicated_connection_overview().await?;
     println!(
-        "Rust workspace browser acceptance: 5 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+        "Rust workspace browser acceptance: 6 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+    );
+    Ok(())
+}
+
+async fn dedicated_connection_overview() -> Check<()> {
+    use reborn_crafty_fixture as c;
+    step(
+        "dedicated encrypted Crafty enrollment, real GET overview and secret-free browser lifetimes",
+    );
+    let f = Fixture::new().await?;
+    let provider = c::Crafty::start().await?;
+    let mut b = f.browser(true).await?;
+    claim(&f, &b).await?;
+    workspace(&f, &b).await?;
+    note(&b).await?;
+    b.fill(
+        "#workspace-note",
+        "Keep my unfinished thought while viewing servers",
+    )
+    .await?;
+    b.evaluate(
+        "window.__retainedEditor=document.querySelector('#workspace-note');return true",
+        json!([]),
+    )
+    .await?;
+    b.click(".main-nav button:nth-child(3)").await?;
+    b.fill("#crafty-endpoint", &provider.origin).await?;
+    b.fill("#crafty-token", c::TOKEN).await?;
+    b.fill("#crafty-timezone", "UTC").await?;
+    b.fill("#crafty-ca", &provider.ca).await?;
+    b.fill("input[name=server-id]", c::ID).await?;
+    b.fill("input[name=server-name]", "Reviewed browser server")
+        .await?;
+    b.fill("input[name=server-join]", "play.example:25565")
+        .await?;
+    b.click(".connection-setup form button[type=submit]")
+        .await?;
+    b.wait("return document.querySelector('.server-card')?.textContent.includes('0 reported') && document.querySelector('.server-card').textContent.includes('Recent provider sample')",json!([])).await?;
+    check(b.evaluate("return document.querySelector('#crafty-token').value==='' && document.querySelector('#crafty-endpoint').value==='' && document.querySelector('.server-card').textContent.includes('Reviewed browser server') && !document.body.textContent.includes(arguments[0]) && !document.body.textContent.includes(arguments[1]) && [...Object.values(sessionStorage),...Object.values(localStorage)].every(v=>!v.includes(arguments[0])&&!v.includes(arguments[1]))",json!([c::TOKEN,&provider.origin])).await?==true,"enrollment clears secret fields and exposes only reviewed public data")?;
+    check(
+        provider.requests().len() == 2
+            && provider.requests().iter().all(|(method, path)| {
+                method == "GET"
+                    && (path == "/api/v2/servers"
+                        || path == &format!("/api/v2/servers/{}/stats", c::ID))
+            }),
+        "browser overview uses only bounded actual Crafty GETs",
+    )?;
+    b.fill(
+        "#crafty-token",
+        "An unfinished fictional credential must be cleared",
+    )
+    .await?;
+    check(b.evaluate("window.dispatchEvent(new Event('pagehide'));return !document.querySelector('#crafty-token') || document.querySelector('#crafty-token').value===''",json!([])).await?==true,"privacy invalidation synchronously removes unfinished provider credentials")?;
+    b.evaluate(
+        "window.dispatchEvent(new Event('focus'));return true",
+        json!([]),
+    )
+    .await?;
+    b.wait(
+        "return !!document.querySelector('#crafty-token')",
+        json!([]),
+    )
+    .await?;
+    note(&b).await?;
+    check(
+        b.evaluate(
+            "return window.__retainedEditor===document.querySelector('#workspace-note')",
+            json!([]),
+        )
+        .await?
+            == true,
+        "connection navigation preserves the real note editor",
+    )?;
+    // Privacy clearing requires deliberate compatible draft recovery.
+    b.click("section[aria-label='Draft recovery'] button:first-of-type")
+        .await?;
+    body(&b, "Keep my unfinished thought while viewing servers").await?;
+    b.click(".main-nav button:nth-child(3)").await?;
+    accessibility(&b).await?;
+    b.mobile().await?;
+    check(
+        b.evaluate(
+            "return document.documentElement.scrollWidth<=innerWidth+1",
+            json!([]),
+        )
+        .await?
+            == true,
+        "connection enrollment and server cards reflow on narrow viewport",
+    )?;
+    accessibility(&b).await?;
+    b.click(".connection-setup > button.text-button").await?;
+    b.wait("return document.querySelector('[aria-label=Connections]').textContent.includes('No Crafty connection enrolled') && !document.querySelector('.server-card')",json!([])).await?;
+    b.close().await?;
+    drop(b);
+    f.close().await?;
+    println!(
+        "PASS Rust browser: dedicated connection, zero versus unknown, cleared credentials and retained editor"
     );
     Ok(())
 }

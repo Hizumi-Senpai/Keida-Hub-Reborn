@@ -12,7 +12,7 @@ jobs:
   foundation:
     name: Rust 1.99.1 / PostgreSQL 16
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     services:
       postgres:
         image: postgres:16.15-bookworm@sha256:d81f7b51697014367236d07ec58b54153fc28f828b72bf247fe5c7487520bcb0
@@ -54,10 +54,14 @@ jobs:
           rustc +1.99.1 --version
           uname -a
           psql --version
-      - name: Format and derive explicit development source identity
+      - name: Format and derive explicit source identity
         run: |
           cargo +1.99.1 fmt --all --check
-          cargo +1.99.1 run -p reborn-source-identity --locked -- --repo . --candidate "$SOURCE_SHA" --channel development --format env >> "$GITHUB_ENV"
+          if [ "$GITHUB_EVENT_NAME" = push ]; then
+            cargo +1.99.1 run -p reborn-source-identity --locked -- --repo . --candidate "$SOURCE_SHA" --channel accepted --main-ref refs/remotes/origin/main --main-sha "$SOURCE_SHA" --format env >> "$GITHUB_ENV"
+          else
+            cargo +1.99.1 run -p reborn-source-identity --locked -- --repo . --candidate "$SOURCE_SHA" --channel development --format env >> "$GITHUB_ENV"
+          fi
       - name: Recreate compilation schema and check literal queries online
         run: |
           for migration in migrations/*.sql; do
@@ -83,6 +87,11 @@ jobs:
         env:
           SQLX_OFFLINE: 'true'
         run: cargo +1.99.1 build --workspace --release --locked
+      - name: Build and inspect the exact repository Linux image
+        run: |
+          docker build --build-arg REBORN_BUILD_PRODUCT --build-arg REBORN_BUILD_VERSION --build-arg REBORN_BUILD_COMMIT --build-arg REBORN_BUILD_TREE --build-arg REBORN_BUILD_ORDINAL --build-arg REBORN_BUILD_CHANNEL --build-arg REBORN_BUILD_CONTRACT --iidfile "$RUNNER_TEMP/reborn-image-id" --tag "reborn-ci:$SOURCE_SHA" .
+          mkdir -m 700 "$RUNNER_TEMP/reborn-package"
+          target/release/reborn-release inspect-image "$(cat "$RUNNER_TEMP/reborn-image-id")" "$SOURCE_SHA" "$REBORN_BUILD_TREE" "$REBORN_BUILD_VERSION" "$REBORN_BUILD_CHANNEL" "$RUNNER_TEMP/reborn-package"
       - name: Install isolated HTTPS browser prerequisites
         timeout-minutes: 5
         working-directory: web
@@ -109,6 +118,17 @@ jobs:
           export REBORN_CHROMEDRIVER="$RUNNER_TEMP/reborn-chromedriver/chromedriver-linux64/chromedriver"
           "$REBORN_CHROMEDRIVER" --version
           cargo +1.99.1 run -p reborn-workspace-browser --release --locked
+      - name: Repeat Rust HTTPS browser contracts through the exact packaged image
+        env:
+          REBORN_BROWSER_BINARY: ${{ github.workspace }}/target/release/keida-hub-reborn
+          REBORN_BROWSER_EXPECT_COMMIT: ${{ env.SOURCE_SHA }}
+          REBORN_AXE_SCRIPT: ${{ github.workspace }}/web/node_modules/axe-core/axe.min.js
+        run: |
+          export REBORN_BROWSER_IMAGE="$(cat "$RUNNER_TEMP/reborn-image-id")"
+          export REBORN_CHROMEDRIVER="$RUNNER_TEMP/reborn-chromedriver/chromedriver-linux64/chromedriver"
+          cargo +1.99.1 run -p reborn-workspace-browser --release --locked
+      - name: Rehearse packaged private install and matched PostgreSQL recovery
+        run: target/release/reborn-release rehearse-image "$(cat "$RUNNER_TEMP/reborn-image-id")" "$RUNNER_TEMP/reborn-package"
       - name: Real Chromium HTTPS account workflows including elapsed form expiry
         working-directory: web
         env:
@@ -116,6 +136,17 @@ jobs:
           REBORN_BROWSER_EXPECT_COMMIT: ${{ env.SOURCE_SHA }}
           REBORN_BROWSER_OUTPUT_DIR: ${{ runner.temp }}/reborn-browser-safe
         run: npm run test:browser
+      - name: Preserve the qualified image and nonsecret artifact proof
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reborn-linux-${{ env.SOURCE_SHA }}
+          path: |
+            ${{ runner.temp }}/reborn-package/image.tar
+            ${{ runner.temp }}/reborn-package/image-proof.json
+            ${{ runner.temp }}/reborn-package/recovery-proof.json
+          if-no-files-found: error
+          retention-days: 14
+          overwrite: false
       - name: Export only explicitly blank account views for visual review
         if: always()
         env:

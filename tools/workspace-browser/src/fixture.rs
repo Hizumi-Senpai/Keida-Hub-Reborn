@@ -137,20 +137,34 @@ fn random() -> Check<String> {
     getrandom::fill(&mut bytes).map_err(|_| "fixture randomness")?;
     Ok(bytes.iter().map(|b| format!("{b:02x}")).collect())
 }
-struct CommandChild(Child);
+struct CommandChild(Child, Option<PathBuf>);
 impl Drop for CommandChild {
     fn drop(&mut self) {
+        if let Some(name) = &self.1 {
+            stop_container(name);
+        }
         let _ = self.0.kill();
         let _ = self.0.wait();
     }
 }
 async fn command(mut command: Command) -> Check<()> {
+    let args: Vec<_> = command
+        .get_args()
+        .map(|v| v.to_string_lossy().into_owned())
+        .collect();
+    let container = if command.get_program() == "docker" {
+        args.windows(2)
+            .find(|a| a[0] == "--cidfile")
+            .map(|a| PathBuf::from(&a[1]))
+    } else {
+        None
+    };
     let child = command
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()
         .map_err(|_| "fixture command spawn")?;
-    let mut child = CommandChild(child);
+    let mut child = CommandChild(child, container);
     let deadline = tokio::time::Instant::now() + Duration::from_secs(35);
     loop {
         if let Some(status) = child.0.try_wait().map_err(|_| "fixture command state")? {
@@ -230,6 +244,7 @@ pub struct Fixture {
     admin: String,
     name: String,
     child: Option<Child>,
+    container: Option<PathBuf>,
     proxy: Arc<Proxy>,
     server: JoinHandle<()>,
     driver: PathBuf,
@@ -413,8 +428,67 @@ impl Fixture {
         )?;
         let key = root.join("instance.key");
         let setup_path = root.join("setup.token");
+        let image = std::env::var("REBORN_BROWSER_IMAGE").ok();
+        if let Some(ref image) = image {
+            check(
+                image.len() == 71
+                    && image.starts_with("sha256:")
+                    && image[7..]
+                        .bytes()
+                        .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)),
+                "exact image digest required",
+            )?;
+        }
+        let container = image.as_ref().map(|_| root.join("owned-app.cid"));
+        let uid = std::fs::metadata("/proc/self").map_err(|_| "fixture UID")?;
+        use std::os::unix::fs::MetadataExt;
         let application = |args: Vec<String>| {
-            let mut cmd = Command::new(&binary);
+            let mut cmd = if let Some(ref image) = image {
+                let mut cmd = Command::new("docker");
+                cmd.args([
+                    "run",
+                    "--rm",
+                    "--name",
+                    &format!("reborn-browser-app-{name}"),
+                    "--cidfile",
+                    container
+                        .as_ref()
+                        .expect("owned image CID file")
+                        .to_str()
+                        .expect("owned path"),
+                    "--network",
+                    "host",
+                    "--user",
+                    &format!("{}:{}", uid.uid(), uid.gid()),
+                    "--read-only",
+                    "--cap-drop",
+                    "ALL",
+                    "--security-opt",
+                    "no-new-privileges",
+                    "--pids-limit",
+                    "64",
+                    "--memory",
+                    "256m",
+                    "--cpus",
+                    "1",
+                    "--tmpfs",
+                    "/tmp:rw,noexec,nosuid,size=16m",
+                    "--mount",
+                    &format!("type=bind,src={},dst={}", s(&root), s(&root)),
+                    "-e",
+                    "DATABASE_URL",
+                    "-e",
+                    "REBORN_BIND",
+                    "-e",
+                    "REBORN_PUBLIC_ORIGIN",
+                    "-e",
+                    "REBORN_INSTANCE_KEY_FILE",
+                    image,
+                ]);
+                cmd
+            } else {
+                Command::new(&binary)
+            };
             cmd.args(args)
                 .env("DATABASE_URL", &db_url)
                 .env("REBORN_BIND", bind.to_string())
@@ -485,6 +559,7 @@ impl Fixture {
             admin,
             name,
             child: Some(child),
+            container,
             proxy,
             server,
             driver,
@@ -504,6 +579,18 @@ impl Fixture {
                     value["identity"]["commit"] == expected,
                     "actual Rust source identity",
                 )?;
+                for (field, env) in [
+                    ("tree", "REBORN_BUILD_TREE"),
+                    ("version", "REBORN_BUILD_VERSION"),
+                    ("channel", "REBORN_BUILD_CHANNEL"),
+                ] {
+                    let expected =
+                        std::env::var(env).map_err(|_| "qualified source metadata prerequisite")?;
+                    check(
+                        value["identity"][field] == expected,
+                        "runtime source/tree/version/channel agreement",
+                    )?;
+                }
                 break;
             }
             check(
@@ -555,6 +642,9 @@ impl Fixture {
         self.proxy.writes.load(Ordering::SeqCst)
     }
     pub async fn close(mut self) -> Check<()> {
+        if let Some(ref name) = self.container {
+            stop_container(name);
+        }
         if let Some(mut child) = self.child.take() {
             let _ = child.kill();
             child.wait().map_err(|_| "owned app shutdown")?;
@@ -575,6 +665,9 @@ impl Fixture {
 }
 impl Drop for Fixture {
     fn drop(&mut self) {
+        if let Some(ref name) = self.container {
+            stop_container(name);
+        }
         if let Some(mut child) = self.child.take() {
             let _ = child.kill();
             let _ = child.wait();
@@ -661,5 +754,24 @@ impl Fixture {
     pub async fn revoke_all(&self, browser: &Browser) -> Check<()> {
         self.owner_api(browser, "/api/auth/revoke-all", serde_json::json!({}))
             .await
+    }
+}
+
+fn stop_container(cid_file: &Path) {
+    if let Ok(id) = fs::read_to_string(cid_file) {
+        let id = id.trim();
+        if id.len() != 64
+            || !id
+                .bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        {
+            return;
+        }
+        let _ = Command::new("docker")
+            .args(["rm", "--force", id])
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status();
+        let _ = fs::remove_file(cid_file);
     }
 }
