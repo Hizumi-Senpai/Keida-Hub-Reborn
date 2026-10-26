@@ -9,9 +9,10 @@ of the original or the independent rewrite.
 [exact deployment/ownership receipts](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1),
 and [immediate M0 task](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/3).
 
-**Documented direction, 2026-10-25: no implementation, benchmark, deployment or
-live acceptance is claimed here.** Existing accepted functionality in another
-application is a behavior reference, not a completed Reborn milestone.
+**M0 implementation is in progress.** Accepted source and current API work are in
+[CURRENT_STATE.md](CURRENT_STATE.md); the milestone remains open. No benchmark,
+deployment or live acceptance is claimed here. Existing accepted functionality in
+another application is a behavior reference, not a completed Reborn milestone.
 
 The original **https://keida.me stays live and unchanged**. Existing rewrite
 data, original game controllers, listeners, bot jobs, backup/update workers and

@@ -1,8 +1,8 @@
 # Independent M0 authentication API contracts
 
 Expectations frozen from [M0_AUTH_API.md](M0_AUTH_API.md) before inspecting the
-authentication implementation. This verification owns only the new native HTTP
-test and this document. It changes no live host, credentials, route or authority.
+authentication implementation. Verification owns the new native HTTP and store
+phase contracts and this document. It changes no live host, credentials, route or authority.
 
 ## Independent expectations
 
