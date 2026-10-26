@@ -45,6 +45,7 @@ pub const LARGE: u8 = 7;
 pub const TIMEOUT: u8 = 8;
 pub const REDIRECT: u8 = 9;
 pub const HOLD: u8 = 10;
+pub const DUPLICATE: u8 = 11;
 static NEXT: AtomicU64 = AtomicU64::new(0);
 struct Data {
     mode: AtomicU8,
@@ -126,6 +127,9 @@ async fn handler(State(data): State<Arc<Data>>, request: Request) -> Response {
     }
     if mode == MALFORMED {
         return ([("content-type", "application/json")], "{broken").into_response();
+    }
+    if mode == DUPLICATE {
+        return ([("content-type","application/json")],r#"{"status":"ok","data":{"running":true,"online":5,"online":0,"int_ping_results":true}}"#).into_response();
     }
     if mode == LARGE {
         return "x".repeat(262145).into_response();

@@ -1,68 +1,74 @@
 # Reborn current state
 
-Updated **2026-10-26 America/Chicago**. **M0 remains in progress.**
+Updated **2026-10-26 America/Chicago**. **M0 and the first useful live alpha are
+tracked in issues1/3.** Read their latest exact receipts before acting; source,
+artifact, installed server and loaded browser remain separate facts.
 
-## Source and acceptance
+## Accepted baseline and alpha source
 
-The prior accepted baseline is source **0.1.4**, main
-`377f89d0dee9ed9e2e96f70385587f7ca6939b22`: Rust/PostgreSQL foundation,
-private atomic owner/session API and separate native Askama account documents.
-Its exact head/main CI passed42 Rust tests and11 real Chromium HTTPS workflows.
-[Exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6407867529).
+The accepted baseline is source **0.1.6**, main
+`6a17e186e693dcaada6d15cbfeee373528814e8f`, tree
+`07399bcfacae3e441e7b3de3b6f8c7441e319596`: Rust/PostgreSQL authentication,
+native Askama account pages and one persistent Svelte workspace. Exact final-main
+CI passed47 native tests,5 Rust browser workflows and11 additional Chromium HTTPS
+regressions. [Exact baseline receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6421208874).
 
-The [persistent workspace slice](docs/M0_WORKSPACE.md) adds one compiled Svelte
-application served by Rust, a private account-owned note with revision conflicts,
-scoped non-secret drafts, one observation controller, and logout/revocation/
-account-switch/late-response cleanup. Separate account pages remain native Askama.
-Schema3 adds workspace notes without editing accepted0001/0002. The old schema2
-binary refuses schema3; recovery/rollback compatibility is not claimed.
+The owner subsequently authorized a useful alpha at rewrite.keida.me: the workspace
+plus dedicated Crafty read-only observations, qualified packaging/recovery and a
+reversible cross-product cutover. The [alpha contract](docs/LIVE_ALPHA.md) was
+published before implementation. Actual source/CI/artifact/host/public outcomes
+are recorded in issues1/3; this source file does not certify those outcomes.
 
-New primary browser verification uses a [Rust WebDriver caller](tools/workspace-browser/README.md)
-against real Chromium/ChromeDriver156.0.8078.4, private trusted HTTPS and disposable
-PostgreSQL. Existing Playwright workflows remain additional regression coverage.
-Svelte/Vite/checker dependencies are exact locked; its checker uses a compatible
-TypeScript6 npm workspace while account/test TypeScript7 stays pinned. No production
-Node server, renderer, room engine or invented provider data is introduced.
+Alpha source adds owner-only revision-bound encrypted connection enrollment,
+GET-only bounded Rust Crafty observation, reviewed server/join selection, explicit
+freshness/unknowns and a persistent Svelte Connections view. Secrets are never
+browser drafts or successful/error response fields. Schema4 preserves accepted
+migrations0001–0003 and their account/note data. Older schema3 binaries refuse
+schema4; no previous-binary/current-data rollback is claimed.
 
-Source presence is not execution acceptance. Exact eventual-head/main CI, review,
-accepted source identity and terminal outcomes for this slice are recorded in
-[issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1) and
-[issue3](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/3). No Reborn image,
-production database/key/account, installed service, public/provider acceptance,
-packaged restore, native iPhone/Safari or performance result exists yet.
+The pinned repository Dockerfile separates the Rust build from an unprivileged
+Debian runtime. [Rust release tooling](tools/release/README.md) inspects the actual
+image/binary/manifest, repeats native HTTPS browser workflows through it, rehearses
+matched PostgreSQL/key restoration in a different PostgreSQL instance and checks
+newer-write preservation after a failed candidate. The constrained application
+role is separate from the migration owner. Manual create-once publication rejects
+conflicts and late channel reversal; it does not install a host updater.
 
-## Ownership and delivery
+The first alpha has one supported workspace contract and no lazy renderer chunks.
+Accepted0.1.6 JS/CSS bytes are retained under their exact immutable hashes. Future
+upgrades must qualify their actual supported client/data/asset window. Retained
+Playwright workflows are additional regressions; new primary verification is Rust.
+No production Node, Python application fallback, renderer/room engine, invented
+provider data or implicit game authority is introduced.
 
-One active CORE integrates. No external Reborn worker assignment is active;
-existing original/Rewrite assignments and unpublished branches remain protected.
-Main ruleset25845081 is active, main-only, empty bypass list, PR-only with current
-base and required `Rust 1.99.1 / PostgreSQL 16` check, no deletion/force pushes,
-resolved conversations and merge/squash only. Refresh before integration.
+## Ownership and preserved services
 
-Accepted source, publication, installation and loaded browser identities remain
-separate. Source derivation/compiled HTTP/HTML metadata exist; immutable artifact
-publication, conflicting/late publisher admission, lazy-client retention and
-packaged recovery remain open. Full M0 is tracked in issue3, M0–M8 in issue2.
+One active CORE integrates; no external Reborn worker assignment is active.
+Existing original/Rewrite assignments, branches and unpublished work remain
+protected. Main ruleset25845081 requires an up-to-date PR and the exact required
+`Rust 1.99.1 / PostgreSQL 16` check, with empty bypass list and no force/deletion.
+Refresh before integration and before every dependent host mutation.
 
-## Preserved live baseline
+Before the alpha cutover, rewrite.keida.me serves the independent Rewritev0.1.4.
+The original keida.me, shared nginx/tunnel, game/proxy/controllers and Steam updater
+retain their owners. A read-only Crafty adapter transfers no lifecycle authority.
+Keep the prior Rewrite container/image/SQLite/key/data recoverable. Reborn uses its
+own PostgreSQL, app/migration roles, private key/config and network; no old product
+credentials or volumes are imported. See [OWNERSHIP.md](docs/OWNERSHIP.md).
 
-`https://rewrite.keida.me` is recorded as the independent **Keida-Hub-Rewrite
-v0.1.4**; `https://keida.me` remains the original Hub. Read the
-[Rewrite deployment receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Rewrite/issues/1#issuecomment-6403570111)
-and refresh host/container/process/network/bridge ownership before remote work.
+Read-only host inventory refreshed2026-10-26T17:04:34Z/17:26Z recorded original
+Hub16f002a59ae5, Rewrite4d59e3f30d54, nginx d48e93768bfd, tunnel0089224c9b0b and
+Crafty f00dfa3d737e (already started16:37:01Z). Updater9858 remained active. Later
+alpha fixture resources are independently named/labelled. These observations are
+historical and must be refreshed; they are not current deployment locks.
 
-The last read-only host receipt (2026-10-25T22:58:34Z) recorded unchanged original,
-Rewrite, nginx/tunnel/Crafty containers, active Steam updater9858 and clean bridge
-`36c62838b99a9804383884f775358fe90b8bc45c`. Those observations are historical,
-not fresh locks. Rewrite's port8790/data/key/network remain its own. No host,
-route, provider credential, game controller or updater was changed by these source
-slices. Full host-updater installation and original game transfer retain separate
-concrete review/authorization gates. See [OWNERSHIP.md](docs/OWNERSHIP.md).
+## Next concrete gate
 
-## Next concrete work
-
-Qualify the workspace's exact eventual-head/main checks and record its receipt.
-Then introduce encrypted dedicated provider-secret enrollment with the first
-Crafty read-only caller; use valid TLS and honest observation freshness/unknowns.
-Immutable publication, supported client asset retention, isolated packaged
-install/upgrade/recovery and any public cutover remain separate acceptance gates.
+Use the latest issue3 receipt to resume the authorized alpha sequence: exact
+head/main checks, immutable packaged artifact, isolated recovery, deliberately
+enrolled provider access and reviewed reversible public cutover. Never request
+secrets in chat or replay older enrollment. Record real provider and signed-in
+public acceptance separately. Native iPhone/Safari, outside-LAN joining,
+performance, advanced client retention and full automatic updating remain distinct
+gates. Full host-updater activation and original game-control transfer retain their
+separate concrete review/authorization requirements.

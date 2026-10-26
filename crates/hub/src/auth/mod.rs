@@ -30,6 +30,9 @@ use std::{
 };
 
 pub const CONTRACT: &str = "reborn-auth-v1";
+pub fn artifact_assets() -> Vec<String> {
+    workspace_assets::manifest()
+}
 pub fn account_timeout() -> Response {
     account_pages::timeout()
 }

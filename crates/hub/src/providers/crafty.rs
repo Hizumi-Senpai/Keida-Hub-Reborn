@@ -177,17 +177,22 @@ fn timestamp(value: &Value, timezone: Tz) -> Option<i64> {
         return None;
     }
     if let Ok(d) = DateTime::parse_from_rfc3339(value) {
-        return Some(d.timestamp());
+        return (d.timestamp() >= 0).then_some(d.timestamp());
     }
-    ["%Y-%m-%d %H:%M:%S%.f", "%Y-%m-%dT%H:%M:%S%.f"]
-        .iter()
-        .find_map(|fmt| {
-            let d = NaiveDateTime::parse_from_str(value, fmt).ok()?;
-            timezone
-                .from_local_datetime(&d)
-                .single()
-                .map(|v| v.timestamp())
-        })
+    [
+        "%Y-%m-%d %H:%M:%S%.f",
+        "%Y-%m-%dT%H:%M:%S%.f",
+        "%Y/%m/%d, %H:%M:%S",
+    ]
+    .iter()
+    .find_map(|fmt| {
+        let d = NaiveDateTime::parse_from_str(value, fmt).ok()?;
+        timezone
+            .from_local_datetime(&d)
+            .single()
+            .map(|v| v.timestamp())
+            .filter(|v| *v >= 0)
+    })
 }
 fn normalized(s: &Selected, body: &Value, at: i64, timezone: Tz) -> Server {
     let mut row = unknown(s, "malformed");
@@ -226,7 +231,29 @@ fn normalized(s: &Selected, body: &Value, at: i64, timezone: Tz) -> Server {
     };
     row
 }
-async fn get(client: &Client, base: &str, path: &str) -> Result<Value, &'static str> {
+#[derive(Deserialize, Serialize)]
+struct Envelope<T> {
+    status: String,
+    data: T,
+}
+#[derive(Deserialize, Serialize)]
+struct Discovered {
+    server_id: String,
+}
+#[derive(Deserialize, Serialize)]
+struct Stats {
+    running: Option<bool>,
+    online: Option<u64>,
+    max: Option<u64>,
+    created: Option<String>,
+    int_ping_results: Option<Value>,
+}
+// Typed envelope/fields reject duplicate known keys before Value normalization.
+async fn get<T: serde::de::DeserializeOwned + Serialize>(
+    client: &Client,
+    base: &str,
+    path: &str,
+) -> Result<Value, &'static str> {
     let mut response = client
         .get(format!("{}{path}", base.trim_end_matches('/')))
         .send()
@@ -254,7 +281,11 @@ async fn get(client: &Client, base: &str, path: &str) -> Result<Value, &'static 
         }
         bytes.extend_from_slice(&chunk);
     }
-    serde_json::from_slice(&bytes).map_err(|_| "malformed")
+    let envelope: Envelope<T> = serde_json::from_slice(&bytes).map_err(|_| "malformed")?;
+    if envelope.status != "ok" {
+        return Err("provider_error");
+    }
+    serde_json::to_value(envelope).map_err(|_| "malformed")
 }
 async fn collect(config: &Enrollment, revision: i64) -> Overview {
     let at = now();
@@ -271,7 +302,7 @@ async fn collect(config: &Enrollment, revision: i64) -> Overview {
     };
     let run = async {
         let client = config.client()?;
-        let body = get(&client, &config.endpoint, "/api/v2/servers").await?;
+        let body = get::<Vec<Discovered>>(&client, &config.endpoint, "/api/v2/servers").await?;
         let list = body
             .get("data")
             .filter(|_| body.get("status").and_then(Value::as_str) == Some("ok"))
@@ -296,7 +327,7 @@ async fn collect(config: &Enrollment, revision: i64) -> Overview {
                 out.servers[i] = unknown(s, "not_discovered");
                 continue;
             }
-            out.servers[i] = match get(
+            out.servers[i] = match get::<Stats>(
                 &client,
                 &config.endpoint,
                 &format!("/api/v2/servers/{}/stats", s.id),
@@ -410,6 +441,10 @@ mod tests {
         assert_eq!(bad.freshness, "stale");
         let ambiguous = timestamp(&json!("2026-11-01 01:30:00"), chrono_tz::America::Chicago);
         assert_eq!(ambiguous, None);
+        assert_eq!(
+            timestamp(&json!("2026/10/26, 12:00:00"), chrono_tz::America::Chicago),
+            Some(at)
+        );
         let ping = normalized(
             &s,
             &json!({"status":"ok","data":{"running":true,"online":0,"int_ping_results":false}}),

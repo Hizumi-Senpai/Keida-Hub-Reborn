@@ -58,19 +58,19 @@ impl Secrets {
                 .map_err(|_| CryptoError::Unavailable)?,
         );
         let aad = connection_aad(revision);
-        let mut body = plaintext.to_vec();
+        let mut body = Zeroizing::new(plaintext.to_vec());
         cipher
             .seal_in_place_append_tag(
                 Nonce::assume_unique_for_key(nonce),
                 Aad::from(aad),
-                &mut body,
+                &mut *body,
             )
             .map_err(|_| CryptoError::Unavailable)?;
         let mut out = Vec::with_capacity(45 + body.len());
         out.push(1);
         out.extend_from_slice(&salt);
         out.extend_from_slice(&nonce);
-        out.extend(body);
+        out.extend_from_slice(&body);
         Ok(out)
     }
 
@@ -435,6 +435,39 @@ fn read_key(path: &Path) -> Result<Zeroizing<[u8; 32]>, CryptoError> {
     Ok(key)
 }
 
+/// File-backed runtime credentials use the same anchored private-file rules as
+/// the instance key. No symlinks, shared parent, inherited permissions or echo.
+pub fn read_private_text(path: &Path, limit: u64) -> Result<Zeroizing<String>, CryptoError> {
+    let (_directory, anchored, uid) = private_parent(path)?;
+    let mut file = OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC | libc::O_NONBLOCK)
+        .open(anchored)
+        .map_err(|_| CryptoError::Unavailable)?;
+    let size = file.metadata().map_err(|_| CryptoError::Unavailable)?.len();
+    if size == 0 || size > limit {
+        return Err(CryptoError::Invalid);
+    }
+    private_regular(&file, uid, size)?;
+    let mut bytes = Zeroizing::new(vec![0u8; size as usize]);
+    file.read_exact(&mut bytes)
+        .map_err(|_| CryptoError::Unavailable)?;
+    let mut extra = [0; 1];
+    if file
+        .read(&mut extra)
+        .map_err(|_| CryptoError::Unavailable)?
+        != 0
+    {
+        return Err(CryptoError::Invalid);
+    }
+    private_regular(&file, uid, size)?;
+    let value = std::str::from_utf8(&bytes).map_err(|_| CryptoError::Invalid)?;
+    if value.contains('\0') || value.trim() != value {
+        return Err(CryptoError::Invalid);
+    }
+    Ok(Zeroizing::new(value.to_string()))
+}
+
 fn create_private(path: &Path, bytes: &[u8]) -> Result<(), CryptoError> {
     let (directory, anchored, uid) = private_parent(path)?;
     let mut file = OpenOptions::new()
@@ -525,6 +558,25 @@ mod tests {
             assert!(first.open_connection(7, &a[..length]).is_err());
         }
         assert!(first.seal_connection(0, private).is_err());
+    }
+
+    #[test]
+    fn file_backed_runtime_configuration_is_private_bounded_and_never_follows_aliases() {
+        let root = PrivateDir::new();
+        let path = root.file("database.url");
+        create_private(&path, b"postgresql://fixture:disposable@127.0.0.1/fixture").unwrap();
+        assert!(read_private_text(&path, 8192).is_ok());
+        assert!(read_private_text(&path, 8).is_err());
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
+        assert!(read_private_text(&path, 8192).is_err());
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
+        let alias = root.file("alias");
+        symlink(&path, &alias).unwrap();
+        assert!(read_private_text(&alias, 8192).is_err());
+        create_private(&root.file("nul"), b"not\0configuration").unwrap();
+        assert!(read_private_text(&root.file("nul"), 8192).is_err());
+        create_private(&root.file("newline"), b"configuration\n").unwrap();
+        assert!(read_private_text(&root.file("newline"), 8192).is_err());
     }
 
     #[test]

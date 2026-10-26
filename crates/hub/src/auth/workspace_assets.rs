@@ -34,3 +34,11 @@ pub fn find(path: &str) -> Option<(&'static str, &'static [u8])> {
         None
     }
 }
+pub fn manifest() -> Vec<String> {
+    vec![
+        script().into(),
+        style().into(),
+        url(PREVIOUS_SCRIPT, "js"),
+        url(PREVIOUS_STYLE, "css"),
+    ]
+}

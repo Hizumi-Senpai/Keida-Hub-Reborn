@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/hub", "tools/source-identity", "tools/workspace-browser", "tools/crafty-fixture"]
+members = ["crates/hub", "tools/source-identity", "tools/workspace-browser", "tools/crafty-fixture", "tools/release"]
 resolver = "3"
 
 [workspace.package]

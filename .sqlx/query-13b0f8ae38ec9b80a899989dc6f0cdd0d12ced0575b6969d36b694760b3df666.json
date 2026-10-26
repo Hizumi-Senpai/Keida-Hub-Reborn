@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE crafty_connection SET revision = $1, sealed = $2 WHERE singleton = TRUE",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Bytea"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "13b0f8ae38ec9b80a899989dc6f0cdd0d12ced0575b6969d36b694760b3df666"
+}

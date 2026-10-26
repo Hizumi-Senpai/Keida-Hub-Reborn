@@ -1981,6 +1981,7 @@ async fn real_provider_partial_missing_stale_denied_timeout_redirect_and_body_bo
     for (index, mode) in [
         c::MISSING,
         c::MALFORMED,
+        c::DUPLICATE,
         c::STALE,
         c::NO_PLAYERS,
         c::WRONG_TYPE,
@@ -2012,7 +2013,7 @@ async fn real_provider_partial_missing_stale_denied_timeout_redirect_and_body_bo
         }
         match mode {
             c::MISSING => assert_eq!(row["error"], "not_discovered"),
-            c::MALFORMED => assert_eq!(row["error"], "malformed"),
+            c::MALFORMED | c::DUPLICATE => assert_eq!(row["error"], "malformed"),
             c::LARGE => assert_eq!(row["error"], "oversized"),
             c::DENIED => assert_eq!(crafty["error"], "denied"),
             c::REDIRECT => assert_eq!(crafty["error"], "provider_error"),
