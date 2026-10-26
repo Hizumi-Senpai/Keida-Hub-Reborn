@@ -66,6 +66,32 @@ impl Enrollment {
         {
             return Err("invalid_configuration");
         }
+        if !self.ca_pem.is_empty() {
+            use tokio_rustls::rustls::{
+                RootCertStore,
+                pki_types::{CertificateDer, pem::PemObject},
+            };
+            if !self
+                .ca_pem
+                .trim()
+                .starts_with("-----BEGIN CERTIFICATE-----")
+                || !self.ca_pem.trim().ends_with("-----END CERTIFICATE-----")
+                || self.ca_pem.contains("PRIVATE KEY")
+            {
+                return Err("invalid_configuration");
+            }
+            let mut certificates = CertificateDer::pem_slice_iter(self.ca_pem.as_bytes());
+            let certificate = certificates
+                .next()
+                .ok_or("invalid_configuration")?
+                .map_err(|_| "invalid_configuration")?;
+            if certificates.next().is_some() {
+                return Err("invalid_configuration");
+            }
+            RootCertStore::empty()
+                .add(certificate)
+                .map_err(|_| "invalid_configuration")?;
+        }
         let mut ids = BTreeSet::new();
         for s in &self.servers {
             if !uuid(&s.id)
@@ -409,6 +435,29 @@ impl Observer {
 mod tests {
     use super::*;
     use serde_json::json;
+    #[test]
+    fn configured_ca_requires_one_real_certificate_not_silently_ignored_text() {
+        let mut config = Enrollment {
+            endpoint: "https://provider.example/".into(),
+            token: "fixture-token".into(),
+            ca_pem: String::new(),
+            timezone: "UTC".into(),
+            servers: vec![Selected {
+                id: "12345678-1234-1234-1234-123456789abc".into(),
+                name: "Reviewed fixture".into(),
+                join: String::new(),
+            }],
+        };
+        assert!(config.validate().is_ok());
+        for value in [
+            "not a certificate",
+            "-----BEGIN CERTIFICATE-----\nAAAA\n-----END CERTIFICATE-----",
+            "-----BEGIN PRIVATE KEY-----\nAAAA\n-----END PRIVATE KEY-----",
+        ] {
+            config.ca_pem = value.into();
+            assert_eq!(config.validate(), Err("invalid_configuration"));
+        }
+    }
     #[test]
     fn valid_zero_missing_ping_stale_and_ambiguous_local_clock_remain_distinct() {
         let s = Selected {
