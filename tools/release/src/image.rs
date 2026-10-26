@@ -44,6 +44,15 @@ pub(super) fn inspect(
         return Err("exact image/source identity required");
     }
     directory(out)?;
+    for name in ["inspected-binary", "image.tar", "image-proof.json"] {
+        if out
+            .join(name)
+            .try_exists()
+            .map_err(|_| "inspection output unavailable")?
+        {
+            return Err("inspection output already exists");
+        }
+    }
     let info: Value = serde_json::from_slice(&docker(&["image", "inspect", image])?)
         .map_err(|_| "image JSON rejected")?;
     let metadata = &info[0];
@@ -117,16 +126,23 @@ pub(super) fn inspect(
     }
     let mut random = [0u8; 12];
     getrandom::fill(&mut random).map_err(|_| "inspection identity failed")?;
-    let container = Container(format!("reborn-image-inspect-{}", hex(&random)));
-    docker(&[
+    let name = format!("reborn-image-inspect-{}", hex(&random));
+    let created = docker(&[
         "create",
         "--name",
-        &container.0,
+        &name,
         "--network",
         "none",
         "--read-only",
         id,
     ])?;
+    let id = std::str::from_utf8(&created)
+        .map(str::trim)
+        .map_err(|_| "created container identity rejected")?;
+    if !crate::digest(id, 64) {
+        return Err("created container identity rejected");
+    }
+    let container = Container(id.to_owned());
     let binary = out.join("inspected-binary");
     docker(&[
         "cp",
@@ -143,15 +159,15 @@ pub(super) fn inspect(
         "save",
         "--output",
         archive.to_str().ok_or("archive path rejected")?,
-        id,
+        image,
     ])?;
     let archive_sha256 = hash(&archive)?;
-    let proof = json!({"format":1,"product":"keida-hub-reborn","identity":identity,"database_schema":4,"workspace_contract":"reborn-workspace-v1","assets":assets,"image_id":id,"binary_sha256":binary_sha256,"archive_sha256":archive_sha256});
+    let proof = json!({"format":1,"product":"keida-hub-reborn","identity":identity,"database_schema":4,"workspace_contract":"reborn-workspace-v1","assets":assets,"image_id":image,"binary_sha256":binary_sha256,"archive_sha256":archive_sha256});
     crate::write(
         &out.join("image-proof.json"),
         &serde_json::to_vec(&proof).map_err(|_| "image proof encoding failed")?,
         true,
     )?;
-    println!("Packaged image inspection passed: {version} {commit} {id}");
+    println!("Packaged image inspection passed: {version} {commit} {image}");
     Ok(())
 }

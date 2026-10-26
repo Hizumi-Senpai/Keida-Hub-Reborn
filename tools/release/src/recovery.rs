@@ -30,7 +30,12 @@ struct Scope {
 impl Drop for Scope {
     fn drop(&mut self) {
         for c in self.containers.iter().rev() {
-            let _ = docker(&["rm", "--force", c]);
+            if let Ok(id) = fs::read_to_string(self.root.join(format!("{c}.cid"))) {
+                let id = id.trim();
+                if crate::digest(id, 64) {
+                    let _ = docker(&["rm", "--force", id]);
+                }
+            }
         }
         let _ = fs::remove_dir_all(&self.root);
     }
@@ -61,6 +66,12 @@ fn app_args(
         "run",
         "--name",
         name,
+        "--cidfile",
+        &root
+            .parent()
+            .expect("owned recovery parent")
+            .join(format!("{name}.cid"))
+            .to_string_lossy(),
         "--network",
         "host",
         "--user",
@@ -170,12 +181,14 @@ async fn wait(client: &Client, origin: &str) -> Result<()> {
         tokio::time::sleep(Duration::from_millis(100)).await;
     }
 }
-async fn start_pg(pg: &str, database: &str) -> Result<String> {
+async fn start_pg(pg: &str, database: &str, root: &Path) -> Result<String> {
     docker(&[
         "run",
         "-d",
         "--name",
         pg,
+        "--cidfile",
+        &root.join(format!("{pg}.cid")).to_string_lossy(),
         "--label",
         "keida.reborn.fixture=recovery",
         "--memory",
@@ -236,11 +249,12 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     let mut random = [0u8; 12];
     getrandom::fill(&mut random).map_err(|_| "recovery identity unavailable")?;
     let nonce = hex(&random);
+    let root = std::env::temp_dir().join(format!("reborn-recovery-{nonce}"));
+    private(&root)?;
     let mut scope = Scope {
-        root: std::env::temp_dir().join(format!("reborn-recovery-{nonce}")),
+        root,
         containers: Vec::new(),
     };
-    private(&scope.root)?;
     let app_root = scope.root.join("app");
     private(&app_root)?;
     let restored_root = scope.root.join("restored");
@@ -250,7 +264,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     let user = format!("{uid}:{}", owner.gid());
     let pg = format!("reborn-recovery-pg-{nonce}");
     scope.containers.push(pg.clone());
-    let pg_port = start_pg(&pg, "first").await?;
+    let pg_port = start_pg(&pg, "first", &scope.root).await?;
     bootstrap_roles(&pg, "first")?;
     let dsn = format!("postgresql://reborn_app:disposable-app-only@127.0.0.1:{pg_port}/first");
     crate::write(&app_root.join("database.url"), dsn.as_bytes(), false)?;
@@ -455,7 +469,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     .map_err(|_| "matched key permissions failed")?;
     let restore_pg = format!("reborn-recovery-restore-pg-{nonce}");
     scope.containers.push(restore_pg.clone());
-    let restore_pg_port = start_pg(&restore_pg, "restored").await?;
+    let restore_pg_port = start_pg(&restore_pg, "restored", &scope.root).await?;
     bootstrap_roles(&restore_pg, "restored")?;
     crate::write(
         &restored_root.join("database.url"),

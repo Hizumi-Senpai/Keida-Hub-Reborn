@@ -203,11 +203,12 @@ fn publish_qualified(root: &Path, manifest: &Manifest, archive: &Path) -> Result
     } else {
         let mut nonce = [0u8; 16];
         getrandom::fill(&mut nonce).map_err(|_| "staging identity unavailable")?;
-        let stage = Stage(releases.join(format!("staging-{}", hex(&nonce))));
+        let path = releases.join(format!("staging-{}", hex(&nonce)));
         fs::DirBuilder::new()
             .mode(0o700)
-            .create(&stage.0)
+            .create(&path)
             .map_err(|_| "private stage failed")?;
+        let stage = Stage(path);
         let target = stage.0.join("image.tar");
         let mut source = file(archive, 1024 * 1024 * 1024)?;
         let mut out = OpenOptions::new()

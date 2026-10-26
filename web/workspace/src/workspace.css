@@ -662,7 +662,7 @@ textarea::placeholder {
 .connections-intro { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:1rem; margin:1.5rem 0; }
 .server-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr)); gap:1.25rem; }
 .server-card dl { display:grid; grid-template-columns:1fr; gap:.25rem; overflow-wrap:anywhere; }
-.server-card dt { color:#606d68; margin-top:.6rem; }
+.server-card dt { color:var(--muted); margin-top:.6rem; }
 .server-card dd { margin:0; }
 .connection-setup { margin-top:1.5rem; padding:clamp(1rem,3vw,2rem); }
 .connection-setup form { display:grid; gap:.65rem; }

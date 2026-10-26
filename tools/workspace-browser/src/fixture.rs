@@ -137,7 +137,7 @@ fn random() -> Check<String> {
     getrandom::fill(&mut bytes).map_err(|_| "fixture randomness")?;
     Ok(bytes.iter().map(|b| format!("{b:02x}")).collect())
 }
-struct CommandChild(Child, Option<String>);
+struct CommandChild(Child, Option<PathBuf>);
 impl Drop for CommandChild {
     fn drop(&mut self) {
         if let Some(name) = &self.1 {
@@ -154,8 +154,8 @@ async fn command(mut command: Command) -> Check<()> {
         .collect();
     let container = if command.get_program() == "docker" {
         args.windows(2)
-            .find(|a| a[0] == "--name")
-            .map(|a| a[1].clone())
+            .find(|a| a[0] == "--cidfile")
+            .map(|a| PathBuf::from(&a[1]))
     } else {
         None
     };
@@ -244,7 +244,7 @@ pub struct Fixture {
     admin: String,
     name: String,
     child: Option<Child>,
-    container: Option<String>,
+    container: Option<PathBuf>,
     proxy: Arc<Proxy>,
     server: JoinHandle<()>,
     driver: PathBuf,
@@ -439,9 +439,7 @@ impl Fixture {
                 "exact image digest required",
             )?;
         }
-        let container = image
-            .as_ref()
-            .map(|_| format!("reborn-browser-app-{}", name));
+        let container = image.as_ref().map(|_| root.join("owned-app.cid"));
         let uid = std::fs::metadata("/proc/self").map_err(|_| "fixture UID")?;
         use std::os::unix::fs::MetadataExt;
         let application = |args: Vec<String>| {
@@ -451,7 +449,13 @@ impl Fixture {
                     "run",
                     "--rm",
                     "--name",
-                    container.as_deref().expect("owned image name"),
+                    &format!("reborn-browser-app-{name}"),
+                    "--cidfile",
+                    container
+                        .as_ref()
+                        .expect("owned image CID file")
+                        .to_str()
+                        .expect("owned path"),
                     "--network",
                     "host",
                     "--user",
@@ -753,16 +757,21 @@ impl Fixture {
     }
 }
 
-fn stop_container(name: &str) {
-    if name.starts_with("reborn-browser-app-keida_reborn_ws_")
-        && name
-            .bytes()
-            .all(|b| b.is_ascii_alphanumeric() || b"_-".contains(&b))
-    {
+fn stop_container(cid_file: &Path) {
+    if let Ok(id) = fs::read_to_string(cid_file) {
+        let id = id.trim();
+        if id.len() != 64
+            || !id
+                .bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        {
+            return;
+        }
         let _ = Command::new("docker")
-            .args(["rm", "--force", name])
+            .args(["rm", "--force", id])
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .status();
+        let _ = fs::remove_file(cid_file);
     }
 }

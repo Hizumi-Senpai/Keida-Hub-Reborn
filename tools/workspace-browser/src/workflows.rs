@@ -51,6 +51,14 @@ async fn accessibility(b: &Browser) -> Check<()> {
     let source = fs::read_to_string(path).map_err(|_| "Axe script read")?;
     check(source.len() < 1024 * 1024, "Axe script bound")?;
     let result=b.evaluate(&format!("{source}\nreturn axe.run(document,{{runOnly:{{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}}}}).then(r=>r.violations.map(v=>v.id));"),json!([])).await?;
+    // Only pinned rule identifiers, never DOM fragments or private page content.
+    if let Some(violations) = result.as_array() {
+        for id in violations.iter().filter_map(serde_json::Value::as_str) {
+            if id.len() <= 80 && id.bytes().all(|b| b.is_ascii_lowercase() || b == b'-') {
+                eprintln!("Accessibility rule failed: {id}");
+            }
+        }
+    }
     check(
         result.as_array().is_some_and(Vec::is_empty),
         "workspace accessibility rules",
