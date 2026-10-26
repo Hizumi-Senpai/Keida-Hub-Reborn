@@ -2,7 +2,8 @@
 
 Frozen before implementation, 2026-10-26 America/Chicago. The owner authorized
 the persistent workspace plus a Crafty read-only overview at rewrite.keida.me.
-This authorizes the necessary isolated packaging, dedicated provider enrollment,+recovery checks and reversible route change after their gates pass. It does not
+This authorizes the necessary isolated packaging, dedicated provider enrollment,
+recovery checks and reversible route change after their gates pass. It does not
 activate an automatic host updater or transfer original Hub/game responsibilities.
 
 ## Dedicated connection and observation

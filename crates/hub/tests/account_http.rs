@@ -1762,3 +1762,358 @@ async fn workspace_save_rechecks_revoked_generation_after_waiting_for_authority_
         0
     );
 }
+
+fn dedicated_connection(provider: &reborn_crafty_fixture::Crafty) -> Value {
+    json!({"endpoint":provider.origin,"token":reborn_crafty_fixture::TOKEN,"ca_pem":provider.ca,"timezone":"UTC",
+        "servers":[{"id":reborn_crafty_fixture::ID,"name":"Reviewed public server","join":"play.example:25565"}]})
+}
+async fn replace_connection(
+    actor: &Actor,
+    binding: &str,
+    base: &str,
+    connection: Value,
+    status: StatusCode,
+) -> Value {
+    let response = workspace_request(actor, Method::PUT, "/api/owner/crafty", binding)
+        .header("Origin", ORIGIN)
+        .json(&json!({"base_revision":base,"connection":connection}))
+        .send()
+        .await
+        .expect("dedicated enrollment response");
+    assert_eq!(response.status(), status);
+    no_store(&response);
+    let body = response.text().await.expect("nonsecret enrollment outcome");
+    private_text(&body, &[reborn_crafty_fixture::TOKEN, "BEGIN CERTIFICATE"]);
+    serde_json::from_str(&body).expect("enrollment JSON")
+}
+#[tokio::test]
+async fn dedicated_connection_is_encrypted_revision_bound_and_valid_tls_gets_are_shared() {
+    let fixture = Fixture::new().await;
+    let secret = fixture.prepare().await;
+    let server = Server::start(&fixture, true).await;
+    let mut owner = claim(&fixture, &server, &secret).await;
+    let binding = workspace_binding(&mut owner).await;
+    let provider = reborn_crafty_fixture::Crafty::start()
+        .await
+        .expect("real HTTPS provider fixture");
+    let empty = workspace_snapshot(&owner, &binding, StatusCode::OK).await;
+    assert_eq!(empty["crafty"]["revision"], "0");
+    assert_eq!(empty["crafty"]["configured"], false);
+    let mut untrusted = dedicated_connection(&provider);
+    untrusted["ca_pem"] = json!("");
+    replace_connection(&owner, &binding, "0", untrusted, StatusCode::OK).await;
+    let denied = workspace_snapshot(&owner, &binding, StatusCode::OK).await;
+    assert_eq!(denied["crafty"]["error"], "transport");
+    assert!(
+        provider.requests().is_empty(),
+        "untrusted TLS never reaches authenticated HTTP"
+    );
+    let saved = replace_connection(
+        &owner,
+        &binding,
+        "1",
+        dedicated_connection(&provider),
+        StatusCode::OK,
+    )
+    .await;
+    assert_eq!(saved, json!({"revision":"2","configured":true}));
+    let first = workspace_snapshot(&owner, &binding, StatusCode::OK).await;
+    assert_eq!(first["crafty"]["servers"][0]["players"], 0);
+    assert_eq!(first["crafty"]["servers"][0]["freshness"], "fresh");
+    assert_eq!(
+        first["crafty"]["servers"][0]["name"],
+        "Reviewed public server"
+    );
+    let serialized = first.to_string();
+    private_text(
+        &serialized,
+        &[
+            reborn_crafty_fixture::TOKEN,
+            &provider.origin,
+            "Unreviewed provider metadata",
+            "/private/provider-path",
+            reborn_crafty_fixture::ID,
+        ],
+    );
+    let requests = provider.requests();
+    assert_eq!(requests.len(), 2);
+    for _ in 0..3 {
+        workspace_snapshot(&owner, &binding, StatusCode::OK).await;
+    }
+    assert_eq!(provider.requests(), requests, "one shared refresh cache");
+    let mut db = fixture.connect().await;
+    let sealed: Vec<u8> = sqlx::query_scalar("SELECT sealed FROM crafty_connection")
+        .fetch_one(&mut db)
+        .await
+        .expect("ciphertext");
+    for private in [
+        reborn_crafty_fixture::TOKEN.as_bytes(),
+        provider.origin.as_bytes(),
+        provider.ca.as_bytes(),
+    ] {
+        assert!(
+            !sealed.windows(private.len()).any(|v| v == private),
+            "private connection stored only as authenticated ciphertext"
+        );
+    }
+    replace_connection(&owner, &binding, "1", Value::Null, StatusCode::CONFLICT).await;
+    drop(server);
+    let restarted = Server::start(&fixture, true).await;
+    owner.origin = restarted.origin.clone();
+    let retained = workspace_snapshot(&owner, &binding, StatusCode::OK).await;
+    assert_eq!(retained["crafty"]["servers"][0]["players"], 0);
+    sqlx::query("UPDATE crafty_connection SET sealed=set_byte(sealed,octet_length(sealed)-1,get_byte(sealed,octet_length(sealed)-1)#1)").execute(&mut db).await.expect("actual ciphertext tamper");
+    let unavailable = workspace_snapshot(&owner, &binding, StatusCode::OK).await;
+    assert_eq!(unavailable["crafty"]["error"], "unavailable");
+    save_note(
+        &owner,
+        &binding,
+        "Optional provider corruption does not stop my note",
+        "0",
+        StatusCode::OK,
+    )
+    .await;
+    replace_connection(&owner, &binding, "2", Value::Null, StatusCode::OK).await;
+    let removed = workspace_snapshot(&owner, &binding, StatusCode::OK).await;
+    assert_eq!(removed["crafty"]["revision"], "3");
+    assert_eq!(removed["crafty"]["configured"], false);
+    assert!(
+        provider
+            .requests()
+            .iter()
+            .all(|(method, path)| method == "GET"
+                && (path == "/api/v2/servers"
+                    || path == &format!("/api/v2/servers/{}/stats", reborn_crafty_fixture::ID)))
+    );
+    restarted.private_logs(&[
+        reborn_crafty_fixture::TOKEN,
+        &provider.origin,
+        &secret,
+        OWNER_PASSWORD,
+    ]);
+}
+#[tokio::test]
+async fn dedicated_enrollment_rejects_wrong_client_origin_role_and_malformed_configuration_before_effects()
+ {
+    let fixture = Fixture::new().await;
+    let secret = fixture.prepare().await;
+    let server = Server::start(&fixture, true).await;
+    let mut owner = claim(&fixture, &server, &secret).await;
+    let binding = workspace_binding(&mut owner).await;
+    let provider = reborn_crafty_fixture::Crafty::start()
+        .await
+        .expect("HTTPS fixture");
+    for (key, value) in [
+        ("endpoint", json!("http://example.invalid/")),
+        ("endpoint", json!("https://user:secret@example.invalid/")),
+        ("endpoint", json!("https://example.invalid/private")),
+        ("token", json!("bad\nheader")),
+        ("ca_pem", json!("not a certificate")),
+        ("timezone", json!("not-a-zone")),
+    ] {
+        let mut config = dedicated_connection(&provider);
+        config[key] = value;
+        replace_connection(&owner, &binding, "0", config, StatusCode::BAD_REQUEST).await;
+    }
+    for base in ["01", "-1", "+0", "9223372036854775808"] {
+        replace_connection(&owner, &binding, base, Value::Null, StatusCode::BAD_REQUEST).await;
+    }
+    for (name, value, expected) in [
+        ("Origin", "https://other.example", StatusCode::FORBIDDEN),
+        ("X-CSRF-Token", "bad", StatusCode::FORBIDDEN),
+        ("X-Reborn-Contract", "wrong", StatusCode::UPGRADE_REQUIRED),
+    ] {
+        let response = workspace_request(&owner, Method::PUT, "/api/owner/crafty", &binding)
+            .header("Origin", ORIGIN)
+            .header(name, value)
+            .json(&json!({"base_revision":"0","connection":dedicated_connection(&provider)}))
+            .send()
+            .await
+            .expect("admission rejection");
+        assert_eq!(response.status(), expected);
+    }
+    let auth = owner.api_session(StatusCode::OK).await;
+    let response = owner
+        .request(Method::POST, "/api/owner/members")
+        .header("Origin", ORIGIN)
+        .header("X-Reborn-Product", PRODUCT)
+        .header("X-Reborn-Contract", "reborn-auth-v1")
+        .header("X-CSRF-Token", auth["csrf_token"].as_str().unwrap())
+        .json(&json!({"username":"crafty_member","password":MEMBER_PASSWORD}))
+        .send()
+        .await
+        .expect("actual member");
+    assert_eq!(response.status(), StatusCode::CREATED);
+    owner.api_login("crafty_member", MEMBER_PASSWORD).await;
+    let member_binding = workspace_binding(&mut owner).await;
+    replace_connection(
+        &owner,
+        &member_binding,
+        "0",
+        dedicated_connection(&provider),
+        StatusCode::FORBIDDEN,
+    )
+    .await;
+    let response = workspace_request(&owner, Method::GET, "/api/owner/crafty", &member_binding)
+        .send()
+        .await
+        .expect("owner-only status");
+    assert_eq!(response.status(), StatusCode::FORBIDDEN);
+    let mut db = fixture.connect().await;
+    let row = sqlx::query("SELECT revision,sealed FROM crafty_connection")
+        .fetch_one(&mut db)
+        .await
+        .expect("no rejected effects");
+    assert_eq!(row.get::<i64, _>("revision"), 0);
+    assert!(row.get::<Option<Vec<u8>>, _>("sealed").is_none());
+    assert!(provider.requests().is_empty());
+}
+#[tokio::test]
+async fn real_provider_partial_missing_stale_denied_timeout_redirect_and_body_bound_never_invent_players()
+ {
+    use reborn_crafty_fixture as c;
+    let fixture = Fixture::new().await;
+    let secret = fixture.prepare().await;
+    let server = Server::start(&fixture, true).await;
+    let mut owner = claim(&fixture, &server, &secret).await;
+    let binding = workspace_binding(&mut owner).await;
+    let provider = c::Crafty::start().await.expect("HTTPS provider");
+    for (index, mode) in [
+        c::MISSING,
+        c::MALFORMED,
+        c::STALE,
+        c::NO_PLAYERS,
+        c::WRONG_TYPE,
+        c::LARGE,
+        c::DENIED,
+        c::REDIRECT,
+        c::TIMEOUT,
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        provider.mode(mode);
+        replace_connection(
+            &owner,
+            &binding,
+            &index.to_string(),
+            dedicated_connection(&provider),
+            StatusCode::OK,
+        )
+        .await;
+        let value = workspace_snapshot(&owner, &binding, StatusCode::OK).await;
+        let crafty = &value["crafty"];
+        let row = &crafty["servers"][0];
+        if mode == c::STALE {
+            assert_eq!(row["freshness"], "stale");
+            assert_eq!(row["players"], 0);
+        } else {
+            assert!(row["players"].is_null());
+        }
+        match mode {
+            c::MISSING => assert_eq!(row["error"], "not_discovered"),
+            c::MALFORMED => assert_eq!(row["error"], "malformed"),
+            c::LARGE => assert_eq!(row["error"], "oversized"),
+            c::DENIED => assert_eq!(crafty["error"], "denied"),
+            c::REDIRECT => assert_eq!(crafty["error"], "provider_error"),
+            c::TIMEOUT => assert_eq!(row["error"], "timeout"),
+            _ => {}
+        }
+        private_text(
+            &value.to_string(),
+            &[c::TOKEN, &provider.origin, "/private/provider-path"],
+        );
+    }
+    assert!(
+        provider
+            .requests()
+            .iter()
+            .all(|(method, path)| method == "GET"
+                && (path == "/api/v2/servers"
+                    || path == &format!("/api/v2/servers/{}/stats", c::ID)))
+    );
+    save_note(
+        &owner,
+        &binding,
+        "Provider faults leave ordinary work usable",
+        "0",
+        StatusCode::OK,
+    )
+    .await;
+}
+#[tokio::test]
+async fn held_provider_io_has_no_db_transaction_and_rechecks_configuration_and_revocation_before_disclosure()
+ {
+    use reborn_crafty_fixture as c;
+    let fixture = Fixture::new().await;
+    let secret = fixture.prepare().await;
+    let server = Server::start(&fixture, true).await;
+    let mut owner = claim(&fixture, &server, &secret).await;
+    let binding = workspace_binding(&mut owner).await;
+    let provider = c::Crafty::start().await.expect("HTTPS provider");
+    provider.mode(c::HOLD);
+    replace_connection(
+        &owner,
+        &binding,
+        "0",
+        dedicated_connection(&provider),
+        StatusCode::OK,
+    )
+    .await;
+    let reader = owner.clone();
+    let bound = binding.clone();
+    let read =
+        tokio::spawn(async move { workspace_snapshot(&reader, &bound, StatusCode::OK).await });
+    tokio::time::timeout(Duration::from_secs(2), provider.entered())
+        .await
+        .expect("actual provider IO entered");
+    let in_flight = workspace_snapshot(&owner, &binding, StatusCode::OK).await;
+    assert_eq!(in_flight["crafty"]["error"], "checking");
+    assert_eq!(
+        provider.requests().len(),
+        2,
+        "one provider refresh in flight"
+    );
+    let before = Instant::now();
+    replace_connection(&owner, &binding, "1", Value::Null, StatusCode::OK).await;
+    assert!(
+        before.elapsed() < Duration::from_secs(1),
+        "provider IO cannot hold auth/DB authority"
+    );
+    provider.release();
+    let result = read.await.expect("read completion");
+    assert_eq!(result["crafty"]["revision"], "2");
+    assert_eq!(result["crafty"]["configured"], false);
+    assert!(result["crafty"]["servers"].as_array().unwrap().is_empty());
+    replace_connection(
+        &owner,
+        &binding,
+        "2",
+        dedicated_connection(&provider),
+        StatusCode::OK,
+    )
+    .await;
+    let reader = owner.clone();
+    let bound = binding.clone();
+    let read =
+        tokio::spawn(
+            async move { workspace_snapshot(&reader, &bound, StatusCode::UNAUTHORIZED).await },
+        );
+    tokio::time::timeout(Duration::from_secs(2), provider.entered())
+        .await
+        .expect("second actual IO entered");
+    let auth = owner.api_session(StatusCode::OK).await;
+    let response = owner
+        .request(Method::POST, "/api/auth/revoke-all")
+        .header("Origin", ORIGIN)
+        .header("X-Reborn-Product", PRODUCT)
+        .header("X-Reborn-Contract", "reborn-auth-v1")
+        .header("X-CSRF-Token", auth["csrf_token"].as_str().unwrap())
+        .send()
+        .await
+        .expect("revoke during external IO");
+    assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    provider.release();
+    let result = read.await.expect("revoked read completion");
+    assert_eq!(result["error"], "invalid_session");
+}

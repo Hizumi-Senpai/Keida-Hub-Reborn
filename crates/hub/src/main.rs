@@ -2,6 +2,7 @@ mod auth;
 mod config;
 mod database;
 mod identity;
+mod providers;
 
 use axum::{
     Json, Router,

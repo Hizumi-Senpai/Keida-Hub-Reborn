@@ -41,6 +41,68 @@ pub struct Secrets {
 }
 
 impl Secrets {
+    /// A fresh256-bit subkey salt per envelope makes each derived AEAD key a
+    /// single-encryption key. A random96-bit nonce provides a second boundary.
+    pub fn seal_connection(&self, revision: i64, plaintext: &[u8]) -> Result<Vec<u8>, CryptoError> {
+        use ring::aead::{Aad, CHACHA20_POLY1305, LessSafeKey, Nonce, UnboundKey};
+        if revision <= 0 || plaintext.is_empty() || plaintext.len() > 30000 {
+            return Err(CryptoError::Invalid);
+        }
+        let mut salt = [0u8; 32];
+        let mut nonce = [0u8; 12];
+        getrandom::fill(&mut salt).map_err(|_| CryptoError::Unavailable)?;
+        getrandom::fill(&mut nonce).map_err(|_| CryptoError::Unavailable)?;
+        let key = Zeroizing::new(self.mac(b"reborn/crafty/encryption-key/v1\0", &salt));
+        let cipher = LessSafeKey::new(
+            UnboundKey::new(&CHACHA20_POLY1305, key.as_ref())
+                .map_err(|_| CryptoError::Unavailable)?,
+        );
+        let aad = connection_aad(revision);
+        let mut body = plaintext.to_vec();
+        cipher
+            .seal_in_place_append_tag(
+                Nonce::assume_unique_for_key(nonce),
+                Aad::from(aad),
+                &mut body,
+            )
+            .map_err(|_| CryptoError::Unavailable)?;
+        let mut out = Vec::with_capacity(45 + body.len());
+        out.push(1);
+        out.extend_from_slice(&salt);
+        out.extend_from_slice(&nonce);
+        out.extend(body);
+        Ok(out)
+    }
+
+    pub fn open_connection(
+        &self,
+        revision: i64,
+        sealed: &[u8],
+    ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
+        use ring::aead::{Aad, CHACHA20_POLY1305, LessSafeKey, Nonce, UnboundKey};
+        if revision <= 0 || !(62..=30100).contains(&sealed.len()) || sealed[0] != 1 {
+            return Err(CryptoError::Invalid);
+        }
+        let key = Zeroizing::new(self.mac(b"reborn/crafty/encryption-key/v1\0", &sealed[1..33]));
+        let cipher = LessSafeKey::new(
+            UnboundKey::new(&CHACHA20_POLY1305, key.as_ref())
+                .map_err(|_| CryptoError::Unavailable)?,
+        );
+        let nonce: [u8; 12] = sealed[33..45]
+            .try_into()
+            .map_err(|_| CryptoError::Invalid)?;
+        let mut body = Zeroizing::new(sealed[45..].to_vec());
+        let size = cipher
+            .open_in_place(
+                Nonce::assume_unique_for_key(nonce),
+                Aad::from(connection_aad(revision)),
+                &mut body,
+            )
+            .map_err(|_| CryptoError::Invalid)?
+            .len();
+        body.truncate(size);
+        Ok(body)
+    }
     pub fn from_file(path: &Path) -> Result<Arc<Self>, CryptoError> {
         let key = read_key(path)?;
         // Construction occurs before listening. It also observes the same
@@ -194,6 +256,12 @@ impl Secrets {
         mac.update(value);
         mac.finalize().into_bytes().into()
     }
+}
+
+fn connection_aad(revision: i64) -> Vec<u8> {
+    let mut aad = b"keida-hub-reborn/crafty/connection/v1\0".to_vec();
+    aad.extend_from_slice(&revision.to_be_bytes());
+    aad
 }
 
 async fn password_job<T: Send + 'static>(
@@ -430,6 +498,33 @@ mod tests {
             key: Zeroizing::new([1u8; 32]),
             dummy_phc: Zeroizing::new(String::new()),
         }
+    }
+
+    #[test]
+    fn dedicated_envelopes_authenticate_revision_key_format_and_every_ciphertext_byte() {
+        let first = form_secrets();
+        let second = Secrets {
+            key: Zeroizing::new([2; 32]),
+            dummy_phc: Zeroizing::new(String::new()),
+        };
+        let private = b"{\"token\":\"deliberately-fake-native-token\"}";
+        let a = first.seal_connection(7, private).unwrap();
+        let b = first.seal_connection(7, private).unwrap();
+        assert_ne!(a, b);
+        assert_ne!(&a[1..33], &b[1..33]);
+        assert!(!a.windows(private.len()).any(|w| w == private));
+        assert_eq!(first.open_connection(7, &a).unwrap().as_slice(), private);
+        assert!(first.open_connection(8, &a).is_err());
+        assert!(second.open_connection(7, &a).is_err());
+        for position in 0..a.len() {
+            let mut bad = a.clone();
+            bad[position] ^= 1;
+            assert!(first.open_connection(7, &bad).is_err());
+        }
+        for length in 0..a.len() {
+            assert!(first.open_connection(7, &a[..length]).is_err());
+        }
+        assert!(first.seal_connection(0, private).is_err());
     }
 
     #[test]
