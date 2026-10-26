@@ -1,0 +1,38 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT product, schema_version FROM reborn_schema WHERE singleton = TRUE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "product",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "reborn_schema",
+            "name": "product"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "schema_version",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "reborn_schema",
+            "name": "schema_version"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "9ed4a0c0c46a2bd5c0ffdc583051f01240d38d2f909408ffd38a843d35f4d83f"
+}
