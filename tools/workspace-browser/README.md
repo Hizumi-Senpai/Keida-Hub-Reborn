@@ -15,8 +15,13 @@ OpenSSL and certutil are local test prerequisites. Missing prerequisites fail.
 Chromium and ChromeDriver both must report156.0.8078.4. The driver ZIP is pinned
 by SHA256 `ae36d1b2391e6852594d7dd1be963f818ca05f117cfc5fdcb41c33f3074afa8b`;
 CI downloads its exact official Chrome-for-Testing URL and verifies those bytes.
-The existing locked Playwright installer supplies Chromium; Node does not run
-this browser driver. Svelte's compiled application is the code under test.
+Chrome for Testing is pinned by SHA256
+`43fd31766c7533a02dda2ded5ad50c2f861cd5400be7509c0abad71129f79d79`
+from the same official156.0.8078.4 version manifest. The exact browser is supplied
+to both native WebDriver and retained Playwright checks; version agreement is
+checked at runtime. The locked Playwright CLI installs OS dependencies only.
+Node does not run this native browser driver. Svelte's compiled application is
+the code under test.
 
 Five independent workflows cover real native enrollment/TLS, persistent editor
 identity and selection, one poll owner, draft/keyboard/reflow/accessibility,
