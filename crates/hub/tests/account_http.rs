@@ -1701,3 +1701,64 @@ async fn workspace_scope_comes_only_from_current_authority_and_old_bindings_cann
     assert_eq!(rows[1].get::<String, _>("body"), "member private note");
     assert!(rows.iter().all(|r| r.get::<i64, _>("revision") == 1));
 }
+
+#[tokio::test]
+async fn workspace_save_rechecks_revoked_generation_after_waiting_for_authority_lock() {
+    let fixture = Fixture::new().await;
+    let secret = fixture.prepare().await;
+    let server = Server::start(&fixture, true).await;
+    let mut owner = claim(&fixture, &server, &secret).await;
+    let binding = workspace_binding(&mut owner).await;
+    let mut connection = fixture.connect().await;
+    let mut tx = connection
+        .begin()
+        .await
+        .expect("hold authority transaction");
+    sqlx::query("SELECT singleton FROM auth_state WHERE singleton=TRUE FOR UPDATE")
+        .fetch_one(&mut *tx)
+        .await
+        .expect("hold actual auth lock");
+    let request = workspace_request(&owner, Method::PUT, "/api/workspace/note", &binding)
+        .header("Origin", ORIGIN)
+        .json(&json!({"body":"must not commit after revocation","base_revision":"0"}));
+    let pending = tokio::spawn(async move { request.send().await });
+    let mut observer = fixture.connect().await;
+    let deadline = Instant::now() + Duration::from_secs(1);
+    loop {
+        let blocked:bool=sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%auth_state%FOR UPDATE%')").fetch_one(&mut observer).await.expect("observe actual save lock wait");
+        if blocked {
+            break;
+        }
+        assert!(
+            Instant::now() < deadline,
+            "save did not reach authority lock before deadline"
+        );
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    }
+    // An independently controlled invalidator commits while holding the same
+    // authority lock used by the real revoke-all path. The waiting save has
+    // already passed its initial HTTP principal check; it must recheck now.
+    sqlx::query("UPDATE users SET generation=generation+1")
+        .execute(&mut *tx)
+        .await
+        .expect("advance generation under authority lock");
+    sqlx::query("UPDATE sessions SET revoked=TRUE")
+        .execute(&mut *tx)
+        .await
+        .expect("revoke under authority lock");
+    tx.commit()
+        .await
+        .expect("commit independently owned invalidation");
+    let response = pending
+        .await
+        .expect("save task")
+        .expect("bounded save response");
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM workspace_notes")
+            .fetch_one(&mut observer)
+            .await
+            .expect("no stale-authority write"),
+        0
+    );
+}

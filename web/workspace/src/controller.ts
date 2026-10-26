@@ -1,4 +1,5 @@
 import { writable, get } from 'svelte/store';
+import { flushSync } from 'svelte';
 const PRODUCT = 'keida-hub-reborn';
 const CONTRACT = 'reborn-workspace-v1';
 const MAX_REVISION = 9223372036854775807n;
@@ -65,7 +66,7 @@ export function workspace(binding: string) {
   }
   function invalidate(message: string, blocked = false): void {
     cancel(); terminal ||= blocked;
-    model.set(empty(blocked ? 'blocked' : 'paused', message));
+    flushSync(() => model.set(empty(blocked ? 'blocked' : 'paused', message)));
   }
   function schedule(): void {
     if (timer) clearTimeout(timer);

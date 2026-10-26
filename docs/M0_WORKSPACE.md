@@ -41,7 +41,7 @@ current account, session generation, note and explicit workspace schema1.
 
 One controller owns bounded4second reads/saves and one15second visible-page poll.
 Navigation does not create more controllers, editors or subscriptions. Pause on
-blur/hidden/pagehide, clear private DOM immediately and abort/invalidate all work.
+blur/hidden/pagehide, synchronously flush cleared private DOM and abort/invalidate all work.
 Focus/visible/pageshow performs a fresh bound read before revealing private UI.
 Account-document auth notifications also invalidate the workspace. An obsolete,
 cancelled, expired or late result never restores cleared content or another

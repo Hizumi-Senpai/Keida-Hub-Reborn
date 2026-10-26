@@ -90,6 +90,7 @@ async fn lifetime_and_recovery() -> Check<()> {
     b.fill("#workspace-note", "An unfinished draft after saving")
         .await?;
     check(b.evaluate("return Object.entries(sessionStorage).filter(([k])=>k.startsWith('keida-hub-reborn.workspace.v1:')).length === 1 && Object.entries(sessionStorage).every(([k,v])=>!v.includes(arguments[0])&&!v.includes(arguments[1])&&!v.includes(document.querySelector('meta[name=reborn-session-binding]').content))",json!([&f.password,&f.setup])).await?==true,"draft storage has scoped non-secret text only")?;
+    check(b.evaluate("window.dispatchEvent(new Event('pagehide')); return document.querySelector('#workspace-note').value === '' && !document.body.textContent.includes(arguments[0])",json!([&f.username])).await?==true,"pagehide clears private DOM synchronously")?;
     workspace(&f, &b).await?;
     note(&b).await?;
     body(&b, "A private fictional note 海").await?;
