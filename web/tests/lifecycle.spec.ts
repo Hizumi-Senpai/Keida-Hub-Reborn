@@ -88,7 +88,7 @@ test('visible account notices remote expiry with bounded probing and clears priv
   expect(await page.getByLabel('Password', { exact: true }).inputValue() === '', 'expiry recovers a blank native sign-in form').toBe(true);
 });
 
-test('pagehide clears actual private data and pageshow needs a fresh bounded authorized probe', async ({ account }) => {
+test('synthetic lifecycle and actual back-forward navigation preserve private identity and never replay POST', async ({ account }) => {
   const page = await account.page();
   await owner(account, page);
   const observed: string[] = [];
@@ -99,6 +99,50 @@ test('pagehide clears actual private data and pageshow needs a fresh bounded aut
   await expect(page.locator('#account-private')).toBeVisible();
   expect(await page.locator('[data-account-name]').textContent() === account.ownerName, 'restored page displays only fresh authorized identity').toBe(true);
   expect(observed.length, 'lifecycle restoration never replays a POST').toBe(0);
+
+  // Exercise real browser history as well as the explicit lifecycle seam above.
+  // Both bfcache restoration and eviction followed by a new GET are valid, but
+  // either account document must obtain a fresh authorized identity response.
+  await page.goto('/account/sign-in');
+  expect(await page.getByLabel('Password', { exact: true }).inputValue() === '', 'history destination has no retained password').toBe(true);
+  const firstBackProbe = page.waitForResponse((response) => response.request().method() === 'GET'
+    && new URL(response.url()).pathname === '/api/auth/session');
+  await page.goBack();
+  await page.waitForURL(`${account.origin}/account`);
+  expect((await firstBackProbe).status(), 'real back navigation freshly authorizes identity').toBe(200);
+  await expect(page.locator('#account-private')).toBeVisible();
+  expect(await page.locator('[data-account-name]').textContent() === account.ownerName, 'back navigation displays only the freshly authorized owner').toBe(true);
+  await page.goForward();
+  await page.waitForURL(`${account.origin}/account/sign-in`);
+  expect(await page.getByLabel('Password', { exact: true }).inputValue() === '', 'forward navigation retains no password').toBe(true);
+  expect(observed.length, 'actual back and forward never replay credentials or POST').toBe(0);
+
+  const secondBackProbe = page.waitForResponse((response) => response.request().method() === 'GET'
+    && new URL(response.url()).pathname === '/api/auth/session');
+  await page.goBack();
+  await page.waitForURL(`${account.origin}/account`);
+  expect((await secondBackProbe).status()).toBe(200);
+  await expect(page.locator('#account-private')).toBeVisible();
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await page.waitForURL(`${account.origin}/account/sign-in`);
+  expect(observed.length, 'only the deliberate native sign-out creates an operation').toBe(1);
+  expect(observed[0]).toBe('/account/sign-out');
+  const postLogoutProbes: number[] = [];
+  page.on('response', (response) => {
+    if (response.request().method() === 'GET' && new URL(response.url()).pathname === '/api/auth/session') postLogoutProbes.push(response.status());
+  });
+  await page.goBack();
+  if (new URL(page.url()).pathname === '/account') {
+    await expect.poll(() => postLogoutProbes.includes(401), { timeout: 8_000 }).toBe(true);
+    await empty(page);
+    await expect(page.locator('[data-account-status]')).toContainText(/ended|sign.in/i);
+  } else {
+    // A fresh protected GET may redirect directly to a blank sign-in form.
+    await page.waitForURL(`${account.origin}/account/sign-in`);
+    expect(await page.getByLabel('Password', { exact: true }).inputValue() === '', 'post-logout history recovery has no retained password').toBe(true);
+  }
+  expect((await page.content()).includes(account.ownerName), 'history after sign out cannot redisplay the old identity').toBe(false);
+  expect(observed.length, 'post-logout back navigation never repeats the sign-out POST').toBe(1);
 });
 
 test('optional probe network failure hides identity while native sign out remains usable', async ({ account }) => {

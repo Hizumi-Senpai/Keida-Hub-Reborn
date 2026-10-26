@@ -499,6 +499,13 @@ async fn html(response: Response, status: StatusCode, secrets: &[&str]) -> Strin
     assert_eq!(response.status(), status);
     no_store(&response);
     page_csp(&response);
+    assert_eq!(
+        response
+            .headers()
+            .get("referrer-policy")
+            .expect("native form referrer policy"),
+        "same-origin"
+    );
     assert!(
         response
             .headers()
@@ -509,6 +516,13 @@ async fn html(response: Response, status: StatusCode, secrets: &[&str]) -> Strin
             .starts_with("text/html")
     );
     let text = response.text().await.expect("native HTML document");
+    assert!(
+        tags(&text, "meta")
+            .iter()
+            .any(|tag| attribute(tag, "name").as_deref() == Some("referrer")
+                && attribute(tag, "content").as_deref() == Some("same-origin")),
+        "native document meta suppressed its same-origin form Origin"
+    );
     private_text(&text, secrets);
     for tag in tags(&text, "input") {
         if matches!(
@@ -856,7 +870,7 @@ async fn strict_native_decoding_and_admission_reject_before_owner_claim_effects(
     let setup = fixture.prepare().await;
     let server = Server::start(&fixture, true).await;
     let mut actor = server.actor();
-    for case in 0..19 {
+    for case in 0..20 {
         let page = actor
             .page("/account/claim", StatusCode::OK, &[&setup])
             .await;
@@ -965,6 +979,10 @@ async fn strict_native_decoding_and_admission_reject_before_owner_claim_effects(
             }
             18 => {
                 fields.retain(|(name, _)| name != "csrf_token");
+                StatusCode::FORBIDDEN
+            }
+            19 => {
+                origin = Some("null");
                 StatusCode::FORBIDDEN
             }
             _ => unreachable!(),

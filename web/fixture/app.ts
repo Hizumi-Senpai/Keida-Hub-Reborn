@@ -15,6 +15,23 @@ const execute = promisify(execFile);
 const PRODUCT = 'keida-hub-reborn';
 const CONTRACT = 'reborn-auth-v1';
 const SESSION_COOKIE = '__Host-keida-reborn-session';
+const SAFE_PATHS = new Set(['/account', '/account/claim', '/account/sign-in', '/account/sign-out', '/account/sign-out-all', '/api/auth/session']);
+function safePath(url: string, origin: string): string | undefined {
+  try { const parsed = new URL(url, origin); return parsed.origin === origin && SAFE_PATHS.has(parsed.pathname) ? parsed.pathname : undefined; }
+  catch { return undefined; }
+}
+function formErrorClass(body: string): string | undefined {
+  if (!body.includes('id="form-error"')) return undefined;
+  if (body.includes('This form could not be verified')) return 'verification';
+  if (body.includes('Sign-in was not accepted')) return 'credentials';
+  if (body.includes('The setup secret was not accepted')) return 'setup';
+  if (body.includes('This request conflicts')) return 'conflict';
+  if (body.includes('Too many attempts')) return 'limited';
+  if (body.includes('This form is no longer supported')) return 'contract';
+  if (body.includes('Account access is unavailable')) return 'unavailable';
+  if (body.includes('The form was not accepted')) return 'invalid';
+  return 'other';
+}
 let emittedEvidence = false;
 
 function requireFixture(name: string): string {
@@ -218,12 +235,27 @@ export class AccountFixture {
     });
     this.contexts.push(context);
     context.on('request', (request) => {
+      const path = safePath(request.url(), this.origin);
+      if (path && request.method() === 'POST') {
+        const origin = request.headers()['origin'];
+        const originClass = origin === this.origin ? 'same' : origin === 'null' ? 'opaque' : origin === undefined ? 'absent' : 'other';
+        process.stdout.write(`BROWSER_ORIGIN POST ${path} ${originClass}\n`);
+      }
       if ([...this.sensitive].some((secret) => secret.length > 12 && request.url().includes(secret))) this.violation = true;
     });
     context.on('response', (response) => {
+      const path = safePath(response.url(), this.origin);
+      const method = response.request().method();
+      if (path && ['GET', 'POST', 'HEAD'].includes(method)) {
+        const rawLocation = response.headers()['location'];
+        const location = rawLocation === undefined ? 'none' : safePath(rawLocation, this.origin) ?? 'other';
+        process.stdout.write(`BROWSER_HTTP ${method} ${path} ${response.status()} ${location}\n`);
+      }
       const contentType = response.headers()['content-type'] ?? '';
       if (contentType.includes('text/html') || contentType.includes('application/json')) {
         void response.text().then((body) => {
+          const error = path && contentType.includes('text/html') ? formErrorClass(body) : undefined;
+          if (error) process.stdout.write(`BROWSER_FORM ${path} ${error}\n`);
           if ([...this.sensitive].some((secret) => secret.length > 12 && body.includes(secret))) this.violation = true;
         }).catch(() => undefined);
       }

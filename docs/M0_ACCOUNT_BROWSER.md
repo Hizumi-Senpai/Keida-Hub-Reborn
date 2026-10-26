@@ -72,7 +72,14 @@ new account inside an old document. No POST is replayed by these transitions.
 Use actual multiple browser tabs/contexts to verify cross-account changes,
 revocation and held late probe responses. Explicit event dispatch is a bounded
 additional seam for lifecycle cleanup; it is not a claim that native bfcache,
-mobile app suspension or every device lifecycle has been accepted.
+mobile app suspension or every device lifecycle has been accepted. A separate
+part of the same case performs actual `goBack()` / `goForward()` navigation:
+restored account pages require a fresh authorized probe, password fields stay
+blank, and history traversal submits no POST. After deliberate native sign out,
+back navigation must show either a cleared unauthenticated account document or a
+fresh blank sign-in redirect, never the previous identity. The browser may evict
+the history document and issue a new GET; no specific bfcache-retention outcome or
+cross-platform bfcache guarantee is assumed.
 
 ## Accessibility and evidence boundaries
 
@@ -123,8 +130,12 @@ matching pinned-browser installation, not a TLS-validation bypass.
 The anonymous-expiry case unconditionally waits602seconds of actual monotonic
 elapsed time. The real browser must expire its600second cookie; the old DOM form
 then fails without creating an owner, and a deliberate fresh GET/form recovers.
-It has a660second test deadline. Two workers use separate databases/keys/browser
-homes, so other cases can complete while this real expiry gate waits.
+It has a660second test deadline. The account-workflows project runs the ten short
+cases first, with two workers and separate databases/keys/browser homes. The
+form-expiry project depends on those workflows: only after they pass does the
+unconditional real expiry case run. A prerequisite failure makes CI fail and
+blocks the long dependent project; no eventual acceptance is green until all
+eleven cases, including real expiry, pass. There is no test.skip or fake clock.
 
 Late-probe verification pauses a real Chromium network response only after normal
 TLS validation and a real Rust session200. It never injects a successful auth
@@ -141,3 +152,11 @@ were executed. Local Chromium execution was unavailable: the standard pinned CDN
 returned an invalid HTML response, and a matching official CFT download could not
 be launched in this environment. No actual browser workflow is claimed from those
 local checks. Exact-source CI must execute and qualify this complete harness.
+
+
+Native form POSTs are observed rather than given a synthetic Origin. The golden
+path asserts that Chromium supplies the exact configured origin. Sanitized
+browser diagnostics expose only fixed route paths, methods, numeric status,
+allowlisted same-origin redirect paths, boolean validity and fixed origin/error
+classes. Raw headers, locations, DOM messages and form contents never reach logs.
+This distinguishes native-form failures from manually supplied HTTP headers.

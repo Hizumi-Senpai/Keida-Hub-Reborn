@@ -9,6 +9,10 @@ export default defineConfig({
   workers: 2,
   retries: 0,
   forbidOnly: true,
+  projects: [
+    { name: 'account-workflows', grepInvert: /actual ten-minute browser form expiry/ },
+    { name: 'form-expiry', grep: /actual ten-minute browser form expiry/, dependencies: ['account-workflows'] }
+  ],
   reporter: [['./fixture/reporter.ts']],
   outputDir: process.env.REBORN_BROWSER_OUTPUT_DIR ?? '/tmp/keida-reborn-browser-results',
   use: {

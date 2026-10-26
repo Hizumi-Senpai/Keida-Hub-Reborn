@@ -87,7 +87,7 @@ fn render(kind: PageKind, status: StatusCode, csrf: &str, message: Option<&str>)
     );
     response.headers_mut().insert(
         header::REFERRER_POLICY,
-        HeaderValue::from_static("no-referrer"),
+        HeaderValue::from_static("same-origin"),
     );
     response
 }

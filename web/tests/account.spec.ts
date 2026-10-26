@@ -8,12 +8,21 @@ const FORM = '__Host-keida-reborn-form';
 const PRODUCT = 'keida-hub-reborn';
 const CONTRACT = 'reborn-auth-v1';
 
+async function nativeValidity(page: Page, kind: 'claim' | 'sign-in'): Promise<void> {
+  const valid = await page.getByLabel('Password', { exact: true }).evaluate((input) => (input as HTMLInputElement).form?.checkValidity() ?? false);
+  process.stdout.write(`BROWSER_VALID ${kind} ${valid}\n`);
+  expect(valid, 'native credential form is valid before deliberate submit').toBe(true);
+}
+
 async function claim(account: AccountFixture, page: Page): Promise<void> {
   await page.goto('/account/claim');
   await page.getByLabel('Setup secret', { exact: true }).fill(account.setupSecret);
   await page.getByLabel('Username', { exact: true }).fill(account.ownerName);
   await page.getByLabel('Password', { exact: true }).fill(account.password);
+  await nativeValidity(page, 'claim');
+  const posted = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/account/claim');
   await page.getByRole('button', { name: 'Create owner', exact: true }).click();
+  expect((await posted).headers()['origin'] === account.origin, 'native browser sends the exact configured Origin').toBe(true);
   await page.waitForURL(`${account.origin}/account`);
   await expect(page.getByRole('heading', { name: 'Your account', exact: true })).toBeVisible();
 }
@@ -22,6 +31,7 @@ async function signIn(account: AccountFixture, page: Page, username: string, pas
   await page.goto('/account/sign-in');
   await page.getByLabel('Username', { exact: true }).fill(username);
   await page.getByLabel('Password', { exact: true }).fill(password);
+  await nativeValidity(page, 'sign-in');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 }
 
@@ -68,7 +78,10 @@ test('native HTTPS owner claim, cookies, refresh and sign out work without JavaS
   await page.getByLabel('Setup secret', { exact: true }).fill(account.setupSecret);
   await page.getByLabel('Username', { exact: true }).fill(account.ownerName);
   await page.getByLabel('Password', { exact: true }).fill(account.password);
+  await nativeValidity(page, 'claim');
+  const posted = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/account/claim');
   await page.getByRole('button', { name: 'Create owner', exact: true }).click();
+  expect((await posted).headers()['origin'] === account.origin, 'native browser sends the exact configured Origin').toBe(true);
   await page.waitForURL(`${account.origin}/account`);
   await expect(page.getByRole('heading', { name: 'Your account', exact: true })).toBeVisible();
   const cookies = await page.context().cookies(account.origin);
@@ -174,6 +187,7 @@ test('actual ten-minute browser form expiry rejects the old form and recovers no
   await page.getByLabel('Username', { exact: true }).fill(account.ownerName);
   await page.getByLabel('Password', { exact: true }).fill(account.password);
   const rejected = page.waitForResponse((response) => response.request().method() === 'POST' && new URL(response.url()).pathname === '/account/claim');
+  await nativeValidity(page, 'claim');
   await page.getByRole('button', { name: 'Create owner', exact: true }).click();
   expect((await rejected).status()).toBe(403);
   await expect(page.locator('#form-error')).toBeVisible();

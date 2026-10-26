@@ -35,6 +35,13 @@ URLs; unknown hashes fail404. Public source/version details come from compiled
 identity, not a GitHub latest-version request. Artifact publication and retention
 of supported prior browser chunks remain later delivery gates.
 
+Both the HTML referrer meta and response Referrer-Policy use `same-origin`.
+This withholds off-origin Referer information while preserving the native form
+POST's Origin. `no-referrer` would turn that Origin into `null` for this native
+transport, which remains rejected. This follows the
+[Fetch Origin-header algorithm](https://fetch.spec.whatwg.org/#append-a-request-origin-header);
+actual browser submission is verified separately from manually headed HTTP tests.
+
 ## Optional account identity enhancement
 
 Native claim, sign-in and sign-out forms work without JavaScript. Server HTML

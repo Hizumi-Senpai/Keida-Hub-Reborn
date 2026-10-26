@@ -24,6 +24,16 @@ CSRF values belong in escaped hidden controls, not URLs. Ordinary document GETs
 do not make custom headers optional on the existing JSON API: its frozen
 `X-Reborn-Product`/`X-Reborn-Contract`/`X-CSRF-Token` contract stays strict.
 
+The initial real-browser run exposed a transport requirement absent from the
+manually headed fixture: both the response and HTML referrer policy must be
+`same-origin`, so a same-origin native POST retains its actual Origin while
+off-origin Referer information is withheld. The
+[WHATWG Fetch algorithm](https://fetch.spec.whatwg.org/#append-a-request-origin-header)
+would serialize native non-CORS POST Origin as `null` under `no-referrer`.
+This amendment preserves exact-Origin admission: an explicit `Origin: null`
+remains forbidden. The HTTP fixture checks both policy declarations and null
+refusal; real Chromium must still perform the positive native submission.
+
 The native adapter must call shared authentication services directly. It must
 not invoke a loopback HTTP API, copy store decisions or implement a second
 password/session authority. Schema/key qualification, current authorization,

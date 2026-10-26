@@ -14,8 +14,14 @@ export default class PrivateReporter implements Reporter {
     for (const location of locations) process.stdout.write(`AT ${location}\n`);
   }
   onStdOut(chunk: string | Buffer): void {
-    const safe = chunk.toString();
-    if (/^BROWSER_EVIDENCE Chromium [0-9.]+ source [a-f0-9]{40}\n$/.test(safe) || /^BROWSER_A11Y [a-z0-9,-]+\n$/.test(safe)) process.stdout.write(safe);
+    for (const line of chunk.toString().split(/\r?\n/)) {
+      if (/^BROWSER_EVIDENCE Chromium [0-9.]+ source [a-f0-9]{40}$/.test(line)
+          || /^BROWSER_A11Y [a-z0-9,-]+$/.test(line)
+          || /^BROWSER_HTTP (GET|POST|HEAD) \/(?:account(?:\/(?:claim|sign-in|sign-out|sign-out-all))?|api\/auth\/session) [1-5][0-9]{2} (?:none|other|\/(?:account(?:\/(?:claim|sign-in|sign-out|sign-out-all))?|api\/auth\/session))$/.test(line)
+          || /^BROWSER_ORIGIN POST \/(?:account(?:\/(?:claim|sign-in|sign-out|sign-out-all))?|api\/auth\/session) (same|opaque|absent|other)$/.test(line)
+          || /^BROWSER_FORM \/(?:account(?:\/(?:claim|sign-in|sign-out|sign-out-all))?|api\/auth\/session) (verification|credentials|setup|conflict|limited|contract|unavailable|invalid|other)$/.test(line)
+          || /^BROWSER_VALID (claim|sign-in) (true|false)$/.test(line)) process.stdout.write(`${line}\n`);
+    }
   }
   onStdErr(): void { /* No raw worker/process output reaches the report. */ }
   onError(): void {
