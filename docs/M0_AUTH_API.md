@@ -1,5 +1,8 @@
 # M0 authentication API slice contract
 
+This records authentication migration0002. The later workspace migration0003
+advances exact application schema admission to3 without changing0001/0002.
+
 Frozen implementation contract for the next reviewable source slice. This is a
 backend/API slice, not browser sign-in acceptance or production enrollment. No
 existing deployment, account, credential, route or game owner is changed.

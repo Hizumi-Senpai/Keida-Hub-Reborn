@@ -272,21 +272,21 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
     assert_eq!(metadata.len(), 1);
     assert!(metadata[0].get::<bool, _>("singleton"));
     assert_eq!(metadata[0].get::<String, _>("product"), "keida-hub-reborn");
-    assert_eq!(metadata[0].get::<i32, _>("schema_version"), 2);
+    assert_eq!(metadata[0].get::<i32, _>("schema_version"), 3);
     for statement in [
         "UPDATE reborn_schema SET singleton = FALSE",
         "UPDATE reborn_schema SET product = 'keida-hub-rewrite'",
-        "UPDATE reborn_schema SET schema_version = 3",
+        "UPDATE reborn_schema SET schema_version = 4",
     ] {
         assert_constraint(&mut connection, statement, "23514").await;
     }
-    assert_constraint(&mut connection, "INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',2)", "23505").await;
+    assert_constraint(&mut connection, "INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',3)", "23505").await;
 
     let ledger_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM _sqlx_migrations")
         .fetch_one(&mut connection)
         .await
         .expect("migration ledger count");
-    assert_eq!(ledger_count, 2);
+    assert_eq!(ledger_count, 3);
     assert_migrated(completed(database.migrate()).await);
     assert_eq!(
         sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM _sqlx_migrations")
@@ -297,7 +297,7 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
     );
 
     // Restore fixture bytes after each fault; acceptance requires rejecting the fault, not trusting a copied result.
-    for version in [1_i64, 2] {
+    for version in [1_i64, 2, 3] {
         let checksum: Vec<u8> =
             sqlx::query_scalar("SELECT checksum FROM _sqlx_migrations WHERE version = $1")
                 .bind(version)
@@ -347,12 +347,12 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
         .await
         .expect("remove singleton fixture row");
     server.readiness(false).await;
-    connection.execute("INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',2)").await.expect("restore singleton fixture row");
+    connection.execute("INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',3)").await.expect("restore singleton fixture row");
     server.readiness(true).await;
 }
 
 #[tokio::test]
-async fn concurrent_migration_commands_leave_both_complete_migrations_and_valid_metadata() {
+async fn concurrent_migration_commands_leave_all_complete_migrations_and_valid_metadata() {
     let database = Database::create().await;
     let first = database.migrate();
     let second = database.migrate();
@@ -360,16 +360,16 @@ async fn concurrent_migration_commands_leave_both_complete_migrations_and_valid_
     assert_migrated(first);
     assert_migrated(second);
     let mut connection = database.connect().await;
-    let row = sqlx::query("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE success AND version IN (1, 2)) AS completed FROM _sqlx_migrations")
+    let row = sqlx::query("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE success AND version IN (1, 2, 3)) AS completed FROM _sqlx_migrations")
         .fetch_one(&mut connection).await.expect("inspect concurrent ledger");
-    assert_eq!(row.get::<i64, _>("total"), 2);
-    assert_eq!(row.get::<i64, _>("completed"), 2);
+    assert_eq!(row.get::<i64, _>("total"), 3);
+    assert_eq!(row.get::<i64, _>("completed"), 3);
     let server = Server::start(&database).await;
     server.readiness(true).await;
 }
 
 #[tokio::test]
-async fn actual_schema_one_upgrades_to_auth_schema_two_without_losing_existing_data() {
+async fn actual_schema_one_upgrades_through_auth_to_workspace_without_losing_existing_data() {
     let database = Database::create().await;
     let mut connection = database.connect().await;
     // Resolve the real versioned migration source. Restrict SQLx's actual
@@ -434,15 +434,16 @@ async fn actual_schema_one_upgrades_to_auth_schema_two_without_losing_existing_d
             .await
             .expect("inspect upgraded metadata");
     assert_eq!(after.get::<String, _>("product"), "keida-hub-reborn");
-    assert_eq!(after.get::<i32, _>("schema_version"), 2);
+    assert_eq!(after.get::<i32, _>("schema_version"), 3);
     let ledger =
         sqlx::query("SELECT version, checksum, success FROM _sqlx_migrations ORDER BY version")
             .fetch_all(&mut connection)
             .await
             .expect("inspect upgraded ledger");
-    assert_eq!(ledger.len(), 2);
+    assert_eq!(ledger.len(), 3);
     assert_eq!(ledger[0].get::<i64, _>("version"), 1);
     assert_eq!(ledger[1].get::<i64, _>("version"), 2);
+    assert_eq!(ledger[2].get::<i64, _>("version"), 3);
     assert!(ledger.iter().all(|row| row.get::<bool, _>("success")));
     assert_eq!(
         ledger[0].get::<Vec<u8>, _>("checksum"),
@@ -464,5 +465,72 @@ async fn actual_schema_one_upgrades_to_auth_schema_two_without_losing_existing_d
     assert_eq!(
         sentinel[0].get::<String, _>("retained"),
         "accepted-before-auth"
+    );
+}
+
+#[tokio::test]
+async fn schema_two_upgrade_preserves_real_account_session_and_accepted_migration_checksums() {
+    let database = Database::create().await;
+    let mut connection = database.connect().await;
+    let source = sqlx::migrate!("../../migrations");
+    let previous: Vec<_> = source.iter().filter(|m| m.version <= 2).cloned().collect();
+    assert_eq!(previous.len(), 2);
+    sqlx::migrate::Migrator::with_migrations(previous.clone())
+        .run(&mut connection)
+        .await
+        .expect("actual prior schema two");
+    connection.execute("INSERT INTO users (username,password_phc,role,generation) VALUES ('upgrade_owner','$argon2id$v=19$m=19456,t=2,p=1$fictional-fixture-not-used-for-login','owner',7)").await.expect("prior account fixture");
+    connection.execute("UPDATE auth_state SET key_id=decode(repeat('ab',32),'hex'), owner_id=(SELECT id FROM users WHERE username='upgrade_owner') WHERE singleton=TRUE").await.expect("prior bound owner");
+    connection.execute("INSERT INTO sessions (verifier,account_id,generation,created_at,expires_at) SELECT decode(repeat('cd',32),'hex'),id,generation,100,200 FROM users").await.expect("prior session fixture");
+    let before = sqlx::query("SELECT id,username,password_phc,role,generation FROM users")
+        .fetch_one(&mut connection)
+        .await
+        .expect("prior user");
+    assert_migrated(completed(database.migrate()).await);
+    let after = sqlx::query("SELECT id,username,password_phc,role,generation FROM users")
+        .fetch_one(&mut connection)
+        .await
+        .expect("retained user");
+    for field in ["username", "password_phc", "role"] {
+        assert_eq!(
+            before.get::<String, _>(field),
+            after.get::<String, _>(field)
+        );
+    }
+    for field in ["id", "generation"] {
+        assert_eq!(before.get::<i64, _>(field), after.get::<i64, _>(field));
+    }
+    let session = sqlx::query(
+        "SELECT generation,created_at,expires_at,encode(verifier,'hex') AS verifier FROM sessions",
+    )
+    .fetch_one(&mut connection)
+    .await
+    .expect("retained session");
+    assert_eq!(session.get::<i64, _>("generation"), 7);
+    assert_eq!(session.get::<i64, _>("created_at"), 100);
+    assert_eq!(session.get::<i64, _>("expires_at"), 200);
+    assert_eq!(session.get::<String, _>("verifier"), "cd".repeat(32));
+    for migration in previous {
+        let checksum: Vec<u8> =
+            sqlx::query_scalar("SELECT checksum FROM _sqlx_migrations WHERE version=$1")
+                .bind(migration.version)
+                .fetch_one(&mut connection)
+                .await
+                .expect("retained accepted checksum");
+        assert_eq!(checksum, migration.checksum.as_ref());
+    }
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM workspace_notes")
+            .fetch_one(&mut connection)
+            .await
+            .expect("no invented notes"),
+        0
+    );
+    assert_eq!(
+        sqlx::query_scalar::<_, i32>("SELECT schema_version FROM reborn_schema")
+            .fetch_one(&mut connection)
+            .await
+            .expect("schema three"),
+        3
     );
 }

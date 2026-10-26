@@ -1349,3 +1349,355 @@ async fn native_schema_fence_and_head_preserve_authority_until_matching_schema_r
     }
     server.private_logs(&[&setup, OWNER_PASSWORD]);
 }
+
+const WORKSPACE: &str = "reborn-workspace-v1";
+fn workspace_request(actor: &Actor, method: Method, path: &str, binding: &str) -> RequestBuilder {
+    actor
+        .request(method, path)
+        .header("X-Reborn-Product", PRODUCT)
+        .header("X-Reborn-Contract", WORKSPACE)
+        .header("X-CSRF-Token", binding)
+}
+async fn workspace_binding(actor: &mut Actor) -> String {
+    let response = actor.get("/workspace").await;
+    assert_eq!(response.status(), StatusCode::OK);
+    no_store(&response);
+    page_csp(&response);
+    let text = response.text().await.expect("workspace HTML bootstrap");
+    let binding = tags(&text, "meta")
+        .into_iter()
+        .find(|tag| attribute(tag, "name").as_deref() == Some("reborn-session-binding"))
+        .and_then(|tag| attribute(tag, "content"))
+        .expect("loaded workspace binding");
+    assert!(canonical_token(&binding));
+    assert!(!text.contains("native_owner"));
+    binding
+}
+async fn workspace_snapshot(actor: &Actor, binding: &str, status: StatusCode) -> Value {
+    let response = workspace_request(actor, Method::GET, "/api/workspace/snapshot", binding)
+        .send()
+        .await
+        .expect("workspace read response");
+    assert_eq!(response.status(), status);
+    no_store(&response);
+    response.json().await.expect("workspace read JSON")
+}
+async fn save_note(
+    actor: &Actor,
+    binding: &str,
+    text: &str,
+    revision: &str,
+    status: StatusCode,
+) -> Value {
+    let response = workspace_request(actor, Method::PUT, "/api/workspace/note", binding)
+        .header("Origin", ORIGIN)
+        .json(&json!({"body":text,"base_revision":revision}))
+        .send()
+        .await
+        .expect("workspace save response");
+    assert_eq!(response.status(), status);
+    no_store(&response);
+    response.json().await.expect("workspace save JSON")
+}
+
+#[tokio::test]
+async fn persistent_workspace_note_has_exact_assets_revisions_and_concurrent_save_admission() {
+    let fixture = Fixture::new().await;
+    let secret = fixture.prepare().await;
+    let server = Server::start(&fixture, true).await;
+    let mut anonymous = server.actor();
+    let denied = anonymous.get("/workspace").await;
+    redirected(&denied, "/account/sign-in");
+    let mut owner = claim(&fixture, &server, &secret).await;
+    let binding = workspace_binding(&mut owner).await;
+    let initial = workspace_snapshot(&owner, &binding, StatusCode::OK).await;
+    assert_eq!(initial["product"], PRODUCT);
+    assert_eq!(initial["contract"], WORKSPACE);
+    assert_eq!(initial["schema"], 1);
+    assert_eq!(initial["note"], json!({"body":"","revision":"0"}));
+    let mut db = fixture.connect().await;
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM workspace_notes")
+            .fetch_one(&mut db)
+            .await
+            .expect("read is not a write"),
+        0
+    );
+    let bootstrap = owner
+        .get("/workspace")
+        .await
+        .text()
+        .await
+        .expect("native bootstrap");
+    for (tag, attribute_name, extension) in [("script", "src", "js"), ("link", "href", "css")] {
+        let path = tags(&bootstrap, tag)
+            .into_iter()
+            .filter_map(|tag| attribute(tag, attribute_name))
+            .find(|path| path.starts_with("/assets/workspace/"))
+            .expect("exact compiled workspace asset");
+        let response = owner.get(&path).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response
+                .headers()
+                .get("cache-control")
+                .expect("immutable asset"),
+            "public, max-age=31536000, immutable"
+        );
+        let bytes = response.bytes().await.expect("asset bytes");
+        use sha2::Digest;
+        let hash: String = Sha256::digest(&bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        assert_eq!(path, format!("/assets/workspace/{hash}.{extension}"));
+    }
+    assert_eq!(
+        owner.get("/assets/workspace/latest.js").await.status(),
+        StatusCode::NOT_FOUND
+    );
+    let note = "A private Unicode note: 海 🌿\n<script>not executable</script>";
+    let saved = save_note(&owner, &binding, note, "0", StatusCode::OK).await;
+    assert_eq!(saved["note"], json!({"body":note,"revision":"1"}));
+    let (a, b) = tokio::join!(
+        workspace_request(&owner, Method::PUT, "/api/workspace/note", &binding)
+            .header("Origin", ORIGIN)
+            .json(&json!({"body":"first candidate","base_revision":"1"}))
+            .send(),
+        workspace_request(&owner, Method::PUT, "/api/workspace/note", &binding)
+            .header("Origin", ORIGIN)
+            .json(&json!({"body":"second candidate","base_revision":"1"}))
+            .send()
+    );
+    let a = a.expect("first save");
+    let b = b.expect("second save");
+    let outcomes = [a.status().as_u16(), b.status().as_u16()];
+    assert!(outcomes == [200, 409] || outcomes == [409, 200]);
+    let winner: Value = if a.status() == StatusCode::OK {
+        a.json().await.expect("winner JSON")
+    } else {
+        b.json().await.expect("winner JSON")
+    };
+    assert_eq!(winner["note"]["revision"], "2");
+    assert_eq!(
+        workspace_snapshot(&owner, &binding, StatusCode::OK).await["note"],
+        winner["note"]
+    );
+    let html = owner
+        .get("/workspace")
+        .await
+        .text()
+        .await
+        .expect("fresh document");
+    private_text(
+        &html,
+        &[
+            note,
+            "first candidate",
+            "second candidate",
+            "native_owner",
+            &secret,
+        ],
+    );
+    drop(server);
+    let restarted = Server::start(&fixture, true).await;
+    owner.origin = restarted.origin.clone();
+    assert_eq!(
+        workspace_snapshot(&owner, &binding, StatusCode::OK).await["note"],
+        winner["note"]
+    );
+    restarted.private_logs(&[note, &secret, OWNER_PASSWORD]);
+}
+
+#[tokio::test]
+async fn workspace_transport_rejects_malformed_scope_origin_and_unsupported_schema_before_effects()
+{
+    let fixture = Fixture::new().await;
+    let secret = fixture.prepare().await;
+    let server = Server::start(&fixture, true).await;
+    let mut owner = claim(&fixture, &server, &secret).await;
+    let binding = workspace_binding(&mut owner).await;
+    for method in [Method::GET, Method::HEAD] {
+        let response = owner
+            .request(method, "/api/workspace/snapshot")
+            .send()
+            .await
+            .expect("unsupported workspace client");
+        assert_eq!(response.status(), StatusCode::UPGRADE_REQUIRED);
+    }
+    for origin in ["null", "https://other.example"] {
+        let response = workspace_request(&owner, Method::PUT, "/api/workspace/note", &binding)
+            .header("Origin", origin)
+            .json(&json!({"body":"must never be saved","base_revision":"0"}))
+            .send()
+            .await
+            .expect("wrong origin");
+        assert_eq!(response.status(), StatusCode::FORBIDDEN);
+    }
+    let duplicate = workspace_request(&owner, Method::GET, "/api/workspace/snapshot", &binding)
+        .header("X-CSRF-Token", &binding)
+        .send()
+        .await
+        .expect("ambiguous binding");
+    assert_eq!(duplicate.status(), StatusCode::FORBIDDEN);
+    for input in [
+        json!({"body":"private invalid fixture","base_revision":"00"}),
+        json!({"body":"private invalid fixture","base_revision":"-1"}),
+        json!({"body":"private invalid fixture","base_revision":"9223372036854775808"}),
+        json!({"body":"private invalid fixture","base_revision":"0","account_id":"1"}),
+        json!({"body":"\0","base_revision":"0"}),
+        json!({"body":"海".repeat(1366),"base_revision":"0"}),
+    ] {
+        let response = workspace_request(&owner, Method::PUT, "/api/workspace/note", &binding)
+            .header("Origin", ORIGIN)
+            .json(&input)
+            .send()
+            .await
+            .expect("invalid payload");
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+        let text = response.text().await.expect("sanitized rejection");
+        private_text(&text, &["private invalid fixture"]);
+    }
+    let oversized = workspace_request(&owner, Method::PUT, "/api/workspace/note", &binding)
+        .header("Origin", ORIGIN)
+        .json(&json!({"body":"x".repeat(9000),"base_revision":"0"}))
+        .send()
+        .await
+        .expect("oversized body");
+    assert_eq!(oversized.status(), StatusCode::PAYLOAD_TOO_LARGE);
+    assert_eq!(
+        workspace_snapshot(&owner, &binding, StatusCode::OK).await["note"]["revision"],
+        "0"
+    );
+    let mut db = fixture.connect().await;
+    sqlx::query("INSERT INTO _sqlx_migrations (version,description,success,checksum,execution_time) VALUES (999,'workspace-future-fixture',TRUE,decode('00','hex'),0)").execute(&mut db).await.expect("schema fault");
+    workspace_snapshot(&owner, &binding, StatusCode::SERVICE_UNAVAILABLE).await;
+    save_note(
+        &owner,
+        &binding,
+        "forbidden during schema drift",
+        "0",
+        StatusCode::SERVICE_UNAVAILABLE,
+    )
+    .await;
+    let response = workspace_request(&owner, Method::HEAD, "/api/workspace/snapshot", &binding)
+        .send()
+        .await
+        .expect("HEAD schema fence");
+    assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM workspace_notes")
+            .fetch_one(&mut db)
+            .await
+            .expect("no fault writes"),
+        0
+    );
+    sqlx::query("DELETE FROM _sqlx_migrations WHERE version=999")
+        .execute(&mut db)
+        .await
+        .expect("restore schema");
+    save_note(&owner, &binding, &"x".repeat(4096), "0", StatusCode::OK).await;
+    sqlx::query("UPDATE workspace_notes SET revision=9223372036854775807")
+        .execute(&mut db)
+        .await
+        .expect("overflow boundary fixture");
+    save_note(
+        &owner,
+        &binding,
+        "no overflow",
+        "9223372036854775807",
+        StatusCode::SERVICE_UNAVAILABLE,
+    )
+    .await;
+    let note = workspace_snapshot(&owner, &binding, StatusCode::OK).await;
+    assert_eq!(note["note"]["revision"], "9223372036854775807");
+    assert_eq!(
+        note["note"]["body"].as_str().expect("retained note").len(),
+        4096
+    );
+}
+
+#[tokio::test]
+async fn workspace_scope_comes_only_from_current_authority_and_old_bindings_cannot_switch_accounts()
+{
+    let fixture = Fixture::new().await;
+    let secret = fixture.prepare().await;
+    let server = Server::start(&fixture, true).await;
+    let mut owner = claim(&fixture, &server, &secret).await;
+    let owner_binding = workspace_binding(&mut owner).await;
+    save_note(
+        &owner,
+        &owner_binding,
+        "owner private note",
+        "0",
+        StatusCode::OK,
+    )
+    .await;
+    let current = owner.api_session(StatusCode::OK).await;
+    let response = owner
+        .request(Method::POST, "/api/owner/members")
+        .header("Origin", ORIGIN)
+        .header("X-Reborn-Product", PRODUCT)
+        .header("X-Reborn-Contract", "reborn-auth-v1")
+        .header(
+            "X-CSRF-Token",
+            current["csrf_token"].as_str().expect("owner csrf"),
+        )
+        .json(&json!({"username":"workspace_member","password":MEMBER_PASSWORD}))
+        .send()
+        .await
+        .expect("enroll actual member");
+    assert_eq!(response.status(), StatusCode::CREATED);
+    let old = owner.clone();
+    owner.api_login("workspace_member", MEMBER_PASSWORD).await;
+    workspace_snapshot(&owner, &owner_binding, StatusCode::FORBIDDEN).await;
+    save_note(
+        &owner,
+        &owner_binding,
+        "old owner page must never write as member",
+        "1",
+        StatusCode::FORBIDDEN,
+    )
+    .await;
+    workspace_snapshot(&old, &owner_binding, StatusCode::UNAUTHORIZED).await;
+    let member_binding = workspace_binding(&mut owner).await;
+    let member = workspace_snapshot(&owner, &member_binding, StatusCode::OK).await;
+    assert_eq!(member["account"]["role"], "member");
+    assert_eq!(member["note"], json!({"body":"","revision":"0"}));
+    save_note(
+        &owner,
+        &member_binding,
+        "member private note",
+        "0",
+        StatusCode::OK,
+    )
+    .await;
+    let auth = owner.api_session(StatusCode::OK).await;
+    let response = owner
+        .request(Method::POST, "/api/auth/revoke-all")
+        .header("Origin", ORIGIN)
+        .header("X-Reborn-Product", PRODUCT)
+        .header("X-Reborn-Contract", "reborn-auth-v1")
+        .header(
+            "X-CSRF-Token",
+            auth["csrf_token"].as_str().expect("member csrf"),
+        )
+        .send()
+        .await
+        .expect("revoke generation");
+    assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    save_note(
+        &owner,
+        &member_binding,
+        "revoked save",
+        "1",
+        StatusCode::UNAUTHORIZED,
+    )
+    .await;
+    let mut db = fixture.connect().await;
+    let rows=sqlx::query("SELECT u.username,n.body,n.revision FROM workspace_notes n JOIN users u ON u.id=n.account_id ORDER BY u.id").fetch_all(&mut db).await.expect("independent account rows");
+    assert_eq!(rows.len(), 2);
+    assert_eq!(rows[0].get::<String, _>("body"), "owner private note");
+    assert_eq!(rows[1].get::<String, _>("body"), "member private note");
+    assert!(rows.iter().all(|r| r.get::<i64, _>("revision") == 1));
+}

@@ -4,6 +4,8 @@ pub mod crypto;
 pub mod store;
 #[cfg(test)]
 mod store_contracts;
+mod workspace;
+mod workspace_assets;
 
 use axum::{
     Json, Router,
@@ -91,7 +93,8 @@ pub fn router(service: Service) -> Router {
             schema_guard,
         ))
         .with_state(service.clone())
-        .merge(account_pages::router(service))
+        .merge(account_pages::router(service.clone()))
+        .merge(workspace::router(service))
 }
 
 async fn schema_guard(

@@ -1,10 +1,10 @@
 # Reborn versions and safe updating
 
-Status: locked design, documentation only. None of the badge, identity derivation,
-release publication, browser notice or host updater described here is implemented
-or live in Reborn. `rewrite.keida.me` currently serves the separate **Keida Hub
-Rewrite v0.1.4** at this planning checkpoint. Its implementation and acceptance
-must not be attributed to this new project.
+Status: source identity derivation and compiled HTTP/account/workspace metadata
+are implemented. Immutable artifact publication, release channel admission,
+browser update discovery and host updater remain unimplemented/unaccepted.
+`rewrite.keida.me` is recorded as the independent Keida-Hub-Rewrite v0.1.4;
+Reborn has not been installed. Exact source/CI receipts are in issues1/3.
 
 ## Numbered identity for every accepted main merge
 
@@ -39,7 +39,7 @@ accepted-main ancestry. Inject the qualified display version/source metadata at
 compile time. Runtime environment variables cannot relabel an installed binary.
 Cargo package metadata may remain the source package series; report it separately
 from the running numbered identity. Unqualified local builds must say development,
-not masquerade as accepted main. These are required interfaces, not existing tools.
+not masquerade as accepted main. The source tool is implemented in tools/source-identity; publication remains a separate gate.
 
 PR candidates can display `0.1.(base-N+1)-preview.<head12>` with their full source
 SHA/tree and a preview channel. A preview is provisional and never installable as
@@ -203,5 +203,4 @@ No service, daemon, scheduler, privileged mount or bootstrap is activated here.
 Record implemented source, CI, published artifacts, installation receipts and
 owner/browser acceptance separately in the new repository's checkpoints/tracker.
 Preserve the existing Rewrite and original-Hub checkpoint histories. Until these
-gates pass, the status remains **design only**, with no automatic updating or
-Reborn live deployment claimed.
+gates pass, there is no qualified automatic updating or Reborn live deployment.

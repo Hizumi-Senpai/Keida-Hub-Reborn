@@ -1,100 +1,68 @@
 # Reborn current state
 
-Updated **2026-10-25 America/Chicago**. M0 is in progress.
-The [accepted foundation, PR #4](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/pull/4)
-provides Rust/Axum configuration, liveness/version diagnostics, exact PostgreSQL
-schema readiness, explicit migrations and source identity.
+Updated **2026-10-26 America/Chicago**. **M0 remains in progress.**
 
-[Authentication API slice, PR #5](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/pull/5)
-adds private key/setup preparation, atomic owner claim, Argon2id passwords,
-revocable owner/member sessions, Origin/CSRF/client admission and durable throttles.
-Auth is absent without an explicitly configured instance key. Schema2 upgrades
-schema1 and refuses unsupported live schema state before auth access. See the
-[API contract](docs/M0_AUTH_API.md), [independent verification contracts](docs/M0_AUTH_API_CONTRACTS.md)
-and [exact-head/main integration receipts](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/3).
+## Source and acceptance
 
-The API's accepted source is **0.1.3**, main
-`5f353c57eecb5347a32e33903b404752eb15d591`. Its eventual-head and main CI passed
-Rust1.99.1 formatting, locked all-target checks,25 SQLx query metadata checks,
-Clippy-D,36 tests and locked release; see the
-[exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6406919172).
+The prior accepted baseline is source **0.1.4**, main
+`377f89d0dee9ed9e2e96f70385587f7ca6939b22`: Rust/PostgreSQL foundation,
+private atomic owner/session API and separate native Askama account documents.
+Its exact head/main CI passed42 Rust tests and11 real Chromium HTTPS workflows.
+[Exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6407867529).
 
-The [account-document slice](docs/M0_ACCOUNT_PAGES.md) adds separate Askama native
-claim/sign-in/account/sign-out pages and a bounded identity enhancement. It shares
-the same Rust authority and keeps JSON API admission strict. Independent native
-and trusted-HTTPS Chromium contracts include actual elapsed form expiry,
-cross-tab switching, late responses, remote expiry and no-JavaScript forms.
-Exact eventual-head/main execution and acceptance are recorded in issue3, not
-implied by source presence. No Reborn image, production database/key/account,
-live deployment, public/provider acceptance or performance result exists yet.
-The persistent Svelte workspace and encrypted provider-secret enrollment remain
-open. Linux Chromium/mobile-viewport evidence is not native iPhone/Safari proof.
+The [persistent workspace slice](docs/M0_WORKSPACE.md) adds one compiled Svelte
+application served by Rust, a private account-owned note with revision conflicts,
+scoped non-secret drafts, one observation controller, and logout/revocation/
+account-switch/late-response cleanup. Separate account pages remain native Askama.
+Schema3 adds workspace notes without editing accepted0001/0002. The old schema2
+binary refuses schema3; recovery/rollback compatibility is not claimed.
 
-Main now has active ruleset25845081: main-only, empty bypass list, PR-only updates,
-no deletion/force pushes, exact GitHub Actions foundation check with current base,
-resolved conversations, merge/squash only. GitHub UI creation and API readback
-confirmed it. Source identity CI still deliberately uses development channel;
-accepted artifact publication and installed/browser identities remain open.
+New primary browser verification uses a [Rust WebDriver caller](tools/workspace-browser/README.md)
+against real Chromium/ChromeDriver156.0.8078.4, private trusted HTTPS and disposable
+PostgreSQL. Existing Playwright workflows remain additional regression coverage.
+Svelte/Vite/checker dependencies are exact locked; its checker uses a compatible
+TypeScript6 npm workspace while account/test TypeScript7 stays pinned. No production
+Node server, renderer, room engine or invented provider data is introduced.
 
-## Owner decision
+Source presence is not execution acceptance. Exact eventual-head/main CI, review,
+accepted source identity and terminal outcomes for this slice are recorded in
+[issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1) and
+[issue3](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/3). No Reborn image,
+production database/key/account, installed service, public/provider acceptance,
+packaged restore, native iPhone/Safari or performance result exists yet.
 
-[Issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1) holds exact
-deployment/ownership receipts; [issue2](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/2)
-tracks the roadmap; [issue3](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/3)
-is the next M0 implementation task. No source/CI/host acceptance is inherited.
+## Ownership and delivery
 
-Create Hizumi-Senpai/Keida-Hub-Reborn; use https://rewrite.keida.me as its target
-URL for now. Preserve https://keida.me. The final architecture is in
-[ADR0001](docs/decisions/0001-platform-and-assets.md); the next task is M0 in
-[ROADMAP.md](ROADMAP.md), followed by Crafty read-only workflows. Room/asset
-contracts are designed early; full room rendering is a later delivery.
+One active CORE integrates. No external Reborn worker assignment is active;
+existing original/Rewrite assignments and unpublished branches remain protected.
+Main ruleset25845081 is active, main-only, empty bypass list, PR-only with current
+base and required `Rust 1.99.1 / PostgreSQL 16` check, no deletion/force pushes,
+resolved conversations and merge/squash only. Refresh before integration.
 
-## Existing running baseline, not a Reborn release
+Accepted source, publication, installation and loaded browser identities remain
+separate. Source derivation/compiled HTTP/HTML metadata exist; immutable artifact
+publication, conflicting/late publisher admission, lazy-client retention and
+packaged recovery remain open. Full M0 is tracked in issue3, M0–M8 in issue2.
 
-GitHub refreshed on 2026-10-25:
+## Preserved live baseline
 
-- Original main: `f65cc4e372125a5cf64e0673248c71d89302e037`.
-- Rewrite main: `51e0f5625dd6e8518db8f324e447af2b62f69adf`.
-- Rewrite tree: `832e0b676ac212022b467d555feb5d2febe62430`.
-- Current target-site application: **Keida Hub Rewrite v0.1.4**.
-- Image: `sha256:6fc93c846aefd9087d58b8e8e218b7e2f629e6c6282df2bb4310e30c6f042adc`.
-- Container: `4d59e3f30d54d26365e4deef135a78a299086eb5ffd7ebfd74ce60ecf21661a9`,
-  started `2026-10-25T21:27:49.301819807Z`.
-- Origin: `192.168.1.135:8790`; data `/mnt/user/appdata/keida-hub-rewrite`;
-  network `keida-hub-rewrite-net`. These resources still belong to Rewrite.
+`https://rewrite.keida.me` is recorded as the independent **Keida-Hub-Rewrite
+v0.1.4**; `https://keida.me` remains the original Hub. Read the
+[Rewrite deployment receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Rewrite/issues/1#issuecomment-6403570111)
+and refresh host/container/process/network/bridge ownership before remote work.
 
-[Rewrite issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Rewrite/issues/1#issuecomment-6403570111)
-is the exact prior deployment receipt; its source, CI, browser, backup and rollback
-evidence is not Reborn acceptance. Owner saved-layout interaction, native iPhone/
-Safari and dedicated-key media acceptance remain open there.
-
-Read-only host refresh at **2026-10-25T22:58:34Z** observed the same Rewrite,
-original Hub, nginx, tunnel and Crafty container IDs/images/start times. Rewrite
-retains its single data mount and recorded network/port; active Steam-updater
-PID9858 remains present. Bridge is clean on `unraid-bridge`, commit
-`36c62838b99a9804383884f775358fe90b8bc45c`.
-No process/container was stopped or started, no pending bridge file replayed,
-no provider credentials read, and no URL route changed.
-Refresh this evidence again before future remote work; recorded PIDs are not locks.
-
-## Repository and delivery posture
-
-Reborn root/numbering anchor is `c06c3a03a3be17c4293e77b57fa3063ec65c8ad8`.
-It is the autogenerated README commit, not an application build. Numbering follows
-[UPDATES.md](docs/UPDATES.md); a numbered accepted source is not a published or
-installed server version. GitHub's Website metadata points to the target URL.
-
-One successor CORE owns Reborn integration. Internal scoped review/verification
-workers are scoped to source review and verification; no external Reborn worker
-assignment is active. Original/rewrite worker branches,
-PRs and unpublished checkouts retain their owners; see [OWNERSHIP.md](docs/OWNERSHIP.md).
-The original protected four-writer/two-reader game interface remains unfrozen.
-No lifecycle/proxy/updater authority transfers with this new repository.
+The last read-only host receipt (2026-10-25T22:58:34Z) recorded unchanged original,
+Rewrite, nginx/tunnel/Crafty containers, active Steam updater9858 and clean bridge
+`36c62838b99a9804383884f775358fe90b8bc45c`. Those observations are historical,
+not fresh locks. Rewrite's port8790/data/key/network remain its own. No host,
+route, provider credential, game controller or updater was changed by these source
+slices. Full host-updater installation and original game transfer retain separate
+concrete review/authorization gates. See [OWNERSHIP.md](docs/OWNERSHIP.md).
 
 ## Next concrete work
 
-After exact-head/main acceptance of the account documents, introduce the
-persistent Svelte workspace with account/session-generation isolation,
-logout/revocation/account-switch cleanup and actual browser verification. Keep the
-working target site online until cutover gates pass. Full host-updater activation
-remains a separately reviewed and authorized bootstrap.
+Qualify the workspace's exact eventual-head/main checks and record its receipt.
+Then introduce encrypted dedicated provider-secret enrollment with the first
+Crafty read-only caller; use valid TLS and honest observation freshness/unknowns.
+Immutable publication, supported client asset retention, isolated packaged
+install/upgrade/recovery and any public cutover remain separate acceptance gates.

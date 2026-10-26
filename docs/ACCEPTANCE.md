@@ -1,10 +1,10 @@
 # Reborn acceptance and evidence
 
-This is the acceptance contract for the [M0–M8 roadmap](../ROADMAP.md), drafted
-2026-10-25. **The current task is documentation only. No Reborn application,
-tests, benchmarks, provider enrollment, release, deployment or live workflow is
-accepted by these documents.** Original Hub and Rewrite receipts describe their
-own applications, not Reborn.
+This is the acceptance contract for the [M0–M8 roadmap](../ROADMAP.md), initially
+drafted2026-10-25. Source slices and exact execution receipts are recorded in
+[CURRENT_STATE.md](../CURRENT_STATE.md) and issues1/3. These requirements do not
+establish a published artifact, installed service or live/provider acceptance.
+Original Hub and Rewrite receipts describe their own applications, not Reborn.
 
 ## Evidence levels
 
@@ -227,7 +227,7 @@ acceptance status into Reborn.
 
 | Workflow / milestone | Source and exact-head checks | Artifact / installed identity | Browser / provider / platform evidence | Storage, permissions and recovery | Remaining gate / responsible owner | Transferred / retired responsibility |
 | --- | --- | --- | --- | --- | --- | --- |
-| M0 foundation | Planned | Not built or deployed | Not accepted | Design requirements above | Implementation and isolated verification / CORE | None |
+| M0 foundation | Foundation/auth/account source accepted; workspace source/exact CI tracked in issue3 | No published or installed Reborn artifact | Rust HTTP/browser and retained Chromium regressions; exact outcomes in issue1 | Private independent fixture data; packaged recovery open | Complete remaining M0/recovery gates / CORE | None |
 | M1 Crafty overview | Planned | Not built or deployed | Credentialed reads and real browser acceptance open | GET-only; no game effects | Dedicated enrollment and actual contract verification / CORE | None |
 
 Define the agreed required-workflow denominator before any completion percentage.

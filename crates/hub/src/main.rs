@@ -159,7 +159,8 @@ async fn readiness(State(state): State<AppState>) -> (StatusCode, Json<Readiness
 async fn headers(request: axum::extract::Request, next: middleware::Next) -> Response {
     let account_document = matches!(
         request.uri().path(),
-        "/account"
+        "/workspace"
+            | "/account"
             | "/account/claim"
             | "/account/sign-in"
             | "/account/sign-out"

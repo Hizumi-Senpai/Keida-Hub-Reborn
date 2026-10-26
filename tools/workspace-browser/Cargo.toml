@@ -1,0 +1,16 @@
+[package]
+name = "reborn-workspace-browser"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99.1"
+publish = false
+
+[dependencies]
+axum.workspace = true
+tokio.workspace = true
+sqlx.workspace = true
+serde_json.workspace = true
+reqwest.workspace = true
+getrandom.workspace = true
+url.workspace = true
+tokio-rustls.workspace = true
