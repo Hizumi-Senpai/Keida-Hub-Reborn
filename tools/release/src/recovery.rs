@@ -217,10 +217,14 @@ async fn start_pg(pg: &str, database: &str, root: &Path) -> Result<String> {
         .to_owned();
     let mut ready = false;
     for _ in 0..100 {
+        // The entrypoint's temporary initialization server uses only a Unix
+        // socket. TCP becomes available after initialization has finished.
         if docker(&[
             "exec",
             pg,
             "pg_isready",
+            "-h",
+            "127.0.0.1",
             "-U",
             "reborn_fixture",
             "-d",
