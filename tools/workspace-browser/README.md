@@ -19,7 +19,11 @@ Chrome for Testing is pinned by SHA256
 `43fd31766c7533a02dda2ded5ad50c2f861cd5400be7509c0abad71129f79d79`
 from the same official156.0.8078.4 version manifest. The exact browser is supplied
 to both native WebDriver and retained Playwright checks; version agreement is
-checked at runtime. The locked Playwright CLI installs OS dependencies only.
+checked at runtime. The Ubuntu24.04 runner supplies the browser's system libraries. The actual browser
+run still fails if a required library is unavailable. The certutil package is
+extracted privately without apt upgrades or global trust changes, from official
+Ubuntu Noble bytes pinned by SHA256
+`d8d6093edcf2206edeee40eaddd90a54bacc84cde4d8cc9c4fb50bd7aa12cf0d`.
 Node does not run this native browser driver. Svelte's compiled application is
 the code under test.
 

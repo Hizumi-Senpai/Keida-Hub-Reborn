@@ -87,9 +87,11 @@ jobs:
         timeout-minutes: 5
         working-directory: web
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libnss3-tools openssl
-          ./node_modules/.bin/playwright install-deps chromium
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 30 https://archive.ubuntu.com/ubuntu/pool/main/n/nss/libnss3-tools_3.98-1build1_amd64.deb -o "$RUNNER_TEMP/reborn-certutil.deb"
+          printf '%s  %s\n' d8d6093edcf2206edeee40eaddd90a54bacc84cde4d8cc9c4fb50bd7aa12cf0d "$RUNNER_TEMP/reborn-certutil.deb" | sha256sum --check --strict
+          dpkg-deb -x "$RUNNER_TEMP/reborn-certutil.deb" "$RUNNER_TEMP/reborn-tools"
+          printf '%s\n' "$RUNNER_TEMP/reborn-tools/usr/bin" >> "$GITHUB_PATH"
+          openssl version
           curl --fail --silent --show-error --location --connect-timeout 10 --max-time 90 https://storage.googleapis.com/chrome-for-testing-public/156.0.8078.4/linux64/chrome-linux64.zip -o "$RUNNER_TEMP/reborn-chrome.zip"
           printf '%s  %s\n' 43fd31766c7533a02dda2ded5ad50c2f861cd5400be7509c0abad71129f79d79 "$RUNNER_TEMP/reborn-chrome.zip" | sha256sum --check --strict
           unzip -q "$RUNNER_TEMP/reborn-chrome.zip" -d "$RUNNER_TEMP/reborn-chrome"
