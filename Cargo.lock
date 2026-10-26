@@ -1330,6 +1330,20 @@ name = "reborn-source-identity"
 version = "0.1.0"
 
 [[package]]
+name = "reborn-workspace-browser"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "getrandom 0.4.3",
+ "reqwest",
+ "serde_json",
+ "sqlx",
+ "tokio",
+ "tokio-rustls",
+ "url",
+]
+
+[[package]]
 name = "redox_syscall"
 version = "0.5.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"

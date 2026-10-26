@@ -1,8 +1,9 @@
 # Keida Hub Reborn deployment contract
 
-Status: locked design, documentation only. Reborn has no application runtime,
-published image, installed database or accepted deployment at this checkpoint.
-The rules below describe the implementation and acceptance still required.
+Status: deployment contract. Rust/browser source and isolated fixture execution
+are tracked in CURRENT_STATE.md and issues1/3. Reborn has no published image,
+production database, installed service or accepted public deployment. The rules
+below describe the packaged/operational acceptance still required.
 
 At this planning checkpoint, `https://rewrite.keida.me` serves **Keida Hub
 Rewrite v0.1.4**, not Reborn. Its eventual reuse for Reborn is reserved; creating
@@ -180,6 +181,6 @@ health/HTTP evidence, public/browser result and terminal success/failure/recover
 state. Record limitations and pending owner acceptance explicitly. Preserve prior
 checkpoint history rather than replacing it with an unqualified success claim.
 
-Current acceptance: **design documentation only**. There is no Reborn runtime,
-host bootstrap, installed updater, published release, database migration, URL
-cutover or live/browser acceptance to report.
+Current deployment acceptance: **not installed**. Source/fixture CI is separate
+from host bootstrap, updater activation, immutable publication, production
+migration, URL cutover and public/provider acceptance; all remain open.

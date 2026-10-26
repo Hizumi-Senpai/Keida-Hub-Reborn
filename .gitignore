@@ -5,3 +5,6 @@
 .env
 .env.*
 !*.example
+
+/web/workspace/node_modules/
+/web/workspace/dist/

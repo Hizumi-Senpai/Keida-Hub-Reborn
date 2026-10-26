@@ -1,0 +1,42 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO workspace_notes (account_id, body, revision) VALUES ($1, $2, $3) ON CONFLICT (account_id) DO UPDATE SET body = EXCLUDED.body, revision = EXCLUDED.revision RETURNING body, revision",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "body",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "workspace_notes",
+            "name": "body"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "revision",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "workspace_notes",
+            "name": "revision"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "c5a746203b3daffe8512fd72ca5ea5c21765ec16d9ca1a947b7ef5672ee08a0c"
+}

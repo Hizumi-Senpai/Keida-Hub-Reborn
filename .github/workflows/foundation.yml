@@ -3,6 +3,9 @@ on:
   pull_request:
   push:
     branches: [main]
+concurrency:
+  group: reborn-foundation-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -41,8 +44,10 @@ jobs:
           node --version
           npm ci
           npm run check
+          npm run check:workspace
           npm run build:account
-          git diff --exit-code -- ../crates/hub/static/account.js
+          npm run build:workspace
+          git diff --exit-code -- ../crates/hub/static/account.js ../crates/hub/static/workspace
       - name: Pin toolchain and record actual platform
         run: |
           rustup toolchain install 1.99.1 --profile minimal --component rustfmt --component clippy
@@ -79,11 +84,29 @@ jobs:
           SQLX_OFFLINE: 'true'
         run: cargo +1.99.1 build --workspace --release --locked
       - name: Install isolated HTTPS browser prerequisites
+        timeout-minutes: 5
         working-directory: web
         run: |
           sudo apt-get update
           sudo apt-get install -y libnss3-tools openssl
-          npm run install:browser
+          ./node_modules/.bin/playwright install-deps chromium
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 90 https://storage.googleapis.com/chrome-for-testing-public/156.0.8078.4/linux64/chrome-linux64.zip -o "$RUNNER_TEMP/reborn-chrome.zip"
+          printf '%s  %s\n' 43fd31766c7533a02dda2ded5ad50c2f861cd5400be7509c0abad71129f79d79 "$RUNNER_TEMP/reborn-chrome.zip" | sha256sum --check --strict
+          unzip -q "$RUNNER_TEMP/reborn-chrome.zip" -d "$RUNNER_TEMP/reborn-chrome"
+          "$RUNNER_TEMP/reborn-chrome/chrome-linux64/chrome" --version
+          printf 'REBORN_CHROMIUM=%s\nREBORN_BROWSER_EXECUTABLE=%s\n' "$RUNNER_TEMP/reborn-chrome/chrome-linux64/chrome" "$RUNNER_TEMP/reborn-chrome/chrome-linux64/chrome" >> "$GITHUB_ENV"
+      - name: Pin native browser driver and execute Rust workspace browser contracts
+        env:
+          REBORN_BROWSER_BINARY: ${{ github.workspace }}/target/release/keida-hub-reborn
+          REBORN_BROWSER_EXPECT_COMMIT: ${{ env.SOURCE_SHA }}
+          REBORN_AXE_SCRIPT: ${{ github.workspace }}/web/node_modules/axe-core/axe.min.js
+        run: |
+          curl --fail --silent --show-error --location --max-time 90 https://storage.googleapis.com/chrome-for-testing-public/156.0.8078.4/linux64/chromedriver-linux64.zip -o "$RUNNER_TEMP/reborn-chromedriver.zip"
+          printf '%s  %s\n' ae36d1b2391e6852594d7dd1be963f818ca05f117cfc5fdcb41c33f3074afa8b "$RUNNER_TEMP/reborn-chromedriver.zip" | sha256sum --check --strict
+          unzip -q "$RUNNER_TEMP/reborn-chromedriver.zip" -d "$RUNNER_TEMP/reborn-chromedriver"
+          export REBORN_CHROMEDRIVER="$RUNNER_TEMP/reborn-chromedriver/chromedriver-linux64/chromedriver"
+          "$REBORN_CHROMEDRIVER" --version
+          cargo +1.99.1 run -p reborn-workspace-browser --release --locked
       - name: Real Chromium HTTPS account workflows including elapsed form expiry
         working-directory: web
         env:

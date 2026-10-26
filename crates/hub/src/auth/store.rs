@@ -3,6 +3,8 @@
 
 use sqlx::{PgPool, Postgres, Transaction};
 
+pub(super) mod workspace;
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Error {
     Unauthorized,
