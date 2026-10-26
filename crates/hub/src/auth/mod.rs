@@ -95,9 +95,10 @@ async fn schema_guard(
 ) -> Response {
     let method = request.method();
     let path = request.uri().path();
-    let public_form = method == Method::GET && path == "/api/auth/form";
-    let protected_read =
-        method == Method::GET && matches!(path, "/api/auth/session" | "/api/owner/members");
+    // Axum's GET routes also serve HEAD through the same handlers.
+    let read_request = method == Method::GET || method == Method::HEAD;
+    let public_form = read_request && path == "/api/auth/form";
+    let protected_read = read_request && matches!(path, "/api/auth/session" | "/api/owner/members");
     let mutation_request = method == Method::POST;
     if public_form || protected_read || mutation_request {
         if !public_form {

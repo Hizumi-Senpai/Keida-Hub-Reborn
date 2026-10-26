@@ -147,7 +147,9 @@ concurrency/response-loss cases remain separate evidence.
 
 Exact schema readiness is enforced at every actual auth HTTP entrypoint and before
 CLI owner preparation, rather than being only a diagnostic. Header/client
-admission precedes that database read. Controlled concurrent upgrades still need
+admission precedes that database read. HEAD uses the same read admission and
+schema guard as GET because Axum dispatches it through the same handlers.
+Controlled concurrent upgrades still need
 the documented single migration owner and a held write fence; the schema probe is
 not a replacement for deployment coordination. Unknown future ledger/schema state
 after startup refuses auth reads/writes until the matched schema is restored.

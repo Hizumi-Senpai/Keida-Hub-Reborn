@@ -132,6 +132,12 @@ their earlier precedence. Public liveness remains 200 and readiness becomes 503.
 Removing only the owned future-ledger fixture restores ordinary operation using
 the same database, key and session; no reset or replacement key is allowed.
 
+Axum's implicit HEAD handling must receive the same read admission and schema
+fence as GET. Under staged drift HEAD form/session/member-list requests are 503
+without issuing cookies; protected HEAD with no client contract remains 426
+before database qualification. A normal HEAD form can issue its usual form cookie
+with an empty response body and no account-state mutation.
+
 The durable owner reference must also reject assigning the auth singleton to an
 existing member. With the fixed owner-role composite foreign key this is a real
 PostgreSQL foreign-key violation (23503), preserving the actual owner reference.

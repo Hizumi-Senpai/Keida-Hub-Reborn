@@ -1796,6 +1796,22 @@ async fn auth_durable_snapshot(
 async fn schema_drift_fences_live_auth_effects_and_restoration_preserves_existing_authority() {
     let fixture = Fixture::new().await;
     let (server, owner, setup) = claimed(&fixture).await;
+    let normal_head = server
+        .client
+        .head(server.url("/api/auth/form"))
+        .send()
+        .await
+        .expect("normal anonymous HEAD form");
+    assert_eq!(normal_head.status(), StatusCode::OK);
+    assert_no_store(&normal_head);
+    let _ = cookie(&normal_head, FORM_COOKIE, true);
+    assert!(
+        normal_head
+            .bytes()
+            .await
+            .expect("empty normal HEAD body")
+            .is_empty()
+    );
     let owner_id = owner.account["id"]
         .as_str()
         .expect("owner ID")
@@ -1828,6 +1844,47 @@ async fn schema_drift_fences_live_auth_effects_and_restoration_preserves_existin
         response.json::<Value>().await.expect("unready schema JSON")
             == json!({"status":"not_ready"})
     );
+
+    for path in ["/api/auth/form", "/api/auth/session", "/api/owner/members"] {
+        let request = if path == "/api/auth/form" {
+            server.client.head(server.url(path))
+        } else {
+            server.authorized(Method::HEAD, path, &owner)
+        };
+        let response = request.send().await.expect("HEAD under exact-schema fence");
+        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+        assert_no_store(&response);
+        assert!(
+            response.headers().get("set-cookie").is_none(),
+            "schema-fenced HEAD issued a cookie"
+        );
+        assert!(
+            response
+                .bytes()
+                .await
+                .expect("empty fenced HEAD body")
+                .is_empty()
+        );
+    }
+    for path in ["/api/auth/session", "/api/owner/members"] {
+        let response = server
+            .client
+            .head(server.url(path))
+            .header("Cookie", &owner.cookie)
+            .send()
+            .await
+            .expect("unqualified protected HEAD under drift");
+        assert_eq!(response.status(), StatusCode::UPGRADE_REQUIRED);
+        assert_no_store(&response);
+        assert!(response.headers().get("set-cookie").is_none());
+        assert!(
+            response
+                .bytes()
+                .await
+                .expect("empty unqualified HEAD body")
+                .is_empty()
+        );
+    }
 
     let response = server
         .client
