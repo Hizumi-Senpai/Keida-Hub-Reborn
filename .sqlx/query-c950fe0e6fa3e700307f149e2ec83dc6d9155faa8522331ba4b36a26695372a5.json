@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE sessions SET revoked = TRUE WHERE verifier = $1 AND verifier <> $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Bytea",
+        "Bytea"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c950fe0e6fa3e700307f149e2ec83dc6d9155faa8522331ba4b36a26695372a5"
+}

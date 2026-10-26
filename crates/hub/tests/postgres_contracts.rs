@@ -272,21 +272,21 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
     assert_eq!(metadata.len(), 1);
     assert!(metadata[0].get::<bool, _>("singleton"));
     assert_eq!(metadata[0].get::<String, _>("product"), "keida-hub-reborn");
-    assert_eq!(metadata[0].get::<i32, _>("schema_version"), 1);
+    assert_eq!(metadata[0].get::<i32, _>("schema_version"), 2);
     for statement in [
         "UPDATE reborn_schema SET singleton = FALSE",
         "UPDATE reborn_schema SET product = 'keida-hub-rewrite'",
-        "UPDATE reborn_schema SET schema_version = 2",
+        "UPDATE reborn_schema SET schema_version = 3",
     ] {
         assert_constraint(&mut connection, statement, "23514").await;
     }
-    assert_constraint(&mut connection, "INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',1)", "23505").await;
+    assert_constraint(&mut connection, "INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',2)", "23505").await;
 
     let ledger_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM _sqlx_migrations")
         .fetch_one(&mut connection)
         .await
         .expect("migration ledger count");
-    assert_eq!(ledger_count, 1);
+    assert_eq!(ledger_count, 2);
     assert_migrated(completed(database.migrate()).await);
     assert_eq!(
         sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM _sqlx_migrations")
@@ -297,33 +297,42 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
     );
 
     // Restore fixture bytes after each fault; acceptance requires rejecting the fault, not trusting a copied result.
-    let checksum: Vec<u8> =
-        sqlx::query_scalar("SELECT checksum FROM _sqlx_migrations WHERE version = 1")
-            .fetch_one(&mut connection)
-            .await
-            .expect("saved fixture checksum");
-    connection
-        .execute("UPDATE _sqlx_migrations SET checksum = decode('00', 'hex') WHERE version = 1")
-        .await
-        .expect("introduce checksum mismatch");
-    server.readiness(false).await;
-    sqlx::query("UPDATE _sqlx_migrations SET checksum = $1 WHERE version = 1")
-        .bind(checksum)
+    for version in [1_i64, 2] {
+        let checksum: Vec<u8> =
+            sqlx::query_scalar("SELECT checksum FROM _sqlx_migrations WHERE version = $1")
+                .bind(version)
+                .fetch_one(&mut connection)
+                .await
+                .expect("saved fixture checksum");
+        sqlx::query(
+            "UPDATE _sqlx_migrations SET checksum = decode('00', 'hex') WHERE version = $1",
+        )
+        .bind(version)
         .execute(&mut connection)
         .await
-        .expect("restore fixture checksum");
-    server.readiness(true).await;
+        .expect("introduce checksum mismatch");
+        server.readiness(false).await;
+        sqlx::query("UPDATE _sqlx_migrations SET checksum = $1 WHERE version = $2")
+            .bind(checksum)
+            .bind(version)
+            .execute(&mut connection)
+            .await
+            .expect("restore fixture checksum");
+        server.readiness(true).await;
 
-    connection
-        .execute("UPDATE _sqlx_migrations SET success = FALSE WHERE version = 1")
-        .await
-        .expect("introduce incomplete migration");
-    server.readiness(false).await;
-    connection
-        .execute("UPDATE _sqlx_migrations SET success = TRUE WHERE version = 1")
-        .await
-        .expect("restore migration completion");
-    server.readiness(true).await;
+        sqlx::query("UPDATE _sqlx_migrations SET success = FALSE WHERE version = $1")
+            .bind(version)
+            .execute(&mut connection)
+            .await
+            .expect("introduce incomplete migration");
+        server.readiness(false).await;
+        sqlx::query("UPDATE _sqlx_migrations SET success = TRUE WHERE version = $1")
+            .bind(version)
+            .execute(&mut connection)
+            .await
+            .expect("restore migration completion");
+        server.readiness(true).await;
+    }
 
     connection.execute("INSERT INTO _sqlx_migrations (version, description, success, checksum, execution_time) VALUES (999, 'future-fixture', TRUE, decode('00','hex'), 0)").await.expect("introduce unsupported future schema");
     server.readiness(false).await;
@@ -338,12 +347,12 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
         .await
         .expect("remove singleton fixture row");
     server.readiness(false).await;
-    connection.execute("INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',1)").await.expect("restore singleton fixture row");
+    connection.execute("INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',2)").await.expect("restore singleton fixture row");
     server.readiness(true).await;
 }
 
 #[tokio::test]
-async fn concurrent_migration_commands_leave_one_complete_migration_and_valid_metadata() {
+async fn concurrent_migration_commands_leave_both_complete_migrations_and_valid_metadata() {
     let database = Database::create().await;
     let first = database.migrate();
     let second = database.migrate();
@@ -351,10 +360,109 @@ async fn concurrent_migration_commands_leave_one_complete_migration_and_valid_me
     assert_migrated(first);
     assert_migrated(second);
     let mut connection = database.connect().await;
-    let row = sqlx::query("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE success AND version = 1) AS completed FROM _sqlx_migrations")
+    let row = sqlx::query("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE success AND version IN (1, 2)) AS completed FROM _sqlx_migrations")
         .fetch_one(&mut connection).await.expect("inspect concurrent ledger");
-    assert_eq!(row.get::<i64, _>("total"), 1);
-    assert_eq!(row.get::<i64, _>("completed"), 1);
+    assert_eq!(row.get::<i64, _>("total"), 2);
+    assert_eq!(row.get::<i64, _>("completed"), 2);
     let server = Server::start(&database).await;
     server.readiness(true).await;
+}
+
+#[tokio::test]
+async fn actual_schema_one_upgrades_to_auth_schema_two_without_losing_existing_data() {
+    let database = Database::create().await;
+    let mut connection = database.connect().await;
+    // Resolve the real versioned migration source. Restrict SQLx's actual
+    // migrator to the already accepted first migration; do not synthesize its
+    // SQL, checksum or ledger row in the fixture.
+    let source = sqlx::migrate!("../../migrations");
+    let accepted_first = source
+        .iter()
+        .find(|migration| migration.version == 1)
+        .expect("accepted migration0001 remains in the actual source")
+        .clone();
+    let prior = sqlx::migrate::Migrator::with_migrations(vec![accepted_first.clone()]);
+    prior
+        .run(&mut connection)
+        .await
+        .expect("install the real accepted schema one");
+    let before =
+        sqlx::query("SELECT product, schema_version FROM reborn_schema WHERE singleton = TRUE")
+            .fetch_one(&mut connection)
+            .await
+            .expect("inspect actual prior metadata");
+    assert_eq!(before.get::<String, _>("product"), "keida-hub-reborn");
+    assert_eq!(before.get::<i32, _>("schema_version"), 1);
+    let prior_rows =
+        sqlx::query("SELECT version, checksum, success FROM _sqlx_migrations ORDER BY version")
+            .fetch_all(&mut connection)
+            .await
+            .expect("inspect actual prior ledger");
+    assert_eq!(prior_rows.len(), 1);
+    assert_eq!(prior_rows[0].get::<i64, _>("version"), 1);
+    assert!(prior_rows[0].get::<bool, _>("success"));
+    assert_eq!(
+        prior_rows[0].get::<Vec<u8>, _>("checksum"),
+        accepted_first.checksum.as_ref()
+    );
+    let absent: Option<String> = sqlx::query_scalar("SELECT to_regclass('users')::text")
+        .fetch_one(&mut connection)
+        .await
+        .expect("prior schema has no auth accounts");
+    assert!(absent.is_none());
+
+    connection
+        .execute(
+            "CREATE TABLE upgrade_fixture_sentinel (id bigint PRIMARY KEY, retained text NOT NULL)",
+        )
+        .await
+        .expect("create owned unrelated pre-upgrade fixture");
+    sqlx::query("INSERT INTO upgrade_fixture_sentinel (id, retained) VALUES ($1, $2)")
+        .bind(101_i64)
+        .bind("accepted-before-auth")
+        .execute(&mut connection)
+        .await
+        .expect("save pre-upgrade sentinel");
+    let server = Server::start(&database).await;
+    server.readiness(false).await;
+    assert_migrated(completed(database.migrate()).await);
+    server.readiness(true).await;
+
+    let after =
+        sqlx::query("SELECT product, schema_version FROM reborn_schema WHERE singleton = TRUE")
+            .fetch_one(&mut connection)
+            .await
+            .expect("inspect upgraded metadata");
+    assert_eq!(after.get::<String, _>("product"), "keida-hub-reborn");
+    assert_eq!(after.get::<i32, _>("schema_version"), 2);
+    let ledger =
+        sqlx::query("SELECT version, checksum, success FROM _sqlx_migrations ORDER BY version")
+            .fetch_all(&mut connection)
+            .await
+            .expect("inspect upgraded ledger");
+    assert_eq!(ledger.len(), 2);
+    assert_eq!(ledger[0].get::<i64, _>("version"), 1);
+    assert_eq!(ledger[1].get::<i64, _>("version"), 2);
+    assert!(ledger.iter().all(|row| row.get::<bool, _>("success")));
+    assert_eq!(
+        ledger[0].get::<Vec<u8>, _>("checksum"),
+        prior_rows[0].get::<Vec<u8>, _>("checksum")
+    );
+    let counts = sqlx::query("SELECT (SELECT COUNT(*) FROM users) AS users, (SELECT COUNT(*) FROM sessions) AS sessions, (SELECT COUNT(*) FROM auth_throttles) AS throttles")
+        .fetch_one(&mut connection)
+        .await
+        .expect("inspect fresh auth rows after upgrade");
+    assert_eq!(counts.get::<i64, _>("users"), 0);
+    assert_eq!(counts.get::<i64, _>("sessions"), 0);
+    assert_eq!(counts.get::<i64, _>("throttles"), 66);
+    let sentinel = sqlx::query("SELECT id, retained FROM upgrade_fixture_sentinel")
+        .fetch_all(&mut connection)
+        .await
+        .expect("read preserved pre-upgrade data");
+    assert_eq!(sentinel.len(), 1);
+    assert_eq!(sentinel[0].get::<i64, _>("id"), 101);
+    assert_eq!(
+        sentinel[0].get::<String, _>("retained"),
+        "accepted-before-auth"
+    );
 }

@@ -44,7 +44,9 @@ jobs:
           cargo +1.99.1 run -p reborn-source-identity --locked -- --repo . --candidate "$SOURCE_SHA" --channel development --format env >> "$GITHUB_ENV"
       - name: Recreate compilation schema and check literal queries online
         run: |
-          psql -h 127.0.0.1 -U reborn_fixture -d reborn_build -v ON_ERROR_STOP=1 -f migrations/0001_foundation.sql
+          for migration in migrations/*.sql; do
+            psql -h 127.0.0.1 -U reborn_fixture -d reborn_build -v ON_ERROR_STOP=1 -f "$migration"
+          done
           mkdir "$RUNNER_TEMP/reborn-sqlx"
           SQLX_OFFLINE=false SQLX_OFFLINE_DIR="$RUNNER_TEMP/reborn-sqlx" cargo +1.99.1 check --workspace --all-targets --locked
       - name: Verify checked offline metadata against recreated schema

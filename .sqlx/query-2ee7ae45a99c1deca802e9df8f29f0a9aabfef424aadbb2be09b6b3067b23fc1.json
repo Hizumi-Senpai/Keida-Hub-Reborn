@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT window_start, attempts FROM auth_throttles WHERE scope = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "window_start",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "auth_throttles",
+            "name": "window_start"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "attempts",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "auth_throttles",
+            "name": "attempts"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int2"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "2ee7ae45a99c1deca802e9df8f29f0a9aabfef424aadbb2be09b6b3067b23fc1"
+}

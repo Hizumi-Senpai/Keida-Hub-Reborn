@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM sessions WHERE account_id = $1 AND (expires_at <= $2 OR revoked = TRUE OR generation <> $3)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "27d8d74ec5319e51eeec403ed32b5b4b7d2d4bda7275726f90b9fea32b827bec"
+}

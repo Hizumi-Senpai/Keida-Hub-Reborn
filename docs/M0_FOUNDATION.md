@@ -1,5 +1,9 @@
 # M0 first foundation slice
 
+This records the historical PR#4 scope. The later
+[authentication API slice](M0_AUTH_API.md) adds schema2 and private routes;
+[CURRENT_STATE.md](../CURRENT_STATE.md) and linked receipts track integration.
+
 This slice introduces a bootable Rust service and its verification boundary. It is
 not the full M0 milestone, a public deployment, an authentication implementation,
 an artifact publisher, or the Svelte workspace. Private routes return 404; no

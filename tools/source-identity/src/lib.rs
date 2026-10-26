@@ -5,7 +5,7 @@ use std::{collections::BTreeMap, path::PathBuf, process::Command, str::FromStr};
 
 pub const PRODUCT: &str = "keida-hub-reborn";
 pub const ANCHOR: &str = "c06c3a03a3be17c4293e77b57fa3063ec65c8ad8";
-pub const INTERFACE_CONTRACT: &str = "reborn-foundation-v1";
+pub const INTERFACE_CONTRACT: &str = "reborn-auth-v1";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Channel {
