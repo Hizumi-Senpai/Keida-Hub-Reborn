@@ -6,6 +6,7 @@ rust-version.workspace = true
 build = "build.rs"
 
 [dependencies]
+askama.workspace = true
 axum.workspace = true
 tokio.workspace = true
 tower.workspace = true

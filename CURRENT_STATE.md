@@ -3,8 +3,7 @@
 Updated **2026-10-25 America/Chicago**. M0 is in progress.
 The [accepted foundation, PR #4](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/pull/4)
 provides Rust/Axum configuration, liveness/version diagnostics, exact PostgreSQL
-schema readiness, explicit migrations and source identity. Its accepted source is
-**0.1.2**, main `dab2a56a75c2af83b0b74f5161edeb5203b21727`; this is not an installed release.
+schema readiness, explicit migrations and source identity.
 
 [Authentication API slice, PR #5](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/pull/5)
 adds private key/setup preparation, atomic owner claim, Argon2id passwords,
@@ -14,16 +13,22 @@ schema1 and refuses unsupported live schema state before auth access. See the
 [API contract](docs/M0_AUTH_API.md), [independent verification contracts](docs/M0_AUTH_API_CONTRACTS.md)
 and [exact-head/main integration receipts](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/3).
 
-Authentication head `4addebf647ccb8d0d844a8386dd835218683ccd9` passed Rust1.99.1
-formatting, locked all-target checks, online/offline verification of25 SQL queries,
-Clippy-D, all36 tests and locked release build on Ubuntu24.04/PostgreSQL16
-([CI40258239670](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/actions/runs/40258239670)).
-Later heads and accepted main require their own exact CI in the receipts. No test
-was ignored. HTTP uses real local sockets and disposable PostgreSQL, not a browser.
-No Reborn image, production database/key/account, live deployment, browser/provider
-acceptance or measured speed comparison exists yet. Askama account pages and the
-account-scoped persistent Svelte workspace are the next M0 slices. Encrypted
-provider-secret storage awaits a real provider enrollment caller.
+The API's accepted source is **0.1.3**, main
+`5f353c57eecb5347a32e33903b404752eb15d591`. Its eventual-head and main CI passed
+Rust1.99.1 formatting, locked all-target checks,25 SQLx query metadata checks,
+Clippy-D,36 tests and locked release; see the
+[exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6406919172).
+
+The [account-document slice](docs/M0_ACCOUNT_PAGES.md) adds separate Askama native
+claim/sign-in/account/sign-out pages and a bounded identity enhancement. It shares
+the same Rust authority and keeps JSON API admission strict. Independent native
+and trusted-HTTPS Chromium contracts include actual elapsed form expiry,
+cross-tab switching, late responses, remote expiry and no-JavaScript forms.
+Exact eventual-head/main execution and acceptance are recorded in issue3, not
+implied by source presence. No Reborn image, production database/key/account,
+live deployment, public/provider acceptance or performance result exists yet.
+The persistent Svelte workspace and encrypted provider-secret enrollment remain
+open. Linux Chromium/mobile-viewport evidence is not native iPhone/Safari proof.
 
 Main now has active ruleset25845081: main-only, empty bypass list, PR-only updates,
 no deletion/force pushes, exact GitHub Actions foundation check with current base,
@@ -88,9 +93,8 @@ No lifecycle/proxy/updater authority transfers with this new repository.
 
 ## Next concrete work
 
-Integrate the authentication API with exact-head and accepted-main CI, then add
-separate Askama account pages and actual browser sign-in/rejected-form recovery.
-Introduce the persistent Svelte workspace with account/session-generation isolation,
+After exact-head/main acceptance of the account documents, introduce the
+persistent Svelte workspace with account/session-generation isolation,
 logout/revocation/account-switch cleanup and actual browser verification. Keep the
 working target site online until cutover gates pass. Full host-updater activation
 remains a separately reviewed and authorized bootstrap.

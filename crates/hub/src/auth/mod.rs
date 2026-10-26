@@ -1,3 +1,5 @@
+mod account_pages;
+mod account_view;
 pub mod crypto;
 pub mod store;
 #[cfg(test)]
@@ -25,6 +27,9 @@ use std::{
 };
 
 pub const CONTRACT: &str = "reborn-auth-v1";
+pub fn account_timeout() -> Response {
+    account_pages::timeout()
+}
 const SESSION: &str = "__Host-keida-reborn-session";
 const FORM: &str = "__Host-keida-reborn-form";
 
@@ -85,7 +90,8 @@ pub fn router(service: Service) -> Router {
             service.clone(),
             schema_guard,
         ))
-        .with_state(service)
+        .with_state(service.clone())
+        .merge(account_pages::router(service))
 }
 
 async fn schema_guard(
@@ -228,6 +234,9 @@ fn clock() -> Result<u64, ApiError> {
 }
 fn anonymous(service: &Service, headers: &HeaderMap) -> Result<(), ApiError> {
     let csrf = mutation(service, headers)?;
+    anonymous_csrf(service, headers, csrf)
+}
+fn anonymous_csrf(service: &Service, headers: &HeaderMap, csrf: &str) -> Result<(), ApiError> {
     let parsed = cookies(headers).map_err(|_| ApiError(StatusCode::FORBIDDEN, "csrf_rejected"))?;
     let cookie = parsed
         .form
@@ -247,11 +256,19 @@ async fn principal(
     headers: &HeaderMap,
     write: bool,
 ) -> Result<Principal, ApiError> {
-    if write {
-        mutation(service, headers)?;
+    let csrf = if write {
+        Some(mutation(service, headers)?)
     } else {
         client(headers)?;
-    }
+        None
+    };
+    principal_csrf(service, headers, csrf).await
+}
+async fn principal_csrf(
+    service: &Service,
+    headers: &HeaderMap,
+    csrf: Option<&str>,
+) -> Result<Principal, ApiError> {
     let parsed =
         cookies(headers).map_err(|_| ApiError(StatusCode::UNAUTHORIZED, "invalid_session"))?;
     let token = parsed
@@ -259,11 +276,7 @@ async fn principal(
         .ok_or(ApiError(StatusCode::UNAUTHORIZED, "invalid_session"))?;
     let hash = Secrets::token_hash(&token)
         .map_err(|_| ApiError(StatusCode::UNAUTHORIZED, "invalid_session"))?;
-    if write
-        && !service
-            .secrets
-            .verify_session_csrf(&token, one(headers, "x-csrf-token").unwrap_or(""))
-    {
+    if csrf.is_some_and(|csrf| !service.secrets.verify_session_csrf(&token, csrf)) {
         return Err(ApiError(StatusCode::FORBIDDEN, "csrf_rejected"));
     }
     let session = store::session(&service.pool, &service.key_id, &hash).await?;
@@ -335,9 +348,12 @@ fn signed_in(
         Json(json!({"account":account(who),"csrf_token":csrf})),
     )
         .into_response();
-    set_cookie(&mut response, SESSION, token, 43_200);
-    set_cookie(&mut response, FORM, "", 0);
+    session_cookies(&mut response, token);
     Ok(response)
+}
+fn session_cookies(response: &mut Response, token: &str) {
+    set_cookie(response, SESSION, token, 43_200);
+    set_cookie(response, FORM, "", 0);
 }
 
 async fn form(State(service): State<Service>) -> Result<Response, ApiError> {
@@ -372,6 +388,24 @@ async fn claim(
 ) -> Result<Response, ApiError> {
     anonymous(&service, &headers)?;
     let input = payload(body)?;
+    let authenticated = authenticate_claim(&service, input).await?;
+    signed_in(
+        &service,
+        StatusCode::CREATED,
+        authenticated.who,
+        &authenticated.token,
+    )
+}
+struct Authenticated {
+    who: store::Account,
+    token: String,
+}
+// Both admitted HTTP transports call the same credential/domain path. Cookie,
+// origin and client-contract admission remain explicit in each adapter.
+async fn authenticate_claim(
+    service: &Service,
+    input: ClaimInput,
+) -> Result<Authenticated, ApiError> {
     let username = username(input.username)?;
     password(&input.password)?;
     let setup_hash = Secrets::token_hash(&input.setup_secret)
@@ -393,7 +427,7 @@ async fn claim(
         &session_hash,
     )
     .await?;
-    signed_in(&service, StatusCode::CREATED, who, &token)
+    Ok(Authenticated { who, token })
 }
 async fn login(
     State(service): State<Service>,
@@ -402,6 +436,19 @@ async fn login(
 ) -> Result<Response, ApiError> {
     anonymous(&service, &headers)?;
     let input = payload(body)?;
+    let authenticated = authenticate_login(&service, &headers, input).await?;
+    signed_in(
+        &service,
+        StatusCode::OK,
+        authenticated.who,
+        &authenticated.token,
+    )
+}
+async fn authenticate_login(
+    service: &Service,
+    headers: &HeaderMap,
+    input: LoginInput,
+) -> Result<Authenticated, ApiError> {
     let username = username(input.username)?;
     password(&input.password)?;
     let snapshot = store::reserve_login(
@@ -420,7 +467,7 @@ async fn login(
         .ok_or(ApiError(StatusCode::UNAUTHORIZED, "invalid_credentials"))?;
     let token = Secrets::token()?;
     let hash = Secrets::token_hash(&token)?;
-    let previous_hash = cookies(&headers)
+    let previous_hash = cookies(headers)
         .map_err(|_| ApiError(StatusCode::FORBIDDEN, "csrf_rejected"))?
         .session
         .map(|value| Secrets::token_hash(&value))
@@ -440,7 +487,7 @@ async fn login(
             e.into()
         }
     })?;
-    signed_in(&service, StatusCode::OK, who, &token)
+    Ok(Authenticated { who, token })
 }
 async fn session(State(service): State<Service>, headers: HeaderMap) -> Response {
     match principal(&service, &headers, false).await {

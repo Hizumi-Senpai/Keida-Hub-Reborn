@@ -6,8 +6,9 @@ with an optional editable 3D room and companion.
 
 **Target URL: https://rewrite.keida.me.** That URL currently serves the independent
 Keida-Hub-Rewrite v0.1.4. Reborn has an [M0 backend foundation](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/pull/4)
-and a [private owner/session authentication API slice](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/pull/5)
-([contract and verification scope](docs/M0_AUTH_API.md));
+and a [private owner/session authentication API](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/pull/5),
+with [separate Askama account documents](docs/M0_ACCOUNT_PAGES.md)
+([API contract](docs/M0_AUTH_API.md));
 there is no Reborn image, production database, live deployment or performance
 result yet. Keep https://keida.me live and unchanged. Reuse of the target URL follows
 the [deployment and cutover gates](docs/DEPLOYMENT.md), preserving the working

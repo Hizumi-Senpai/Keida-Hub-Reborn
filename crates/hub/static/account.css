@@ -1,0 +1,164 @@
+:root {
+  color-scheme: dark;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #edeff4;
+  background: #0d1016;
+  font-synthesis: none;
+  line-height: 1.5;
+  --surface: #151a23;
+  --line: #303848;
+  --muted: #a9b3c4;
+  --accent: #b6eed7;
+  --accent-ink: #10251e;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 18rem; }
+a { color: inherit; text-underline-offset: .25em; }
+a:hover { color: var(--accent); }
+button, input { font: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid #cdf9e7; outline-offset: 4px; }
+
+.skip-link {
+  position: absolute;
+  z-index: 10;
+  top: .75rem;
+  left: 1rem;
+  padding: .7rem 1rem;
+  color: var(--accent-ink);
+  background: var(--accent);
+  transform: translateY(-180%);
+}
+.skip-link:focus { transform: translateY(0); }
+.site-header, .site-footer {
+  width: min(100% - 6rem, 76rem);
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+.site-header { min-height: 7rem; }
+.brand { display: inline-flex; align-items: center; gap: .8rem; text-decoration: none; font-size: 1.12rem; font-weight: 650; letter-spacing: -.02em; }
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid #6f9588;
+  border-radius: .7rem .7rem .7rem .15rem;
+  color: var(--accent);
+  font-size: 1.15rem;
+}
+.brand-edition { margin-left: .2rem; font-weight: 450; color: var(--muted); }
+.header-label { color: var(--muted); font-size: .8rem; letter-spacing: .025em; }
+.account-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(21rem, 28rem);
+  align-items: center;
+  gap: clamp(3rem, 8vw, 9rem);
+  width: min(100% - 6rem, 67rem);
+  min-height: calc(100svh - 14rem);
+  margin-inline: auto;
+  padding-block: 3rem 4rem;
+}
+.eyebrow { margin: 0 0 1rem; font-size: .72rem; line-height: 1.4; font-weight: 650; text-transform: uppercase; letter-spacing: .16em; color: var(--accent); }
+.introduction h2 { margin: 0; font-size: clamp(2.5rem, 4.3vw, 4.1rem); line-height: 1.12; letter-spacing: -.045em; font-weight: 520; }
+.introduction-copy { max-width: 22rem; margin-top: 1.5rem; color: var(--muted); font-size: 1.04rem; line-height: 1.75; }
+.introduction-note { display: flex; align-items: flex-start; gap: .8rem; max-width: 20rem; margin-top: 3.2rem; padding-top: 1.4rem; border-top: 1px solid var(--line); }
+.introduction-note p { margin: 0; font-size: .8rem; line-height: 1.65; color: var(--muted); }
+.note-mark { width: .4rem; height: .4rem; margin-top: .5rem; flex: 0 0 auto; border-radius: 50%; background: var(--accent); }
+.account-card { padding: 2.25rem; border: 1px solid var(--line); border-radius: 1.2rem; background: var(--surface); box-shadow: 0 1.5rem 4rem #0000001f; }
+.card-heading .eyebrow { margin-bottom: .6rem; font-size: .65rem; color: var(--muted); }
+.card-heading h1 { margin: 0; font-size: 1.75rem; font-weight: 560; line-height: 1.2; letter-spacing: -.035em; }
+.card-heading > p:last-child { margin: .9rem 0 0; color: var(--muted); font-size: .87rem; line-height: 1.65; }
+.credential-form { margin-top: 1.75rem; }
+.field + .field { margin-top: 1.25rem; }
+.field label { display: block; margin-bottom: .45rem; font-size: .83rem; font-weight: 550; }
+.field input {
+  width: 100%;
+  min-height: 2.9rem;
+  padding: .7rem .8rem;
+  border: 1px solid #465165;
+  border-radius: .5rem;
+  background: #0f141d;
+  color: #f4f7fc;
+  font-size: 1rem;
+}
+.field input:hover { border-color: #69778e; }
+.field input:focus { border-color: var(--accent); }
+.field-help { margin: .5rem 0 0; color: var(--muted); font-size: .72rem; line-height: 1.65; }
+.button { display: inline-flex; width: 100%; align-items: center; justify-content: center; gap: .7rem; min-height: 2.9rem; padding: .75rem 1rem; border: 1px solid transparent; border-radius: .5rem; text-align: center; text-decoration: none; font-size: .85rem; line-height: 1.4; font-weight: 650; }
+.button-primary { color: var(--accent-ink); background: var(--accent); }
+.button-primary:hover { color: #071a13; background: #d0f8e7; }
+.button-primary span { margin-left: auto; font-size: 1.1rem; font-weight: 400; }
+.credential-form > .button { margin-top: 1.75rem; }
+.button-secondary { color: #e4eaf3; border-color: #586478; background: transparent; }
+.button-secondary:hover { border-color: #b4c4db; background: #202836; }
+.card-links { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .75rem 1rem; margin-top: 1.4rem; font-size: .73rem; color: #bac7db; }
+.card-links a { padding-block: .2rem; }
+.card-footnote { display: flex; align-items: center; gap: .5rem; margin-top: 1.75rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .65rem; }
+.card-footnote > span { color: #8cbaa8; font-size: .4rem; }
+.form-message { margin-top: 1.5rem; padding: .9rem 1rem; border: 1px solid #8f7161; border-radius: .5rem; color: #f5ddcb; background: #34291f; }
+.form-message p { margin: 0; font-size: .82rem; line-height: 1.65; }
+.account-status { margin: 1.5rem 0; font-size: .8rem; line-height: 1.6; color: var(--muted); }
+.private-account { display: flex; align-items: center; gap: .85rem; margin-block: 1.5rem; padding: 1rem; border: 1px solid var(--line); border-radius: .65rem; background: #101720; }
+.account-avatar { width: 2.6rem; height: 2.6rem; display: grid; place-items: center; flex: 0 0 auto; border-radius: .65rem; background: #263d36; color: var(--accent); }
+.account-name { margin: 0; font-size: .95rem; font-weight: 600; overflow-wrap: anywhere; }
+.account-role { margin: .15rem 0 0; font-size: .73rem; color: var(--muted); text-transform: capitalize; }
+.session-actions { margin-top: 1.5rem; }
+.session-actions > form + form { margin-top: 1.2rem; }
+.no-script-note, .recovery-options > p { font-size: .8rem; line-height: 1.7; color: var(--muted); }
+.recovery-options { margin-top: 1.5rem; }
+.recovery-options .button { margin-top: .75rem; }
+.text-link { display: inline-block; margin-top: 1rem; font-size: .78rem; }
+.site-footer { align-items: flex-start; padding-block: 1.5rem 2rem; border-top: 1px solid #242c3b; color: var(--muted); font-size: .7rem; }
+.site-footer > p { margin: .15rem 0; }
+.build-details { max-width: min(40rem, 80vw); }
+.build-details summary { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: .65rem; cursor: pointer; list-style: none; }
+.build-details summary::-webkit-details-marker { display: none; }
+.build-details summary::after { content: "+"; font-size: 1rem; color: #d2deed; }
+.build-details[open] summary::after { content: "−"; }
+.version-label { font-weight: 600; color: #dce7f6; overflow-wrap: anywhere; }
+.revision-label { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; color: #8f9db3; }
+.details-label { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.build-details dl { margin: 1rem 0 0; padding: 1rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--surface); }
+.build-details dl > div { display: grid; grid-template-columns: 4rem minmax(0, 1fr); gap: .75rem; }
+.build-details dl > div + div { margin-top: .6rem; }
+.build-details dt { color: #8795ab; }
+.build-details dd { margin: 0; color: #d7e1ef; overflow-wrap: anywhere; }
+
+@media (max-width: 56rem) {
+  .site-header, .site-footer { width: calc(100% - 3rem); }
+  .account-layout { width: calc(100% - 3rem); grid-template-columns: minmax(0, 1fr) minmax(19rem, 25rem); gap: 2.5rem; }
+  .account-card { padding: 1.75rem; }
+  .introduction h2 { font-size: 2.5rem; }
+  .introduction-copy { font-size: .95rem; }
+}
+
+@media (max-width: 43rem) {
+  .site-header { min-height: 5.5rem; }
+  .site-header, .site-footer, .account-layout { width: calc(100% - 2rem); }
+  .account-layout { grid-template-columns: minmax(0, 1fr); align-items: start; gap: 1.8rem; min-height: auto; padding-block: 1rem 2rem; }
+  .introduction { padding-inline: .4rem; }
+  .introduction h2 { font-size: 2rem; }
+  .desktop-break { display: none; }
+  .introduction > .eyebrow { margin-bottom: .6rem; font-size: .6rem; }
+  .introduction-copy { margin: .8rem 0 0; font-size: .85rem; }
+  .introduction-note { display: none; }
+  .account-card { padding: 1.5rem; border-radius: .9rem; }
+  .header-label { font-size: .68rem; }
+  .card-heading h1 { font-size: 1.6rem; }
+  .site-footer { gap: 1rem; }
+  .build-details { max-width: 70%; }
+  .build-details summary { gap: .35rem .6rem; }
+  .revision-label { font-size: .62rem; }
+  .build-details dl > div { grid-template-columns: 1fr; gap: .15rem; }
+  .build-details dl > div + div { margin-top: .9rem; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .button, .field input { transition: background-color .12s ease, border-color .12s ease; }
+}

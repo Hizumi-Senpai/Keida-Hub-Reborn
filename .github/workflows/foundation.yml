@@ -9,7 +9,7 @@ jobs:
   foundation:
     name: Rust 1.99.1 / PostgreSQL 16
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:16.15-bookworm@sha256:d81f7b51697014367236d07ec58b54153fc28f828b72bf247fe5c7487520bcb0
@@ -32,6 +32,17 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.22.1'
+      - name: Locked browser tooling and reproducible account script
+        working-directory: web
+        run: |
+          node --version
+          npm ci
+          npm run check
+          npm run build:account
+          git diff --exit-code -- ../crates/hub/static/account.js
       - name: Pin toolchain and record actual platform
         run: |
           rustup toolchain install 1.99.1 --profile minimal --component rustfmt --component clippy
@@ -67,3 +78,37 @@ jobs:
         env:
           SQLX_OFFLINE: 'true'
         run: cargo +1.99.1 build --workspace --release --locked
+      - name: Install isolated HTTPS browser prerequisites
+        working-directory: web
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3-tools openssl
+          npm run install:browser
+      - name: Real Chromium HTTPS account workflows including elapsed form expiry
+        working-directory: web
+        env:
+          REBORN_BROWSER_BINARY: ${{ github.workspace }}/target/release/keida-hub-reborn
+          REBORN_BROWSER_EXPECT_COMMIT: ${{ env.SOURCE_SHA }}
+          REBORN_BROWSER_OUTPUT_DIR: ${{ runner.temp }}/reborn-browser-safe
+        run: npm run test:browser
+      - name: Export only explicitly blank account views for visual review
+        if: always()
+        env:
+          REBORN_BROWSER_OUTPUT_DIR: ${{ runner.temp }}/reborn-browser-safe
+        run: |
+          node --input-type=module <<'JS'
+          import { readdir, readFile } from 'node:fs/promises';
+          import { join } from 'node:path';
+          async function visit(path) {
+            for (const entry of await readdir(path, { withFileTypes: true }).catch(() => [])) {
+              const file = join(path, entry.name);
+              if (entry.isDirectory()) await visit(file);
+              else if (/^blank-(claim-desktop|sign-in-mobile)\.png$/.test(entry.name)) {
+                const png = await readFile(file);
+                if (png.length > 200000) throw new Error('Blank preview exceeds review size');
+                process.stdout.write(`SAFE_BLANK_ACCOUNT_PNG ${entry.name} ${png.toString('base64')}\n`);
+              }
+            }
+          }
+          await visit(process.env.REBORN_BROWSER_OUTPUT_DIR);
+          JS

@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="referrer" content="same-origin">
+  <meta name="reborn-product" content="{{ identity.product }}">
+  <meta name="reborn-version" content="{{ identity.version }}">
+  <meta name="reborn-commit" content="{{ identity.commit }}">
+  <meta name="reborn-tree" content="{{ identity.tree }}">
+  <meta name="reborn-api-contract" content="{{ identity.contract }}">
+  <title>{{ self.title() }} · Keida Reborn</title>
+  <link rel="stylesheet" href="{{ css_url }}">
+  {% match script_url %}
+  {% when Some with (url) %}<script type="module" src="{{ url }}"></script>
+  {% when None %}
+  {% endmatch %}
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="/account" aria-label="Keida Reborn account">
+      <span class="brand-mark" aria-hidden="true">K</span>
+      <span>Keida <span class="brand-edition">Reborn</span></span>
+    </a>
+    <span class="header-label">Account access</span>
+  </header>
+
+  <main id="main-content" class="account-layout"
+        data-account-page="{{ self.page_name() }}"
+        data-product="keida-hub-reborn"
+        data-contract="reborn-account-v1"
+        data-api-contract="reborn-auth-v1">
+    <section class="introduction" aria-labelledby="welcome-heading">
+      <p class="eyebrow">Your own corner of Keida</p>
+      <h2 id="welcome-heading">A place to<br class="desktop-break"> come back to.</h2>
+      <p class="introduction-copy">One account, a private session, and a clear way back in.</p>
+      <div class="introduction-note">
+        <span class="note-mark" aria-hidden="true"></span>
+        <p>Use your Reborn account here. Access to another Keida site stays separate.</p>
+      </div>
+    </section>
+
+    <section class="account-card" aria-labelledby="page-heading">
+      <div class="card-heading">
+        <p class="eyebrow">Keida Reborn</p>
+        <h1 id="page-heading">{{ self.title() }}</h1>
+        {% if self.is_sign_in() %}
+        <p>Welcome back. Enter your account details to continue.</p>
+        {% else if self.is_claim() %}
+        <p>Create the owner account using the setup secret prepared for this instance.</p>
+        {% else if self.is_account() %}
+        <p>Manage this browser’s session or sign out across your devices.</p>
+        {% else %}
+        <p>Account access cannot be checked right now.</p>
+        {% endif %}
+      </div>
+
+      {% match message %}
+      {% when Some with (text) %}
+      <div class="form-message" id="form-error" role="alert" tabindex="-1">
+        <p>{{ text }}</p>
+      </div>
+      {% when None %}
+      {% endmatch %}
+
+      {% if self.has_credentials() %}
+      <form method="post" action="{{ self.form_action() }}" class="credential-form">
+        <input type="hidden" name="product" value="keida-hub-reborn">
+        <input type="hidden" name="contract" value="reborn-account-v1">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        {% if self.is_claim() %}
+        <div class="field">
+          <label for="setup-secret">Setup secret</label>
+          <input id="setup-secret" name="setup_secret" type="password" autocomplete="off"
+                 spellcheck="false" autocapitalize="none" required aria-describedby="setup-help">
+          <p id="setup-help" class="field-help">Use the private setup secret once. It is never shown on this page.</p>
+        </div>
+        {% endif %}
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" autocomplete="username"
+                 spellcheck="false" autocapitalize="none" required aria-describedby="username-help">
+          <p id="username-help" class="field-help">3–32 a–z letters, numbers, underscores or hyphens.</p>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password"
+                 {% if self.is_claim() %}autocomplete="new-password"{% else %}autocomplete="current-password"{% endif %}
+                 required aria-describedby="password-help">
+          <p id="password-help" class="field-help">15–128 characters. Spaces and Unicode are welcome.</p>
+        </div>
+        <button class="button button-primary" type="submit">
+          {% if self.is_claim() %}Create owner{% else %}Sign in{% endif %}
+          <span aria-hidden="true">↗</span>
+        </button>
+      </form>
+      <nav class="card-links" aria-label="Account options">
+        {% if self.is_claim() %}
+        <a href="/account/sign-in">Already have an account? Sign in</a>
+        {% else %}
+        <a href="/account">Your account</a>
+        <a href="/account/claim">Use a setup secret</a>
+        {% endif %}
+      </nav>
+      {% else if self.is_account() %}
+      <p class="account-status" data-account-status role="status">Checking your session…</p>
+      <section class="private-account" id="account-private" data-private-account hidden
+               aria-label="Current account">
+        <div class="account-avatar" aria-hidden="true">K</div>
+        <div>
+          <p class="account-name" data-account-name></p>
+          <p class="account-role" data-account-role></p>
+        </div>
+      </section>
+      <noscript>
+        <p class="no-script-note">Sign-out controls work without JavaScript. Current account details need the optional session check.</p>
+      </noscript>
+      <div class="session-actions">
+        <form method="post" action="/account/sign-out">
+          <input type="hidden" name="product" value="keida-hub-reborn">
+          <input type="hidden" name="contract" value="reborn-account-v1">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="button button-primary" type="submit">Sign out <span aria-hidden="true">↗</span></button>
+          <p class="field-help">End the session in this browser.</p>
+        </form>
+        <form method="post" action="/account/sign-out-all">
+          <input type="hidden" name="product" value="keida-hub-reborn">
+          <input type="hidden" name="contract" value="reborn-account-v1">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="button button-secondary" type="submit">Sign out everywhere</button>
+          <p class="field-help">End your existing sessions on every device.</p>
+        </form>
+      </div>
+      <nav class="card-links" aria-label="Account options">
+        <a href="/account/sign-in">Switch account</a>
+        <a href="/account">Check session again</a>
+      </nav>
+      {% else %}
+      <div class="recovery-options">
+        <p>Your credentials have not been kept on this page. If a previous submission was interrupted, use a fresh sign-in form to check access.</p>
+        <a class="button button-primary" href="/account/sign-in">Fresh sign-in form <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="/account">Check session again</a>
+      </div>
+      {% endif %}
+
+      <div class="card-footnote"><span aria-hidden="true">●</span> Private session · This browser</div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Keida Reborn</p>
+    <details class="build-details">
+      <summary><span class="version-label">{{ identity.version }}</span><span class="revision-label">{{ self.short_commit() }}</span><span class="details-label">Build details</span></summary>
+      <dl>
+        <div><dt>Version</dt><dd>{{ identity.version }}</dd></div>
+        <div><dt>Channel</dt><dd>{{ identity.channel }}</dd></div>
+        <div><dt>Source</dt><dd>{% if self.has_source() %}<a href="{{ self.source_url() }}" rel="noreferrer">{{ identity.commit }}</a>{% else %}{{ identity.commit }}{% endif %}</dd></div>
+        <div><dt>Tree</dt><dd>{{ identity.tree }}</dd></div>
+        <div><dt>Product</dt><dd>{{ identity.product }}</dd></div>
+        <div><dt>Package</dt><dd>{{ identity.package_version }}</dd></div>
+      </dl>
+    </details>
+  </footer>
+</body>
+</html>
