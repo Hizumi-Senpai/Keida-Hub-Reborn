@@ -13,7 +13,8 @@ query parameters, fragments, whitespace, backslashes and non-HTTPS schemes. A
 deliberate LAN/private HTTPS destination is allowed. Rust never fetches these URLs;
 this is a directory, not provider availability, discovery, a login broker or proxy.
 Authenticated accounts can see all enrolled links. Links open in a separate tab
-with noopener/noreferrer; no Hub cookie or reusable credential is forwarded.
+with noopener/noreferrer. Rust does not proxy a destination or forward credentials;
+the browser follows its ordinary origin/cookie rules and each service handles login.
 
 Each account can pin up to24 unique services and reorder them with keyboard/touch
 buttons. Home shows that account's pins in order; Services provides category and

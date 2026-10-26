@@ -465,6 +465,7 @@ mod tests {
         older.version = "0.1.7".into();
         older.database_schema = 4;
         publish_qualified(&root.0, &older, &archive).unwrap();
+        assert_eq!(verified(&root.0, 7).unwrap().database_schema, 4);
         let channel: Channel =
             serde_json::from_slice(&fs::read(root.0.join("channel.json")).unwrap()).unwrap();
         assert_eq!(channel.ordinal, 8);

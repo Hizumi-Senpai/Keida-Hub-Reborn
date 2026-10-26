@@ -82,7 +82,7 @@
     {/each}
   </div>
 {/if}
-{#if !compact}<p class="field-help">Up to 24 personal pins. Links open the selected service in a new tab; directory links do not check its availability or share your Hub session.</p>{/if}
+{#if !compact}<p class="field-help">Up to 24 personal pins. Links open the selected service in a new tab. Each service handles its own sign-in; directory links do not check availability.</p>{/if}
 {#if owner && authorized}
   <section class="card directory-editor" hidden={compact} aria-label="Service editor"><h2>{editing ? 'Edit service' : 'Add a service'}</h2><p>Add a reviewed HTTPS link without passwords, tokens, query parameters or fragments. These links are visible to signed-in accounts.</p>
     <form onsubmit={(event) => { event.preventDefault(); void submit(); }}>

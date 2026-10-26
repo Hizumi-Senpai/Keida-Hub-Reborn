@@ -1697,6 +1697,78 @@ async fn directory_field_catalog_and_pin_bounds_do_not_change_accepted_data() {
         100
     );
 }
+
+#[tokio::test]
+async fn directory_and_pin_writes_recheck_revocation_after_waiting_for_authority() {
+    for (path, input) in [
+        (
+            "/api/owner/directory",
+            json!({"base_revision":"0","change":{"action":"create","link":directory_link("Must not be admitted")}}),
+        ),
+        (
+            "/api/workspace/pins",
+            json!({"base_directory_revision":"0","base_revision":"0","ids":[]}),
+        ),
+    ] {
+        let f = Fixture::new().await;
+        let setup = f.prepare().await;
+        let server = Server::start(&f, true).await;
+        let mut owner = claim(&f, &server, &setup).await;
+        let binding = workspace_binding(&mut owner).await;
+        let mut db = f.connect().await;
+        let mut tx = db.begin().await.unwrap();
+        sqlx::query("SELECT singleton FROM auth_state FOR UPDATE")
+            .fetch_one(&mut *tx)
+            .await
+            .unwrap();
+        // Uncommitted revocation is invisible to the preliminary HTTP session
+        // check. The write must wait, then recheck current authority after commit.
+        sqlx::query("UPDATE sessions SET revoked=TRUE")
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        let request = workspace_request(&owner, Method::PUT, path, &binding)
+            .header("Origin", ORIGIN)
+            .json(&input);
+        let pending = tokio::spawn(async move { request.send().await.unwrap() });
+        let mut observer = f.connect().await;
+        let deadline = Instant::now() + Duration::from_secs(2);
+        loop {
+            let waiting: bool=sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%FROM auth_state WHERE singleton = TRUE FOR UPDATE%')").fetch_one(&mut observer).await.unwrap();
+            if waiting {
+                break;
+            }
+            assert!(
+                Instant::now() < deadline,
+                "directory mutation did not reach the actual authority wait"
+            );
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
+        tx.commit().await.unwrap();
+        assert_eq!(pending.await.unwrap().status(), StatusCode::UNAUTHORIZED);
+        assert_eq!(
+            sqlx::query_scalar::<_, i64>("SELECT revision FROM directory_state")
+                .fetch_one(&mut db)
+                .await
+                .unwrap(),
+            0
+        );
+        assert_eq!(
+            sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM directory_services")
+                .fetch_one(&mut db)
+                .await
+                .unwrap(),
+            0
+        );
+        assert_eq!(
+            sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM directory_pins")
+                .fetch_one(&mut db)
+                .await
+                .unwrap(),
+            0
+        );
+    }
+}
 fn workspace_request(actor: &Actor, method: Method, path: &str, binding: &str) -> RequestBuilder {
     actor
         .request(method, path)
