@@ -7,7 +7,7 @@
   let category = 'all';
   let applied: Activity | undefined;
   $: if (!authorized) { query = ''; category = 'all'; applied = undefined; }
-  $: if (state !== applied && (state.phase === 'ready' || state.phase === 'loading')) { applied = state; query = state.query; category = state.category; }
+  $: if (state !== applied && state.phase === 'loading') { applied = state; query = state.query; category = state.category; }
   const when = (s: string) => new Date(Number(s) * 1000).toLocaleString();
 </script>
 

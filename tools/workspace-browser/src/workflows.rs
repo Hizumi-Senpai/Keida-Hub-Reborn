@@ -705,6 +705,25 @@ async fn retained_activity_history() -> Check<()> {
     b.click(".main-nav button:nth-child(3)").await?;
     b.click("section[aria-label=Connections] > button").await?;
     b.wait("return !!document.querySelector('.activity-empty') && document.querySelector('#activity-category').value==='connections'",json!([])).await?;
+    let comparison = f.hold("/api/workspace/activity");
+    b.fill("#activity-query", "saved").await?;
+    b.click(".activity-search button").await?;
+    tokio::time::timeout(Duration::from_secs(3), comparison.entered.notified())
+        .await
+        .map_err(|_| "held search response entered")?;
+    b.fill("#activity-query", "A newer unsubmitted search")
+        .await?;
+    comparison.release.notify_one();
+    b.wait("return document.querySelector('.activity-card .workspace-status').textContent.includes('checked')",json!([])).await?;
+    check(
+        b.evaluate(
+            "return document.querySelector('#activity-query').value==='A newer unsubmitted search'",
+            json!([]),
+        )
+        .await?
+            == true,
+        "completed search does not replace newer typed search text",
+    )?;
     let held = f.hold("/api/workspace/activity");
     b.fill("#activity-query", "private history search").await?;
     b.click(".activity-search button").await?;

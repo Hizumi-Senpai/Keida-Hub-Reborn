@@ -3173,7 +3173,7 @@ function Ta(e, t) {
 	wn(() => G(r()), () => {
 		r() || (F(a, ""), F(o, "all"), F(s, void 0));
 	}), wn(() => (G(n()), U(s)), () => {
-		n() !== U(s) && (n().phase === "ready" || n().phase === "loading") && (F(s, n()), F(a, n().query), F(o, n().category));
+		n() !== U(s) && n().phase === "loading" && (F(s, n()), F(a, n().query), F(o, n().category));
 	}), Tn(), yi();
 	var l = wa(), u = R(I(l), 4), d = I(u), f = R(I(d));
 	li(f), A(d);
