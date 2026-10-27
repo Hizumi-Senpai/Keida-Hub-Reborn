@@ -4,9 +4,9 @@ A fresh Rust-centered Keida Hub, authorized on **2026-10-25 America/Chicago**.
 The goal is a fast, reliable, feature-rich self-hosted dashboard and control platform
 with an optional editable 3D room and companion.
 
-**Reborn0.1.11 is installed at https://rewrite.keida.me.** Exact source, CI,
+**Reborn is live at https://rewrite.keida.me.** Current exact source, CI,
 artifact, independent PostgreSQL/key recovery and public HTTP receipts are in
-[deployment issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6448326282).
+[deployment issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1).
 The owner reports successful sign-in; wider desktop/mobile workflow acceptance and
 real dedicated Crafty enrollment remain separate open gates. The original
 https://keida.me stays live and unchanged, and the independent Rewrite installation

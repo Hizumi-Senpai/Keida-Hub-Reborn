@@ -408,6 +408,7 @@ async fn catalog_roadmap_and_observations() -> Check<()> {
     let f = Fixture::new().await?;
     let provider = c::Crafty::start().await?;
     let mut owner = f.browser(true).await?;
+    step("catalog phase01 owner claim and private draft");
     claim(&f, &owner).await?;
     workspace(&f, &owner).await?;
     note(&owner).await?;
@@ -421,20 +422,25 @@ async fn catalog_roadmap_and_observations() -> Check<()> {
     saved(&owner).await?;
     let draft = "An unfinished private thought across catalog and history";
     owner.fill("#workspace-note", draft).await?;
-    owner.evaluate("window.__guideEditor=document.querySelector('#workspace-note');window.__guideEditor.setSelectionRange(3,12);return true",json!([])).await?;
+    check(owner.evaluate("window.__guideEditor=document.querySelector('#workspace-note');if(!window.__guideEditor)return false;window.__guideEditor.setSelectionRange(3,12);return true",json!([])).await?==true,"capture the existing private editor before opening the guide")?;
     let writes = f.writes();
+    step("catalog phase02 available and planned entries");
     owner.click(".main-nav button:nth-child(7)").await?;
     owner.wait("return document.querySelectorAll('.catalog-list > article[data-integration-id]').length===7",json!([])).await?;
-    check(owner.evaluate("const cards=[...document.querySelectorAll('.catalog-list > article[data-integration-id]')];return cards.map(c=>c.dataset.integrationId).join(',')==='crafty,jellyfin,seerr,sonarr,radarr,qbittorrent,discord' && cards[0].querySelectorAll('button').length===1 && cards.slice(1).every(c=>c.querySelectorAll('button').length===0 && c.textContent.includes('Planned'))",json!([])).await?==true,"catalog distinguishes the one available integration from planned capabilities")?;
+    check(owner.evaluate("const cards=[...document.querySelectorAll('.catalog-list > article[data-integration-id]')];return cards.length===7 && cards.map(c=>c.dataset.integrationId).join(',')==='crafty,jellyfin,seerr,sonarr,radarr,qbittorrent,discord' && cards[0].querySelectorAll('button').length===1 && cards.slice(1).every(c=>c.querySelectorAll('button').length===0 && c.textContent.includes('Planned'))",json!([])).await?==true,"catalog distinguishes the one available integration from planned capabilities")?;
+    step("catalog phase03 desktop catalog accessibility");
     accessibility(&owner).await?;
+    step("catalog phase04 dated Roadmap and retained editor");
     owner.click(".main-nav button:nth-child(8)").await?;
     owner.wait("return !!document.querySelector('.roadmap-note') && Array.from({length:9},(_,i)=>'M'+i).every(id=>document.querySelector('.roadmap-note').textContent.includes(id))",json!([])).await?;
-    check(owner.evaluate("return document.querySelector('.roadmap-note a[href=\"https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/2\"]')!==null && document.querySelector('.roadmap-note').textContent.includes('2026-10-27') && window.__guideEditor===document.querySelector('#workspace-note') && window.__guideEditor.value===arguments[0] && window.__guideEditor.selectionStart===3 && window.__guideEditor.selectionEnd===12",json!([draft])).await?==true,"dated M0–M8 Roadmap note preserves the actual private editor and selection")?;
+    check(owner.evaluate("const roadmap=document.querySelector('.roadmap-note'),editor=document.querySelector('#workspace-note');return !!roadmap && !!editor && roadmap.querySelector('a[href=\"https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/2\"]')!==null && roadmap.textContent.includes('2026-10-27') && window.__guideEditor===editor && editor.value===arguments[0] && editor.selectionStart===3 && editor.selectionEnd===12",json!([draft])).await?==true,"dated M0–M8 Roadmap note preserves the actual private editor and selection")?;
     check(
         f.writes() == writes,
         "catalog and Roadmap reads cannot save the personal note",
     )?;
+    step("catalog phase05 desktop Roadmap accessibility");
     accessibility(&owner).await?;
+    step("catalog phase06 available catalog action and TLS enrollment");
     owner.click(".main-nav button:nth-child(7)").await?;
     owner
         .wait(
@@ -445,7 +451,7 @@ async fn catalog_roadmap_and_observations() -> Check<()> {
     owner
         .click(".catalog-list [data-integration-id=crafty] button")
         .await?;
-    owner.wait("return document.querySelector('.main-nav button:nth-child(3)').getAttribute('aria-current')==='page' && !!document.querySelector('#crafty-endpoint')",json!([])).await?;
+    owner.wait("return document.querySelector('.main-nav button:nth-child(3)')?.getAttribute('aria-current')==='page' && !!document.querySelector('#crafty-endpoint')",json!([])).await?;
     owner.fill("#crafty-endpoint", &provider.origin).await?;
     owner.fill("#crafty-token", c::TOKEN).await?;
     owner.fill("#crafty-timezone", "UTC").await?;
@@ -470,11 +476,13 @@ async fn catalog_roadmap_and_observations() -> Check<()> {
         f.observation_count().await? == 1,
         "actual TLS collection creates one retained sample",
     )?;
-    let repeated=owner.evaluate("const h={'X-Reborn-Product':'keida-hub-reborn','X-Reborn-Contract':'reborn-workspace-v1','X-CSRF-Token':document.querySelector('meta[name=reborn-session-binding]').content};return (async()=>{for(let i=0;i<2;i++){const r=await fetch('/api/workspace/snapshot',{headers:h});if(!r.ok||(await r.json()).crafty.servers[0].players!==0)return false;}return true;})();",json!([])).await?;
+    step("catalog phase07 repeated real snapshot and sample deduplication");
+    let repeated=owner.evaluate("const binding=document.querySelector('meta[name=reborn-session-binding]')?.content;if(!binding)return false;const h={'X-Reborn-Product':'keida-hub-reborn','X-Reborn-Contract':'reborn-workspace-v1','X-CSRF-Token':binding};return (async()=>{for(let i=0;i<2;i++){const r=await fetch('/api/workspace/snapshot',{headers:h});if(!r.ok)return false;const v=await r.json();if(v?.crafty?.configured!==true||v.crafty.revision!=='1'||!Array.isArray(v.crafty.servers)||v.crafty.servers.length!==1||v.crafty.servers[0]?.players!==0)return false;}return true;})();",json!([])).await?;
     check(
         repeated == true && f.observation_count().await? == 1,
         "cached repeated snapshots retain the sample once",
     )?;
+    step("catalog phase08 initial retained history and normalized zero");
     let requests = provider.requests().len();
     owner.click(".view-observation-history").await?;
     owner
@@ -485,15 +493,20 @@ async fn catalog_roadmap_and_observations() -> Check<()> {
         .await?;
     let first_id = owner
         .evaluate(
-            "return document.querySelector('.observation-list > li').dataset.observationId",
+            "return document.querySelector('.observation-list > li')?.dataset.observationId ?? null",
             json!([]),
         )
         .await?;
-    check(owner.evaluate("const row=document.querySelector('.observation-list > li');return row.dataset.observationRevision==='1' && row.textContent.includes('Reviewed history fixture') && row.textContent.includes('0 reported') && document.querySelector('.observation-history').textContent.includes('10,000') && !document.querySelector('.observation-history').textContent.includes(arguments[0]) && !document.querySelector('.observation-history').textContent.includes(arguments[1]) && !document.querySelector('.observation-history').textContent.includes(arguments[2]) && !document.querySelector('.observation-history').textContent.includes('play.example:25565')",json!([c::TOKEN,c::ID,&provider.origin])).await?==true,"history presents normalized zero and sampling limits without private provider configuration")?;
+    check(
+        first_id.as_str().is_some(),
+        "initial retained observation has an identity",
+    )?;
+    check(owner.evaluate("const row=document.querySelector('.observation-list > li'),history=document.querySelector('.observation-history');return !!row && !!history && row.dataset.observationRevision==='1' && row.textContent.includes('Reviewed history fixture') && row.textContent.includes('0 reported') && history.textContent.includes('10,000') && !history.textContent.includes(arguments[0]) && !history.textContent.includes(arguments[1]) && !history.textContent.includes(arguments[2]) && !history.textContent.includes('play.example:25565')",json!([c::TOKEN,c::ID,&provider.origin])).await?==true,"history presents normalized zero and sampling limits without private provider configuration")?;
     check(
         provider.requests().len() == requests,
         "opening retained history does not contact the provider",
     )?;
+    step("catalog phase09 retained failure page and fixed keyset window");
     let seeded = f.seed_observations(1, 26, 2).await?;
     owner.click(".observation-newest").await?;
     owner
@@ -502,7 +515,7 @@ async fn catalog_roadmap_and_observations() -> Check<()> {
             json!([]),
         )
         .await?;
-    check(owner.evaluate("return document.querySelector('.observation-list > li').dataset.observationId===arguments[0] && document.querySelector('.observation-list > li').textContent.includes('Not reported') && document.querySelector('.observation-list > li').textContent.includes('Unknown')",json!([seeded.last().ok_or("historical seed absent")?])).await?==true,"retained failure remains unknown rather than an invented player zero")?;
+    check(owner.evaluate("const row=document.querySelector('.observation-list > li');return !!row && row.dataset.observationId===arguments[0] && row.textContent.includes('Not reported') && row.textContent.includes('Unknown')",json!([seeded.last().ok_or("historical seed absent")?])).await?==true,"retained failure remains unknown rather than an invented player zero")?;
     let arriving = f.seed_observations(1, 1, 100).await?;
     owner.click(".observation-older").await?;
     owner
@@ -511,11 +524,13 @@ async fn catalog_roadmap_and_observations() -> Check<()> {
             json!([]),
         )
         .await?;
-    check(owner.evaluate("return [...document.querySelectorAll('.observation-list > li')].map(row=>row.dataset.observationId).join(',')===[arguments[0],arguments[1]].join(',') && document.querySelector('.observation-older').disabled",json!([&seeded[0],first_id])).await?==true,"older keyset page preserves its window after a newly retained sample")?;
+    check(owner.evaluate("return [...document.querySelectorAll('.observation-list > li')].map(row=>row.dataset.observationId).join(',')===[arguments[0],arguments[1]].join(',') && document.querySelector('.observation-older')?.disabled===true",json!([&seeded[0],first_id])).await?==true,"older keyset page preserves its window after a newly retained sample")?;
+    step("catalog phase10 explicit newest refresh and desktop history accessibility");
     owner.click(".observation-newest").await?;
     owner.wait("return document.querySelector('.observation-list > li')?.dataset.observationId===arguments[0]",json!([&arriving[0]])).await?;
-    check(owner.evaluate("return window.__guideEditor===document.querySelector('#workspace-note') && window.__guideEditor.value===arguments[0]",json!([draft])).await?==true,"provider history preserves the existing unfinished private note")?;
+    check(owner.evaluate("const editor=document.querySelector('#workspace-note');return !!editor && window.__guideEditor===editor && editor.value===arguments[0]",json!([draft])).await?==true,"provider history preserves the existing unfinished private note")?;
     accessibility(&owner).await?;
+    step("catalog phase11 mobile history catalog and Roadmap accessibility");
     owner.mobile().await?;
     check(
         owner
@@ -542,6 +557,7 @@ async fn catalog_roadmap_and_observations() -> Check<()> {
             == true,
         "catalog and Roadmap note reflow at390px",
     )?;
+    step("catalog phase12 member enrollment and current-scope history");
     let (member_name, member_password) = f.enroll_member(&owner).await?;
     let mut member = f.browser(true).await?;
     sign_in(&f, &member, &member_name, &member_password).await?;

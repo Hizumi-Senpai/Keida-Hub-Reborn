@@ -5,9 +5,9 @@ service, loaded browser and real-provider acceptance remain separate. Exact
 [issue1 receipts](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1) take
 precedence over historical bootstrap examples.
 
-## Installed baseline
+## Verified baseline at slice start
 
-Reborn0.1.11 serves https://rewrite.keida.me: main
+The verified baseline is Reborn0.1.11 at https://rewrite.keida.me: main
 `29c88fcc7d77952862d96b748b24430fea48b57f`, tree
 `e5e27187c40fe111419aa41fff1c2be031978549`, schema8.
 [Exact source/CI/artifact/current-data recovery/install receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6448326282).
