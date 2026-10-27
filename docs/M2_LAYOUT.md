@@ -18,7 +18,10 @@ panel list moves existing DOM/components in reading order; it preserves note and
 service form drafts. Hidden Home pins remain available through Services. Reset
 previews the default; Save applies it, and Cancel returns to the checked layout.
 The existing single poller retains current authorization without replacing a
-local arrangement. A committed response lost to the request deadline is marked
+local arrangement. Services defers Home reordering until returning Home, so a
+background change preserves the focused service input and selection. Home keyed
+moves restore a visible same-account focus target only when rendering lost it.
+A committed response lost to the request deadline is marked
 uncertain and reconciled by deliberate authorized GET, without automatic PUT
 replay. Conflict comparison retains the local document until an explicit choice.
 Account/visibility loss cancels and clears private in-memory layout state.

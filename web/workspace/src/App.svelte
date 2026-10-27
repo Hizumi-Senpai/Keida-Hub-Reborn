@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { workspace, defaultPanels } from './controller';
+  import { onMount, beforeUpdate, afterUpdate } from 'svelte';
+  import { workspace, defaultPanels, type HomePanel } from './controller';
   import LayoutEditor from './LayoutEditor.svelte';
   import Connections from './Connections.svelte';
   import Directory from './Directory.svelte';
@@ -11,15 +11,36 @@
   const model = controller.model;
   let view: 'home' | 'note' | 'connections' | 'directory' | 'activity' | 'notifications' = 'home';
   let heading: HTMLHeadingElement;
+  let panelGrid: HTMLDivElement;
+  let panels: HomePanel[] = defaultPanels();
+  let movedFocus: { element: HTMLElement; scope: string } | undefined;
   const version = document.querySelector<HTMLMetaElement>('meta[name="reborn-version"]')?.content ?? 'development';
   const commit = document.querySelector<HTMLMetaElement>('meta[name="reborn-commit"]')?.content ?? 'unqualified';
   const tree = document.querySelector<HTMLMetaElement>('meta[name="reborn-tree"]')?.content ?? 'unqualified';
   const channel = document.querySelector<HTMLMetaElement>('meta[name="reborn-channel"]')?.content ?? 'development';
-  $: panels = $model.layoutDraft?.panels ?? $model.snapshot?.layout.panels ?? defaultPanels();
+  $: desiredPanels = $model.layoutDraft?.panels ?? $model.snapshot?.layout.panels ?? defaultPanels();
+  // Services shares the same pinned-services instance. Defer order changes until
+  // Home is shown so a background layout check cannot detach its focused form.
+  $: if ($model.phase !== 'ready') panels = defaultPanels();
+  else if (view !== 'directory') panels = desiredPanels;
   $: bytes = new TextEncoder().encode($model.draft).length;
   $: canSave = $model.phase === 'ready' && $model.dirty && bytes <= 4096
     && !['saving', 'checking-conflict'].includes($model.layoutSave) && $model.notificationSave !== 'saving' && !['saving', 'checking-conflict', 'conflict', 'uncertain'].includes($model.save);
   function navigate(next: 'home' | 'note' | 'connections' | 'directory' | 'activity' | 'notifications'): void { view = next; heading?.focus(); if (next === 'activity') void controller.activity(); if (next === 'notifications') void controller.check(); }
+  const focusScope = () => $model.snapshot ? `${$model.snapshot.account.id}:${$model.snapshot.session_generation}:${$model.snapshot.account.role}` : '';
+  beforeUpdate(() => {
+    const element = document.activeElement;
+    movedFocus = view === 'home' && $model.phase === 'ready' && element instanceof HTMLElement && panelGrid?.contains(element)
+      ? { element, scope: focusScope() } : undefined;
+  });
+  afterUpdate(() => {
+    const prior = movedFocus; movedFocus = undefined;
+    // Keyed moves can temporarily blur a focused descendant. This render cycle
+    // restores only a visible same-account node when focus fell back to body.
+    if (prior && view === 'home' && $model.phase === 'ready' && prior.scope === focusScope() && prior.element.isConnected
+        && panelGrid?.contains(prior.element) && document.activeElement === document.body && document.visibilityState === 'visible'
+        && document.hasFocus() && prior.element.getClientRects().length > 0) prior.element.focus({ preventScroll: true });
+  });
   onMount(controller.start);
 </script>
 
@@ -59,7 +80,7 @@
       <div class="welcome-card card" hidden={view !== 'home'}><div><p class="eyebrow">MAKE YOURSELF AT HOME</p><h2>A useful place<br>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><button class="button primary" onclick={() => navigate('note')}>Open your note <span aria-hidden="true">↗</span></button></div><div class="orb" aria-hidden="true"><div>K</div></div></div>
       <div class="home-layout-heading" hidden={view !== 'home'}><p class="layout-status" role="status">{$model.layoutMessage || 'Your panels, in your own order.'}</p><button class="button secondary customize-home" disabled={!!$model.layoutDraft || $model.phase !== 'ready' || $model.layoutSave === 'saving'} onclick={controller.beginLayout}>Customize Home</button></div>
       <div hidden={view !== 'home'}><LayoutEditor draft={$model.layoutDraft} saved={$model.snapshot?.layout} state={$model.layoutSave} authorized={$model.phase === 'ready'} move={controller.moveLayout} toggle={controller.toggleLayout} save={controller.saveLayout} cancel={controller.cancelLayout} reset={controller.resetLayout} resolve={controller.resolveLayout} check={controller.checkLayout} /></div>
-      <div class="home-grid" class:services-view={view === 'directory'}>
+      <div class="home-grid" bind:this={panelGrid} class:services-view={view === 'directory'}>
         {#each panels as panel (panel.id)}
           <section data-home-panel={panel.id} class:card={panel.id !== 'pins'} class:small-card={panel.id !== 'pins'} class:pins-panel={panel.id === 'pins'} hidden={$model.phase !== 'ready' || (panel.id === 'pins' ? view === 'home' && !panel.visible : view !== 'home' || !panel.visible)} aria-label={panel.id === 'pins' ? 'Services' : panel.id === 'note' ? 'Workspace note shortcut' : 'Connections shortcut'}>
             {#if panel.id === 'note'}<span class="card-icon" aria-hidden="true">▤</span><h2>Your workspace note</h2><p>{$model.dirty ? 'You have an unsaved draft open.' : $model.snapshot?.note.revision !== '0' ? 'Your saved note is ready when you are.' : 'A blank page for whatever comes next.'}</p><button class="text-button" onclick={() => navigate('note')}>Keep writing <span aria-hidden="true">→</span></button>

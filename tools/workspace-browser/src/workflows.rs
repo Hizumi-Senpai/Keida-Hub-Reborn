@@ -1039,6 +1039,46 @@ async fn personal_home_layout() -> Check<()> {
     workspace(&f, &b).await?;
     home_panels(&b, ["pins", "note", "connections"], ["pins", "note", ""]).await?;
 
+    step("remote Home reorder preserves active service form focus and selection");
+    workspace(&f, &a).await?;
+    home_panels(&a, ["pins", "note", "connections"], ["pins", "note", ""]).await?;
+    a.click(".main-nav button:nth-child(4)").await?;
+    a.fill(
+        "#service-name",
+        "A focused service draft during a remote Home reorder",
+    )
+    .await?;
+    check(a.evaluate("window.__focusedService=document.querySelector('#service-name');window.__focusedService.setSelectionRange(3,11);window.__focusedPanelOrder=[...document.querySelectorAll('[data-home-panel]')].map(p=>p.dataset.homePanel).join(',');return document.activeElement===window.__focusedService;", json!([])).await? == true, "service form starts focused with an actual text selection")?;
+    b.click(".customize-home").await?;
+    b.click(".reset-layout").await?;
+    b.click(".save-layout").await?;
+    layout_saved(&b).await?;
+    let focused = f.hold("/api/workspace/snapshot");
+    a.evaluate(
+        "window.__layoutObservationStart=performance.now();window.dispatchEvent(new Event('focus'));return true;",
+        json!([]),
+    )
+    .await?;
+    tokio::time::timeout(Duration::from_secs(3), focused.entered.notified())
+        .await
+        .map_err(|_| "focused service canonical layout observation hold")?;
+    focused.release.notify_one();
+    // Observe completion of the real authorized fetch, then allow its Svelte
+    // DOM work to render before checking focus. No application state is injected.
+    a.wait("return performance.getEntriesByType('resource').some(e=>new URL(e.name).pathname==='/api/workspace/snapshot' && e.initiatorType==='fetch' && e.startTime>=window.__layoutObservationStart);", json!([])).await?;
+    a.evaluate("return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))));", json!([])).await?;
+    check(a.evaluate("return document.querySelector('#service-name')===window.__focusedService && document.activeElement===window.__focusedService && window.__focusedService.selectionStart===3 && window.__focusedService.selectionEnd===11 && window.__focusedService.value==='A focused service draft during a remote Home reorder' && [...document.querySelectorAll('[data-home-panel]')].map(p=>p.dataset.homePanel).join(',')===window.__focusedPanelOrder;", json!([])).await? == true, "authorized layout refresh while Services is active preserves exact form focus, selection, draft and wrapper positions")?;
+    a.click(".main-nav button:first-child").await?;
+    home_panels(
+        &a,
+        ["note", "connections", "pins"],
+        ["note", "connections", "pins"],
+    )
+    .await?;
+    arrange_pins_first(&b).await?;
+    b.click(".save-layout").await?;
+    layout_saved(&b).await?;
+
     step("independent member layout and native desktop/mobile arrangement controls");
     let mut other = f.browser(true).await?;
     sign_in(&f, &other, &member, &password).await?;
@@ -1109,7 +1149,7 @@ async fn personal_home_layout() -> Check<()> {
     a.close().await?;
     f.close().await?;
     println!(
-        "PASS Rust browser: personal Home order/visibility, stable components and drafts, concurrent conflict, lost response without replay, account isolation, privacy and narrow accessibility"
+        "PASS Rust browser: personal Home order/visibility, stable components/drafts/focused service selection, concurrent conflict, lost response without replay, account isolation, privacy and narrow accessibility"
     );
     Ok(())
 }

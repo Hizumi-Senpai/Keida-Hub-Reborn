@@ -44,17 +44,17 @@ function be(e) {
 	return k = e;
 }
 function xe() {
-	return be(/* @__PURE__ */ on(k));
+	return be(/* @__PURE__ */ sn(k));
 }
 function A(e) {
 	if (O) {
-		if (/* @__PURE__ */ on(k) !== null) throw ge(), pe;
+		if (/* @__PURE__ */ sn(k) !== null) throw ge(), pe;
 		k = e;
 	}
 }
 function Se(e = 1) {
 	if (O) {
-		for (var t = e, n = k; t--;) n = /* @__PURE__ */ on(n);
+		for (var t = e, n = k; t--;) n = /* @__PURE__ */ sn(n);
 		k = n;
 	}
 }
@@ -67,7 +67,7 @@ function Ce(e = !0) {
 				--t;
 			} else (r === "[" || r === "[!" || r[0] === "[" && !isNaN(Number(r.slice(1)))) && (t += 1);
 		}
-		var i = /* @__PURE__ */ on(n);
+		var i = /* @__PURE__ */ sn(n);
 		e && n.remove(), n = i;
 	}
 }
@@ -108,31 +108,34 @@ function Pe() {
 	throw Error("https://svelte.dev/e/effect_update_depth_exceeded");
 }
 function Fe(e) {
+	throw Error("https://svelte.dev/e/lifecycle_legacy_only");
+}
+function Ie(e) {
 	throw Error("https://svelte.dev/e/props_invalid_value");
 }
-function Ie() {
+function Le() {
 	throw Error("https://svelte.dev/e/state_descriptors_fixed");
 }
-function Le() {
+function Re() {
 	throw Error("https://svelte.dev/e/state_prototype_fixed");
 }
-function Re() {
+function ze() {
 	throw Error("https://svelte.dev/e/state_unsafe_mutation");
 }
-function ze() {
+function Be() {
 	throw Error("https://svelte.dev/e/svelte_boundary_reset_onerror");
 }
 // ../node_modules/svelte/src/internal/flags/index.js
-var Be = !1;
-function Ve() {
-	Be = !0;
+var Ve = !1;
+function He() {
+	Ve = !0;
 }
 // ../node_modules/svelte/src/internal/client/context.js
 var j = null;
-function He(e) {
+function Ue(e) {
 	j = e;
 }
-function Ue(e, t = !1, n) {
+function We(e, t = !1, n) {
 	j = {
 		p: j,
 		i: !1,
@@ -141,135 +144,135 @@ function Ue(e, t = !1, n) {
 		s: e,
 		x: null,
 		r: V,
-		l: Be && !t ? {
+		l: Ve && !t ? {
 			s: null,
 			u: null,
 			$: []
 		} : null
 	};
 }
-function We(e) {
+function Ge(e) {
 	var t = j, n = t.e;
 	if (n !== null) {
 		t.e = null;
-		for (var r of n) bn(r);
+		for (var r of n) xn(r);
 	}
-	return e !== void 0 && (t.x = e), t.i = !0, j = t.p, Ge(e);
+	return e !== void 0 && (t.x = e), t.i = !0, j = t.p, Ke(e);
 }
-function Ge(e = {}) {
+function Ke(e = {}) {
 	return i(e, re, { value: !0 }), e;
 }
-function Ke() {
-	return !Be || j !== null && j.l === null;
+function qe() {
+	return !Ve || j !== null && j.l === null;
 }
 // ../node_modules/svelte/src/internal/client/dom/task.js
-var qe = [];
-function Je() {
-	var e = qe;
-	qe = [], p(e);
+var Je = [];
+function Ye() {
+	var e = Je;
+	Je = [], p(e);
 }
-function Ye(e) {
-	if (qe.length === 0 && !Ct) {
-		var t = qe;
+function Xe(e) {
+	if (Je.length === 0 && !wt) {
+		var t = Je;
 		queueMicrotask(() => {
-			t === qe && Je();
+			t === Je && Ye();
 		});
 	}
-	qe.push(e);
+	Je.push(e);
 }
-function Xe() {
-	for (; qe.length > 0;) Je();
+function Ze() {
+	for (; Je.length > 0;) Ye();
 }
 // ../node_modules/svelte/src/internal/client/reactivity/status.js
-var Ze = ~(g | _ | h);
+var Qe = ~(g | _ | h);
 function M(e, t) {
-	e.f = e.f & Ze | t;
+	e.f = e.f & Qe | t;
 }
-function Qe(e) {
+function $e(e) {
 	e.f & 512 || e.deps === null ? M(e, h) : M(e, _);
 }
 // ../node_modules/svelte/src/internal/client/reactivity/utils.js
-function $e(e, t, n) {
+function et(e, t, n) {
 	e.f & 2048 ? t.add(e) : e.f & 4096 && n.add(e), M(e, h);
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/misc.js
-function et(e) {
-	O && /* @__PURE__ */ an(e) !== null && cn(e);
+function tt(e) {
+	O && /* @__PURE__ */ on(e) !== null && ln(e);
 }
-var tt = !1;
-function nt() {
-	tt || (tt = !0, document.addEventListener("reset", (e) => {
+var nt = !1;
+function rt() {
+	nt || (nt = !0, document.addEventListener("reset", (e) => {
 		Promise.resolve().then(() => {
 			if (!e.defaultPrevented) for (let t of e.target.elements) t[ue]?.();
 		});
 	}, { capture: !0 }));
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/bindings/shared.js
-function rt(e) {
+function it(e) {
 	var t = B, n = V;
-	Gn(null), Kn(null);
+	Kn(null), qn(null);
 	try {
 		return e();
 	} finally {
-		Gn(t), Kn(n);
+		Kn(t), qn(n);
 	}
 }
-function it(e, t, n, r = n) {
-	e.addEventListener(t, () => rt(n));
+function at(e, t, n, r = n) {
+	e.addEventListener(t, () => it(n));
 	let i = e[ue];
 	e[ue] = i ? () => {
 		i(), r(!0);
-	} : () => r(!0), nt();
+	} : () => r(!0), rt();
 }
 // ../node_modules/svelte/src/internal/client/reactivity/async.js
-function at(e, t, n, r) {
-	let i = Ke() ? lt : pt;
+function ot(e, t, n, r) {
+	let i = qe() ? ut : mt;
 	var a = e.filter((e) => !e.settled), o = t.map(i);
 	if (n.length === 0 && a.length === 0) {
 		r(o);
 		return;
 	}
-	var s = V, c = ot(), l = a.length === 1 ? a[0].promise : a.length > 1 ? Promise.all(a.map((e) => e.promise)) : null;
+	var s = V, c = st(), l = a.length === 1 ? a[0].promise : a.length > 1 ? Promise.all(a.map((e) => e.promise)) : null;
 	function u(e) {
 		if (!(s.f & 16384)) {
 			c();
 			try {
 				r([...o, ...e]);
 			} catch (e) {
-				pn(e, s);
+				mn(e, s);
 			}
-			st();
+			ct();
 		}
 	}
-	var d = ct();
+	var d = lt();
 	if (n.length === 0) {
 		l.then(() => u([])).finally(d);
 		return;
 	}
 	function f() {
-		Promise.all(n.map((e) => /* @__PURE__ */ dt(e))).then(u).catch((e) => pn(e, s)).finally(d);
+		Promise.all(n.map((e) => /* @__PURE__ */ ft(e))).then(u).catch((e) => mn(e, s)).finally(d);
 	}
 	l ? l.then(() => {
-		s.f & 16384 ? d() : (c(), f(), st());
+		s.f & 16384 ? d() : (c(), f(), ct());
 	}) : f();
 }
-function ot() {
+function st() {
 	var e = V, t = B, n = j, r = N;
 	return function(i = !0) {
-		Kn(e), Gn(t), He(n), i && !(e.f & 16384) && (r?.activate(), r?.apply());
+		qn(e), Kn(t), Ue(n), i && !(e.f & 16384) && (r?.activate(), r?.apply());
 	};
 }
-function st(e = !0) {
-	Kn(null), Gn(null), He(null), e && N?.deactivate();
+function ct(e = !0) {
+	qn(null), Kn(null), Ue(null), e && N?.deactivate();
 }
-function ct() {
+function lt() {
 	var e = V, t = e.b, n = N, r = !!t?.is_rendered();
 	return t?.update_pending_count(1, n), n.increment(r, e), () => {
 		t?.update_pending_count(-1, n), n.decrement(r, e);
 	};
 }
 /*#__NO_SIDE_EFFECTS__*/
-function lt(e) {
+function ut(e) {
 	var t = 2 | g;
 	return V !== null && (V.f |= C), {
 		ctx: j,
@@ -286,35 +289,35 @@ function lt(e) {
 		ac: null
 	};
 }
-var ut = Symbol("obsolete");
+var dt = Symbol("obsolete");
 /*#__NO_SIDE_EFFECTS__*/
-function dt(e, t, n) {
+function ft(e, t, n) {
 	let r = V;
 	r === null && ke();
-	var i = void 0, a = Bt(D), o = !B, s = /* @__PURE__ */ new Set();
-	return En(() => {
+	var i = void 0, a = Vt(D), o = !B, s = /* @__PURE__ */ new Set();
+	return Dn(() => {
 		var t = V, n = m();
 		i = n.promise;
 		try {
 			Promise.resolve(e()).then(n.resolve, (e) => {
 				e !== de && n.reject(e);
-			}).finally(st);
+			}).finally(ct);
 		} catch (e) {
-			n.reject(e), st();
+			n.reject(e), ct();
 		}
 		var c = N;
 		if (o) {
-			if (t.f & 32768) var l = ct();
-			if (r.b?.is_rendered()) c.async_deriveds.get(t)?.reject(ut);
-			else for (let e of s.values()) e.reject(ut);
+			if (t.f & 32768) var l = lt();
+			if (r.b?.is_rendered()) c.async_deriveds.get(t)?.reject(dt);
+			else for (let e of s.values()) e.reject(dt);
 			s.add(n), c.async_deriveds.set(t, n);
 		}
 		let u = (e, t = void 0) => {
-			l?.(), s.delete(n), t !== ut && (c.activate(), t ? (a.f |= te, Wt(a, t)) : (a.f & 8388608 && (a.f ^= te), Wt(a, e)), c.deactivate());
+			l?.(), s.delete(n), t !== dt && (c.activate(), t ? (a.f |= te, Gt(a, t)) : (a.f & 8388608 && (a.f ^= te), Gt(a, e)), c.deactivate());
 		};
 		n.promise.then(u, (e) => u(null, e || "unknown"));
-	}), vn(() => {
-		for (let e of s) e.reject(ut);
+	}), yn(() => {
+		for (let e of s) e.reject(dt);
 	}), new Promise((e) => {
 		function t(n) {
 			function r() {
@@ -326,48 +329,48 @@ function dt(e, t, n) {
 	});
 }
 /*#__NO_SIDE_EFFECTS__*/
-function ft(e) {
-	let t = /* @__PURE__ */ lt(e);
-	return Jn(t), t;
+function pt(e) {
+	let t = /* @__PURE__ */ ut(e);
+	return Yn(t), t;
 }
 /*#__NO_SIDE_EFFECTS__*/
-function pt(e) {
-	let t = /* @__PURE__ */ lt(e);
+function mt(e) {
+	let t = /* @__PURE__ */ ut(e);
 	return t.equals = De, t;
 }
-function mt(e) {
+function ht(e) {
 	var t = e.effects;
 	if (t !== null) {
 		e.effects = null;
-		for (var n = 0; n < t.length; n += 1) Nn(t[n]);
+		for (var n = 0; n < t.length; n += 1) Pn(t[n]);
 	}
 }
-function ht(e) {
+function gt(e) {
 	var t, n = V, r = e.parent;
-	if (!Hn && r !== null && e.v !== D && r.f & 24576) return he(), e.v;
-	Kn(r);
+	if (!Un && r !== null && e.v !== D && r.f & 24576) return he(), e.v;
+	qn(r);
 	try {
-		mt(e), t = or(e);
+		ht(e), t = sr(e);
 	} finally {
-		Kn(n);
+		qn(n);
 	}
 	return t;
 }
-function gt(e) {
-	var t = ht(e);
-	!e.equals(t) && (e.wv = rr(), (!N?.is_fork || e.deps === null) && (N === null ? e.v = t : (N.capture(e, t, !0), bt?.capture(e, t, !0)), e.deps === null)) ? M(e, h) : Hn || (xt === null ? Qe(e) : (_n() || N?.is_fork) && xt.set(e, t));
-}
 function _t(e) {
-	if (e.effects !== null) for (let t of e.effects) (t.teardown || t.ac) && (t.teardown?.(), t.ac !== null && rt(() => {
-		t.ac.abort(de), t.ac = null;
-	}), t.fn !== null && (t.teardown = d), lr(t, 0), jn(t));
+	var t = gt(e);
+	!e.equals(t) && (e.wv = ir(), (!N?.is_fork || e.deps === null) && (N === null ? e.v = t : (N.capture(e, t, !0), xt?.capture(e, t, !0)), e.deps === null)) ? M(e, h) : Un || (St === null ? $e(e) : (vn() || N?.is_fork) && St.set(e, t));
 }
 function vt(e) {
-	if (e.effects !== null) for (let t of e.effects) t.teardown && t.fn !== null && ur(t);
+	if (e.effects !== null) for (let t of e.effects) (t.teardown || t.ac) && (t.teardown?.(), t.ac !== null && it(() => {
+		t.ac.abort(de), t.ac = null;
+	}), t.fn !== null && (t.teardown = d), ur(t, 0), Mn(t));
+}
+function yt(e) {
+	if (e.effects !== null) for (let t of e.effects) t.teardown && t.fn !== null && dr(t);
 }
 // ../node_modules/svelte/src/internal/client/reactivity/batch.js
-var yt = null, N = null, bt = null, xt = null, St = null, Ct = !1, wt = !1, Tt = null, Et = null, Dt = 0, Ot = 1, kt = class e {
-	id = Ot++;
+var bt = null, N = null, xt = null, St = null, Ct = null, wt = !1, Tt = !1, Et = null, Dt = null, Ot = 0, kt = 1, At = class e {
+	id = kt++;
 	#e = !1;
 	linked = !0;
 	#t = null;
@@ -389,7 +392,7 @@ var yt = null, N = null, bt = null, xt = null, St = null, Ct = !1, wt = !1, Tt =
 	is_fork = !1;
 	#m = !1;
 	constructor() {
-		yt === null ? yt = this : (yt.#n = this, this.#t = yt), yt = this;
+		bt === null ? bt = this : (bt.#n = this, this.#t = bt), bt = this;
 	}
 	#h() {
 		if (this.is_fork) return !0;
@@ -443,21 +446,21 @@ var yt = null, N = null, bt = null, xt = null, St = null, Ct = !1, wt = !1, Tt =
 		for (let e of this.#u) this.#d.delete(e), M(e, g), this.schedule(e);
 		for (let e of this.#d) M(e, _), this.schedule(e);
 		this.apply();
-		for (var t = Tt = [], n = [], r = Et = []; this.#c.length > 0;) {
-			Dt++ > 1e3 && (this.#S(), jt());
+		for (var t = Et = [], n = [], r = Dt = []; this.#c.length > 0;) {
+			Ot++ > 1e3 && (this.#S(), Mt());
 			for (let e of this.#g()) try {
 				this.#v(e, t, n);
 			} catch (t) {
-				throw It(e), this.#h() || this.discard(), t;
+				throw Lt(e), this.#h() || this.discard(), t;
 			}
 		}
 		if (N = null, r.length > 0) {
 			var i = e.ensure();
 			for (let e of r) i.schedule(e);
 		}
-		if (Tt = null, Et = null, this.#h()) {
+		if (Et = null, Dt = null, this.#h()) {
 			this.#x(n), this.#x(t);
-			for (let [e, t] of this.#f) Ft(e, t);
+			for (let [e, t] of this.#f) It(e, t);
 			r.length > 0 && N.#_();
 			return;
 		}
@@ -466,7 +469,7 @@ var yt = null, N = null, bt = null, xt = null, St = null, Ct = !1, wt = !1, Tt =
 		else {
 			this.#u.clear(), this.#d.clear();
 			for (let e of this.#r) e(this);
-			this.#r.clear(), bt = this, Nt(n), Nt(t), bt = null, this.#s?.resolve();
+			this.#r.clear(), xt = this, Pt(n), Pt(t), xt = null, this.#s?.resolve();
 			var o = N;
 			if (this.#a === 0 && (this.#c.length === 0 || o !== null) && this.#S(), this.#c.length > 0) {
 				if (o !== null) {
@@ -474,7 +477,7 @@ var yt = null, N = null, bt = null, xt = null, St = null, Ct = !1, wt = !1, Tt =
 					this.#c = [];
 				} else o = this;
 			}
-			o !== null && (Rt.clear(), o.#_());
+			o !== null && (zt.clear(), o.#_());
 		}
 	}
 	#v(e, t, n) {
@@ -482,7 +485,7 @@ var yt = null, N = null, bt = null, xt = null, St = null, Ct = !1, wt = !1, Tt =
 		for (var r = e.first; r !== null;) {
 			var i = r.f, a = !!(i & 96);
 			if (!(a && i & 1024 || i & 8192 || this.#f.has(r)) && r.fn !== null) {
-				a ? r.f ^= h : i & 4 ? t.push(r) : ir(r) && (i & 16 && this.#d.add(r), ur(r));
+				a ? r.f ^= h : i & 4 ? t.push(r) : ar(r) && (i & 16 && this.#d.add(r), dr(r));
 				var o = r.first;
 				if (o !== null) {
 					r = o;
@@ -530,28 +533,28 @@ var yt = null, N = null, bt = null, xt = null, St = null, Ct = !1, wt = !1, Tt =
 		this.oncommit(() => e.discard()), e.#S(), N = this, this.#_();
 	}
 	#x(e) {
-		for (var t = 0; t < e.length; t += 1) $e(e[t], this.#u, this.#d);
+		for (var t = 0; t < e.length; t += 1) et(e[t], this.#u, this.#d);
 	}
 	capture(e, t, n = !1) {
-		e.v !== D && !this.previous.has(e) && this.previous.set(e, e.v), e.f & 8388608 || (this.current.set(e, [t, n]), xt?.set(e, t)), this.is_fork || (e.v = t);
+		e.v !== D && !this.previous.has(e) && this.previous.set(e, e.v), e.f & 8388608 || (this.current.set(e, [t, n]), St?.set(e, t)), this.is_fork || (e.v = t);
 	}
 	activate() {
 		N = this;
 	}
 	deactivate() {
-		N = null, xt = null;
+		N = null, St = null;
 	}
 	flush() {
 		try {
-			wt = !0, N = this, this.#_();
+			Tt = !0, N = this, this.#_();
 		} finally {
-			Dt = 0, St = null, Tt = null, Et = null, wt = !1, N = null, xt = null, Rt.clear();
+			Ot = 0, Ct = null, Et = null, Dt = null, Tt = !1, N = null, St = null, zt.clear();
 		}
 	}
 	discard() {
 		for (let e of this.#i) e(this);
 		this.#i.clear();
-		for (let e of this.async_deriveds.values()) e.reject(ut);
+		for (let e of this.async_deriveds.values()) e.reject(dt);
 		this.#S(), this.#s?.resolve();
 	}
 	register_created_effect(e) {
@@ -568,7 +571,7 @@ var yt = null, N = null, bt = null, xt = null, St = null, Ct = !1, wt = !1, Tt =
 			let e = this.#o.get(t) ?? 0;
 			e === 1 ? this.#o.delete(t) : this.#o.set(t, e - 1);
 		}
-		this.#m || (this.#m = !0, Ye(() => {
+		this.#m || (this.#m = !0, Xe(() => {
 			this.#m = !1, this.linked && this.flush();
 		}));
 	}
@@ -589,84 +592,84 @@ var yt = null, N = null, bt = null, xt = null, St = null, Ct = !1, wt = !1, Tt =
 	static ensure() {
 		if (N === null) {
 			let t = N = new e();
-			!wt && !Ct && Ye(() => {
+			!Tt && !wt && Xe(() => {
 				t.#e || t.flush();
 			});
 		}
 		return N;
 	}
 	apply() {
-		xt = null;
+		St = null;
 	}
 	schedule(e) {
-		St = e, e.b?.is_pending && e.f & 16777228 && !(e.f & 32768) ? e.b.defer_effect(e) : this.#c.push(e);
+		Ct = e, e.b?.is_pending && e.f & 16777228 && !(e.f & 32768) ? e.b.defer_effect(e) : this.#c.push(e);
 	}
 	#S() {
 		if (this.linked) {
 			var e = this.#t, t = this.#n;
-			e === null || (e.#n = t), t === null ? yt = e : t.#t = e, this.linked = !1;
+			e === null || (e.#n = t), t === null ? bt = e : t.#t = e, this.linked = !1;
 		}
 	}
 };
-function At(e) {
-	var t = Ct, n = bt;
-	bt = null, Ct = !0;
+function jt(e) {
+	var t = wt, n = xt;
+	xt = null, wt = !0;
 	try {
 		var r;
-		for (e && (At(), r = e());;) {
-			if (Xe(), N === null) return r;
+		for (e && (jt(), r = e());;) {
+			if (Ze(), N === null) return r;
 			N.flush();
 		}
 	} finally {
-		Ct = t, bt = n;
+		wt = t, xt = n;
 	}
 }
-function jt() {
+function Mt() {
 	try {
 		Pe();
 	} catch (e) {
-		pn(e, St);
+		mn(e, Ct);
 	}
 }
-var Mt = null;
-function Nt(e) {
+var Nt = null;
+function Pt(e) {
 	var t = e.length;
 	if (t !== 0) {
 		for (var n = 0; n < t;) {
 			var r = e[n++];
-			if (!(r.f & 24576) && ir(r) && (Mt = /* @__PURE__ */ new Set(), ur(r), r.deps === null && r.first === null && r.nodes === null && r.teardown === null && r.ac === null && Fn(r), Mt?.size > 0)) {
-				Rt.clear();
-				for (let e of Mt) {
+			if (!(r.f & 24576) && ar(r) && (Nt = /* @__PURE__ */ new Set(), dr(r), r.deps === null && r.first === null && r.nodes === null && r.teardown === null && r.ac === null && In(r), Nt?.size > 0)) {
+				zt.clear();
+				for (let e of Nt) {
 					if (e.f & 24576) continue;
 					let t = [e], n = e.parent;
-					for (; n !== null;) Mt.has(n) && (Mt.delete(n), t.push(n)), n = n.parent;
+					for (; n !== null;) Nt.has(n) && (Nt.delete(n), t.push(n)), n = n.parent;
 					for (let e = t.length - 1; e >= 0; e--) {
 						let n = t[e];
-						n.f & 24576 || ur(n);
+						n.f & 24576 || dr(n);
 					}
 				}
-				Mt.clear();
+				Nt.clear();
 			}
 		}
-		Mt = null;
+		Nt = null;
 	}
 }
-function Pt(e) {
+function Ft(e) {
 	N.schedule(e);
 }
-function Ft(e, t) {
+function It(e, t) {
 	if (!(e.f & 32 && e.f & 1024)) {
 		e.f & 2048 ? t.d.push(e) : e.f & 4096 && t.m.push(e), M(e, h);
-		for (var n = e.first; n !== null;) Ft(n, t), n = n.next;
+		for (var n = e.first; n !== null;) It(n, t), n = n.next;
 	}
 }
-function It(e) {
+function Lt(e) {
 	M(e, h);
-	for (var t = e.first; t !== null;) It(t), t = t.next;
+	for (var t = e.first; t !== null;) Lt(t), t = t.next;
 }
 // ../node_modules/svelte/src/internal/client/reactivity/sources.js
-var Lt = /* @__PURE__ */ new Set(), Rt = /* @__PURE__ */ new Map(), zt = !1;
-function Bt(e, t) {
+var Rt = /* @__PURE__ */ new Set(), zt = /* @__PURE__ */ new Map(), Bt = !1;
+function Vt(e, t) {
 	return {
 		f: 0,
 		v: e,
@@ -677,93 +680,93 @@ function Bt(e, t) {
 	};
 }
 /*#__NO_SIDE_EFFECTS__*/
-function Vt(e, t) {
-	let n = Bt(e, t);
-	return Jn(n), n;
+function Ht(e, t) {
+	let n = Vt(e, t);
+	return Yn(n), n;
 }
 /*#__NO_SIDE_EFFECTS__*/
 function P(e, t = !1, n = !0) {
-	let r = Bt(e);
-	return t || (r.equals = De), Be && n && j !== null && j.l !== null && (j.l.s ??= []).push(r), r;
+	let r = Vt(e);
+	return t || (r.equals = De), Ve && n && j !== null && j.l !== null && (j.l.s ??= []).push(r), r;
 }
 function F(e, t, n = !1) {
-	return B !== null && (!Wn || B.f & 131072) && Ke() && B.f & 4325394 && (qn === null || !qn.has(e)) && Re(), Wt(e, n ? Yt(t) : t, Et);
+	return B !== null && (!Gn || B.f & 131072) && qe() && B.f & 4325394 && (Jn === null || !Jn.has(e)) && ze(), Gt(e, n ? Xt(t) : t, Dt);
 }
-var Ht = null, Ut = 0;
-function Wt(e, t, n = null) {
+var Ut = null, Wt = 0;
+function Gt(e, t, n = null) {
 	if (!e.equals(t)) {
-		Hn ? Rt.set(e, t) : Rt.has(e) || Rt.set(e, e.v);
-		var r = kt.ensure();
+		Un ? zt.set(e, t) : zt.has(e) || zt.set(e, e.v);
+		var r = At.ensure();
 		if (r.capture(e, t), e.f & 2) {
 			let t = e;
-			e.f & 2048 && ht(t), xt === null && Qe(t);
+			e.f & 2048 && gt(t), St === null && $e(t);
 		}
-		e.wv = rr(), Ht = null, Ut = 0, Jt(e, g, n), Ht = null, Ke() && V !== null && V.f & 1024 && !(V.f & 96) && (Zn === null ? Qn([e]) : Zn.push(e)), !r.is_fork && Lt.size > 0 && !zt && Gt();
+		e.wv = ir(), Ut = null, Wt = 0, Yt(e, g, n), Ut = null, qe() && V !== null && V.f & 1024 && !(V.f & 96) && (Qn === null ? $n([e]) : Qn.push(e)), !r.is_fork && Rt.size > 0 && !Bt && Kt();
 	}
 	return t;
 }
-function Gt() {
-	zt = !1;
-	for (let e of Lt) {
+function Kt() {
+	Bt = !1;
+	for (let e of Rt) {
 		e.f & 1024 && M(e, _);
 		let t;
 		try {
-			t = ir(e);
+			t = ar(e);
 		} catch {
 			t = !0;
 		}
-		t && ur(e);
+		t && dr(e);
 	}
-	Lt.clear();
+	Rt.clear();
 }
-function Kt(e, t = 1) {
+function qt(e, t = 1) {
 	var n = H(e);
 	return F(e, t === 1 ? ++n : --n);
 }
-function qt(e) {
+function Jt(e) {
 	F(e, e.v + 1);
 }
-function Jt(e, t, n) {
+function Yt(e, t, n) {
 	var r = e.reactions;
 	if (r !== null) {
-		var i = Ke(), a = r.length;
-		if (Ut += a, Ut > 1e5 && Ht === null && (Ht = /* @__PURE__ */ new Set()), Ht !== null) {
-			if (Ht.has(e)) return;
-			Ht.add(e);
+		var i = qe(), a = r.length;
+		if (Wt += a, Wt > 1e5 && Ut === null && (Ut = /* @__PURE__ */ new Set()), Ut !== null) {
+			if (Ut.has(e)) return;
+			Ut.add(e);
 		}
 		for (var o = 0; o < a; o++) {
 			var s = r[o], c = s.f;
 			if (i || s !== V) {
 				var l = (c & g) === 0;
-				if (l && M(s, t), c & 131072) Lt.add(s);
+				if (l && M(s, t), c & 131072) Rt.add(s);
 				else if (c & 2) {
 					var u = s;
-					xt?.delete(u), Jt(u, _, n);
+					St?.delete(u), Yt(u, _, n);
 				} else if (l) {
 					var d = s;
-					c & 16 && Mt !== null && Mt.add(d), n === null ? Pt(d) : n.push(d);
+					c & 16 && Nt !== null && Nt.add(d), n === null ? Ft(d) : n.push(d);
 				}
 			}
 		}
 	}
 }
-function Yt(t) {
+function Xt(t) {
 	if (typeof t != "object" || !t || ne in t || re in t) return t;
 	let n = l(t);
 	if (n !== s && n !== c) return t;
-	var r = /* @__PURE__ */ new Map(), i = e(t), o = /* @__PURE__ */ Vt(0), u = null, d = tr, f = (e) => {
-		if (tr === d) return e();
-		var t = B, n = tr;
-		Gn(null), nr(d);
+	var r = /* @__PURE__ */ new Map(), i = e(t), o = /* @__PURE__ */ Ht(0), u = null, d = nr, f = (e) => {
+		if (nr === d) return e();
+		var t = B, n = nr;
+		Kn(null), rr(d);
 		var r = e();
-		return Gn(t), nr(n), r;
+		return Kn(t), rr(n), r;
 	};
-	return i && r.set("length", /* @__PURE__ */ Vt(t.length, u)), new Proxy(t, {
+	return i && r.set("length", /* @__PURE__ */ Ht(t.length, u)), new Proxy(t, {
 		defineProperty(e, t, n) {
-			"value" in n && n.configurable !== !1 && n.enumerable !== !1 && n.writable !== !1 || Ie();
+			"value" in n && n.configurable !== !1 && n.enumerable !== !1 && n.writable !== !1 || Le();
 			var i = r.get(t);
 			return i === void 0 ? f(() => {
-				var e = /* @__PURE__ */ Vt(n.value, u);
+				var e = /* @__PURE__ */ Ht(n.value, u);
 				return r.set(t, e), e;
 			}) : F(i, n.value, !0), !0;
 		},
@@ -771,16 +774,16 @@ function Yt(t) {
 			var n = r.get(t);
 			if (n === void 0) {
 				if (t in e) {
-					let e = f(() => /* @__PURE__ */ Vt(D, u));
-					r.set(t, e), qt(o);
+					let e = f(() => /* @__PURE__ */ Ht(D, u));
+					r.set(t, e), Jt(o);
 				}
-			} else F(n, D), qt(o);
+			} else F(n, D), Jt(o);
 			return !0;
 		},
 		get(e, n, i) {
 			if (n === ne) return t;
 			var o = r.get(n), s = n in e;
-			if (o === void 0 && (!s || a(e, n)?.writable) && (o = f(() => /* @__PURE__ */ Vt(Yt(s ? e[n] : D), u)), r.set(n, o)), o !== void 0) {
+			if (o === void 0 && (!s || a(e, n)?.writable) && (o = f(() => /* @__PURE__ */ Ht(Xt(s ? e[n] : D), u)), r.set(n, o)), o !== void 0) {
 				var c = H(o);
 				return c === D ? void 0 : c;
 			}
@@ -805,18 +808,18 @@ function Yt(t) {
 		has(e, t) {
 			if (t === ne) return !0;
 			var n = r.get(t), i = n !== void 0 && n.v !== D || Reflect.has(e, t);
-			return (n !== void 0 || V !== null && (!i || a(e, t)?.writable)) && (n === void 0 && (n = f(() => /* @__PURE__ */ Vt(i ? Yt(e[t]) : D, u)), r.set(t, n)), H(n) === D) ? !1 : i;
+			return (n !== void 0 || V !== null && (!i || a(e, t)?.writable)) && (n === void 0 && (n = f(() => /* @__PURE__ */ Ht(i ? Xt(e[t]) : D, u)), r.set(t, n)), H(n) === D) ? !1 : i;
 		},
 		set(e, t, n, s) {
 			var c = r.get(t), l = t in e;
 			if (i && t === "length") for (var d = n; d < c.v; d += 1) {
 				var p = r.get(d + "");
-				p === void 0 ? d in e && (p = f(() => /* @__PURE__ */ Vt(D, u)), r.set(d + "", p)) : F(p, D);
+				p === void 0 ? d in e && (p = f(() => /* @__PURE__ */ Ht(D, u)), r.set(d + "", p)) : F(p, D);
 			}
-			if (c === void 0) (!l || a(e, t)?.writable) && (c = f(() => /* @__PURE__ */ Vt(void 0, u)), F(c, Yt(n)), r.set(t, c));
+			if (c === void 0) (!l || a(e, t)?.writable) && (c = f(() => /* @__PURE__ */ Ht(void 0, u)), F(c, Xt(n)), r.set(t, c));
 			else {
 				l = c.v !== D;
-				var m = f(() => Yt(n));
+				var m = f(() => Xt(n));
 				F(c, m);
 			}
 			var h = Reflect.getOwnPropertyDescriptor(e, t);
@@ -825,7 +828,7 @@ function Yt(t) {
 					var g = r.get("length"), _ = Number(t);
 					Number.isInteger(_) && _ >= g.v && F(g, _ + 1);
 				}
-				qt(o);
+				Jt(o);
 			}
 			return !0;
 		},
@@ -839,101 +842,101 @@ function Yt(t) {
 			return t;
 		},
 		setPrototypeOf() {
-			Le();
+			Re();
 		}
 	});
 }
-function Xt(e) {
+function Zt(e) {
 	try {
 		if (typeof e == "object" && e && ne in e) return e[ne];
 	} catch {}
 	return e;
 }
-function Zt(e, t) {
-	return Object.is(Xt(e), Xt(t));
+function Qt(e, t) {
+	return Object.is(Zt(e), Zt(t));
 }
-var Qt, $t, en, tn;
-function nn() {
-	if (Qt === void 0) {
-		Qt = window, $t = /Firefox/.test(navigator.userAgent);
+var $t, en, tn, nn;
+function rn() {
+	if ($t === void 0) {
+		$t = window, en = /Firefox/.test(navigator.userAgent);
 		var e = Element.prototype, t = Node.prototype, n = Text.prototype;
-		en = a(t, "firstChild").get, tn = a(t, "nextSibling").get, u(e) && (e[se] = void 0, e[oe] = null, e[ce] = void 0, e.__e = void 0), u(n) && (n[le] = void 0);
+		tn = a(t, "firstChild").get, nn = a(t, "nextSibling").get, u(e) && (e[se] = void 0, e[oe] = null, e[ce] = void 0, e.__e = void 0), u(n) && (n[le] = void 0);
 	}
 }
-function rn(e = "") {
+function an(e = "") {
 	return document.createTextNode(e);
-}
-/*@__NO_SIDE_EFFECTS__*/
-function an(e) {
-	return en.call(e);
 }
 /*@__NO_SIDE_EFFECTS__*/
 function on(e) {
 	return tn.call(e);
 }
+/*@__NO_SIDE_EFFECTS__*/
+function sn(e) {
+	return nn.call(e);
+}
 function I(e, t) {
-	if (!O) return /* @__PURE__ */ an(e);
-	var n = /* @__PURE__ */ an(k);
-	if (n === null) n = k.appendChild(rn());
+	if (!O) return /* @__PURE__ */ on(e);
+	var n = /* @__PURE__ */ on(k);
+	if (n === null) n = k.appendChild(an());
 	else if (t && n.nodeType !== 3) {
-		var r = rn();
+		var r = an();
 		return n?.before(r), be(r), r;
 	}
-	return t && dn(n), be(n), n;
+	return t && fn(n), be(n), n;
 }
-function sn(e, t = !1) {
+function cn(e, t = !1) {
 	if (!O) {
-		var n = /* @__PURE__ */ an(e);
-		return n instanceof Comment && n.data === "" ? /* @__PURE__ */ on(n) : n;
+		var n = /* @__PURE__ */ on(e);
+		return n instanceof Comment && n.data === "" ? /* @__PURE__ */ sn(n) : n;
 	}
 	if (t) {
 		if (k?.nodeType !== 3) {
-			var r = rn();
+			var r = an();
 			return k?.before(r), be(r), r;
 		}
-		dn(k);
+		fn(k);
 	}
 	return k;
 }
 function L(e, t = !1) {
-	if (!O) return /* @__PURE__ */ an(e);
+	if (!O) return /* @__PURE__ */ on(e);
 	var n = I(e, t);
 	return A(e), n;
 }
 function R(e, t = 1, n = !1) {
 	let r = O ? k : e;
-	for (var i; t--;) i = r, r = /* @__PURE__ */ on(r);
+	for (var i; t--;) i = r, r = /* @__PURE__ */ sn(r);
 	if (!O) return r;
 	if (n) {
 		if (r?.nodeType !== 3) {
-			var a = rn();
+			var a = an();
 			return r === null ? i?.after(a) : r.before(a), be(a), a;
 		}
-		dn(r);
+		fn(r);
 	}
 	return be(r), r;
 }
-function cn(e) {
+function ln(e) {
 	e.textContent = "";
 }
-function ln() {
+function un() {
 	return !1;
 }
-function un(e, t, n) {
+function dn(e, t, n) {
 	return t == null || t === "http://www.w3.org/1999/xhtml" ? n ? document.createElement(e, { is: n }) : document.createElement(e) : n ? document.createElementNS(t, e, { is: n }) : document.createElementNS(t, e);
 }
-function dn(e) {
+function fn(e) {
 	if (e.nodeValue.length < 65536) return;
 	let t = e.nextSibling;
 	for (; t !== null && t.nodeType === 3;) t.remove(), e.nodeValue += t.nodeValue, t = e.nextSibling;
 }
-function fn(e) {
+function pn(e) {
 	var t = V;
 	if (t === null) return B.f |= te, e;
 	if (!(t.f & 32768) && !(t.f & 4)) throw e;
-	pn(e, t);
+	mn(e, t);
 }
-function pn(e, t) {
+function mn(e, t) {
 	if (e === pe) throw e;
 	if (!(t !== null && t.f & 16384)) {
 		for (; t !== null;) {
@@ -952,14 +955,14 @@ function pn(e, t) {
 	}
 }
 // ../node_modules/svelte/src/internal/client/reactivity/effects.js
-function mn(e) {
-	V === null && (B === null && Ne(e), Me()), Hn && je(e);
+function hn(e) {
+	V === null && (B === null && Ne(e), Me()), Un && je(e);
 }
-function hn(e, t) {
+function gn(e, t) {
 	var n = t.last;
 	n === null ? t.last = t.first = e : (n.next = e, e.prev = n, t.last = e);
 }
-function gn(e, t) {
+function _n(e, t) {
 	var n = V;
 	n !== null && n.f & 8192 && (e |= v);
 	var r = {
@@ -980,163 +983,163 @@ function gn(e, t) {
 	};
 	N?.register_created_effect(r);
 	var i = r;
-	if (e & 4) Tt === null ? kt.ensure().schedule(r) : Tt.push(r);
+	if (e & 4) Et === null ? At.ensure().schedule(r) : Et.push(r);
 	else if (t !== null) {
 		try {
-			ur(r);
+			dr(r);
 		} catch (e) {
-			throw Nn(r), e;
+			throw Pn(r), e;
 		}
 		i.deps === null && i.teardown === null && i.nodes === null && i.first === i.last && !(i.f & 524288) && (i = i.first, e & 16 && e & 65536 && i !== null && (i.f |= S));
 	}
-	if (i !== null && (i.parent = n, n !== null && hn(i, n), B !== null && B.f & 2 && !(e & 64))) {
+	if (i !== null && (i.parent = n, n !== null && gn(i, n), B !== null && B.f & 2 && !(e & 64))) {
 		var a = B;
 		(a.effects ??= []).push(i);
 	}
 	return r;
 }
-function _n() {
-	return B !== null && !Wn;
-}
-function vn(e) {
-	let t = gn(8, null);
-	return M(t, h), t.teardown = e, t;
+function vn() {
+	return B !== null && !Gn;
 }
 function yn(e) {
-	mn("$effect");
+	let t = _n(8, null);
+	return M(t, h), t.teardown = e, t;
+}
+function bn(e) {
+	hn("$effect");
 	var t = V.f;
 	if (!B && t & 32 && j !== null && !j.i) {
 		var n = j;
 		(n.e ??= []).push(e);
-	} else return bn(e);
-}
-function bn(e) {
-	return gn(4 | w, e);
+	} else return xn(e);
 }
 function xn(e) {
-	return mn("$effect.pre"), gn(8 | w, e);
+	return _n(4 | w, e);
 }
 function Sn(e) {
-	kt.ensure();
-	let t = gn(64 | C, e);
-	return (e = {}) => new Promise((n) => {
-		e.outro ? In(t, () => {
-			Nn(t), n(void 0);
-		}) : (Nn(t), n(void 0));
-	});
+	return hn("$effect.pre"), _n(8 | w, e);
 }
 function Cn(e) {
-	return gn(4, e);
+	At.ensure();
+	let t = _n(64 | C, e);
+	return (e = {}) => new Promise((n) => {
+		e.outro ? Ln(t, () => {
+			Pn(t), n(void 0);
+		}) : (Pn(t), n(void 0));
+	});
 }
-function wn(e, t) {
+function wn(e) {
+	return _n(4, e);
+}
+function Tn(e, t) {
 	var n = j, r = {
 		effect: null,
 		ran: !1,
 		deps: e
 	};
-	n.l.$.push(r), r.effect = Dn(() => {
+	n.l.$.push(r), r.effect = On(() => {
 		if (e(), !r.ran) {
 			r.ran = !0;
 			var n = V;
 			try {
-				Kn(n.parent), U(t);
+				qn(n.parent), U(t);
 			} finally {
-				Kn(n);
+				qn(n);
 			}
 		}
 	});
 }
-function Tn() {
+function En() {
 	var e = j;
-	Dn(() => {
+	On(() => {
 		for (var t of e.l.$) {
 			t.deps();
 			var n = t.effect;
-			n.f & 1024 && n.deps !== null && M(n, _), ir(n) && ur(n), t.ran = !1;
+			n.f & 1024 && n.deps !== null && M(n, _), ar(n) && dr(n), t.ran = !1;
 		}
 	});
 }
-function En(e) {
-	return gn(ee | C, e);
+function Dn(e) {
+	return _n(ee | C, e);
 }
-function Dn(e, t = 0) {
-	return gn(8 | t, e);
+function On(e, t = 0) {
+	return _n(8 | t, e);
 }
 function z(e, t = [], n = [], r = []) {
-	at(r, t, n, (t) => {
-		gn(8, () => {
+	ot(r, t, n, (t) => {
+		_n(8, () => {
 			e(...t.map(H));
 		});
 	});
 }
-function On(e, t = 0) {
-	return gn(16 | t, e);
-}
-function kn(e) {
-	return gn(32 | C, e);
+function kn(e, t = 0) {
+	return _n(16 | t, e);
 }
 function An(e) {
+	return _n(32 | C, e);
+}
+function jn(e) {
 	var t = e.teardown;
 	if (t !== null) {
-		let n = Hn, r = B;
-		Un(!0), Gn(null);
+		let n = Un, r = B;
+		Wn(!0), Kn(null);
 		try {
 			t.call(null);
 		} catch (t) {
-			pn(t, e.parent);
+			mn(t, e.parent);
 		} finally {
-			Un(n), Gn(r);
+			Wn(n), Kn(r);
 		}
 	}
 }
-function jn(e, t = !1) {
+function Mn(e, t = !1) {
 	var n = e.first;
 	for (e.first = e.last = null; n !== null;) {
 		let e = n.ac;
-		e !== null && rt(() => {
+		e !== null && it(() => {
 			e.abort(de);
 		});
 		var r = n.next;
-		n.f & 64 ? n.parent = null : Nn(n, t), n = r;
+		n.f & 64 ? n.parent = null : Pn(n, t), n = r;
 	}
 }
-function Mn(e) {
+function Nn(e) {
 	for (var t = e.first; t !== null;) {
 		var n = t.next;
-		t.f & 32 || Nn(t), t = n;
+		t.f & 32 || Pn(t), t = n;
 	}
 }
-function Nn(e, t = !0) {
+function Pn(e, t = !0) {
 	var n = !1;
-	(t || e.f & 262144) && e.nodes !== null && e.nodes.end !== null && (Pn(e.nodes.start, e.nodes.end), n = !0), e.f |= x, jn(e, t && !n), lr(e, 0);
+	(t || e.f & 262144) && e.nodes !== null && e.nodes.end !== null && (Fn(e.nodes.start, e.nodes.end), n = !0), e.f |= x, Mn(e, t && !n), ur(e, 0);
 	var r = e.nodes && e.nodes.t;
 	if (r !== null) for (let e of r) e.stop();
-	An(e), e.f ^= x, e.f |= y;
+	jn(e), e.f ^= x, e.f |= y;
 	var i = e.parent;
-	i !== null && i.first !== null && Fn(e), e.next = e.prev = e.teardown = e.ctx = e.deps = e.fn = e.nodes = e.ac = e.b = null;
+	i !== null && i.first !== null && In(e), e.next = e.prev = e.teardown = e.ctx = e.deps = e.fn = e.nodes = e.ac = e.b = null;
 }
-function Pn(e, t) {
+function Fn(e, t) {
 	for (; e !== null;) {
-		var n = e === t ? null : /* @__PURE__ */ on(e);
+		var n = e === t ? null : /* @__PURE__ */ sn(e);
 		e.remove(), e = n;
 	}
 }
-function Fn(e) {
+function In(e) {
 	var t = e.parent, n = e.prev, r = e.next;
 	n !== null && (n.next = r), r !== null && (r.prev = n), t !== null && (t.first === e && (t.first = r), t.last === e && (t.last = n));
 }
-function In(e, t, n = !0) {
+function Ln(e, t, n = !0) {
 	var r = [];
-	e.f |= 256, Ln(e, r, !0);
+	e.f |= 256, Rn(e, r, !0);
 	var i = () => {
-		n && Nn(e), t && t();
+		n && Pn(e), t && t();
 	}, a = r.length;
 	if (a > 0) {
 		var o = () => --a || i();
 		for (var s of r) s.out(o);
 	} else i();
 }
-function Ln(e, t, n) {
+function Rn(e, t, n) {
 	if (!(e.f & 8192)) {
 		e.f ^= v;
 		var r = e.nodes && e.nodes.t;
@@ -1145,113 +1148,113 @@ function Ln(e, t, n) {
 			var a = i.next;
 			if (!(i.f & 64)) {
 				var o = !!(i.f & 65536) || !!(i.f & 32) && !!(e.f & 16);
-				Ln(i, t, o ? n : !1);
+				Rn(i, t, o ? n : !1);
 			}
 			i = a;
 		}
 	}
 }
-function Rn(e) {
-	e.f &= -257, zn(e, !0);
+function zn(e) {
+	e.f &= -257, Bn(e, !0);
 }
-function zn(e, t) {
+function Bn(e, t) {
 	if (!(e.f & 256) && e.f & 8192) {
-		e.f ^= v, e.f & 1024 || (M(e, g), kt.ensure().schedule(e));
+		e.f ^= v, e.f & 1024 || (M(e, g), At.ensure().schedule(e));
 		for (var n = e.first; n !== null;) {
 			var r = n.next, i = !!(n.f & 65536) || !!(n.f & 32);
-			zn(n, i ? t : !1), n = r;
+			Bn(n, i ? t : !1), n = r;
 		}
 		var a = e.nodes && e.nodes.t;
 		if (a !== null) for (let e of a) (e.is_global || t) && e.in();
 	}
 }
-function Bn(e, t) {
+function Vn(e, t) {
 	if (e.nodes) for (var n = e.nodes.start, r = e.nodes.end; n !== null;) {
-		var i = n === r ? null : /* @__PURE__ */ on(n);
+		var i = n === r ? null : /* @__PURE__ */ sn(n);
 		t.append(n), n = i;
 	}
 }
 // ../node_modules/svelte/src/internal/client/legacy.js
-var Vn = null, Hn = !1;
-function Un(e) {
-	Hn = e;
+var Hn = null, Un = !1;
+function Wn(e) {
+	Un = e;
 }
-var B = null, Wn = !1;
-function Gn(e) {
+var B = null, Gn = !1;
+function Kn(e) {
 	B = e;
 }
 var V = null;
-function Kn(e) {
+function qn(e) {
 	V = e;
 }
-var qn = null;
-function Jn(e) {
-	B !== null && (B.f & 2097152 || B.f & 2) && (qn ??= /* @__PURE__ */ new Set()).add(e);
+var Jn = null;
+function Yn(e) {
+	B !== null && (B.f & 2097152 || B.f & 2) && (Jn ??= /* @__PURE__ */ new Set()).add(e);
 }
-var Yn = null, Xn = 0, Zn = null;
-function Qn(e) {
-	Zn = e;
+var Xn = null, Zn = 0, Qn = null;
+function $n(e) {
+	Qn = e;
 }
-var $n = 1, er = 0, tr = er;
-function nr(e) {
-	tr = e;
+var er = 1, tr = 0, nr = tr;
+function rr(e) {
+	nr = e;
 }
-function rr() {
-	return ++$n;
+function ir() {
+	return ++er;
 }
-function ir(e) {
+function ar(e) {
 	var t = e.f;
 	if (t & 2048) return !0;
 	if (t & 4096) {
 		for (var n = e.deps, r = n.length, i = 0; i < r; i++) {
 			var a = n[i];
-			if (ir(a) && gt(a), a.wv > e.wv) return !0;
+			if (ar(a) && _t(a), a.wv > e.wv) return !0;
 		}
-		t & 512 && xt === null && M(e, h);
+		t & 512 && St === null && M(e, h);
 	}
 	return !1;
 }
-function ar(e, t, n = !0) {
+function or(e, t, n = !0) {
 	var r = e.reactions;
-	if (r !== null && !(qn !== null && qn.has(e))) for (var i = 0; i < r.length; i++) {
+	if (r !== null && !(Jn !== null && Jn.has(e))) for (var i = 0; i < r.length; i++) {
 		var a = r[i];
-		a.f & 2 ? ar(a, t, !1) : t === a && (n ? M(a, g) : a.f & 1024 && M(a, _), Pt(a));
+		a.f & 2 ? or(a, t, !1) : t === a && (n ? M(a, g) : a.f & 1024 && M(a, _), Ft(a));
 	}
 }
-function or(e) {
-	var t = Yn, n = Xn, r = Zn, i = B, a = qn, o = j, s = Wn, c = tr, l = e.f;
-	Yn = null, Xn = 0, Zn = null, B = l & 96 ? null : e, qn = null, He(e.ctx), Wn = !1, tr = ++er, e.ac !== null && (rt(() => {
+function sr(e) {
+	var t = Xn, n = Zn, r = Qn, i = B, a = Jn, o = j, s = Gn, c = nr, l = e.f;
+	Xn = null, Zn = 0, Qn = null, B = l & 96 ? null : e, Jn = null, Ue(e.ctx), Gn = !1, nr = ++tr, e.ac !== null && (it(() => {
 		e.ac.abort(de);
 	}), e.ac = null);
 	try {
 		e.f |= E;
 		var u = e.fn, d = u();
 		e.f |= b;
-		var f = sr(e);
-		if (Ke() && Zn !== null && !Wn && f !== null && !(e.f & 6146)) for (var p = 0; p < Zn.length; p++) ar(Zn[p], e);
+		var f = cr(e);
+		if (qe() && Qn !== null && !Gn && f !== null && !(e.f & 6146)) for (var p = 0; p < Qn.length; p++) or(Qn[p], e);
 		if (i !== null && i !== e) {
-			if (er++, i.deps !== null) for (let e = 0; e < n; e += 1) i.deps[e].rv = er;
-			if (t !== null) for (let e of t) e.rv = er;
-			Zn !== null && (r === null ? r = Zn : r.push(...Zn));
+			if (tr++, i.deps !== null) for (let e = 0; e < n; e += 1) i.deps[e].rv = tr;
+			if (t !== null) for (let e of t) e.rv = tr;
+			Qn !== null && (r === null ? r = Qn : r.push(...Qn));
 		}
 		return e.f & 8388608 && (e.f ^= te), d;
 	} catch (t) {
-		return sr(e), fn(t);
+		return cr(e), pn(t);
 	} finally {
-		e.f ^= E, Yn = t, Xn = n, Zn = r, B = i, qn = a, He(o), Wn = s, tr = c;
+		e.f ^= E, Xn = t, Zn = n, Qn = r, B = i, Jn = a, Ue(o), Gn = s, nr = c;
 	}
 }
-function sr(e) {
+function cr(e) {
 	var t = e.deps, n = N?.is_fork;
-	if (Yn !== null) {
+	if (Xn !== null) {
 		var r;
-		if (n || lr(e, Xn), t !== null && Xn > 0) for (t.length = Xn + Yn.length, r = 0; r < Yn.length; r++) t[Xn + r] = Yn[r];
-		else e.deps = t = Yn;
-		if (_n() && e.f & 512) for (r = Xn; r < t.length; r++) (t[r].reactions ??= []).push(e);
-	} else !n && t !== null && Xn < t.length && (lr(e, Xn), t.length = Xn);
+		if (n || ur(e, Zn), t !== null && Zn > 0) for (t.length = Zn + Xn.length, r = 0; r < Xn.length; r++) t[Zn + r] = Xn[r];
+		else e.deps = t = Xn;
+		if (vn() && e.f & 512) for (r = Zn; r < t.length; r++) (t[r].reactions ??= []).push(e);
+	} else !n && t !== null && Zn < t.length && (ur(e, Zn), t.length = Zn);
 	return t;
 }
-function cr(e, r) {
+function lr(e, r) {
 	let i = r.reactions;
 	if (i !== null) {
 		var a = t.call(i, e);
@@ -1260,94 +1263,94 @@ function cr(e, r) {
 			o === 0 ? i = r.reactions = null : (i[a] = i[o], i.pop());
 		}
 	}
-	if (i === null && r.f & 2 && (Yn === null || !n.call(Yn, r))) {
+	if (i === null && r.f & 2 && (Xn === null || !n.call(Xn, r))) {
 		var s = r;
-		s.f & 512 && (s.f ^= 512), s.v !== D && Qe(s), s.ac !== null && rt(() => {
+		s.f & 512 && (s.f ^= 512), s.v !== D && $e(s), s.ac !== null && it(() => {
 			s.ac.abort(de), s.ac = null, M(s, g);
-		}), _t(s), lr(s, 0);
+		}), vt(s), ur(s, 0);
 	}
 }
-function lr(e, t) {
+function ur(e, t) {
 	var n = e.deps;
-	if (n !== null) for (var r = t; r < n.length; r++) cr(e, n[r]);
+	if (n !== null) for (var r = t; r < n.length; r++) lr(e, n[r]);
 }
-function ur(e) {
+function dr(e) {
 	var t = e.f;
 	if (!(t & 16384)) {
 		M(e, h);
 		var n = V;
 		V = e;
 		try {
-			t & 16777232 ? Mn(e) : jn(e), An(e);
-			var r = or(e);
-			e.teardown = typeof r == "function" ? r : null, e.wv = $n;
+			t & 16777232 ? Nn(e) : Mn(e), jn(e);
+			var r = sr(e);
+			e.teardown = typeof r == "function" ? r : null, e.wv = er;
 		} finally {
 			V = n;
 		}
 	}
 }
-async function dr() {
-	await Promise.resolve(), At();
+async function fr() {
+	await Promise.resolve(), jt();
 }
 function H(e) {
 	var t = !!(e.f & 2);
-	if (Vn?.add(e), B !== null && !Wn && !(V !== null && V.f & 16384) && (qn === null || !qn.has(e))) {
+	if (Hn?.add(e), B !== null && !Gn && !(V !== null && V.f & 16384) && (Jn === null || !Jn.has(e))) {
 		var r = B.deps;
-		if (B.f & 2097152) e.rv < er && (e.rv = er, Yn === null && r !== null && r[Xn] === e ? Xn++ : Yn === null ? Yn = [e] : Yn.push(e));
+		if (B.f & 2097152) e.rv < tr && (e.rv = tr, Xn === null && r !== null && r[Zn] === e ? Zn++ : Xn === null ? Xn = [e] : Xn.push(e));
 		else {
 			B.deps ??= [], n.call(B.deps, e) || B.deps.push(e);
 			var i = e.reactions;
 			i === null ? e.reactions = [B] : n.call(i, B) || i.push(B);
 		}
 	}
-	if (Hn && Rt.has(e)) return Rt.get(e);
+	if (Un && zt.has(e)) return zt.get(e);
 	if (t) {
 		var a = e;
-		if (Hn) {
+		if (Un) {
 			var o = a.v;
-			return (!(a.f & 1024) && a.reactions !== null || pr(a)) && (o = ht(a)), Rt.set(a, o), o;
+			return (!(a.f & 1024) && a.reactions !== null || mr(a)) && (o = gt(a)), zt.set(a, o), o;
 		}
-		var s = !(a.f & 512) && !Wn && B !== null && !!(B.f & 512), c = (a.f & b) === 0;
-		ir(a) && (s && (a.f |= 512), gt(a)), s && !c && (vt(a), fr(a));
+		var s = !(a.f & 512) && !Gn && B !== null && !!(B.f & 512), c = (a.f & b) === 0;
+		ar(a) && (s && (a.f |= 512), _t(a)), s && !c && (yt(a), pr(a));
 	}
-	if (xt?.has(e)) return xt.get(e);
+	if (St?.has(e)) return St.get(e);
 	if (e.f & 8388608) throw e.v;
 	return e.v;
 }
-function fr(e) {
+function pr(e) {
 	if (e.f |= 512, e.deps !== null) for (let r of e.deps) {
 		var t = r.reactions;
-		t === null ? r.reactions = [e] : n.call(t, e) || t.push(e), r.f & 2 && !(r.f & 512) && (vt(r), fr(r));
+		t === null ? r.reactions = [e] : n.call(t, e) || t.push(e), r.f & 2 && !(r.f & 512) && (yt(r), pr(r));
 	}
 }
-function pr(e) {
+function mr(e) {
 	if (e.v === D) return !0;
 	if (e.deps === null) return !1;
-	for (let t of e.deps) if (Rt.has(t) || t.f & 2 && pr(t)) return !0;
+	for (let t of e.deps) if (zt.has(t) || t.f & 2 && mr(t)) return !0;
 	return !1;
 }
 function U(e) {
-	var t = Wn;
+	var t = Gn;
 	try {
-		return Wn = !0, e();
+		return Gn = !0, e();
 	} finally {
-		Wn = t;
+		Gn = t;
 	}
 }
 function W(e) {
 	if (!(typeof e != "object" || !e || e instanceof EventTarget)) {
-		if (ne in e) mr(e);
+		if (ne in e) hr(e);
 		else if (!Array.isArray(e)) for (let t in e) {
 			let n = e[t];
-			typeof n == "object" && n && ne in n && mr(n);
+			typeof n == "object" && n && ne in n && hr(n);
 		}
 	}
 }
-function mr(e, t = /* @__PURE__ */ new Set()) {
+function hr(e, t = /* @__PURE__ */ new Set()) {
 	if (typeof e == "object" && e && !(e instanceof EventTarget) && !t.has(e)) {
 		t.add(e), e instanceof Date && e.getTime();
 		for (let n in e) try {
-			mr(e[n], t);
+			hr(e[n], t);
 		} catch {}
 		let n = l(e);
 		if (n !== Object.prototype && n !== Array.prototype && n !== Map.prototype && n !== Set.prototype && n !== Date.prototype) {
@@ -1362,47 +1365,47 @@ function mr(e, t = /* @__PURE__ */ new Set()) {
 	}
 }
 [.../* @__PURE__ */ "allowfullscreen.async.autofocus.autoplay.checked.controls.default.disabled.formnovalidate.indeterminate.inert.ismap.loop.multiple.muted.nomodule.novalidate.open.playsinline.readonly.required.reversed.seamless.selected.webkitdirectory.defer.disablepictureinpicture.disableremoteplayback".split(".")];
-var hr = ["touchstart", "touchmove"];
-function gr(e) {
-	return hr.includes(e);
+var gr = ["touchstart", "touchmove"];
+function _r(e) {
+	return gr.includes(e);
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/events.js
-var _r = Symbol("events"), vr = /* @__PURE__ */ new Set(), yr = /* @__PURE__ */ new Set();
-function br(e, t, n, r = {}) {
+var vr = Symbol("events"), yr = /* @__PURE__ */ new Set(), br = /* @__PURE__ */ new Set();
+function xr(e, t, n, r = {}) {
 	function i(e) {
-		if (r.capture || Tr.call(t, e), !e.cancelBubble) return rt(() => n?.call(this, e));
+		if (r.capture || Er.call(t, e), !e.cancelBubble) return it(() => n?.call(this, e));
 	}
-	return e.startsWith("pointer") || e.startsWith("touch") || e === "wheel" ? (i.__removed = !1, Ye(() => {
+	return e.startsWith("pointer") || e.startsWith("touch") || e === "wheel" ? (i.__removed = !1, Xe(() => {
 		i.__removed || t.addEventListener(e, i, r);
 	})) : t.addEventListener(e, i, r), i;
 }
-function xr(e, t, n, r, i) {
+function Sr(e, t, n, r, i) {
 	var a = {
 		capture: r,
 		passive: i
-	}, o = br(e, t, n, a);
-	(t === document.body || t === window || t === document || t instanceof HTMLMediaElement) && vn(() => {
+	}, o = xr(e, t, n, a);
+	(t === document.body || t === window || t === document || t instanceof HTMLMediaElement) && yn(() => {
 		o.__removed = !0, t.removeEventListener(e, o, a);
 	});
 }
 function G(e, t, n) {
-	(t[_r] ??= {})[e] = n;
+	(t[vr] ??= {})[e] = n;
 }
-function Sr(e) {
-	for (var t = 0; t < e.length; t++) vr.add(e[t]);
-	for (var n of yr) n(e);
+function Cr(e) {
+	for (var t = 0; t < e.length; t++) yr.add(e[t]);
+	for (var n of br) n(e);
 }
-var Cr = null, wr = !1;
-function Tr(e) {
+var wr = null, Tr = !1;
+function Er(e) {
 	var t = this, n = t.ownerDocument, r = e.type, a = e.composedPath?.() || [], o = a[0] || e.target;
-	Cr = e, wr || (wr = !0, setTimeout(() => {
-		wr = !1, Cr = null;
+	wr = e, Tr || (Tr = !0, setTimeout(() => {
+		Tr = !1, wr = null;
 	}));
-	var s = 0, c = Cr === e && e[_r];
+	var s = 0, c = wr === e && e[vr];
 	if (c) {
 		var l = a.indexOf(c);
 		if (l !== -1 && (t === document || t === window)) {
-			e[_r] = t;
+			e[vr] = t;
 			return;
 		}
 		var u = a.indexOf(t);
@@ -1417,11 +1420,11 @@ function Tr(e) {
 			}
 		});
 		var d = B, f = V;
-		Gn(null), Kn(null);
+		Kn(null), qn(null);
 		try {
 			for (var p, m = []; o !== null && o !== t;) {
 				try {
-					var h = o[_r]?.[r];
+					var h = o[vr]?.[r];
 					h == null || o.disabled && e.target !== o || h.call(o, e);
 				} catch (e) {
 					p ? m.push(e) : p = e;
@@ -1436,21 +1439,21 @@ function Tr(e) {
 				throw p;
 			}
 		} finally {
-			e[_r] = t, delete e.currentTarget, Gn(d), Kn(f);
+			e[vr] = t, delete e.currentTarget, Kn(d), qn(f);
 		}
 	}
 }
 // ../node_modules/svelte/src/internal/client/dom/reconciler.js
-var Er = globalThis?.window?.trustedTypes && /* @__PURE__ */ globalThis.window.trustedTypes.createPolicy("svelte-trusted-html", { createHTML: (e) => e });
-function Dr(e) {
-	return Er?.createHTML(e) ?? e;
-}
+var Dr = globalThis?.window?.trustedTypes && /* @__PURE__ */ globalThis.window.trustedTypes.createPolicy("svelte-trusted-html", { createHTML: (e) => e });
 function Or(e) {
-	var t = un("template");
-	return t.innerHTML = Dr(e.replaceAll("<!>", "<!---->")), t.content;
+	return Dr?.createHTML(e) ?? e;
+}
+function kr(e) {
+	var t = dn("template");
+	return t.innerHTML = Or(e.replaceAll("<!>", "<!---->")), t.content;
 }
 // ../node_modules/svelte/src/internal/client/dom/template.js
-function kr(e, t) {
+function Ar(e, t) {
 	var n = V;
 	n.nodes === null && (n.nodes = {
 		start: e,
@@ -1463,23 +1466,23 @@ function kr(e, t) {
 function K(e, t) {
 	var n = !!(t & 1), r = !!(t & 2), i, a = !e.startsWith("<!>");
 	return () => {
-		if (O) return kr(k, null), k;
-		i === void 0 && (i = Or(a ? e : "<!>" + e), n || (i = /* @__PURE__ */ an(i)));
-		var t = r || $t ? document.importNode(i, !0) : i.cloneNode(!0);
+		if (O) return Ar(k, null), k;
+		i === void 0 && (i = kr(a ? e : "<!>" + e), n || (i = /* @__PURE__ */ on(i)));
+		var t = r || en ? document.importNode(i, !0) : i.cloneNode(!0);
 		if (n) {
-			var o = /* @__PURE__ */ an(t), s = t.lastChild;
-			kr(o, s);
-		} else kr(t, t);
+			var o = /* @__PURE__ */ on(t), s = t.lastChild;
+			Ar(o, s);
+		} else Ar(t, t);
 		return t;
 	};
 }
-function Ar(e = "") {
+function jr(e = "") {
 	if (!O) {
-		var t = rn(e + "");
-		return kr(t, t), t;
+		var t = an(e + "");
+		return Ar(t, t), t;
 	}
 	var n = k;
-	return n.nodeType === 3 ? dn(n) : (n.before(n = rn()), be(n)), kr(n, n), n;
+	return n.nodeType === 3 ? fn(n) : (n.before(n = an()), be(n)), Ar(n, n), n;
 }
 function q(e, t) {
 	if (O) {
@@ -1488,22 +1491,22 @@ function q(e, t) {
 	} else e !== null && e.before(t);
 }
 // ../node_modules/svelte/src/reactivity/create-subscriber.js
-function jr(e) {
-	let t = 0, n = Bt(0), r;
+function Mr(e) {
+	let t = 0, n = Vt(0), r;
 	return () => {
-		_n() && (H(n), Dn(() => (t === 0 && (r = U(() => e(() => qt(n)))), t += 1, () => {
-			Ye(() => {
-				--t, t === 0 && (r?.(), r = void 0, qt(n));
+		vn() && (H(n), On(() => (t === 0 && (r = U(() => e(() => Jt(n)))), t += 1, () => {
+			Xe(() => {
+				--t, t === 0 && (r?.(), r = void 0, Jt(n));
 			});
 		})));
 	};
 }
 // ../node_modules/svelte/src/internal/client/dom/blocks/boundary.js
-var Mr = S | C;
-function Nr(e, t, n, r) {
-	new Pr(e, t, n, r);
+var Nr = S | C;
+function Pr(e, t, n, r) {
+	new Fr(e, t, n, r);
 }
-var Pr = class {
+var Fr = class {
 	parent;
 	is_pending = !1;
 	transform_error;
@@ -1522,14 +1525,14 @@ var Pr = class {
 	#f = /* @__PURE__ */ new Set();
 	#p = /* @__PURE__ */ new Set();
 	#m = null;
-	#h = jr(() => (this.#m = Bt(this.#l), () => {
+	#h = Mr(() => (this.#m = Vt(this.#l), () => {
 		this.#m = null;
 	}));
 	constructor(e, t, n, r) {
 		this.#e = e, this.#n = t, this.#r = (e) => {
 			var t = V;
 			t.b = this, t.f |= 128, n(e);
-		}, this.parent = V.b, this.transform_error = r ?? this.parent?.transform_error ?? ((e) => e), this.#i = On(() => {
+		}, this.parent = V.b, this.transform_error = r ?? this.parent?.transform_error ?? ((e) => e), this.#i = kn(() => {
 			if (O) {
 				let e = we(this.#t);
 				xe();
@@ -1539,25 +1542,25 @@ var Pr = class {
 					this.#_(t);
 				} else t ? this.#b() : this.#g();
 			} else this.#x();
-		}, Mr), O && (this.#e = k);
+		}, Nr), O && (this.#e = k);
 	}
 	#g() {
 		try {
-			this.#a = kn(() => this.#r(this.#e));
+			this.#a = An(() => this.#r(this.#e));
 		} catch (e) {
 			this.error(e);
 		}
 	}
 	#_(e) {
 		let t = this.#n.failed, { reset: n, invoke_onerror: r } = this.#v(e);
-		Ye(r), t && (this.#s = kn(() => {
+		Xe(r), t && (this.#s = An(() => {
 			t(this.#e, () => e, () => n);
 		}));
 	}
 	#v(e) {
 		var t = !1, n = !1;
 		let r = () => {
-			this.#y() || (t ? ve() : (t = !0, n && ze(), this.#s !== null && In(this.#s, () => {
+			this.#y() || (t ? ve() : (t = !0, n && Be(), this.#s !== null && Ln(this.#s, () => {
 				this.#s = null;
 			}), this.#C(() => {
 				this.#x();
@@ -1569,7 +1572,7 @@ var Pr = class {
 				if (!this.#y()) try {
 					n = !0, this.#n.onerror?.(e, r), n = !1;
 				} catch (e) {
-					pn(e, this.#i && this.#i.parent);
+					mn(e, this.#i && this.#i.parent);
 				}
 			}
 		};
@@ -1579,21 +1582,21 @@ var Pr = class {
 	}
 	#b() {
 		let e = this.#n.pending;
-		e && (this.is_pending = !0, this.#o = kn(() => e(this.#e)), Ye(() => {
+		e && (this.is_pending = !0, this.#o = An(() => e(this.#e)), Xe(() => {
 			if (!this.#y()) {
-				var e = this.#c = document.createDocumentFragment(), t = rn(), n = !1;
+				var e = this.#c = document.createDocumentFragment(), t = an(), n = !1;
 				e.append(t), this.#a = this.#C(() => {
 					try {
-						return kn(() => this.#r(t));
+						return An(() => this.#r(t));
 					} catch (e) {
 						try {
 							this.error(e), n = !0;
 						} catch (e) {
-							pn(e, this.#i.parent);
+							mn(e, this.#i.parent);
 						}
 						return null;
 					}
-				}), this.#a === null ? (this.#c = null, n && this.#S(N)) : this.#u === 0 && (this.#e.before(e), this.#c = null, In(this.#o, () => {
+				}), this.#a === null ? (this.#c = null, n && this.#S(N)) : this.#u === 0 && (this.#e.before(e), this.#c = null, Ln(this.#o, () => {
 					this.#o = null;
 				}), this.#S(N));
 			}
@@ -1601,13 +1604,13 @@ var Pr = class {
 	}
 	#x() {
 		try {
-			if (this.is_pending = this.has_pending_snippet(), this.#u = 0, this.#l = 0, this.#a = kn(() => {
+			if (this.is_pending = this.has_pending_snippet(), this.#u = 0, this.#l = 0, this.#a = An(() => {
 				this.#r(this.#e);
 			}), this.#u > 0) {
 				var e = this.#c = document.createDocumentFragment();
-				Bn(this.#a, e);
+				Vn(this.#a, e);
 				let t = this.#n.pending;
-				this.#o = kn(() => t(this.#e));
+				this.#o = An(() => t(this.#e));
 			} else this.#S(N);
 		} catch (e) {
 			this.error(e);
@@ -1617,7 +1620,7 @@ var Pr = class {
 		this.is_pending = !1, e.transfer_effects(this.#f, this.#p);
 	}
 	defer_effect(e) {
-		$e(e, this.#f, this.#p);
+		et(e, this.#f, this.#p);
 	}
 	is_rendered() {
 		return !this.is_pending && (!this.parent || this.parent.is_rendered());
@@ -1627,21 +1630,21 @@ var Pr = class {
 	}
 	#C(e) {
 		var t = V, n = B, r = j;
-		Kn(this.#i), Gn(this.#i), He(this.#i.ctx);
+		qn(this.#i), Kn(this.#i), Ue(this.#i.ctx);
 		try {
-			return kt.ensure(), e();
+			return At.ensure(), e();
 		} finally {
-			Kn(t), Gn(n), He(r);
+			qn(t), Kn(n), Ue(r);
 		}
 	}
 	#w(e, t) {
-		this.has_pending_snippet() ? (this.#u += e, this.#u === 0 && (this.#S(t), this.#o && In(this.#o, () => {
+		this.has_pending_snippet() ? (this.#u += e, this.#u === 0 && (this.#S(t), this.#o && Ln(this.#o, () => {
 			this.#o = null;
 		}), this.#c &&= (this.#e.before(this.#c), null))) : this.parent && this.parent.#w(e, t);
 	}
 	update_pending_count(e, t) {
-		this.#w(e, t), this.#l += e, !(!this.#m || this.#d) && (this.#d = !0, Ye(() => {
-			this.#d = !1, this.#m && Wt(this.#m, this.#l);
+		this.#w(e, t), this.#l += e, !(!this.#m || this.#d) && (this.#d = !0, Xe(() => {
+			this.#d = !1, this.#m && Gt(this.#m, this.#l);
 		}));
 	}
 	get_effect_pending() {
@@ -1654,31 +1657,31 @@ var Pr = class {
 		})) : this.#T(e);
 	}
 	#T(e) {
-		this.#a &&= (Nn(this.#a), null), this.#o &&= (Nn(this.#o), null), this.#s &&= (Nn(this.#s), null), O && (be(this.#t), Se(), be(Ce()));
+		this.#a &&= (Pn(this.#a), null), this.#o &&= (Pn(this.#o), null), this.#s &&= (Pn(this.#s), null), O && (be(this.#t), Se(), be(Ce()));
 		let t = this.#n.failed, n = (e) => {
 			if (this.#y()) return;
 			let { reset: n, invoke_onerror: r } = this.#v(e);
 			r(), t && !this.#y() && (this.#s = this.#C(() => {
 				try {
-					return kn(() => {
+					return An(() => {
 						var r = V;
 						r.b = this, r.f |= 128, t(this.#e, () => e, () => n);
 					});
 				} catch (e) {
-					return pn(e, this.#i.parent), null;
+					return mn(e, this.#i.parent), null;
 				}
 			}));
 		};
-		Ye(() => {
+		Xe(() => {
 			if (!this.#y()) {
 				var t;
 				try {
 					t = this.transform_error(e);
 				} catch (e) {
-					pn(e, this.#i && this.#i.parent);
+					mn(e, this.#i && this.#i.parent);
 					return;
 				}
-				typeof t == "object" && t && typeof t.then == "function" ? t.then(n, (e) => pn(e, this.#i && this.#i.parent)) : n(t);
+				typeof t == "object" && t && typeof t.then == "function" ? t.then(n, (e) => mn(e, this.#i && this.#i.parent)) : n(t);
 			}
 		});
 	}
@@ -1687,46 +1690,46 @@ function J(e, t) {
 	var n = t == null ? "" : typeof t == "object" ? `${t}` : t;
 	n !== (e[le] ??= e.nodeValue) && (e[le] = n, e.nodeValue = `${n}`);
 }
-function Fr(e, t) {
-	return Lr(e, t);
+function Ir(e, t) {
+	return Rr(e, t);
 }
-var Ir = /* @__PURE__ */ new Map();
-function Lr(e, { target: t, anchor: n, props: i = {}, events: a, context: o, intro: s = !0, transformError: c }) {
-	nn();
-	var l = void 0, u = Sn(() => {
-		var s = n ?? t.appendChild(rn());
-		Nr(s, { pending: () => {} }, (t) => {
-			Ue({});
+var Lr = /* @__PURE__ */ new Map();
+function Rr(e, { target: t, anchor: n, props: i = {}, events: a, context: o, intro: s = !0, transformError: c }) {
+	rn();
+	var l = void 0, u = Cn(() => {
+		var s = n ?? t.appendChild(an());
+		Pr(s, { pending: () => {} }, (t) => {
+			We({});
 			var n = j;
-			if (o && (n.c = o), a && (i.$$events = a), O && kr(t, null), l = e(t, i) || Ge(), O && (V.nodes.end = k, k === null || k.nodeType !== 8 || k.data !== "]")) throw ge(), pe;
-			We();
+			if (o && (n.c = o), a && (i.$$events = a), O && Ar(t, null), l = e(t, i) || Ke(), O && (V.nodes.end = k, k === null || k.nodeType !== 8 || k.data !== "]")) throw ge(), pe;
+			Ge();
 		}, c);
 		var u = /* @__PURE__ */ new Set(), d = (e) => {
 			for (var n = 0; n < e.length; n++) {
 				var r = e[n];
 				if (!u.has(r)) {
 					u.add(r);
-					var i = gr(r);
+					var i = _r(r);
 					for (let e of [t, document]) {
-						var a = Ir.get(e);
-						a === void 0 && (a = /* @__PURE__ */ new Map(), Ir.set(e, a));
+						var a = Lr.get(e);
+						a === void 0 && (a = /* @__PURE__ */ new Map(), Lr.set(e, a));
 						var o = a.get(r);
-						o === void 0 ? (e.addEventListener(r, Tr, { passive: i }), a.set(r, 1)) : a.set(r, o + 1);
+						o === void 0 ? (e.addEventListener(r, Er, { passive: i }), a.set(r, 1)) : a.set(r, o + 1);
 					}
 				}
 			}
 		};
-		return d(r(vr)), yr.add(d), () => {
+		return d(r(yr)), br.add(d), () => {
 			for (var e of u) for (let n of [t, document]) {
-				var r = Ir.get(n), i = r.get(e);
-				--i == 0 ? (n.removeEventListener(e, Tr), r.delete(e), r.size === 0 && Ir.delete(n)) : r.set(e, i);
+				var r = Lr.get(n), i = r.get(e);
+				--i == 0 ? (n.removeEventListener(e, Er), r.delete(e), r.size === 0 && Lr.delete(n)) : r.set(e, i);
 			}
-			yr.delete(d), s !== n && s.parentNode?.removeChild(s);
+			br.delete(d), s !== n && s.parentNode?.removeChild(s);
 		};
 	});
-	return Rr.set(l, u), l;
+	return zr.set(l, u), l;
 }
-var Rr = /* @__PURE__ */ new WeakMap(), zr = class {
+var zr = /* @__PURE__ */ new WeakMap(), Br = class {
 	anchor;
 	#e = /* @__PURE__ */ new Map();
 	#t = /* @__PURE__ */ new Map();
@@ -1739,47 +1742,47 @@ var Rr = /* @__PURE__ */ new WeakMap(), zr = class {
 	#a = (e) => {
 		if (this.#e.has(e)) {
 			var t = this.#e.get(e), n = this.#t.get(t);
-			if (n) Rn(n), this.#r.delete(t);
+			if (n) zn(n), this.#r.delete(t);
 			else {
 				var r = this.#n.get(t);
-				r && (Rn(r.effect), this.#t.set(t, r.effect), this.#n.delete(t), r.fragment.lastChild.remove(), this.anchor.before(r.fragment), n = r.effect);
+				r && (zn(r.effect), this.#t.set(t, r.effect), this.#n.delete(t), r.fragment.lastChild.remove(), this.anchor.before(r.fragment), n = r.effect);
 			}
 			for (let [t, n] of this.#e) {
 				if (this.#e.delete(t), t === e) break;
 				let r = this.#n.get(n);
-				r && (Nn(r.effect), this.#n.delete(n));
+				r && (Pn(r.effect), this.#n.delete(n));
 			}
 			for (let [e, r] of this.#t) {
 				if (e === t || this.#r.has(e)) continue;
 				let i = () => {
 					if (Array.from(this.#e.values()).includes(e)) {
 						var t = document.createDocumentFragment();
-						Bn(r, t), t.append(rn()), this.#n.set(e, {
+						Vn(r, t), t.append(an()), this.#n.set(e, {
 							effect: r,
 							fragment: t
 						});
-					} else Nn(r);
+					} else Pn(r);
 					this.#r.delete(e), this.#t.delete(e);
 				};
-				this.#i || !n ? (this.#r.add(e), In(r, i, !1)) : i();
+				this.#i || !n ? (this.#r.add(e), Ln(r, i, !1)) : i();
 			}
 		}
 	};
 	#o = (e) => {
 		this.#e.delete(e);
 		let t = Array.from(this.#e.values());
-		for (let [e, n] of this.#n) t.includes(e) || (Nn(n.effect), this.#n.delete(e));
+		for (let [e, n] of this.#n) t.includes(e) || (Pn(n.effect), this.#n.delete(e));
 	};
 	ensure(e, t) {
-		var n = N, r = ln();
+		var n = N, r = un();
 		if (t && !this.#t.has(e) && !this.#n.has(e)) {
 			if (r) {
-				var i = document.createDocumentFragment(), a = rn();
+				var i = document.createDocumentFragment(), a = an();
 				i.append(a), this.#n.set(e, {
-					effect: kn(() => t(a)),
+					effect: An(() => t(a)),
 					fragment: i
 				});
-			} else this.#t.set(e, kn(() => t(this.anchor)));
+			} else this.#t.set(e, An(() => t(this.anchor)));
 		}
 		if (this.#e.set(n, e), r) {
 			for (let [t, r] of this.#t) t === e ? n.unskip_effect(r) : n.skip_effect(r);
@@ -1792,7 +1795,7 @@ var Rr = /* @__PURE__ */ new WeakMap(), zr = class {
 function Y(e, t, n = !1) {
 	var r;
 	O && (r = k, xe());
-	var i = new zr(e), a = n ? S : 0;
+	var i = new Br(e), a = n ? S : 0;
 	function o(e, t) {
 		if (O) {
 			var n = we(r);
@@ -1804,7 +1807,7 @@ function Y(e, t, n = !1) {
 		}
 		i.ensure(e, t);
 	}
-	On(() => {
+	kn(() => {
 		var e = !1;
 		t((t, n = 0) => {
 			e = !0, o(n, t);
@@ -1812,17 +1815,17 @@ function Y(e, t, n = !1) {
 	}, a);
 }
 // ../node_modules/svelte/src/internal/client/dom/blocks/each.js
-function Br(e, t) {
+function Vr(e, t) {
 	return t;
 }
-function Vr(e, t, n) {
+function Hr(e, t, n) {
 	for (var i = [], a = t.length, o, s = t.length, c = 0; c < a; c++) {
 		let n = t[c];
-		In(n, () => {
+		Ln(n, () => {
 			if (o) {
 				if (o.pending.delete(n), o.done.add(n), o.pending.size === 0) {
 					var t = e.outrogroups;
-					Hr(e, r(o.done)), t.delete(o), t.size === 0 && (e.outrogroups = null);
+					Ur(e, r(o.done)), t.delete(o), t.size === 0 && (e.outrogroups = null);
 				}
 			} else --s;
 		}, !1);
@@ -1831,15 +1834,15 @@ function Vr(e, t, n) {
 		var l = i.length === 0 && n !== null && e.pending.size === 0;
 		if (l) {
 			var u = n, d = u.parentNode;
-			cn(d), d.append(u), e.items.clear();
+			ln(d), d.append(u), e.items.clear();
 		}
-		Hr(e, t, !l);
+		Ur(e, t, !l);
 	} else o = {
 		pending: new Set(t),
 		done: /* @__PURE__ */ new Set()
 	}, (e.outrogroups ??= /* @__PURE__ */ new Set()).add(o);
 }
-function Hr(e, t, n = !0) {
+function Ur(e, t, n = !0) {
 	var r;
 	if (e.pending.size > 0) {
 		r = /* @__PURE__ */ new Set();
@@ -1847,18 +1850,18 @@ function Hr(e, t, n = !0) {
 	}
 	for (var i = 0; i < t.length; i++) {
 		var a = t[i];
-		r?.has(a) ? (a.f |= T, Bn(a, document.createDocumentFragment())) : Nn(t[i], n);
+		r?.has(a) ? (a.f |= T, Vn(a, document.createDocumentFragment())) : Pn(t[i], n);
 	}
 }
-var Ur;
-function Wr(t, n, i, a, o, s = null) {
+var Wr;
+function Gr(t, n, i, a, o, s = null) {
 	var c = t, l = /* @__PURE__ */ new Map();
 	if (n & 4) {
 		var u = t;
-		c = O ? be(/* @__PURE__ */ an(u)) : u.appendChild(rn());
+		c = O ? be(/* @__PURE__ */ on(u)) : u.appendChild(an());
 	}
 	O && xe();
-	var d = null, f = /* @__PURE__ */ pt(() => {
+	var d = null, f = /* @__PURE__ */ mt(() => {
 		var t = i();
 		return e(t) ? t : t == null ? [] : r(t);
 	}), p = /* @__PURE__ */ new Map(), m = !0;
@@ -1866,7 +1869,7 @@ function Wr(t, n, i, a, o, s = null) {
 		if (!(_.effect.f & 16384)) {
 			_.pending.delete(e);
 			var t = H(f);
-			_.fallback = d, Kr(_, t, c, n, a), d !== null && (t.length === 0 ? d.f & 33554432 ? (d.f ^= T, Jr(d, null, c)) : Rn(d) : In(d, () => {
+			_.fallback = d, qr(_, t, c, n, a), d !== null && (t.length === 0 ? d.f & 33554432 ? (d.f ^= T, Yr(d, null, c)) : zn(d) : Ln(d, () => {
 				d = null;
 			}));
 		}
@@ -1875,16 +1878,16 @@ function Wr(t, n, i, a, o, s = null) {
 		_.pending.delete(e);
 	}
 	var _ = {
-		effect: On(() => {
+		effect: kn(() => {
 			var e = H(f), t = e.length;
 			let r = !1;
 			O && we(c) === "[!" != (t === 0) && (c = Ce(), be(c), ye(!1), r = !0);
-			for (var u = /* @__PURE__ */ new Set(), _ = N, v = ln(), y = 0; y < t; y += 1) {
+			for (var u = /* @__PURE__ */ new Set(), _ = N, v = un(), y = 0; y < t; y += 1) {
 				O && k.nodeType === 8 && k.data === "]" && (c = k, r = !0, ye(!1));
 				var b = e[y], x = a(b, y), S = m ? null : l.get(x);
-				S ? (S.v && Wt(S.v, b), S.i && Wt(S.i, y), v && _.unskip_effect(S.e)) : (S = qr(l, m ? c : Ur ??= rn(), b, x, y, o, n, i), m || (S.e.f |= T), l.set(x, S)), u.add(x);
+				S ? (S.v && Gt(S.v, b), S.i && Gt(S.i, y), v && _.unskip_effect(S.e)) : (S = Jr(l, m ? c : Wr ??= an(), b, x, y, o, n, i), m || (S.e.f |= T), l.set(x, S)), u.add(x);
 			}
-			if (t === 0 && s && !d && (m ? d = kn(() => s(c)) : (d = kn(() => s(Ur ??= rn())), d.f |= T)), t > u.size && Ae("", "", ""), O && t > 0 && be(Ce()), !m) {
+			if (t === 0 && s && !d && (m ? d = An(() => s(c)) : (d = An(() => s(Wr ??= an())), d.f |= T)), t > u.size && Ae("", "", ""), O && t > 0 && be(Ce()), !m) {
 				if (p.set(_, u), v) {
 					for (let [e, t] of l) u.has(e) || _.skip_effect(t.e);
 					_.oncommit(h), _.ondiscard(g);
@@ -1900,20 +1903,20 @@ function Wr(t, n, i, a, o, s = null) {
 	};
 	m = !1, O && (c = k);
 }
-function Gr(e) {
+function Kr(e) {
 	for (; e !== null && !(e.f & 32);) e = e.next;
 	return e;
 }
-function Kr(e, t, n, i, a) {
-	var o = !!(i & 8), s = t.length, c = e.items, l = Gr(e.effect.first), u, d = null, f, p = [], m = [], h, g, _, v;
+function qr(e, t, n, i, a) {
+	var o = !!(i & 8), s = t.length, c = e.items, l = Kr(e.effect.first), u, d = null, f, p = [], m = [], h, g, _, v;
 	if (o) for (v = 0; v < s; v += 1) h = t[v], g = a(h, v), _ = c.get(g).e, _.f & 33554432 || (_.nodes?.a?.measure(), (f ??= /* @__PURE__ */ new Set()).add(_));
 	for (v = 0; v < s; v += 1) {
 		if (h = t[v], g = a(h, v), _ = c.get(g).e, e.outrogroups !== null) for (let t of e.outrogroups) t.pending.delete(_), t.done.delete(_);
-		if (_.f & 8192 && (Rn(_), o && (_.nodes?.a?.unfix(), (f ??= /* @__PURE__ */ new Set()).delete(_))), _.f & 33554432) {
-			if (_.f ^= T, _ === l) Jr(_, null, n);
+		if (_.f & 8192 && (zn(_), o && (_.nodes?.a?.unfix(), (f ??= /* @__PURE__ */ new Set()).delete(_))), _.f & 33554432) {
+			if (_.f ^= T, _ === l) Yr(_, null, n);
 			else {
 				var y = d ? d.next : l;
-				_ === e.effect.last && (e.effect.last = _.prev), _.prev && (_.prev.next = _.next), _.next && (_.next.prev = _.prev), Yr(e, d, _), Yr(e, _, y), Jr(_, y, n), d = _, p = [], m = [], l = Gr(d.next);
+				_ === e.effect.last && (e.effect.last = _.prev), _.prev && (_.prev.next = _.next), _.next && (_.next.prev = _.prev), Xr(e, d, _), Xr(e, _, y), Yr(_, y, n), d = _, p = [], m = [], l = Kr(d.next);
 				continue;
 			}
 		}
@@ -1923,25 +1926,25 @@ function Kr(e, t, n, i, a) {
 					var b = m[0], x;
 					d = b.prev;
 					var S = p[0], C = p[p.length - 1];
-					for (x = 0; x < p.length; x += 1) Jr(p[x], b, n);
+					for (x = 0; x < p.length; x += 1) Yr(p[x], b, n);
 					for (x = 0; x < m.length; x += 1) u.delete(m[x]);
-					Yr(e, S.prev, C.next), Yr(e, d, S), Yr(e, C, b), l = b, d = C, --v, p = [], m = [];
-				} else u.delete(_), Jr(_, l, n), Yr(e, _.prev, _.next), Yr(e, _, d === null ? e.effect.first : d.next), Yr(e, d, _), d = _;
+					Xr(e, S.prev, C.next), Xr(e, d, S), Xr(e, C, b), l = b, d = C, --v, p = [], m = [];
+				} else u.delete(_), Yr(_, l, n), Xr(e, _.prev, _.next), Xr(e, _, d === null ? e.effect.first : d.next), Xr(e, d, _), d = _;
 				continue;
 			}
-			for (p = [], m = []; l !== null && l !== _;) (u ??= /* @__PURE__ */ new Set()).add(l), m.push(l), l = Gr(l.next);
+			for (p = [], m = []; l !== null && l !== _;) (u ??= /* @__PURE__ */ new Set()).add(l), m.push(l), l = Kr(l.next);
 			if (l === null) continue;
 		}
-		_.f & 33554432 || p.push(_), d = _, l = Gr(_.next);
+		_.f & 33554432 || p.push(_), d = _, l = Kr(_.next);
 	}
 	if (e.outrogroups !== null) {
-		for (let t of e.outrogroups) t.pending.size === 0 && (Hr(e, r(t.done)), e.outrogroups?.delete(t));
+		for (let t of e.outrogroups) t.pending.size === 0 && (Ur(e, r(t.done)), e.outrogroups?.delete(t));
 		e.outrogroups.size === 0 && (e.outrogroups = null);
 	}
 	if (l !== null || u !== void 0) {
 		var w = [];
 		if (u !== void 0) for (_ of u) _.f & 8192 || w.push(_);
-		for (; l !== null;) !(l.f & 8192) && l !== e.fallback && w.push(l), l = Gr(l.next);
+		for (; l !== null;) !(l.f & 8192) && l !== e.fallback && w.push(l), l = Kr(l.next);
 		var E = w.length;
 		if (E > 0) {
 			var ee = i & 4 && s === 0 ? n : null;
@@ -1949,51 +1952,51 @@ function Kr(e, t, n, i, a) {
 				for (v = 0; v < E; v += 1) w[v].nodes?.a?.measure();
 				for (v = 0; v < E; v += 1) w[v].nodes?.a?.fix();
 			}
-			Vr(e, w, ee);
+			Hr(e, w, ee);
 		}
 	}
-	o && Ye(() => {
+	o && Xe(() => {
 		if (f !== void 0) for (_ of f) _.nodes?.a?.apply();
 	});
 }
-function qr(e, t, n, r, i, a, o, s) {
-	var c = o & 1 ? o & 16 ? Bt(n) : /* @__PURE__ */ P(n, !1, !1) : null, l = o & 2 ? Bt(i) : null;
+function Jr(e, t, n, r, i, a, o, s) {
+	var c = o & 1 ? o & 16 ? Vt(n) : /* @__PURE__ */ P(n, !1, !1) : null, l = o & 2 ? Vt(i) : null;
 	return {
 		v: c,
 		i: l,
-		e: kn(() => (a(t, c ?? n, l ?? i, s), () => {
+		e: An(() => (a(t, c ?? n, l ?? i, s), () => {
 			e.delete(r);
 		}))
 	};
 }
-function Jr(e, t, n) {
+function Yr(e, t, n) {
 	if (e.nodes) for (var r = e.nodes.start, i = e.nodes.end, a = t && !(t.f & 33554432) ? t.nodes.start : n; r !== null;) {
-		var o = /* @__PURE__ */ on(r);
+		var o = /* @__PURE__ */ sn(r);
 		if (a.before(r), r === i) return;
 		r = o;
 	}
 }
-function Yr(e, t, n) {
+function Xr(e, t, n) {
 	t === null ? e.effect.first = n : t.next = n, n === null ? e.effect.last = t : n.prev = t;
 }
 // ../node_modules/svelte/src/internal/shared/attributes.js
-var Xr = [..." 	\n\r\f\xA0\v﻿"];
-function Zr(e, t, n) {
+var Zr = [..." 	\n\r\f\xA0\v﻿"];
+function Qr(e, t, n) {
 	var r = e == null ? "" : "" + e;
 	if (t && (r = r ? r + " " + t : t), n) {
 		for (var i of Object.keys(n)) if (n[i]) r = r ? r + " " + i : i;
 		else if (r.length) for (var a = i.length, o = 0; (o = r.indexOf(i, o)) >= 0;) {
 			var s = o + a;
-			(o === 0 || Xr.includes(r[o - 1])) && (s === r.length || Xr.includes(r[s])) ? r = (o === 0 ? "" : r.substring(0, o)) + r.substring(s + 1) : o = s;
+			(o === 0 || Zr.includes(r[o - 1])) && (s === r.length || Zr.includes(r[s])) ? r = (o === 0 ? "" : r.substring(0, o)) + r.substring(s + 1) : o = s;
 		}
 	}
 	return r === "" ? null : r;
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/class.js
-function Qr(e, t, n, r, i, a) {
+function $r(e, t, n, r, i, a) {
 	var o = e[se];
 	if (O || o !== n || o === void 0) {
-		var s = Zr(n, r, a);
+		var s = Qr(n, r, a);
 		O && s === e.getAttribute("class") || (s == null ? e.removeAttribute("class") : t ? e.className = s : e.setAttribute("class", s)), e[se] = n;
 	} else if (a && i !== a) for (var c in a) {
 		var l = !!a[c];
@@ -2002,16 +2005,16 @@ function Qr(e, t, n, r, i, a) {
 	return a;
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/bindings/select.js
-function $r(e, t) {
+function ei(e, t) {
 	t ? e.hasAttribute("selected") || e.setAttribute("selected", "") : e.removeAttribute("selected");
 }
-function ei(t, n) {
+function ti(t, n) {
 	var r = t.__defaultValue, i = t.multiple, a = i ? r ?? [] : null;
 	if (!i || e(a)) {
 		var o = t.selectedIndex, s = n && i ? new Set(t.selectedOptions) : null;
 		for (var c of t.options) {
-			var l = ii(c);
-			$r(c, i ? a.includes(l) : Zt(l, r));
+			var l = ai(c);
+			ei(c, i ? a.includes(l) : Qt(l, r));
 		}
 		if (n) {
 			if (s !== null) for (c of t.options) {
@@ -2022,59 +2025,59 @@ function ei(t, n) {
 		}
 	}
 }
-function ti(t, n, r = !1) {
+function ni(t, n, r = !1) {
 	if (t.multiple) {
 		if (n == null) return;
 		if (!e(n)) return _e();
-		for (var i of t.options) i.selected = n.includes(ii(i));
+		for (var i of t.options) i.selected = n.includes(ai(i));
 	} else {
-		for (i of t.options) if (Zt(ii(i), n)) {
+		for (i of t.options) if (Qt(ai(i), n)) {
 			i.selected = !0;
 			return;
 		}
 		r && n === void 0 || (t.selectedIndex = -1);
 	}
 }
-function ni(e) {
+function ri(e) {
 	var t = new MutationObserver((t) => {
-		t.every(ai) || ("__defaultValue" in e && ei(e, !1), "__value" in e && ti(e, e.__value));
+		t.every(oi) || ("__defaultValue" in e && ti(e, !1), "__value" in e && ni(e, e.__value));
 	});
 	t.observe(e, {
 		childList: !0,
 		subtree: !0,
 		attributes: !0,
 		attributeFilter: ["value"]
-	}), vn(() => {
+	}), yn(() => {
 		t.disconnect();
 	});
 }
-function ri(e, t, n = t) {
+function ii(e, t, n = t) {
 	var r = /* @__PURE__ */ new WeakSet(), i = !0;
-	it(e, "change", (t) => {
+	at(e, "change", (t) => {
 		var i = t ? "[selected]" : ":checked", a;
-		if (e.multiple) a = [].map.call(e.querySelectorAll(i), ii);
+		if (e.multiple) a = [].map.call(e.querySelectorAll(i), ai);
 		else {
 			var o = e.querySelector(i) ?? e.querySelector("option:not([disabled])");
-			a = o && ii(o);
+			a = o && ai(o);
 		}
 		n(a), e.__value = a, N !== null && r.add(N);
-	}), Cn(() => {
+	}), wn(() => {
 		var a = t();
 		if (e === document.activeElement) {
 			var o = N;
 			if (r.has(o)) return;
 		}
-		if (ti(e, a, i), i && a === void 0) {
+		if (ni(e, a, i), i && a === void 0) {
 			var s = e.querySelector(":checked");
-			s !== null && (a = ii(s), n(a));
+			s !== null && (a = ai(s), n(a));
 		}
 		e.__value = a, i = !1;
 	});
 }
-function ii(e) {
+function ai(e) {
 	return "__value" in e ? e.__value : e.value;
 }
-function ai(e) {
+function oi(e) {
 	if (e.target.closest("selectedcontent") !== null) return !0;
 	if (e.type === "childList") {
 		var t = [...e.addedNodes, ...e.removedNodes];
@@ -2083,8 +2086,8 @@ function ai(e) {
 	return !1;
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/attributes.js
-var oi = Symbol("is custom element"), si = Symbol("is html"), ci = fe ? "link" : "LINK", li = fe ? "progress" : "PROGRESS";
-function ui(e) {
+var si = Symbol("is custom element"), ci = Symbol("is html"), li = fe ? "link" : "LINK", ui = fe ? "progress" : "PROGRESS";
+function di(e) {
 	if (O) {
 		var t = !1, n = () => {
 			if (!t) {
@@ -2098,32 +2101,32 @@ function ui(e) {
 				}
 			}
 		};
-		e[ue] = n, Ye(n), nt();
+		e[ue] = n, Xe(n), rt();
 	}
 }
-function di(e, t) {
-	var n = pi(e);
-	n.value !== (n.value = t ?? void 0) && (e.value !== t || t === 0 && e.nodeName === li) && (e.value = t ?? "");
-}
 function fi(e, t) {
-	var n = pi(e);
+	var n = mi(e);
+	n.value !== (n.value = t ?? void 0) && (e.value !== t || t === 0 && e.nodeName === ui) && (e.value = t ?? "");
+}
+function pi(e, t) {
+	var n = mi(e);
 	n.checked !== (n.checked = t ?? void 0) && (e.checked = t);
 }
 function X(e, t, n, r) {
-	var i = pi(e);
-	O && (i[t] = e.getAttribute(t), t === "src" || t === "srcset" || t === "href" && e.nodeName === ci) || i[t] !== (i[t] = n) && (t === "loading" && (e[ae] = n), n == null ? e.removeAttribute(t) : typeof n != "string" && hi(e).has(t) ? e[t] = n : e.setAttribute(t, n));
+	var i = mi(e);
+	O && (i[t] = e.getAttribute(t), t === "src" || t === "srcset" || t === "href" && e.nodeName === li) || i[t] !== (i[t] = n) && (t === "loading" && (e[ae] = n), n == null ? e.removeAttribute(t) : typeof n != "string" && gi(e).has(t) ? e[t] = n : e.setAttribute(t, n));
 }
-function pi(e) {
+function mi(e) {
 	return e[oe] ??= {
-		[oi]: e.nodeName.includes("-"),
-		[si]: e.namespaceURI === me
+		[si]: e.nodeName.includes("-"),
+		[ci]: e.namespaceURI === me
 	};
 }
-var mi = /* @__PURE__ */ new Map();
-function hi(e) {
-	var t = e.getAttribute("is") || e.nodeName, n = mi.get(t);
+var hi = /* @__PURE__ */ new Map();
+function gi(e) {
+	var t = e.getAttribute("is") || e.nodeName, n = hi.get(t);
 	if (n) return n;
-	mi.set(t, n = /* @__PURE__ */ new Set());
+	hi.set(t, n = /* @__PURE__ */ new Set());
 	for (var r, i = e, a = Element.prototype; a !== i;) {
 		for (var s in r = o(i), r) r[s].set && s !== "innerHTML" && s !== "textContent" && s !== "innerText" && n.add(s);
 		i = l(i);
@@ -2131,57 +2134,57 @@ function hi(e) {
 	return n;
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/bindings/input.js
-function gi(e, t, n = t) {
+function _i(e, t, n = t) {
 	var r = /* @__PURE__ */ new WeakSet();
-	it(e, "input", async (i) => {
+	at(e, "input", async (i) => {
 		var a = i ? e.defaultValue : e.value;
-		if (a = vi(e) ? yi(a) : a, n(a), N !== null && r.add(N), await dr(), a !== (a = t())) {
+		if (a = yi(e) ? bi(a) : a, n(a), N !== null && r.add(N), await fr(), a !== (a = t())) {
 			var o = e.selectionStart, s = e.selectionEnd, c = e.value.length;
 			if (e.value = a ?? "", s !== null) {
 				var l = e.value.length;
 				o === s && s === c && l > c ? (e.selectionStart = l, e.selectionEnd = l) : (e.selectionStart = o, e.selectionEnd = Math.min(s, l));
 			}
 		}
-	}), (O && e.defaultValue !== e.value || U(t) == null && e.value) && (n(vi(e) ? yi(e.value) : e.value), N !== null && r.add(N)), Dn(() => {
+	}), (O && e.defaultValue !== e.value || U(t) == null && e.value) && (n(yi(e) ? bi(e.value) : e.value), N !== null && r.add(N)), On(() => {
 		var n = t();
 		if (e === document.activeElement) {
 			var i = N;
 			if (r.has(i)) return;
 		}
-		vi(e) && n === yi(e.value) || (e.type !== "date" || n || e.value) && n !== e.value && (e.value = n ?? "");
+		yi(e) && n === bi(e.value) || (e.type !== "date" || n || e.value) && n !== e.value && (e.value = n ?? "");
 	});
 }
-function _i(e, t, n = t) {
-	it(e, "change", (t) => {
+function vi(e, t, n = t) {
+	at(e, "change", (t) => {
 		n(t ? e.defaultChecked : e.checked);
-	}), (O && e.defaultChecked !== e.checked || U(t) == null) && n(e.checked), Dn(() => {
+	}), (O && e.defaultChecked !== e.checked || U(t) == null) && n(e.checked), On(() => {
 		e.checked = !!t();
 	});
 }
-function vi(e) {
+function yi(e) {
 	var t = e.type;
 	return t === "number" || t === "range";
 }
-function yi(e) {
+function bi(e) {
 	return e === "" ? null : +e;
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/bindings/this.js
-function bi(e, t) {
+function xi(e, t) {
 	return e === t || e?.[ne] === t;
 }
-function xi(e = Ge(), t, n, r) {
+function Si(e = Ke(), t, n, r) {
 	var i = j.r, a = V;
-	return Cn(() => {
+	return wn(() => {
 		var o, s;
-		return Dn(() => {
+		return On(() => {
 			o = s, s = r?.() || [], U(() => {
-				bi(n(...s), e) || (t(e, ...s), o && bi(n(...o), e) && t(null, ...o));
+				xi(n(...s), e) || (t(e, ...s), o && xi(n(...o), e) && t(null, ...o));
 			});
 		}), () => {
 			let r = a;
 			for (; r !== i && r.parent !== null && r.parent.f & 33554432;) r = r.parent;
 			let o = () => {
-				s && bi(n(...s), e) && t(null, ...s);
+				s && xi(n(...s), e) && t(null, ...s);
 			}, c = r.teardown;
 			r.teardown = () => {
 				o(), c?.();
@@ -2190,50 +2193,50 @@ function xi(e = Ge(), t, n, r) {
 	}), e;
 }
 // ../node_modules/svelte/src/internal/client/dom/legacy/lifecycle.js
-function Si(e = !1) {
+function Ci(e = !1) {
 	let t = j, n = t.l.u;
 	if (!n) return;
 	let r = () => W(t.s);
 	if (e) {
-		let e = 0, n = {}, i = /* @__PURE__ */ lt(() => {
+		let e = 0, n = {}, i = /* @__PURE__ */ ut(() => {
 			let r = !1, i = t.s;
 			for (let e in i) i[e] !== n[e] && (n[e] = i[e], r = !0);
 			return r && e++, e;
 		});
 		r = () => H(i);
 	}
-	n.b.length && xn(() => {
-		Ci(t, r), p(n.b);
-	}), yn(() => {
+	n.b.length && Sn(() => {
+		wi(t, r), p(n.b);
+	}), bn(() => {
 		let e = U(() => n.m.map(f));
 		return () => {
 			for (let t of e) typeof t == "function" && t();
 		};
-	}), n.a.length && yn(() => {
-		Ci(t, r), p(n.a);
+	}), n.a.length && bn(() => {
+		wi(t, r), p(n.a);
 	});
 }
-function Ci(e, t) {
+function wi(e, t) {
 	if (e.l.s) for (let t of e.l.s) H(t);
 	t();
 }
 // ../node_modules/svelte/src/store/utils.js
-function wi(e, t, n) {
+function Ti(e, t, n) {
 	if (e == null) return t(void 0), n && n(void 0), d;
 	let r = U(() => e.subscribe(t, n));
 	return r.unsubscribe ? () => r.unsubscribe() : r;
 }
 // ../node_modules/svelte/src/store/shared/index.js
-var Ti = [];
-function Ei(e, t = d) {
+var Ei = [];
+function Di(e, t = d) {
 	let n = null, r = /* @__PURE__ */ new Set();
 	function i(t) {
 		if (Ee(e, t) && (e = t, n)) {
-			let t = !Ti.length;
-			for (let t of r) t[1](), Ti.push(t, e);
+			let t = !Ei.length;
+			for (let t of r) t[1](), Ei.push(t, e);
 			if (t) {
-				for (let e = 0; e < Ti.length; e += 2) Ti[e][0](Ti[e + 1]);
-				Ti.length = 0;
+				for (let e = 0; e < Ei.length; e += 2) Ei[e][0](Ei[e + 1]);
+				Ei.length = 0;
 			}
 		}
 	}
@@ -2252,35 +2255,35 @@ function Ei(e, t = d) {
 		subscribe: o
 	};
 }
-function Di(e) {
+function Oi(e) {
 	let t;
-	return wi(e, (e) => t = e)(), t;
+	return Ti(e, (e) => t = e)(), t;
 }
 // ../node_modules/svelte/src/internal/client/reactivity/store.js
-var Oi = !1, ki = Symbol("unmounted");
-function Ai(e, t, n) {
+var ki = !1, Ai = Symbol("unmounted");
+function ji(e, t, n) {
 	let r = n[t] ??= {
 		store: null,
 		source: /* @__PURE__ */ P(void 0),
 		unsubscribe: d
 	};
-	if (r.store !== e && !(ki in n)) {
+	if (r.store !== e && !(Ai in n)) {
 		if (r.unsubscribe(), r.store = e ?? null, e == null) r.source.v = void 0, r.unsubscribe = d;
 		else {
 			var i = !0;
-			r.unsubscribe = wi(e, (e) => {
+			r.unsubscribe = Ti(e, (e) => {
 				i ? r.source.v = e : F(r.source, e);
 			}), i = !1;
 		}
 	}
-	return e && ki in n ? Di(e) : H(r.source);
+	return e && Ai in n ? Oi(e) : H(r.source);
 }
-function ji() {
+function Mi() {
 	let e = {};
 	function t() {
-		vn(() => {
+		yn(() => {
 			for (var t in e) e[t].unsubscribe();
-			i(e, ki, {
+			i(e, Ai, {
 				enumerable: !1,
 				value: !0
 			});
@@ -2288,24 +2291,24 @@ function ji() {
 	}
 	return [e, t];
 }
-function Mi(e) {
-	var t = Oi;
+function Ni(e) {
+	var t = ki;
 	try {
-		return Oi = !1, [e(), Oi];
+		return ki = !1, [e(), ki];
 	} finally {
-		Oi = t;
+		ki = t;
 	}
 }
 // ../node_modules/svelte/src/internal/client/reactivity/props.js
 function Z(e, t, n, r) {
-	var i = !Be || !!(n & 2), o = !!(n & 8), s = !!(n & 16), c = r, l = !0, u = void 0, d = () => s && i ? (u ??= /* @__PURE__ */ lt(r), H(u)) : (l && (l = !1, c = s ? U(r) : r), c);
+	var i = !Ve || !!(n & 2), o = !!(n & 8), s = !!(n & 16), c = r, l = !0, u = void 0, d = () => s && i ? (u ??= /* @__PURE__ */ ut(r), H(u)) : (l && (l = !1, c = s ? U(r) : r), c);
 	let f;
 	if (o) {
 		var p = ne in e || ie in e;
 		f = a(e, t)?.set ?? (p && t in e ? (n) => e[t] = n : void 0);
 	}
 	var m, h = !1;
-	o ? [m, h] = Mi(() => e[t]) : m = e[t], m === void 0 && r !== void 0 && (m = d(), f && (i && Fe(t), f(m)));
+	o ? [m, h] = Ni(() => e[t]) : m = e[t], m === void 0 && r !== void 0 && (m = d(), f && (i && Ie(t), f(m)));
 	var g = i ? () => {
 		var n = e[t];
 		return n === void 0 ? d() : (l = !0, n);
@@ -2320,27 +2323,33 @@ function Z(e, t, n, r) {
 			return arguments.length > 0 ? ((!i || !t || _ || h) && f(t ? g() : e), e) : g();
 		});
 	}
-	var v = !1, y = (n & 1 ? lt : pt)(() => (v = !1, g()));
+	var v = !1, y = (n & 1 ? ut : mt)(() => (v = !1, g()));
 	o && H(y);
 	var b = V;
 	return (function(e, t) {
 		if (arguments.length > 0) {
-			let n = t ? H(y) : i && o ? Yt(e) : e;
+			let n = t ? H(y) : i && o ? Xt(e) : e;
 			return F(y, n), v = !0, c !== void 0 && (c = n), e;
 		}
-		return Hn && v || b.f & 16384 ? y.v : H(y);
+		return Un && v || b.f & 16384 ? y.v : H(y);
 	});
 }
-function Ni(e) {
-	j === null && Oe("onMount"), Be && j.l !== null ? Fi(j).m.push(e) : yn(() => {
+function Pi(e) {
+	j === null && Oe("onMount"), Ve && j.l !== null ? Ri(j).m.push(e) : bn(() => {
 		let t = U(e);
 		if (typeof t == "function") return t;
 	});
 }
-function Pi(e) {
-	j === null && Oe("onDestroy"), Ni(() => () => U(e));
-}
 function Fi(e) {
+	j === null && Oe("onDestroy"), Pi(() => () => U(e));
+}
+function Ii(e) {
+	j === null && Oe("beforeUpdate"), j.l === null && Fe("beforeUpdate"), Ri(j).b.push(e);
+}
+function Li(e) {
+	j === null && Oe("afterUpdate"), j.l === null && Fe("afterUpdate"), Ri(j).a.push(e);
+}
+function Ri(e) {
 	var t = e.l;
 	return t.u ??= {
 		a: [],
@@ -2349,9 +2358,9 @@ function Fi(e) {
 	};
 }
 // ../node_modules/svelte/src/internal/flags/legacy.js
-typeof window < "u" && ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5"), Ve();
+typeof window < "u" && ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5"), He();
 // src/controller.ts
-var Ii = "keida-hub-reborn", Li = "reborn-workspace-v1", Ri = 9223372036854775807n, zi = () => [
+var zi = "keida-hub-reborn", Bi = "reborn-workspace-v1", Vi = 9223372036854775807n, Hi = () => [
 	{
 		id: "note",
 		visible: !0
@@ -2364,7 +2373,7 @@ var Ii = "keida-hub-reborn", Li = "reborn-workspace-v1", Ri = 922337203685477580
 		id: "pins",
 		visible: !0
 	}
-], Bi = (e) => e === "note" ? "Workspace note" : e === "connections" ? "Connections" : "Pinned services", Vi = () => ({
+], Ui = (e) => e === "note" ? "Workspace note" : e === "connections" ? "Connections" : "Pinned services", Wi = () => ({
 	phase: "idle",
 	entries: [],
 	through: "0",
@@ -2372,7 +2381,7 @@ var Ii = "keida-hub-reborn", Li = "reborn-workspace-v1", Ri = 922337203685477580
 	category: "all",
 	query: "",
 	message: ""
-}), Hi = (e, t) => ({
+}), Gi = (e, t) => ({
 	phase: e,
 	message: t,
 	draft: "",
@@ -2382,13 +2391,13 @@ var Ii = "keida-hub-reborn", Li = "reborn-workspace-v1", Ri = 922337203685477580
 	storageLimited: !1,
 	directorySave: "idle",
 	directoryMessage: "",
-	activity: Vi(),
+	activity: Wi(),
 	notificationSave: "idle",
 	notificationMessage: "",
 	layoutSave: "idle",
 	layoutMessage: ""
-}), Q = (e) => typeof e == "object" && !!e && !Array.isArray(e), $ = (e, t = !1) => typeof e == "string" && /^(0|[1-9][0-9]{0,18})$/.test(e) && BigInt(e) <= Ri && (!t || e !== "0"), Ui = (e) => typeof e == "string" && !e.includes("\0") && new TextEncoder().encode(e).length <= 4096;
-function Wi(e) {
+}), Q = (e) => typeof e == "object" && !!e && !Array.isArray(e), $ = (e, t = !1) => typeof e == "string" && /^(0|[1-9][0-9]{0,18})$/.test(e) && BigInt(e) <= Vi && (!t || e !== "0"), Ki = (e) => typeof e == "string" && !e.includes("\0") && new TextEncoder().encode(e).length <= 4096;
+function qi(e) {
 	if (typeof e != "string" || new TextEncoder().encode(e).length > 1024 || !/^https:\/\/[^/]/.test(e) || /[\s\u0000-\u001f\u007f\\]/u.test(e)) return !1;
 	try {
 		let t = new URL(e);
@@ -2397,7 +2406,7 @@ function Wi(e) {
 		return !1;
 	}
 }
-function Gi(e) {
+function Ji(e) {
 	if (!Q(e) || !Array.isArray(e.groups) || e.groups.length > 2 || !Number.isInteger(e.unread_groups) || new Set(e.groups.map((e) => Q(e) ? e.category : null)).size !== e.groups.length || e.groups.some((e) => !Q(e) || !["services", "connections"].includes(String(e.category)) || !$(e.revision, !0) || !$(e.read_through) || !$(e.unread) || BigInt(e.read_through) > BigInt(e.revision) || BigInt(e.unread) !== BigInt(e.revision) - BigInt(e.read_through) || !Q(e.latest) || !$(e.latest.source_revision, !0) || !$(e.latest.occurred_at) || BigInt(e.latest.occurred_at) > 253402300799n || typeof e.latest.label != "string" || !/^[A-Za-z ]{1,64}$/.test(e.latest.label) || !(e.category === "services" ? [
 		"service_added",
 		"service_updated",
@@ -2405,7 +2414,7 @@ function Gi(e) {
 	] : ["connection_saved", "connection_removed"]).includes(String(e.latest.kind))) || e.unread_groups !== e.groups.filter((e) => e.unread !== "0").length) throw Error("Invalid notification response");
 	return e;
 }
-function Ki(e) {
+function Yi(e) {
 	if (!Q(e) || !$(e.revision) || !Array.isArray(e.panels) || e.panels.length !== 3 || e.panels.some((e) => !Q(e) || ![
 		"note",
 		"connections",
@@ -2413,11 +2422,11 @@ function Ki(e) {
 	].includes(String(e.id)) || typeof e.visible != "boolean") || new Set(e.panels.map((e) => e.id)).size !== 3 || !e.panels.some((e) => e.visible)) throw Error("Invalid layout response");
 	return e;
 }
-var qi = (e, t) => e.length === t.length && e.every((e, n) => e.id === t[n].id && e.visible === t[n].visible);
-function Ji(e) {
-	if (!Q(e) || e.product !== Ii || e.contract !== Li || e.schema !== 1 || !Q(e.account) || !$(e.account.id, !0) || typeof e.account.username != "string" || !/^[a-z0-9_-]{3,32}$/.test(e.account.username) || e.account.role !== "owner" && e.account.role !== "member" || !$(e.session_generation) || !Q(e.note) || !Ui(e.note.body) || !$(e.note.revision)) throw Error("Invalid workspace response");
+var Xi = (e, t) => e.length === t.length && e.every((e, n) => e.id === t[n].id && e.visible === t[n].visible);
+function Zi(e) {
+	if (!Q(e) || e.product !== zi || e.contract !== Bi || e.schema !== 1 || !Q(e.account) || !$(e.account.id, !0) || typeof e.account.username != "string" || !/^[a-z0-9_-]{3,32}$/.test(e.account.username) || e.account.role !== "owner" && e.account.role !== "member" || !$(e.session_generation) || !Q(e.note) || !Ki(e.note.body) || !$(e.note.revision)) throw Error("Invalid workspace response");
 	let t = e.directory, n = (e, t, n = !1) => typeof e == "string" && (!n || e.length > 0) && new TextEncoder().encode(e).length <= t && !/[\u0000-\u001f\u007f]/u.test(e);
-	if (!Q(t) || !$(t.revision) || !$(t.pins_revision) || !Array.isArray(t.services) || t.services.length > 100 || t.services.some((e) => !Q(e) || !$(e.id, !0) || !n(e.name, 80, !0) || !n(e.category, 40, !0) || !n(e.description, 240) || !Wi(e.url)) || new Set(t.services.map((e) => e.id)).size !== t.services.length || !Array.isArray(t.pins) || t.pins.length > 24 || new Set(t.pins).size !== t.pins.length || t.pins.some((e) => !$(e, !0) || !t.services.some((t) => t.id === e))) throw Error("Invalid directory response");
+	if (!Q(t) || !$(t.revision) || !$(t.pins_revision) || !Array.isArray(t.services) || t.services.length > 100 || t.services.some((e) => !Q(e) || !$(e.id, !0) || !n(e.name, 80, !0) || !n(e.category, 40, !0) || !n(e.description, 240) || !qi(e.url)) || new Set(t.services.map((e) => e.id)).size !== t.services.length || !Array.isArray(t.pins) || t.pins.length > 24 || new Set(t.pins).size !== t.pins.length || t.pins.some((e) => !$(e, !0) || !t.services.some((t) => t.id === e))) throw Error("Invalid directory response");
 	if (e.crafty != null) {
 		let t = e.crafty, n = (e) => e === null || typeof e == "number" && Number.isSafeInteger(e) && e >= 0, r = (e) => e === null || typeof e == "string" && /^[a-z_]{1,40}$/.test(e);
 		if (!Q(t) || !$(t.revision) || typeof t.configured != "boolean" || !n(t.checked_at) || !r(t.error) || !Array.isArray(t.servers) || t.servers.length > 8 || t.servers.some((e) => !Q(e) || typeof e.name != "string" || e.name.length > 80 || typeof e.join != "string" || e.join.length > 253 || ![
@@ -2430,19 +2439,19 @@ function Ji(e) {
 			"unknown"
 		].includes(String(e.freshness)) || !n(e.players) || !n(e.capacity) || !n(e.collected_at) || !n(e.provider_at) || !r(e.error))) throw Error("Invalid connection response");
 	}
-	return Gi(e.notifications), Ki(e.layout), e;
+	return Ji(e.notifications), Yi(e.layout), e;
 }
-function Yi(e) {
+function Qi(e) {
 	if (!(!e || e.length > 25e3)) try {
 		let t = JSON.parse(e);
-		if (Q(t) && t.schema === 1 && Ui(t.body) && $(t.base)) return {
+		if (Q(t) && t.schema === 1 && Ki(t.body) && $(t.base)) return {
 			body: t.body,
 			base: t.base
 		};
 	} catch {}
 }
-function Xi(e) {
-	let t = Ei(Hi("checking", "Checking your workspace…")), n = 0, r, i, a, o, s, c, l, u = 0, d, f, p, m = !1, h = !1, g = () => Di(t), _ = (e) => `${Ii}.workspace.v1:${e.account.id}:${e.session_generation}`;
+function $i(e) {
+	let t = Di(Gi("checking", "Checking your workspace…")), n = 0, r, i, a, o, s, c, l, u = 0, d, f, p, m = !1, h = !1, g = () => Oi(t), _ = (e) => `${zi}.workspace.v1:${e.account.id}:${e.session_generation}`;
 	function v() {
 		if (f = void 0, d) try {
 			sessionStorage.removeItem(d);
@@ -2479,7 +2488,7 @@ function Xi(e) {
 		++n, r && clearTimeout(r), r = void 0, i?.abort(), a?.abort(), i = void 0, a = void 0, o?.abort(), o = void 0, ++u, s?.abort(), s = void 0, c?.abort(), c = void 0, l?.abort(), l = void 0;
 	}
 	function x(e, n = !1) {
-		b(), h ||= n, At(() => t.set(Hi(n ? "blocked" : "paused", e)));
+		b(), h ||= n, jt(() => t.set(Gi(n ? "blocked" : "paused", e)));
 	}
 	function S() {
 		r && clearTimeout(r), !m && !h && g().phase === "ready" && g().notificationSave !== "uncertain" && g().layoutSave !== "uncertain" && document.visibilityState === "visible" && (r = setTimeout(() => {
@@ -2496,8 +2505,8 @@ function Xi(e) {
 				redirect: "error",
 				signal: n.signal,
 				headers: {
-					"X-Reborn-Product": Ii,
-					"X-Reborn-Contract": Li,
+					"X-Reborn-Product": zi,
+					"X-Reborn-Contract": Bi,
 					"X-CSRF-Token": e,
 					...r ? { "Content-Type": "application/json" } : {}
 				},
@@ -2535,14 +2544,14 @@ function Xi(e) {
 				x(w(i.status), !0);
 				return;
 			}
-			let a = Ji(i.value);
+			let a = Zi(i.value);
 			if (!T(a)) {
 				x("Your account scope changed. Open a fresh workspace.", !0);
 				return;
 			}
 			let o = g();
 			if (d = _(a), o.phase === "ready") {
-				let n = o.dirty && a.note.revision !== o.base, r = !!o.layoutDraft && qi(o.layoutDraft.panels, a.layout.panels) && e && ["uncertain", "checking-conflict"].includes(o.layoutSave), i = !!o.layoutDraft && !r && o.layoutDraft.base !== a.layout.revision;
+				let n = o.dirty && a.note.revision !== o.base, r = !!o.layoutDraft && Xi(o.layoutDraft.panels, a.layout.panels) && e && ["uncertain", "checking-conflict"].includes(o.layoutSave), i = !!o.layoutDraft && !r && o.layoutDraft.base !== a.layout.revision;
 				t.set({
 					...o,
 					snapshot: a,
@@ -2567,12 +2576,12 @@ function Xi(e) {
 			} else {
 				let e = f?.key === d ? f.draft : void 0, n = !1;
 				try {
-					e ??= Yi(sessionStorage.getItem(d));
+					e ??= Qi(sessionStorage.getItem(d));
 				} catch {
 					n = !0;
 				}
 				e?.body === a.note.body && (v(), e = void 0), t.set({
-					...Hi("ready", "Workspace checked."),
+					...Gi("ready", "Workspace checked."),
 					snapshot: a,
 					draft: a.note.body,
 					base: a.note.revision,
@@ -2595,7 +2604,7 @@ function Xi(e) {
 				draft: e,
 				dirty: e !== n.snapshot.note.body,
 				save: n.save === "saved" ? "idle" : n.save
-			}), Ui(e)) y();
+			}), Ki(e)) y();
 			else if (f = void 0, d) try {
 				sessionStorage.removeItem(d);
 			} catch {}
@@ -2627,7 +2636,7 @@ function Xi(e) {
 	}
 	async function re() {
 		let e = g();
-		if (e.phase !== "ready" || !e.dirty || !Ui(e.draft) || [
+		if (e.phase !== "ready" || !e.dirty || !Ki(e.draft) || [
 			"conflict",
 			"checking-conflict",
 			"uncertain"
@@ -2668,7 +2677,7 @@ function Xi(e) {
 				message: "Another save won. Checking the latest saved note before comparing. Your draft is unchanged."
 			}));
 			else if (e.status === 200) {
-				let n = Ji(e.value);
+				let n = Zi(e.value);
 				if (!T(n) || n.note.body !== u.body || BigInt(n.note.revision) !== BigInt(u.base) + 1n) throw Error("Unqualified save result");
 				t.update((e) => ({
 					...e,
@@ -2717,7 +2726,7 @@ function Xi(e) {
 				426
 			].includes(i.status)) return x(w(i.status), !0), !1;
 			if (i.status === 200) {
-				let e = Ji(i.value);
+				let e = Zi(i.value);
 				return T(e) ? (t.update((t) => ({
 					...t,
 					snapshot: t.snapshot ? {
@@ -2797,11 +2806,11 @@ function Xi(e) {
 			if (r.status === 409) throw Error("Read watermark changed");
 			let i = r.value;
 			if (r.status !== 200 || !Q(i)) throw Error("Read marker unavailable");
-			if (i.product !== Ii || i.contract !== Li || i.schema !== 1 || !Q(i.account) || i.account.id !== u.snapshot.account.id || i.account.username !== u.snapshot.account.username || i.account.role !== u.snapshot.account.role || i.session_generation !== u.snapshot.session_generation) {
+			if (i.product !== zi || i.contract !== Bi || i.schema !== 1 || !Q(i.account) || i.account.id !== u.snapshot.account.id || i.account.username !== u.snapshot.account.username || i.account.role !== u.snapshot.account.role || i.session_generation !== u.snapshot.session_generation) {
 				x("Your account scope changed. Open a fresh workspace.", !0);
 				return;
 			}
-			let a = Gi(i.notifications), o = a.groups.find((t) => t.category === e);
+			let a = Ji(i.notifications), o = a.groups.find((t) => t.category === e);
 			if (!o || BigInt(o.read_through) < BigInt(s)) throw Error("Unqualified read marker");
 			t.update((e) => ({
 				...e,
@@ -2862,7 +2871,7 @@ function Xi(e) {
 		!n || n.visible && t.filter((e) => e.visible).length === 1 || (n.visible = !n.visible, le(t));
 	}
 	function fe() {
-		le(zi());
+		le(Hi());
 	}
 	function pe() {
 		let e = g();
@@ -2896,7 +2905,7 @@ function Xi(e) {
 			base: e.layoutDraft.base,
 			panels: e.layoutDraft.panels.map((e) => ({ ...e }))
 		};
-		if (!s.panels.some((e) => e.visible) || qi(s.panels, e.snapshot.layout.panels)) return;
+		if (!s.panels.some((e) => e.visible) || Xi(s.panels, e.snapshot.layout.panels)) return;
 		i?.abort(), i = void 0, r && clearTimeout(r), r = void 0;
 		let u = new AbortController();
 		l = u;
@@ -2942,12 +2951,12 @@ function Xi(e) {
 			else {
 				let n = r.value;
 				if (r.status !== 200 || !Q(n)) throw Error("Layout unavailable");
-				if (n.product !== Ii || n.contract !== Li || n.schema !== 1 || !Q(n.account) || n.account.id !== e.snapshot.account.id || n.account.username !== e.snapshot.account.username || n.account.role !== e.snapshot.account.role || n.session_generation !== e.snapshot.session_generation) {
+				if (n.product !== zi || n.contract !== Bi || n.schema !== 1 || !Q(n.account) || n.account.id !== e.snapshot.account.id || n.account.username !== e.snapshot.account.username || n.account.role !== e.snapshot.account.role || n.session_generation !== e.snapshot.session_generation) {
 					x("Your account scope changed. Open a fresh workspace.", !0);
 					return;
 				}
-				let i = Ki(n.layout);
-				if (BigInt(i.revision) !== BigInt(s.base) + 1n || !qi(i.panels, s.panels)) throw Error("Unqualified layout result");
+				let i = Yi(n.layout);
+				if (BigInt(i.revision) !== BigInt(s.base) + 1n || !Xi(i.panels, s.panels)) throw Error("Unqualified layout result");
 				t.update((e) => ({
 					...e,
 					snapshot: e.snapshot ? {
@@ -2986,7 +2995,7 @@ function Xi(e) {
 		t.update((t) => ({
 			...t,
 			activity: {
-				...Vi(),
+				...Wi(),
 				phase: "loading",
 				category: e,
 				query: r,
@@ -3009,7 +3018,7 @@ function Xi(e) {
 				return;
 			}
 			let p = s.value;
-			if (s.status !== 200 || !Q(p) || p.product !== Ii || p.contract !== Li || p.schema !== 1 || !Q(p.account) || p.account.id !== a.snapshot.account.id || p.account.role !== a.snapshot.account.role || p.account.username !== a.snapshot.account.username || p.session_generation !== a.snapshot.session_generation) {
+			if (s.status !== 200 || !Q(p) || p.product !== zi || p.contract !== Bi || p.schema !== 1 || !Q(p.account) || p.account.id !== a.snapshot.account.id || p.account.role !== a.snapshot.account.role || p.account.username !== a.snapshot.account.username || p.session_generation !== a.snapshot.session_generation) {
 				if (s.status === 200) {
 					x("Your account scope changed. Open a fresh workspace.", !0);
 					return;
@@ -3046,7 +3055,7 @@ function Xi(e) {
 			!m && c === u && l === n && t.update((t) => ({
 				...t,
 				activity: {
-					...Vi(),
+					...Wi(),
 					phase: "error",
 					category: e,
 					query: r,
@@ -3075,7 +3084,7 @@ function Xi(e) {
 			};
 		} catch {}
 		return window.addEventListener("blur", e), window.addEventListener("pagehide", e), window.addEventListener("focus", n), window.addEventListener("pageshow", n), document.addEventListener("visibilitychange", r), E(), () => {
-			m = !0, b(), p?.close(), t.set(Hi("blocked", "Workspace closed.")), window.removeEventListener("blur", e), window.removeEventListener("pagehide", e), window.removeEventListener("focus", n), window.removeEventListener("pageshow", n), document.removeEventListener("visibilitychange", r);
+			m = !0, b(), p?.close(), t.set(Gi("blocked", "Workspace closed.")), window.removeEventListener("blur", e), window.removeEventListener("pagehide", e), window.removeEventListener("focus", n), window.removeEventListener("pageshow", n), document.removeEventListener("visibilitychange", r);
 		};
 	}
 	return {
@@ -3102,45 +3111,45 @@ function Xi(e) {
 	};
 }
 // src/LayoutEditor.svelte
-var Zi = /* @__PURE__ */ K("<li tabindex=\"-1\"><label><input type=\"checkbox\"/><span> </span></label> <div class=\"layout-move\"><button class=\"button secondary layout-up\">↑<span class=\"sr-only\">Move up</span></button><button class=\"button secondary layout-down\">↓<span class=\"sr-only\">Move down</span></button></div></li>"), Qi = /* @__PURE__ */ K("<li> </li>"), $i = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Layout conflict\"><h3>There’s a newer saved layout</h3><p>Your arrangement is still shown. Compare it with the saved order below before choosing what to keep.</p><ol></ol><div class=\"button-row\"><button class=\"button secondary\">Keep my layout against saved layout</button><button class=\"text-button layout-use-saved\">Use saved layout</button></div></section>"), ea = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain layout\"><h3>Check before saving again</h3><p>The layout may have saved. Your arrangement has not been sent again.</p><button class=\"button secondary check-layout check-saved-layout\">Check saved layout</button></section>"), ta = /* @__PURE__ */ K("<section class=\"layout-editor card\" aria-label=\"Home layout\"><h2>Make Home yours</h2><p>Choose the panels you see and their order. Keep at least one visible. Your other views and open forms stay available.</p> <ol class=\"layout-list\"></ol> <!> <!> <div class=\"button-row\"><button class=\"button primary save-layout\"> </button><button class=\"text-button cancel-layout\">Cancel layout</button><button class=\"text-button reset-layout\">Reset layout</button></div> <p class=\"field-help\">Reset previews the default order and visibility. Save layout applies it to this account.</p></section>");
-function na(e, t) {
-	Ue(t, !1);
+var ea = /* @__PURE__ */ K("<li tabindex=\"-1\"><label><input type=\"checkbox\"/><span> </span></label> <div class=\"layout-move\"><button class=\"button secondary layout-up\">↑<span class=\"sr-only\">Move up</span></button><button class=\"button secondary layout-down\">↓<span class=\"sr-only\">Move down</span></button></div></li>"), ta = /* @__PURE__ */ K("<li> </li>"), na = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Layout conflict\"><h3>There’s a newer saved layout</h3><p>Your arrangement is still shown. Compare it with the saved order below before choosing what to keep.</p><ol></ol><div class=\"button-row\"><button class=\"button secondary\">Keep my layout against saved layout</button><button class=\"text-button layout-use-saved\">Use saved layout</button></div></section>"), ra = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain layout\"><h3>Check before saving again</h3><p>The layout may have saved. Your arrangement has not been sent again.</p><button class=\"button secondary check-layout check-saved-layout\">Check saved layout</button></section>"), ia = /* @__PURE__ */ K("<section class=\"layout-editor card\" aria-label=\"Home layout\"><h2>Make Home yours</h2><p>Choose the panels you see and their order. Keep at least one visible. Your other views and open forms stay available.</p> <ol class=\"layout-list\"></ol> <!> <!> <div class=\"button-row\"><button class=\"button primary save-layout\"> </button><button class=\"text-button cancel-layout\">Cancel layout</button><button class=\"text-button reset-layout\">Reset layout</button></div> <p class=\"field-help\">Reset previews the default order and visibility. Save layout applies it to this account.</p></section>");
+function aa(e, t) {
+	We(t, !1);
 	let n = /* @__PURE__ */ P(), r = /* @__PURE__ */ P(), i = /* @__PURE__ */ P(), a = Z(t, "draft", 8), o = Z(t, "saved", 8), s = Z(t, "state", 8), c = Z(t, "authorized", 8), l = Z(t, "move", 8), u = Z(t, "toggle", 8), d = Z(t, "save", 8), f = Z(t, "cancel", 8), p = Z(t, "reset", 8), m = Z(t, "resolve", 8), h = Z(t, "check", 8);
 	async function g(e, t) {
-		l()(e, t), await dr(), document.querySelector(`[data-layout-row="${e}"]`)?.focus();
+		l()(e, t), await fr(), document.querySelector(`[data-layout-row="${e}"]`)?.focus();
 	}
-	wn(() => (W(c()), W(s())), () => {
+	Tn(() => (W(c()), W(s())), () => {
 		F(n, !c() || [
 			"saving",
 			"checking-conflict",
 			"uncertain"
 		].includes(s()));
-	}), wn(() => W(a()), () => {
+	}), Tn(() => W(a()), () => {
 		F(r, a()?.panels.filter((e) => e.visible).length ?? 0);
-	}), wn(() => (W(a()), W(o())), () => {
+	}), Tn(() => (W(a()), W(o())), () => {
 		F(i, !!a() && !!o() && a().panels.some((e, t) => e.id !== o()?.panels[t].id || e.visible !== o()?.panels[t].visible));
-	}), Tn(), Si();
-	var _ = ta(), v = R(I(_), 3);
-	Wr(v, 7, () => (W(a()), U(() => a()?.panels ?? [])), (e) => e.id, (e, t, i) => {
-		var a = Zi(), o = I(a), s = I(o);
-		ui(s);
+	}), En(), Ci();
+	var _ = ia(), v = R(I(_), 3);
+	Gr(v, 7, () => (W(a()), U(() => a()?.panels ?? [])), (e) => e.id, (e, t, i) => {
+		var a = ea(), o = I(a), s = I(o);
+		di(s);
 		var c = L(R(s), !0);
 		A(o);
 		var l = R(o, 2), d = I(l), f = R(d);
 		A(l), A(a), z((e, o, l, u) => {
-			X(a, "data-layout-row", (H(t), U(() => H(t).id))), X(s, "aria-label", e), fi(s, (H(t), U(() => H(t).visible))), s.disabled = (H(n), H(t), H(r), U(() => H(n) || H(t).visible && H(r) === 1)), J(c, o), X(d, "aria-label", l), d.disabled = H(n) || H(i) === 0, X(f, "aria-label", u), f.disabled = H(n) || H(i) === 2;
+			X(a, "data-layout-row", (H(t), U(() => H(t).id))), X(s, "aria-label", e), pi(s, (H(t), U(() => H(t).visible))), s.disabled = (H(n), H(t), H(r), U(() => H(n) || H(t).visible && H(r) === 1)), J(c, o), X(d, "aria-label", l), d.disabled = H(n) || H(i) === 0, X(f, "aria-label", u), f.disabled = H(n) || H(i) === 2;
 		}, [
-			() => (W(Bi), H(t), U(() => `Show ${Bi(H(t).id)}`)),
-			() => (W(Bi), H(t), U(() => Bi(H(t).id))),
-			() => (W(Bi), H(t), U(() => `Move ${Bi(H(t).id)} up`)),
-			() => (W(Bi), H(t), U(() => `Move ${Bi(H(t).id)} down`))
+			() => (W(Ui), H(t), U(() => `Show ${Ui(H(t).id)}`)),
+			() => (W(Ui), H(t), U(() => Ui(H(t).id))),
+			() => (W(Ui), H(t), U(() => `Move ${Ui(H(t).id)} up`)),
+			() => (W(Ui), H(t), U(() => `Move ${Ui(H(t).id)} down`))
 		]), G("change", s, () => u()(H(t).id)), G("click", d, () => g(H(t).id, -1)), G("click", f, () => g(H(t).id, 1)), q(e, a);
 	}), A(v);
 	var y = R(v, 2), b = (e) => {
-		var t = $i(), n = R(I(t), 2);
-		Wr(n, 5, () => (W(o()), U(() => o()?.panels ?? [])), (e) => e.id, (e, t) => {
-			var n = Qi(), r = L(n);
-			z((e) => J(r, `${e ?? ""} — ${H(t), U(() => H(t).visible ? "Shown" : "Hidden") ?? ""}`), [() => (W(Bi), H(t), U(() => Bi(H(t).id)))]), q(e, n);
+		var t = na(), n = R(I(t), 2);
+		Gr(n, 5, () => (W(o()), U(() => o()?.panels ?? [])), (e) => e.id, (e, t) => {
+			var n = ta(), r = L(n);
+			z((e) => J(r, `${e ?? ""} — ${H(t), U(() => H(t).visible ? "Shown" : "Hidden") ?? ""}`), [() => (W(Ui), H(t), U(() => Ui(H(t).id)))]), q(e, n);
 		}), A(n);
 		var r = R(n), i = I(r), a = R(i);
 		A(r), A(t), G("click", i, () => m()(!1)), G("click", a, () => m()(!0)), q(e, t);
@@ -3149,7 +3158,7 @@ function na(e, t) {
 		s() === "conflict" && e(b);
 	});
 	var x = R(y, 2), S = (e) => {
-		var t = ea(), n = R(I(t), 2);
+		var t = ra(), n = R(I(t), 2);
 		A(t), G("click", n, () => h()()), q(e, t);
 	};
 	Y(x, (e) => {
@@ -3162,18 +3171,18 @@ function na(e, t) {
 		f()?.apply(this, e);
 	}), G("click", ee, function(...e) {
 		p()?.apply(this, e);
-	}), q(e, _), We();
+	}), q(e, _), Ge();
 }
-Sr(["change", "click"]);
+Cr(["change", "click"]);
 // src/Connections.svelte
-var ra = /* @__PURE__ */ K("<section class=\"card small-card\"><h2>No Crafty connection enrolled</h2><p>An owner can add dedicated access and choose which servers to show.</p></section>"), ia = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\"> </p>"), aa = /* @__PURE__ */ K("<p class=\"field-help\">This server could not be fully observed.</p>"), oa = /* @__PURE__ */ K("<article class=\"card small-card server-card\"><h2> </h2> <p><strong> </strong> <span class=\"field-help\">Provider-reported process state</span></p> <dl><dt>Players</dt><dd> </dd> <dt>Freshness</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd> <dt>Join address</dt><dd> </dd></dl> <!></article>"), sa = /* @__PURE__ */ K("<!> <div class=\"server-grid\"></div> <p class=\"field-help\">A running process does not establish game readiness. Join addresses are owner-reviewed; outside-network joining is accepted separately.</p>", 1), ca = /* @__PURE__ */ K("<button class=\"button secondary\">Check connection state</button>"), la = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove server</button>"), ua = /* @__PURE__ */ K("<fieldset><legend> </legend> <label>Crafty server UUID</label><input name=\"server-id\" required=\"\" maxlength=\"36\"/> <label>Display name</label><input name=\"server-name\" required=\"\" maxlength=\"80\"/> <label>Reviewed public join address, optional</label><input name=\"server-join\" maxlength=\"253\" placeholder=\"play.example:25565\"/> <!></fieldset>"), da = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove connection</button>"), fa = /* @__PURE__ */ K("<section class=\"card connection-setup\" aria-label=\"Dedicated Crafty enrollment\"><h2>Dedicated Crafty access</h2> <p>Create access specifically for Reborn, limited to viewing the selected servers. Credentials are encrypted on the server and are not shown again.</p> <p class=\"workspace-status\" role=\"status\"> </p> <!> <form autocomplete=\"off\"><label for=\"crafty-endpoint\">Crafty HTTPS address</label><input id=\"crafty-endpoint\" name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\" placeholder=\"https://crafty.example/\"/> <label for=\"crafty-token\">Dedicated API token</label><input id=\"crafty-token\" name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <label for=\"crafty-timezone\">Crafty’s configured time zone</label><input id=\"crafty-timezone\" name=\"timezone\" required=\"\" maxlength=\"64\" placeholder=\"America/Chicago or UTC\"/> <label for=\"crafty-ca\">Private CA certificate, if needed</label><textarea id=\"crafty-ca\" name=\"ca-pem\" maxlength=\"8192\" rows=\"3\"></textarea> <p class=\"field-help\">Leave the certificate blank for publicly trusted HTTPS. The address and certificate must pass normal hostname and trust checks.</p> <!> <div class=\"button-row\"><button class=\"button secondary\" type=\"button\">Add server</button> <button class=\"button primary\" type=\"submit\"> </button></div></form> <!></section>"), pa = /* @__PURE__ */ K("<button class=\"text-button\">View connection enrollment history</button> <div class=\"connections-intro\"><p>Server observations from your deliberately enrolled Crafty connection.</p><span class=\"quiet-label\">Read-only overview</span></div> <!> <!>", 1);
-function ma(e, t) {
-	Ue(t, !1);
+var oa = /* @__PURE__ */ K("<section class=\"card small-card\"><h2>No Crafty connection enrolled</h2><p>An owner can add dedicated access and choose which servers to show.</p></section>"), sa = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\"> </p>"), ca = /* @__PURE__ */ K("<p class=\"field-help\">This server could not be fully observed.</p>"), la = /* @__PURE__ */ K("<article class=\"card small-card server-card\"><h2> </h2> <p><strong> </strong> <span class=\"field-help\">Provider-reported process state</span></p> <dl><dt>Players</dt><dd> </dd> <dt>Freshness</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd> <dt>Join address</dt><dd> </dd></dl> <!></article>"), ua = /* @__PURE__ */ K("<!> <div class=\"server-grid\"></div> <p class=\"field-help\">A running process does not establish game readiness. Join addresses are owner-reviewed; outside-network joining is accepted separately.</p>", 1), da = /* @__PURE__ */ K("<button class=\"button secondary\">Check connection state</button>"), fa = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove server</button>"), pa = /* @__PURE__ */ K("<fieldset><legend> </legend> <label>Crafty server UUID</label><input name=\"server-id\" required=\"\" maxlength=\"36\"/> <label>Display name</label><input name=\"server-name\" required=\"\" maxlength=\"80\"/> <label>Reviewed public join address, optional</label><input name=\"server-join\" maxlength=\"253\" placeholder=\"play.example:25565\"/> <!></fieldset>"), ma = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove connection</button>"), ha = /* @__PURE__ */ K("<section class=\"card connection-setup\" aria-label=\"Dedicated Crafty enrollment\"><h2>Dedicated Crafty access</h2> <p>Create access specifically for Reborn, limited to viewing the selected servers. Credentials are encrypted on the server and are not shown again.</p> <p class=\"workspace-status\" role=\"status\"> </p> <!> <form autocomplete=\"off\"><label for=\"crafty-endpoint\">Crafty HTTPS address</label><input id=\"crafty-endpoint\" name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\" placeholder=\"https://crafty.example/\"/> <label for=\"crafty-token\">Dedicated API token</label><input id=\"crafty-token\" name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <label for=\"crafty-timezone\">Crafty’s configured time zone</label><input id=\"crafty-timezone\" name=\"timezone\" required=\"\" maxlength=\"64\" placeholder=\"America/Chicago or UTC\"/> <label for=\"crafty-ca\">Private CA certificate, if needed</label><textarea id=\"crafty-ca\" name=\"ca-pem\" maxlength=\"8192\" rows=\"3\"></textarea> <p class=\"field-help\">Leave the certificate blank for publicly trusted HTTPS. The address and certificate must pass normal hostname and trust checks.</p> <!> <div class=\"button-row\"><button class=\"button secondary\" type=\"button\">Add server</button> <button class=\"button primary\" type=\"submit\"> </button></div></form> <!></section>"), ga = /* @__PURE__ */ K("<button class=\"text-button\">View connection enrollment history</button> <div class=\"connections-intro\"><p>Server observations from your deliberately enrolled Crafty connection.</p><span class=\"quiet-label\">Read-only overview</span></div> <!> <!>", 1);
+function _a(e, t) {
+	We(t, !1);
 	let n = Z(t, "binding", 8), r = Z(t, "history", 8), i = Z(t, "overview", 8), a = Z(t, "owner", 8, !1), o = Z(t, "active", 8, !1), s = Z(t, "refresh", 8), c = /* @__PURE__ */ P(), l = /* @__PURE__ */ P([0]), u = /* @__PURE__ */ P(0), d = /* @__PURE__ */ P(), f = /* @__PURE__ */ P(""), p = /* @__PURE__ */ P(!1), m = 0, h = (e) => e === null ? "Not reported" : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleString();
 	function g() {
-		++m, H(d)?.abort(), F(d, void 0), H(c)?.reset(), F(l, [Kt(u)]), F(f, ""), F(p, !1);
+		++m, H(d)?.abort(), F(d, void 0), H(c)?.reset(), F(l, [qt(u)]), F(f, ""), F(p, !1);
 	}
-	Pi(g);
+	Fi(g);
 	async function _(e = !1) {
 		if (!o() || !a() || H(d) || !i() || H(p)) return;
 		let t = i().revision, r = H(c) ? new FormData(H(c)) : void 0, h = (e) => r?.getAll(e).map(String) ?? [], g = h("server-id"), _ = h("server-name"), v = h("server-join"), y = e ? null : {
@@ -3187,7 +3196,7 @@ function ma(e, t) {
 				join: v[t] ?? ""
 			}))
 		};
-		H(c)?.reset(), F(l, [Kt(u)]);
+		H(c)?.reset(), F(l, [qt(u)]);
 		let b = new AbortController();
 		F(d, b);
 		let x = ++m, S = setTimeout(() => b.abort(), 4e3);
@@ -3231,27 +3240,27 @@ function ma(e, t) {
 	async function v() {
 		await s()(), o() && (F(p, !1), F(f, "Review the current connection state before making another change."));
 	}
-	wn(() => W(o()), () => {
+	Tn(() => W(o()), () => {
 		o() || g();
-	}), Tn(), Si();
-	var y = pa(), b = sn(y), x = R(b, 4), S = (e) => {
-		q(e, ra());
+	}), En(), Ci();
+	var y = ga(), b = cn(y), x = R(b, 4), S = (e) => {
+		q(e, oa());
 	}, C = (e) => {
-		var t = sa(), n = sn(t), r = (e) => {
-			var t = ia(), n = L(t, !0);
+		var t = ua(), n = cn(t), r = (e) => {
+			var t = sa(), n = L(t, !0);
 			z(() => J(n, (W(i()), U(() => i().error === "checking" ? "Checking the provider. Fresh results will appear on the next observation." : "Provider observations are unavailable or incomplete. Unknown player counts stay unknown.")))), q(e, t);
 		};
 		Y(n, (e) => {
 			W(i()), U(() => i().error) && e(r);
 		});
 		var a = R(n, 2);
-		Wr(a, 5, () => (W(i()), U(() => i().servers)), Br, (e, t) => {
-			var n = oa(), r = I(n), i = L(r, !0), a = R(r, 2), o = L(I(a), !0);
+		Gr(a, 5, () => (W(i()), U(() => i().servers)), Vr, (e, t) => {
+			var n = la(), r = I(n), i = L(r, !0), a = R(r, 2), o = L(I(a), !0);
 			Se(2), A(a);
 			var s = R(a, 2), c = R(I(s)), l = L(c), u = R(c, 3), d = L(u, !0), f = R(u, 3), p = L(f, !0), m = R(f, 2), g = L(m, !0), _ = L(R(m, 3), !0);
 			A(s);
 			var v = R(s, 2), y = (e) => {
-				q(e, aa());
+				q(e, ca());
 			};
 			Y(v, (e) => {
 				H(t), U(() => H(t).error) && e(y);
@@ -3264,17 +3273,17 @@ function ma(e, t) {
 		W(i()), U(() => !i() || !i().configured) ? e(S) : e(C, -1);
 	});
 	var w = R(x, 2), T = (e) => {
-		var t = fa(), n = R(I(t), 4), r = L(n, !0), a = R(n, 2), o = (e) => {
-			var t = ca();
+		var t = ha(), n = R(I(t), 4), r = L(n, !0), a = R(n, 2), o = (e) => {
+			var t = da();
 			G("click", t, () => void v()), q(e, t);
 		};
 		Y(a, (e) => {
 			H(p) && e(o);
 		});
 		var s = R(a, 2), m = R(I(s)), h = R(m, 3), g = R(h, 3), y = R(g, 3), b = R(y, 4);
-		Wr(b, 3, () => H(l), (e) => e, (e, t, n) => {
-			var r = ua(), i = I(r), a = L(i), o = R(i, 2), s = R(o), c = R(s, 2), u = R(c), f = R(u, 2), m = R(f), h = R(m, 2), g = (e) => {
-				var n = la();
+		Gr(b, 3, () => H(l), (e) => e, (e, t, n) => {
+			var r = pa(), i = I(r), a = L(i), o = R(i, 2), s = R(o), c = R(s, 2), u = R(c), f = R(u, 2), m = R(f), h = R(m, 2), g = (e) => {
+				var n = fa();
 				z(() => n.disabled = !!H(d) || H(p)), G("click", n, () => F(l, H(l).filter((e) => e !== H(t)))), q(e, n);
 			};
 			Y(h, (e) => {
@@ -3284,35 +3293,35 @@ function ma(e, t) {
 			}), q(e, r);
 		});
 		var x = R(b, 2), S = I(x), C = R(S, 2), w = L(C, !0);
-		A(x), A(s), xi(s, (e) => F(c, e), () => H(c));
+		A(x), A(s), Si(s, (e) => F(c, e), () => H(c));
 		var T = R(s, 2), E = (e) => {
-			var t = da();
+			var t = ma();
 			z(() => t.disabled = !!H(d) || H(p)), G("click", t, () => void _(!0)), q(e, t);
 		};
 		Y(T, (e) => {
 			W(i()), U(() => i()?.configured) && e(E);
 		}), A(t), z(() => {
 			J(r, H(f)), m.disabled = !!H(d) || H(p), h.disabled = !!H(d) || H(p), g.disabled = !!H(d) || H(p), y.disabled = !!H(d) || H(p), S.disabled = (H(l), H(d), H(p), U(() => H(l).length >= 8 || !!H(d) || H(p))), C.disabled = !!H(d) || H(p) || !i(), J(w, H(d) ? "Working…" : "Save dedicated connection");
-		}), xr("submit", s, (e) => {
+		}), Sr("submit", s, (e) => {
 			e.preventDefault(), _();
-		}), G("click", S, () => F(l, [...H(l), Kt(u)])), q(e, t);
+		}), G("click", S, () => F(l, [...H(l), qt(u)])), q(e, t);
 	};
 	Y(w, (e) => {
 		a() && o() && e(T);
 	}), G("click", b, function(...e) {
 		r()?.apply(this, e);
-	}), q(e, y), We();
+	}), q(e, y), Ge();
 }
-Sr(["click"]);
+Cr(["click"]);
 // src/Directory.svelte
-var ha = /* @__PURE__ */ K("<button class=\"text-button\">Browse services <span aria-hidden=\"true\">→</span></button>"), ga = /* @__PURE__ */ K("<section class=\"notice\"><h3>Review the saved state</h3><p> </p><button class=\"button secondary\">Check saved services</button></section>"), _a = /* @__PURE__ */ K("<option> </option>"), va = /* @__PURE__ */ K("<div class=\"directory-filters\"><div><label for=\"service-search\">Search services</label><input id=\"service-search\" type=\"search\" maxlength=\"120\" placeholder=\"Name, category or description\"/></div><div><label for=\"service-filter\">Category</label><select id=\"service-filter\"><option>All categories</option><!></select></div></div>"), ya = /* @__PURE__ */ K("<section class=\"card small-card\"><h3> </h3><p> </p></section>"), ba = /* @__PURE__ */ K("<p> </p>"), xa = /* @__PURE__ */ K("<button class=\"text-button move-up\">↑</button><button class=\"text-button move-down\">↓</button>", 1), Sa = /* @__PURE__ */ K("<p>The directory changed. Review the service and choose Remove again.</p>"), Ca = /* @__PURE__ */ K("<div class=\"notice\"><p> </p><!><div class=\"button-row\"><button class=\"button secondary confirm-remove\">Remove service</button><button class=\"text-button\">Keep service</button></div></div>"), wa = /* @__PURE__ */ K("<div class=\"button-row\"><button class=\"text-button edit-service\"> </button><button class=\"text-button remove-service\">Remove</button></div> <!>", 1), Ta = /* @__PURE__ */ K("<article class=\"card small-card service-card\"><p class=\"eyebrow\"> </p><h3><a class=\"service-link\" target=\"_blank\" rel=\"noopener noreferrer\"> <span class=\"sr-only\">(opens in a new tab)</span> <span aria-hidden=\"true\">↗</span></a></h3> <!> <p class=\"field-help service-address\"> </p> <div class=\"button-row\"><button class=\"button secondary pin-service\"> </button> <!></div> <!></article>"), Ea = /* @__PURE__ */ K("<div class=\"directory-grid\"></div>"), Da = /* @__PURE__ */ K("<p class=\"field-help\">Up to 24 personal pins. Links open the selected service in a new tab. Each service handles its own sign-in; directory links do not check availability.</p>"), Oa = /* @__PURE__ */ K("<div class=\"notice\"><p>The directory changed after this form was opened. Review the current entries, then choose whether to keep this edit.</p><button class=\"button secondary\" type=\"button\">Keep edit against current directory</button></div>"), ka = /* @__PURE__ */ K("<section class=\"card directory-editor\" aria-label=\"Service editor\"><h2> </h2><p>Add a reviewed HTTPS link without passwords, tokens, query parameters or fragments. These links are visible to signed-in accounts.</p> <form><label for=\"service-name\">Service name</label><input id=\"service-name\" name=\"service-name\" required=\"\" maxlength=\"80\"/> <label for=\"service-category\">Category</label><input id=\"service-category\" name=\"service-category\" required=\"\" maxlength=\"40\"/> <label for=\"service-url\">HTTPS link</label><input id=\"service-url\" name=\"service-url\" type=\"url\" required=\"\" maxlength=\"1024\" placeholder=\"https://service.example/\"/> <label for=\"service-description\">Description, optional</label><textarea id=\"service-description\" name=\"service-description\" maxlength=\"240\" rows=\"2\"></textarea> <!> <div class=\"button-row\"><button class=\"button primary\" type=\"submit\"> </button><button class=\"text-button\" type=\"button\"> </button></div></form></section>"), Aa = /* @__PURE__ */ K("<div class=\"directory-heading\"><div><p class=\"eyebrow\"> </p><h2> </h2></div><!></div> <p class=\"directory-status\" role=\"status\"> </p> <!> <!> <!> <!> <!>", 1);
-function ja(e, t) {
-	Ue(t, !1);
+var va = /* @__PURE__ */ K("<button class=\"text-button\">Browse services <span aria-hidden=\"true\">→</span></button>"), ya = /* @__PURE__ */ K("<section class=\"notice\"><h3>Review the saved state</h3><p> </p><button class=\"button secondary\">Check saved services</button></section>"), ba = /* @__PURE__ */ K("<option> </option>"), xa = /* @__PURE__ */ K("<div class=\"directory-filters\"><div><label for=\"service-search\">Search services</label><input id=\"service-search\" type=\"search\" maxlength=\"120\" placeholder=\"Name, category or description\"/></div><div><label for=\"service-filter\">Category</label><select id=\"service-filter\"><option>All categories</option><!></select></div></div>"), Sa = /* @__PURE__ */ K("<section class=\"card small-card\"><h3> </h3><p> </p></section>"), Ca = /* @__PURE__ */ K("<p> </p>"), wa = /* @__PURE__ */ K("<button class=\"text-button move-up\">↑</button><button class=\"text-button move-down\">↓</button>", 1), Ta = /* @__PURE__ */ K("<p>The directory changed. Review the service and choose Remove again.</p>"), Ea = /* @__PURE__ */ K("<div class=\"notice\"><p> </p><!><div class=\"button-row\"><button class=\"button secondary confirm-remove\">Remove service</button><button class=\"text-button\">Keep service</button></div></div>"), Da = /* @__PURE__ */ K("<div class=\"button-row\"><button class=\"text-button edit-service\"> </button><button class=\"text-button remove-service\">Remove</button></div> <!>", 1), Oa = /* @__PURE__ */ K("<article class=\"card small-card service-card\"><p class=\"eyebrow\"> </p><h3><a class=\"service-link\" target=\"_blank\" rel=\"noopener noreferrer\"> <span class=\"sr-only\">(opens in a new tab)</span> <span aria-hidden=\"true\">↗</span></a></h3> <!> <p class=\"field-help service-address\"> </p> <div class=\"button-row\"><button class=\"button secondary pin-service\"> </button> <!></div> <!></article>"), ka = /* @__PURE__ */ K("<div class=\"directory-grid\"></div>"), Aa = /* @__PURE__ */ K("<p class=\"field-help\">Up to 24 personal pins. Links open the selected service in a new tab. Each service handles its own sign-in; directory links do not check availability.</p>"), ja = /* @__PURE__ */ K("<div class=\"notice\"><p>The directory changed after this form was opened. Review the current entries, then choose whether to keep this edit.</p><button class=\"button secondary\" type=\"button\">Keep edit against current directory</button></div>"), Ma = /* @__PURE__ */ K("<section class=\"card directory-editor\" aria-label=\"Service editor\"><h2> </h2><p>Add a reviewed HTTPS link without passwords, tokens, query parameters or fragments. These links are visible to signed-in accounts.</p> <form><label for=\"service-name\">Service name</label><input id=\"service-name\" name=\"service-name\" required=\"\" maxlength=\"80\"/> <label for=\"service-category\">Category</label><input id=\"service-category\" name=\"service-category\" required=\"\" maxlength=\"40\"/> <label for=\"service-url\">HTTPS link</label><input id=\"service-url\" name=\"service-url\" type=\"url\" required=\"\" maxlength=\"1024\" placeholder=\"https://service.example/\"/> <label for=\"service-description\">Description, optional</label><textarea id=\"service-description\" name=\"service-description\" maxlength=\"240\" rows=\"2\"></textarea> <!> <div class=\"button-row\"><button class=\"button primary\" type=\"submit\"> </button><button class=\"text-button\" type=\"button\"> </button></div></form></section>"), Na = /* @__PURE__ */ K("<div class=\"directory-heading\"><div><p class=\"eyebrow\"> </p><h2> </h2></div><!></div> <p class=\"directory-status\" role=\"status\"> </p> <!> <!> <!> <!> <!>", 1);
+function Pa(e, t) {
+	We(t, !1);
 	let n = /* @__PURE__ */ P(), r = /* @__PURE__ */ P(), i = /* @__PURE__ */ P(), a = Z(t, "directory", 8), o = Z(t, "authorized", 8, !1), s = Z(t, "owner", 8, !1), c = Z(t, "compact", 8, !1), l = Z(t, "state", 8), u = Z(t, "message", 8), d = Z(t, "browse", 8), f = Z(t, "check", 8), p = Z(t, "edit", 8), m = Z(t, "pin", 8), h = /* @__PURE__ */ P(""), g = /* @__PURE__ */ P(""), _ = /* @__PURE__ */ P(""), v = /* @__PURE__ */ P(""), y = /* @__PURE__ */ P(""), b = /* @__PURE__ */ P(""), x = /* @__PURE__ */ P(""), S = /* @__PURE__ */ P(), C = /* @__PURE__ */ P(), w = 0;
 	function T() {
 		++w, F(h, ""), F(g, ""), F(_, ""), F(v, ""), F(y, ""), F(b, ""), F(x, ""), F(C, void 0), F(S, void 0);
 	}
-	Pi(T);
+	Fi(T);
 	function E() {
 		F(_, ""), F(v, ""), F(y, ""), F(b, ""), F(x, ""), F(C, void 0), F(S, a()?.revision);
 	}
@@ -3331,7 +3340,7 @@ function ja(e, t) {
 				url: H(y)
 			}
 		};
-		await p()(H(S), t) && o() && e === w && (await dr(), o() && e === w && E());
+		await p()(H(S), t) && o() && e === w && (await fr(), o() && e === w && E());
 	}
 	function ne(e) {
 		!H(n) && a() && m()(a().pins.includes(e) ? a().pins.filter((t) => t !== e) : [...a().pins, e]);
@@ -3347,28 +3356,28 @@ function ja(e, t) {
 		await p()(H(C).base, {
 			action: "delete",
 			id: e
-		}) && o() && t === w && (await dr(), o() && t === w && (F(C, void 0), H(x) === e && E()));
+		}) && o() && t === w && (await fr(), o() && t === w && (F(C, void 0), H(x) === e && E()));
 	}
-	wn(() => (W(l()), W(o())), () => {
+	Tn(() => (W(l()), W(o())), () => {
 		F(n, l() === "saving" || l() === "uncertain" || !o());
-	}), wn(() => W(a()), () => {
+	}), Tn(() => W(a()), () => {
 		F(r, [...new Set(a()?.services.map((e) => e.category) ?? [])].sort());
-	}), wn(() => (H(g), H(r)), () => {
+	}), Tn(() => (H(g), H(r)), () => {
 		H(g) && !H(r).includes(H(g)) && F(g, "");
-	}), wn(() => (W(a()), W(c()), H(g), H(h)), () => {
+	}), Tn(() => (W(a()), W(c()), H(g), H(h)), () => {
 		F(i, [...a()?.services ?? []].sort((e, t) => {
 			let n = a()?.pins.indexOf(e.id) ?? -1, r = a()?.pins.indexOf(t.id) ?? -1;
 			return n >= 0 || r >= 0 ? (n < 0 ? 25 : n) - (r < 0 ? 25 : r) : e.name.localeCompare(t.name) || Number(BigInt(e.id) - BigInt(t.id));
 		}).filter((e) => c() ? a()?.pins.includes(e.id) : (!H(g) || e.category === H(g)) && `${e.name} ${e.category} ${e.description}`.toLocaleLowerCase().includes(H(h).toLocaleLowerCase())));
-	}), wn(() => W(o()), () => {
+	}), Tn(() => W(o()), () => {
 		o() || T();
-	}), wn(() => (W(o()), W(a()), H(S)), () => {
+	}), Tn(() => (W(o()), W(a()), H(S)), () => {
 		o() && a() && H(S) === void 0 && F(S, a().revision);
-	}), Tn(), Si();
-	var ae = Aa(), oe = sn(ae), se = I(oe), ce = I(se), le = L(ce, !0), ue = L(R(ce), !0);
+	}), En(), Ci();
+	var ae = Na(), oe = cn(ae), se = I(oe), ce = I(se), le = L(ce, !0), ue = L(R(ce), !0);
 	A(se);
 	var de = R(se), fe = (e) => {
-		var t = ha();
+		var t = va();
 		G("click", t, function(...e) {
 			d()?.apply(this, e);
 		}), q(e, t);
@@ -3377,46 +3386,46 @@ function ja(e, t) {
 		c() && e(fe);
 	}), A(oe);
 	var pe = R(oe, 2), D = L(pe, !0), me = R(pe, 2), he = (e) => {
-		var t = ga(), n = R(I(t)), r = L(n, !0), i = R(n);
+		var t = ya(), n = R(I(t)), r = L(n, !0), i = R(n);
 		A(t), z(() => J(r, l() === "uncertain" ? "Your change has not been sent again." : "Your edit is still in the form. Compare it with the current directory before saving.")), G("click", i, () => void f()()), q(e, t);
 	};
 	Y(me, (e) => {
 		(l() === "uncertain" || l() === "conflict") && e(he);
 	});
 	var ge = R(me, 2), _e = (e) => {
-		var t = va(), n = I(t), i = R(I(n));
-		ui(i), A(n);
+		var t = xa(), n = I(t), i = R(I(n));
+		di(i), A(n);
 		var a = R(n), o = R(I(a)), s = I(o);
-		s.value = s.__value = "", Wr(R(s), 1, () => H(r), Br, (e, t) => {
-			var n = _a(), r = L(n, !0), i = {};
+		s.value = s.__value = "", Gr(R(s), 1, () => H(r), Vr, (e, t) => {
+			var n = ba(), r = L(n, !0), i = {};
 			z(() => {
 				J(r, H(t)), i !== (i = H(t)) && (n.value = (n.__value = i) ?? "");
 			}), q(e, n);
-		}), A(o), ni(o), A(a), A(t), gi(i, () => H(h), (e) => F(h, e)), ri(o, () => H(g), (e) => F(g, e)), q(e, t);
+		}), A(o), ri(o), A(a), A(t), _i(i, () => H(h), (e) => F(h, e)), ii(o, () => H(g), (e) => F(g, e)), q(e, t);
 	};
 	Y(ge, (e) => {
 		c() || e(_e);
 	});
 	var ve = R(ge, 2), O = (e) => {
-		var t = ya(), n = I(t), r = L(n, !0), i = L(R(n), !0);
+		var t = Sa(), n = I(t), r = L(n, !0), i = L(R(n), !0);
 		A(t), z(() => {
 			J(r, (W(c()), W(a()), U(() => c() ? "Keep your favorites close" : a()?.services.length ? "No matching services" : "Your directory starts here"))), J(i, (W(c()), W(a()), W(s()), U(() => c() ? "Pin services from the directory to show them on Home." : a()?.services.length ? "Try another search or category." : s() ? "Add a service below to make it available to signed-in accounts." : "An owner can add reviewed service links.")));
 		}), q(e, t);
 	}, ye = (e) => {
-		var t = Ea();
-		Wr(t, 5, () => H(i), (e) => e.id, (e, t) => {
-			let r = /* @__PURE__ */ pt(() => (W(a()), H(t), U(() => a()?.pins.includes(H(t).id) ?? !1))), i = /* @__PURE__ */ pt(() => (W(a()), H(t), U(() => a()?.pins.indexOf(H(t).id) ?? -1)));
-			var o = Ta(), l = I(o), u = L(l, !0), d = R(l), f = I(d), p = I(f, !0);
+		var t = ka();
+		Gr(t, 5, () => H(i), (e) => e.id, (e, t) => {
+			let r = /* @__PURE__ */ mt(() => (W(a()), H(t), U(() => a()?.pins.includes(H(t).id) ?? !1))), i = /* @__PURE__ */ mt(() => (W(a()), H(t), U(() => a()?.pins.indexOf(H(t).id) ?? -1)));
+			var o = Oa(), l = I(o), u = L(l, !0), d = R(l), f = I(d), p = I(f, !0);
 			Se(3), A(f), A(d);
 			var m = R(d, 2), h = (e) => {
-				var n = ba(), r = L(n, !0);
+				var n = Ca(), r = L(n, !0);
 				z(() => J(r, (H(t), U(() => H(t).description)))), q(e, n);
 			};
 			Y(m, (e) => {
 				H(t), U(() => H(t).description) && e(h);
 			});
 			var g = R(m, 2), _ = L(g, !0), v = R(g, 2), y = I(v), b = L(y, !0), x = R(y, 2), S = (e) => {
-				var r = xa(), o = sn(r), s = R(o);
+				var r = wa(), o = cn(r), s = R(o);
 				z(() => {
 					X(o, "aria-label", (H(t), U(() => `Move ${H(t).name} up`))), o.disabled = H(n) || H(i) === 0, X(s, "aria-label", (H(t), U(() => `Move ${H(t).name} down`))), s.disabled = (H(n), W(H(i)), W(a()), U(() => H(n) || H(i) === (a()?.pins.length ?? 0) - 1));
 				}), G("click", o, () => re(H(t).id, -1)), G("click", s, () => re(H(t).id, 1)), q(e, r);
@@ -3425,11 +3434,11 @@ function ja(e, t) {
 				H(r) && e(S);
 			}), A(v);
 			var w = R(v, 2), T = (e) => {
-				var r = wa(), i = sn(r), o = I(i), s = L(o), c = R(o);
+				var r = Da(), i = cn(r), o = I(i), s = L(o), c = R(o);
 				A(i);
 				var l = R(i, 2), u = (e) => {
-					var r = Ca(), i = I(r), o = L(i), s = R(i), c = (e) => {
-						q(e, Sa());
+					var r = Ea(), i = I(r), o = L(i), s = R(i), c = (e) => {
+						q(e, Ta());
 					};
 					Y(s, (e) => {
 						H(C), W(a()), U(() => H(C).base !== a()?.revision) && e(c);
@@ -3460,22 +3469,22 @@ function ja(e, t) {
 		H(i), U(() => H(i).length === 0) ? e(O) : e(ye, -1);
 	});
 	var k = R(ve, 2), be = (e) => {
-		q(e, Da());
+		q(e, Aa());
 	};
 	Y(k, (e) => {
 		c() || e(be);
 	});
 	var xe = R(k, 2), Ce = (e) => {
-		var t = ka(), r = I(t), i = L(r, !0), o = R(r, 3), s = R(I(o));
-		ui(s);
+		var t = Ma(), r = I(t), i = L(r, !0), o = R(r, 3), s = R(I(o));
+		di(s);
 		var u = R(s, 3);
-		ui(u);
+		di(u);
 		var d = R(u, 3);
-		ui(d);
+		di(d);
 		var f = R(d, 3);
-		et(f);
+		tt(f);
 		var p = R(f, 2), m = (e) => {
-			var t = Oa(), r = R(I(t));
+			var t = ja(), r = R(I(t));
 			A(t), z(() => r.disabled = H(n)), G("click", r, () => F(S, a()?.revision)), q(e, t);
 		};
 		Y(p, (e) => {
@@ -3484,29 +3493,29 @@ function ja(e, t) {
 		var h = R(p, 2), g = I(h), C = L(g, !0), w = R(g), T = L(w, !0);
 		A(h), A(o), A(t), z(() => {
 			X(t, "hidden", c()), J(i, H(x) ? "Edit service" : "Add a service"), s.disabled = H(n), u.disabled = H(n), d.disabled = H(n), f.disabled = H(n), g.disabled = (H(n), H(S), W(a()), U(() => H(n) || H(S) !== a()?.revision)), J(C, l() === "saving" ? "Saving…" : H(x) ? "Save service" : "Add service"), w.disabled = H(n), J(T, H(x) ? "Cancel edit" : "Clear form");
-		}), xr("submit", o, (e) => {
+		}), Sr("submit", o, (e) => {
 			e.preventDefault(), te();
-		}), gi(s, () => H(_), (e) => F(_, e)), gi(u, () => H(b), (e) => F(b, e)), gi(d, () => H(y), (e) => F(y, e)), gi(f, () => H(v), (e) => F(v, e)), G("click", w, E), q(e, t);
+		}), _i(s, () => H(_), (e) => F(_, e)), _i(u, () => H(b), (e) => F(b, e)), _i(d, () => H(y), (e) => F(y, e)), _i(f, () => H(v), (e) => F(v, e)), G("click", w, E), q(e, t);
 	};
 	Y(xe, (e) => {
 		s() && o() && e(Ce);
 	}), z(() => {
 		J(le, c() ? "YOUR SHORTCUTS" : "A PLACE FOR YOUR SERVICES"), J(ue, c() ? "Pinned services" : "Service directory"), J(D, u());
-	}), q(e, ae), We();
+	}), q(e, ae), Ge();
 }
-Sr(["click"]);
+Cr(["click"]);
 // src/Activity.svelte
-var Ma = /* @__PURE__ */ K("<p class=\"activity-empty\">No matching activity in this window. Try another action name or check the newest entries.</p>"), Na = /* @__PURE__ */ K("<li><div><strong> </strong><p> </p></div><time> </time></li>"), Pa = /* @__PURE__ */ K("<!> <ol class=\"activity-list\"></ol> <div class=\"button-row\"><button class=\"button secondary\">Check newest activity</button><button class=\"button secondary\">Older activity</button></div> <p class=\"field-help\">Up to 25 entries per page. New changes appear when you check newest; older pages stay within the current history window. Search matches action names, not note or credential contents.</p>", 1), Fa = /* @__PURE__ */ K("<button class=\"button secondary\">Retry activity</button>"), Ia = /* @__PURE__ */ K("<button class=\"button secondary\">Check activity</button>"), La = /* @__PURE__ */ K("<section class=\"card activity-card\" aria-label=\"Your retained activity\"><h2>Your activity</h2> <p>Successful changes made by your account, retained from the introduction of Activity. Connection entries describe enrollment changes, not game actions or provider uptime.</p> <form class=\"activity-search\"><div><label for=\"activity-query\">Search action names</label><input id=\"activity-query\" maxlength=\"80\" placeholder=\"For example, saved or Crafty\"/></div> <div><label for=\"activity-category\">Activity category</label><select id=\"activity-category\"><option>All activity</option><option>Workspace notes</option><option>Services and pins</option><option>Connection enrollment</option></select></div> <button type=\"submit\" class=\"button primary\">Search activity</button></form> <p class=\"workspace-status\" role=\"status\"> </p> <!></section>");
-function Ra(e, t) {
-	Ue(t, !1);
+var Fa = /* @__PURE__ */ K("<p class=\"activity-empty\">No matching activity in this window. Try another action name or check the newest entries.</p>"), Ia = /* @__PURE__ */ K("<li><div><strong> </strong><p> </p></div><time> </time></li>"), La = /* @__PURE__ */ K("<!> <ol class=\"activity-list\"></ol> <div class=\"button-row\"><button class=\"button secondary\">Check newest activity</button><button class=\"button secondary\">Older activity</button></div> <p class=\"field-help\">Up to 25 entries per page. New changes appear when you check newest; older pages stay within the current history window. Search matches action names, not note or credential contents.</p>", 1), Ra = /* @__PURE__ */ K("<button class=\"button secondary\">Retry activity</button>"), za = /* @__PURE__ */ K("<button class=\"button secondary\">Check activity</button>"), Ba = /* @__PURE__ */ K("<section class=\"card activity-card\" aria-label=\"Your retained activity\"><h2>Your activity</h2> <p>Successful changes made by your account, retained from the introduction of Activity. Connection entries describe enrollment changes, not game actions or provider uptime.</p> <form class=\"activity-search\"><div><label for=\"activity-query\">Search action names</label><input id=\"activity-query\" maxlength=\"80\" placeholder=\"For example, saved or Crafty\"/></div> <div><label for=\"activity-category\">Activity category</label><select id=\"activity-category\"><option>All activity</option><option>Workspace notes</option><option>Services and pins</option><option>Connection enrollment</option></select></div> <button type=\"submit\" class=\"button primary\">Search activity</button></form> <p class=\"workspace-status\" role=\"status\"> </p> <!></section>");
+function Va(e, t) {
+	We(t, !1);
 	let n = Z(t, "state", 8), r = Z(t, "authorized", 8, !1), i = Z(t, "load", 8), a = /* @__PURE__ */ P(""), o = /* @__PURE__ */ P("all"), s = /* @__PURE__ */ P(), c = (e) => (/* @__PURE__ */ new Date(Number(e) * 1e3)).toLocaleString();
-	wn(() => W(r()), () => {
+	Tn(() => W(r()), () => {
 		r() || (F(a, ""), F(o, "all"), F(s, void 0));
-	}), wn(() => (W(n()), H(s)), () => {
+	}), Tn(() => (W(n()), H(s)), () => {
 		n() !== H(s) && n().phase === "loading" && (F(s, n()), F(a, n().query), F(o, n().category));
-	}), Tn(), Si();
-	var l = La(), u = R(I(l), 4), d = I(u), f = R(I(d));
-	ui(f), A(d);
+	}), En(), Ci();
+	var l = Ba(), u = R(I(l), 4), d = I(u), f = R(I(d));
+	di(f), A(d);
 	var p = R(d, 2), m = R(I(p)), h = I(m);
 	h.value = h.__value = "all";
 	var g = R(h);
@@ -3514,19 +3523,19 @@ function Ra(e, t) {
 	var _ = R(g);
 	_.value = _.__value = "directory";
 	var v = R(_);
-	v.value = v.__value = "connections", A(m), ni(m), A(p);
+	v.value = v.__value = "connections", A(m), ri(m), A(p);
 	var y = R(p, 2);
 	A(u);
 	var b = R(u, 2), x = L(b, !0), S = R(b, 2), C = (e) => {
-		var t = Pa(), r = sn(t), a = (e) => {
-			q(e, Ma());
+		var t = La(), r = cn(t), a = (e) => {
+			q(e, Fa());
 		};
 		Y(r, (e) => {
 			W(n()), U(() => n().entries.length === 0) && e(a);
 		});
 		var o = R(r, 2);
-		Wr(o, 5, () => (W(n()), U(() => n().entries)), (e) => e.id, (e, t) => {
-			var n = Na(), r = I(n), i = I(r), a = L(i, !0), o = L(R(i));
+		Gr(o, 5, () => (W(n()), U(() => n().entries)), (e) => e.id, (e, t) => {
+			var n = Ia(), r = I(n), i = I(r), a = L(i, !0), o = L(R(i));
 			A(r);
 			var s = R(r), l = L(s, !0);
 			A(n), z((e, r) => {
@@ -3536,51 +3545,51 @@ function Ra(e, t) {
 		var s = R(o, 2), l = I(s), u = R(l);
 		A(s), Se(2), z(() => u.disabled = (W(n()), U(() => !n().next))), G("click", l, () => void i()(n().category, n().query)), G("click", u, () => void i()(n().category, n().query, !0)), q(e, t);
 	}, w = (e) => {
-		var t = Fa();
+		var t = Ra();
 		G("click", t, () => void i()(n().category, n().query)), q(e, t);
 	}, T = (e) => {
-		var t = Ia();
+		var t = za();
 		z(() => t.disabled = !r()), G("click", t, () => void i()(H(o), H(a))), q(e, t);
 	};
 	Y(S, (e) => {
 		W(n()), U(() => n().phase === "ready") ? e(C) : (W(n()), U(() => n().phase === "error") ? e(w, 1) : (W(n()), U(() => n().phase === "idle") && e(T, 2)));
 	}), A(l), z(() => {
 		f.disabled = !r(), m.disabled = !r(), y.disabled = !r(), J(x, (W(n()), U(() => n().message)));
-	}), xr("submit", u, (e) => {
+	}), Sr("submit", u, (e) => {
 		e.preventDefault(), i()(H(o), H(a));
-	}), gi(f, () => H(a), (e) => F(a, e)), ri(m, () => H(o), (e) => F(o, e)), q(e, l), We();
+	}), _i(f, () => H(a), (e) => F(a, e)), ii(m, () => H(o), (e) => F(o, e)), q(e, l), Ge();
 }
-Sr(["click"]);
+Cr(["click"]);
 // src/Notifications.svelte
-var za = /* @__PURE__ */ K("<div class=\"notice\"><h3>Check your read markers</h3><p>The change may have completed. Check notifications before marking another group read.</p></div>"), Ba = /* @__PURE__ */ K("<p class=\"notification-empty\"> </p>"), Va = /* @__PURE__ */ K("<li><div><h3> </h3><p class=\"notification-count\"> </p><p> </p><p class=\"field-help\"><time> </time></p></div> <button class=\"button secondary mark-notification-read\"> </button></li>"), Ha = /* @__PURE__ */ K("<div class=\"notification-card card\"><div class=\"notification-heading\"><div><p class=\"eyebrow\">AT YOUR PACE</p><h2>Your notifications</h2></div><button class=\"button secondary check-notifications\">Check notifications</button></div> <p>Shared service and connection changes from other accounts, grouped together. Opening this inbox leaves them unread.</p> <label class=\"notification-filter\"><input id=\"notification-show-read\" type=\"checkbox\"/> Show read groups</label> <p class=\"notification-status\" role=\"status\"> </p> <!> <!> <ul class=\"notification-list\"></ul></div>");
-function Ua(e, t) {
-	Ue(t, !1);
+var Ha = /* @__PURE__ */ K("<div class=\"notice\"><h3>Check your read markers</h3><p>The change may have completed. Check notifications before marking another group read.</p></div>"), Ua = /* @__PURE__ */ K("<p class=\"notification-empty\"> </p>"), Wa = /* @__PURE__ */ K("<li><div><h3> </h3><p class=\"notification-count\"> </p><p> </p><p class=\"field-help\"><time> </time></p></div> <button class=\"button secondary mark-notification-read\"> </button></li>"), Ga = /* @__PURE__ */ K("<div class=\"notification-card card\"><div class=\"notification-heading\"><div><p class=\"eyebrow\">AT YOUR PACE</p><h2>Your notifications</h2></div><button class=\"button secondary check-notifications\">Check notifications</button></div> <p>Shared service and connection changes from other accounts, grouped together. Opening this inbox leaves them unread.</p> <label class=\"notification-filter\"><input id=\"notification-show-read\" type=\"checkbox\"/> Show read groups</label> <p class=\"notification-status\" role=\"status\"> </p> <!> <!> <ul class=\"notification-list\"></ul></div>");
+function Ka(e, t) {
+	We(t, !1);
 	let n = /* @__PURE__ */ P(), r = Z(t, "value", 8), i = Z(t, "authorized", 8), a = Z(t, "state", 8), o = Z(t, "message", 8), s = Z(t, "check", 8), c = Z(t, "mark", 8), l = /* @__PURE__ */ P(!1), u = (e) => (/* @__PURE__ */ new Date(Number(e) * 1e3)).toLocaleString();
-	wn(() => W(i()), () => {
+	Tn(() => W(i()), () => {
 		i() || F(l, !1);
-	}), wn(() => (W(i()), W(r()), H(l)), () => {
+	}), Tn(() => (W(i()), W(r()), H(l)), () => {
 		F(n, i() ? (r()?.groups ?? []).filter((e) => H(l) || e.unread !== "0") : []);
-	}), Tn(), Si();
-	var d = Ha(), f = I(d), p = R(I(f));
+	}), En(), Ci();
+	var d = Ga(), f = I(d), p = R(I(f));
 	A(f);
 	var m = R(f, 4), h = I(m);
-	ui(h), Se(), A(m);
+	di(h), Se(), A(m);
 	var g = R(m, 2), _ = L(g, !0), v = R(g, 2), y = (e) => {
-		q(e, za());
+		q(e, Ha());
 	};
 	Y(v, (e) => {
 		a() === "uncertain" && e(y);
 	});
 	var b = R(v, 2), x = (e) => {
-		var t = Ba(), n = L(t, !0);
+		var t = Ua(), n = L(t, !0);
 		z(() => J(n, H(l) ? "No shared changes to show yet." : "You’re all caught up.")), q(e, t);
 	};
 	Y(b, (e) => {
 		H(n), U(() => H(n).length === 0) && e(x);
 	});
 	var S = R(b, 2);
-	Wr(S, 5, () => H(n), (e) => e.category, (e, t) => {
-		var n = Va(), r = I(n), o = I(r), s = L(o, !0), l = R(o), d = L(l, !0), f = R(l), p = L(f, !0), m = R(f), h = I(m), g = L(h, !0);
+	Gr(S, 5, () => H(n), (e) => e.category, (e, t) => {
+		var n = Wa(), r = I(n), o = I(r), s = L(o, !0), l = R(o), d = L(l, !0), f = R(l), p = L(f, !0), m = R(f), h = I(m), g = L(h, !0);
 		A(m), A(r);
 		var _ = R(r, 2), v = L(_);
 		A(n), z((e, r) => {
@@ -3588,91 +3597,103 @@ function Ua(e, t) {
 		}, [() => (H(t), U(() => (/* @__PURE__ */ new Date(Number(H(t).latest.occurred_at) * 1e3)).toISOString())), () => (H(t), U(() => u(H(t).latest.occurred_at)))]), G("click", _, () => c()(H(t).category, H(t).revision)), q(e, n);
 	}), A(S), A(d), z(() => {
 		p.disabled = !i() || a() === "saving", h.disabled = !i(), J(_, o() || "Read markers are saved to your account.");
-	}), G("click", p, () => s()()), _i(h, () => H(l), (e) => F(l, e)), q(e, d), We();
+	}), G("click", p, () => s()()), vi(h, () => H(l), (e) => F(l, e)), q(e, d), Ge();
 }
-Sr(["click"]);
+Cr(["click"]);
 // src/App.svelte
-var Wa = /* @__PURE__ */ K("<span class=\"notification-badge\"> </span>"), Ga = /* @__PURE__ */ K("<a rel=\"noreferrer\"> </a>"), Ka = /* @__PURE__ */ K("<section class=\"recovery card\"><p class=\"eyebrow\">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class=\"button-row\"><a class=\"button primary\" href=\"/workspace\">Open workspace again</a><a class=\"button secondary\" href=\"/account\">Your account</a></div></section>"), qa = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">▤</span><h2>Your workspace note</h2><p> </p><button class=\"text-button\">Keep writing <span aria-hidden=\"true\">→</span></button>", 1), Ja = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">◇</span><h2>Connections</h2><p> </p><button class=\"text-button\">View connections <span aria-hidden=\"true\">→</span></button>", 1), Ya = /* @__PURE__ */ K("<section><!></section>"), Xa = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Draft recovery\"><h2>A draft is waiting</h2><p>This browser session has an unfinished note for this account. Review it before saving.</p><div class=\"button-row\"><button class=\"button secondary\">Recover draft</button><button class=\"text-button\">Discard draft</button></div></section>"), Za = /* @__PURE__ */ K("<p class=\"field-help\">Browser storage is unavailable. Draft recovery is limited to this open page.</p>"), Qa = /* @__PURE__ */ K("<p class=\"notice\">Shorten this note to 4096 bytes before saving or leaving this page.</p>"), $a = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Save conflict\"><h2>There’s a newer saved note</h2><p>Your draft is still in the editor. Compare it with the saved version, then choose what to keep.</p><pre> </pre><div class=\"button-row\"><button class=\"button secondary\">Keep my draft</button><button class=\"text-button\">Use saved note</button></div></section>"), eo = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain save\"><h2>Check before saving again</h2><p>The previous save may have completed. Your draft has not been sent again.</p><button class=\"button secondary\">Check saved note</button></section>"), to = /* @__PURE__ */ K("<a class=\"skip-link\" href=\"#workspace-content\">Skip to content</a> <div class=\"workspace-shell\"><aside class=\"sidebar\" aria-label=\"Workspace sidebar\"><a class=\"brand\" href=\"/workspace\"><span class=\"brand-mark\" aria-hidden=\"true\">K</span><span>Keida <small>REBORN</small></span></a> <p class=\"nav-label\">YOUR SPACE</p> <nav class=\"main-nav\" aria-label=\"Workspace views\"><button><span aria-hidden=\"true\">⌂</span>Home</button> <button><span aria-hidden=\"true\">▤</span>Workspace note<span aria-hidden=\"true\"></span></button> <button><span aria-hidden=\"true\">◇</span>Connections</button> <button><span aria-hidden=\"true\">▦</span>Services</button> <button><span aria-hidden=\"true\">◷</span>Activity</button> <button><span aria-hidden=\"true\">♧</span>Notifications<!></button></nav> <div class=\"sidebar-bottom\"><a href=\"/account\" class=\"account-link\"><span class=\"avatar\" aria-hidden=\"true\">K</span><span><strong> </strong><small> </small></span></a> <form method=\"post\" action=\"/account/sign-out\"><input type=\"hidden\" name=\"product\" value=\"keida-hub-reborn\"/> <input type=\"hidden\" name=\"contract\" value=\"reborn-account-v1\"/> <input type=\"hidden\" name=\"csrf_token\"/> <button type=\"submit\" class=\"sign-out\">Sign out <span aria-hidden=\"true\">↗</span></button></form> <details class=\"version\"><summary> <span>Build details</span></summary> <dl><dt>Source</dt><dd><!></dd><dt>Tree</dt><dd> </dd><dt>Channel</dt><dd> </dd><dt>Workspace contract</dt><dd>reborn-workspace-v1</dd></dl></details></div></aside> <main id=\"workspace-content\" class=\"workspace-content\"><header class=\"page-header\"><div><p class=\"eyebrow\">YOUR OWN CORNER OF KEIDA</p><h1 tabindex=\"-1\"> </h1></div><span class=\"connection-state\"><span aria-hidden=\"true\">●</span> </span></header> <p class=\"workspace-status\" role=\"status\"> </p> <!> <section class=\"home-view\"><div class=\"welcome-card card\"><div><p class=\"eyebrow\">MAKE YOURSELF AT HOME</p><h2>A useful place<br/>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><button class=\"button primary\">Open your note <span aria-hidden=\"true\">↗</span></button></div><div class=\"orb\" aria-hidden=\"true\"><div>K</div></div></div> <div class=\"home-layout-heading\"><p class=\"layout-status\" role=\"status\"> </p><button class=\"button secondary customize-home\">Customize Home</button></div> <div><!></div> <div></div></section> <section class=\"note-view\" aria-label=\"Workspace note\"><div class=\"note-heading\"><p>A private note, available each time you sign in.</p><span class=\"quiet-label\"> </span></div> <!> <form class=\"note-card card\"><label for=\"workspace-note\">Workspace note</label> <textarea id=\"workspace-note\" name=\"workspace-note\" maxlength=\"4096\" spellcheck=\"true\" aria-describedby=\"note-help note-size\" placeholder=\"What would you like to come back to?\"></textarea> <p id=\"note-help\" class=\"field-help\">For ordinary notes. Keep passwords, API keys and other secrets out of this space.</p> <div class=\"note-footer\"><span id=\"note-size\"> </span><button class=\"button primary\" type=\"submit\"> </button></div></form> <!> <!> <!> <!></section> <section aria-label=\"Connections\"><!></section> <section aria-label=\"Activity\"><!></section> <section aria-label=\"Notifications\"><!></section> <footer class=\"content-footer\"><span>Keida Reborn</span><a href=\"/account\">Account &amp; recovery</a></footer></main></div>", 1);
-function no(e, t) {
-	Ue(t, !1);
-	let n = () => Ai(u, "$model", r), [r, i] = ji(), a = /* @__PURE__ */ P(), o = /* @__PURE__ */ P(), s = /* @__PURE__ */ P(), c = Z(t, "binding", 8), l = Xi(c()), u = l.model, d = /* @__PURE__ */ P("home"), f = /* @__PURE__ */ P(), p = document.querySelector("meta[name=\"reborn-version\"]")?.content ?? "development", m = document.querySelector("meta[name=\"reborn-commit\"]")?.content ?? "unqualified", h = document.querySelector("meta[name=\"reborn-tree\"]")?.content ?? "unqualified", g = document.querySelector("meta[name=\"reborn-channel\"]")?.content ?? "development";
-	function _(e) {
+var qa = /* @__PURE__ */ K("<span class=\"notification-badge\"> </span>"), Ja = /* @__PURE__ */ K("<a rel=\"noreferrer\"> </a>"), Ya = /* @__PURE__ */ K("<section class=\"recovery card\"><p class=\"eyebrow\">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class=\"button-row\"><a class=\"button primary\" href=\"/workspace\">Open workspace again</a><a class=\"button secondary\" href=\"/account\">Your account</a></div></section>"), Xa = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">▤</span><h2>Your workspace note</h2><p> </p><button class=\"text-button\">Keep writing <span aria-hidden=\"true\">→</span></button>", 1), Za = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">◇</span><h2>Connections</h2><p> </p><button class=\"text-button\">View connections <span aria-hidden=\"true\">→</span></button>", 1), Qa = /* @__PURE__ */ K("<section><!></section>"), $a = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Draft recovery\"><h2>A draft is waiting</h2><p>This browser session has an unfinished note for this account. Review it before saving.</p><div class=\"button-row\"><button class=\"button secondary\">Recover draft</button><button class=\"text-button\">Discard draft</button></div></section>"), eo = /* @__PURE__ */ K("<p class=\"field-help\">Browser storage is unavailable. Draft recovery is limited to this open page.</p>"), to = /* @__PURE__ */ K("<p class=\"notice\">Shorten this note to 4096 bytes before saving or leaving this page.</p>"), no = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Save conflict\"><h2>There’s a newer saved note</h2><p>Your draft is still in the editor. Compare it with the saved version, then choose what to keep.</p><pre> </pre><div class=\"button-row\"><button class=\"button secondary\">Keep my draft</button><button class=\"text-button\">Use saved note</button></div></section>"), ro = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain save\"><h2>Check before saving again</h2><p>The previous save may have completed. Your draft has not been sent again.</p><button class=\"button secondary\">Check saved note</button></section>"), io = /* @__PURE__ */ K("<a class=\"skip-link\" href=\"#workspace-content\">Skip to content</a> <div class=\"workspace-shell\"><aside class=\"sidebar\" aria-label=\"Workspace sidebar\"><a class=\"brand\" href=\"/workspace\"><span class=\"brand-mark\" aria-hidden=\"true\">K</span><span>Keida <small>REBORN</small></span></a> <p class=\"nav-label\">YOUR SPACE</p> <nav class=\"main-nav\" aria-label=\"Workspace views\"><button><span aria-hidden=\"true\">⌂</span>Home</button> <button><span aria-hidden=\"true\">▤</span>Workspace note<span aria-hidden=\"true\"></span></button> <button><span aria-hidden=\"true\">◇</span>Connections</button> <button><span aria-hidden=\"true\">▦</span>Services</button> <button><span aria-hidden=\"true\">◷</span>Activity</button> <button><span aria-hidden=\"true\">♧</span>Notifications<!></button></nav> <div class=\"sidebar-bottom\"><a href=\"/account\" class=\"account-link\"><span class=\"avatar\" aria-hidden=\"true\">K</span><span><strong> </strong><small> </small></span></a> <form method=\"post\" action=\"/account/sign-out\"><input type=\"hidden\" name=\"product\" value=\"keida-hub-reborn\"/> <input type=\"hidden\" name=\"contract\" value=\"reborn-account-v1\"/> <input type=\"hidden\" name=\"csrf_token\"/> <button type=\"submit\" class=\"sign-out\">Sign out <span aria-hidden=\"true\">↗</span></button></form> <details class=\"version\"><summary> <span>Build details</span></summary> <dl><dt>Source</dt><dd><!></dd><dt>Tree</dt><dd> </dd><dt>Channel</dt><dd> </dd><dt>Workspace contract</dt><dd>reborn-workspace-v1</dd></dl></details></div></aside> <main id=\"workspace-content\" class=\"workspace-content\"><header class=\"page-header\"><div><p class=\"eyebrow\">YOUR OWN CORNER OF KEIDA</p><h1 tabindex=\"-1\"> </h1></div><span class=\"connection-state\"><span aria-hidden=\"true\">●</span> </span></header> <p class=\"workspace-status\" role=\"status\"> </p> <!> <section class=\"home-view\"><div class=\"welcome-card card\"><div><p class=\"eyebrow\">MAKE YOURSELF AT HOME</p><h2>A useful place<br/>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><button class=\"button primary\">Open your note <span aria-hidden=\"true\">↗</span></button></div><div class=\"orb\" aria-hidden=\"true\"><div>K</div></div></div> <div class=\"home-layout-heading\"><p class=\"layout-status\" role=\"status\"> </p><button class=\"button secondary customize-home\">Customize Home</button></div> <div><!></div> <div></div></section> <section class=\"note-view\" aria-label=\"Workspace note\"><div class=\"note-heading\"><p>A private note, available each time you sign in.</p><span class=\"quiet-label\"> </span></div> <!> <form class=\"note-card card\"><label for=\"workspace-note\">Workspace note</label> <textarea id=\"workspace-note\" name=\"workspace-note\" maxlength=\"4096\" spellcheck=\"true\" aria-describedby=\"note-help note-size\" placeholder=\"What would you like to come back to?\"></textarea> <p id=\"note-help\" class=\"field-help\">For ordinary notes. Keep passwords, API keys and other secrets out of this space.</p> <div class=\"note-footer\"><span id=\"note-size\"> </span><button class=\"button primary\" type=\"submit\"> </button></div></form> <!> <!> <!> <!></section> <section aria-label=\"Connections\"><!></section> <section aria-label=\"Activity\"><!></section> <section aria-label=\"Notifications\"><!></section> <footer class=\"content-footer\"><span>Keida Reborn</span><a href=\"/account\">Account &amp; recovery</a></footer></main></div>", 1);
+function ao(e, t) {
+	We(t, !1);
+	let n = () => ji(u, "$model", r), [r, i] = Mi(), a = /* @__PURE__ */ P(), o = /* @__PURE__ */ P(), s = /* @__PURE__ */ P(), c = Z(t, "binding", 8), l = $i(c()), u = l.model, d = /* @__PURE__ */ P("home"), f = /* @__PURE__ */ P(), p = /* @__PURE__ */ P(), m = /* @__PURE__ */ P(Hi()), h, g = document.querySelector("meta[name=\"reborn-version\"]")?.content ?? "development", _ = document.querySelector("meta[name=\"reborn-commit\"]")?.content ?? "unqualified", v = document.querySelector("meta[name=\"reborn-tree\"]")?.content ?? "unqualified", y = document.querySelector("meta[name=\"reborn-channel\"]")?.content ?? "development";
+	function b(e) {
 		F(d, e), H(f)?.focus(), e === "activity" && l.activity(), e === "notifications" && l.check();
 	}
-	Ni(l.start), wn(() => (n(), zi), () => {
-		F(a, n().layoutDraft?.panels ?? n().snapshot?.layout.panels ?? zi());
-	}), wn(() => n(), () => {
+	let x = () => n().snapshot ? `${n().snapshot.account.id}:${n().snapshot.session_generation}:${n().snapshot.account.role}` : "";
+	Ii(() => {
+		let e = document.activeElement;
+		h = H(d) === "home" && n().phase === "ready" && e instanceof HTMLElement && H(p)?.contains(e) ? {
+			element: e,
+			scope: x()
+		} : void 0;
+	}), Li(() => {
+		let e = h;
+		h = void 0, e && H(d) === "home" && n().phase === "ready" && e.scope === x() && e.element.isConnected && H(p)?.contains(e.element) && document.activeElement === document.body && document.visibilityState === "visible" && document.hasFocus() && e.element.getClientRects().length > 0 && e.element.focus({ preventScroll: !0 });
+	}), Pi(l.start), Tn(() => (n(), Hi), () => {
+		F(a, n().layoutDraft?.panels ?? n().snapshot?.layout.panels ?? Hi());
+	}), Tn(() => (n(), H(d), H(a)), () => {
+		n().phase === "ready" ? H(d) !== "directory" && F(m, H(a)) : F(m, Hi());
+	}), Tn(() => n(), () => {
 		F(o, new TextEncoder().encode(n().draft).length);
-	}), wn(() => (n(), H(o)), () => {
+	}), Tn(() => (n(), H(o)), () => {
 		F(s, n().phase === "ready" && n().dirty && H(o) <= 4096 && !["saving", "checking-conflict"].includes(n().layoutSave) && n().notificationSave !== "saving" && ![
 			"saving",
 			"checking-conflict",
 			"conflict",
 			"uncertain"
 		].includes(n().save));
-	}), Tn(), Si();
-	var v = to(), y = R(sn(v), 2), b = I(y), x = R(I(b), 4), S = I(x);
-	let C;
-	var w = R(S, 2);
-	let T;
-	var E = R(I(w), 2);
+	}), En(), Ci();
+	var S = io(), C = R(cn(S), 2), w = I(C), T = R(I(w), 4), E = I(T);
 	let ee;
-	A(w);
-	var te = R(w, 2);
+	var te = R(E, 2);
 	let ne;
-	var re = R(te, 2);
+	var re = R(I(te), 2);
 	let ie;
-	var ae = R(re, 2);
+	A(te);
+	var ae = R(te, 2);
 	let oe;
 	var se = R(ae, 2);
 	let ce;
-	var le = R(I(se), 2), ue = (e) => {
-		var t = Wa(), r = L(t, !0);
+	var le = R(se, 2);
+	let ue;
+	var de = R(le, 2);
+	let fe;
+	var pe = R(I(de), 2), D = (e) => {
+		var t = qa(), r = L(t, !0);
 		z(() => {
 			X(t, "aria-label", (n(), U(() => `${n().snapshot.notifications.unread_groups} unread groups`))), J(r, (n(), U(() => n().snapshot.notifications.unread_groups)));
 		}), q(e, t);
 	};
-	Y(le, (e) => {
-		n(), U(() => n().snapshot?.notifications.unread_groups) && e(ue);
-	}), A(se), A(x);
-	var de = R(x, 2), fe = I(de), pe = R(I(fe)), D = I(pe), me = L(D, !0), he = L(R(D), !0);
-	A(pe), A(fe);
-	var ge = R(fe, 2), _e = R(R(I(ge), 2), 2);
-	ui(_e), Se(2), A(ge);
-	var ve = R(ge, 2), O = I(ve), ye = I(O, !0);
-	Se(), A(O);
-	var k = R(O, 2), be = R(I(k)), xe = I(be), Ce = (e) => {
-		var t = Ga(), n = L(t, !0);
+	Y(pe, (e) => {
+		n(), U(() => n().snapshot?.notifications.unread_groups) && e(D);
+	}), A(de), A(T);
+	var me = R(T, 2), he = I(me), ge = R(I(he)), _e = I(ge), ve = L(_e, !0), O = L(R(_e), !0);
+	A(ge), A(he);
+	var ye = R(he, 2), k = R(R(I(ye), 2), 2);
+	di(k), Se(2), A(ye);
+	var be = R(ye, 2), xe = I(be), Ce = I(xe, !0);
+	Se(), A(xe);
+	var we = R(xe, 2), Te = R(I(we)), Ee = I(Te), De = (e) => {
+		var t = Ja(), n = L(t, !0);
 		z(() => {
-			X(t, "href", `https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/commit/${m}`), J(n, m);
+			X(t, "href", `https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/commit/${_}`), J(n, _);
 		}), q(e, t);
-	}, we = /* @__PURE__ */ ft(() => U(() => /^[a-f0-9]{40}$/.test(m))), Te = (e) => {
-		var t = Ar();
-		z(() => J(t, m)), q(e, t);
+	}, Oe = /* @__PURE__ */ pt(() => U(() => /^[a-f0-9]{40}$/.test(_))), ke = (e) => {
+		var t = jr();
+		z(() => J(t, _)), q(e, t);
 	};
-	Y(xe, (e) => {
-		H(we) ? e(Ce) : e(Te, -1);
-	}), A(be);
-	var Ee = R(be, 2), De = L(Ee, !0), Oe = L(R(Ee, 2), !0);
-	Se(2), A(k), A(ve), A(de), A(b);
-	var ke = R(b, 2), Ae = I(ke), je = I(Ae), Me = R(I(je)), Ne = L(Me, !0);
-	xi(Me, (e) => F(f, e), () => H(f)), A(je);
-	var Pe = R(je), Fe = R(I(Pe), 1, !0);
-	A(Pe), A(Ae);
-	var Ie = R(Ae, 2), Le = L(Ie, !0), Re = R(Ie, 2), ze = (e) => {
-		q(e, Ka());
+	Y(Ee, (e) => {
+		H(Oe) ? e(De) : e(ke, -1);
+	}), A(Te);
+	var Ae = R(Te, 2), je = L(Ae, !0), Me = L(R(Ae, 2), !0);
+	Se(2), A(we), A(be), A(me), A(w);
+	var Ne = R(w, 2), Pe = I(Ne), Fe = I(Pe), Ie = R(I(Fe)), Le = L(Ie, !0);
+	Si(Ie, (e) => F(f, e), () => H(f)), A(Fe);
+	var Re = R(Fe), ze = R(I(Re), 1, !0);
+	A(Re), A(Pe);
+	var Be = R(Pe, 2), Ve = L(Be, !0), He = R(Be, 2), j = (e) => {
+		q(e, Ya());
 	};
-	Y(Re, (e) => {
-		n(), U(() => n().phase !== "ready") && e(ze);
+	Y(He, (e) => {
+		n(), U(() => n().phase !== "ready") && e(j);
 	});
-	var Be = R(Re, 2), Ve = I(Be), j = I(Ve), He = R(I(j), 3);
-	A(j), Se(), A(Ve);
-	var Ge = R(Ve, 2), Ke = I(Ge), qe = L(Ke, !0), Je = R(Ke);
-	A(Ge);
-	var Ye = R(Ge, 2), Xe = I(Ye);
+	var Ue = R(He, 2), Ke = I(Ue), qe = I(Ke), Je = R(I(qe), 3);
+	A(qe), Se(), A(Ke);
+	var Ye = R(Ke, 2), Xe = I(Ye), Ze = L(Xe, !0), Qe = R(Xe);
+	A(Ye);
+	var M = R(Ye, 2), $e = I(M);
 	{
-		let e = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.layout))), t = /* @__PURE__ */ pt(() => (n(), U(() => n().phase === "ready")));
-		na(Xe, {
+		let e = /* @__PURE__ */ mt(() => (n(), U(() => n().snapshot?.layout))), t = /* @__PURE__ */ mt(() => (n(), U(() => n().phase === "ready")));
+		aa($e, {
 			get draft() {
 				return n(), U(() => n().layoutDraft);
 			},
@@ -3708,22 +3729,22 @@ function no(e, t) {
 			}
 		});
 	}
-	A(Ye);
-	var Ze = R(Ye, 2);
-	let M;
-	Wr(Ze, 5, () => H(a), (e) => e.id, (e, t) => {
-		var r = Ya();
+	A(M);
+	var et = R(M, 2);
+	let nt;
+	Gr(et, 5, () => H(m), (e) => e.id, (e, t) => {
+		var r = Qa();
 		let i;
 		var a = I(r), o = (e) => {
-			var t = qa(), r = R(sn(t), 2), i = L(r, !0), a = R(r);
-			z(() => J(i, (n(), U(() => n().dirty ? "You have an unsaved draft open." : n().snapshot?.note.revision === "0" ? "A blank page for whatever comes next." : "Your saved note is ready when you are.")))), G("click", a, () => _("note")), q(e, t);
+			var t = Xa(), r = R(cn(t), 2), i = L(r, !0), a = R(r);
+			z(() => J(i, (n(), U(() => n().dirty ? "You have an unsaved draft open." : n().snapshot?.note.revision === "0" ? "A blank page for whatever comes next." : "Your saved note is ready when you are.")))), G("click", a, () => b("note")), q(e, t);
 		}, s = (e) => {
-			var t = Ja(), r = R(sn(t), 2), i = L(r, !0), a = R(r);
-			z(() => J(i, (n(), U(() => n().snapshot?.crafty?.configured ? "Your enrolled Crafty observations are available in Connections." : "Enroll dedicated Crafty access to see your selected servers.")))), G("click", a, () => _("connections")), q(e, t);
+			var t = Za(), r = R(cn(t), 2), i = L(r, !0), a = R(r);
+			z(() => J(i, (n(), U(() => n().snapshot?.crafty?.configured ? "Your enrolled Crafty observations are available in Connections." : "Enroll dedicated Crafty access to see your selected servers.")))), G("click", a, () => b("connections")), q(e, t);
 		}, c = (e) => {
 			{
-				let t = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.directory))), r = /* @__PURE__ */ pt(() => (n(), U(() => n().phase === "ready"))), i = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.account.role === "owner"))), a = /* @__PURE__ */ pt(() => H(d) === "home");
-				ja(e, {
+				let t = /* @__PURE__ */ mt(() => (n(), U(() => n().snapshot?.directory))), r = /* @__PURE__ */ mt(() => (n(), U(() => n().phase === "ready"))), i = /* @__PURE__ */ mt(() => (n(), U(() => n().snapshot?.account.role === "owner"))), a = /* @__PURE__ */ mt(() => H(d) === "home");
+				Pa(e, {
 					get directory() {
 						return H(t);
 					},
@@ -3742,7 +3763,7 @@ function no(e, t) {
 					get message() {
 						return n(), U(() => n().directoryMessage);
 					},
-					browse: () => _("directory"),
+					browse: () => b("directory"),
 					get check() {
 						return U(() => l.check);
 					},
@@ -3758,60 +3779,60 @@ function no(e, t) {
 		Y(a, (e) => {
 			H(t), U(() => H(t).id === "note") ? e(o) : (H(t), U(() => H(t).id === "connections") ? e(s, 1) : e(c, -1));
 		}), A(r), z(() => {
-			X(r, "data-home-panel", (H(t), U(() => H(t).id))), X(r, "hidden", (n(), H(t), H(d), U(() => n().phase !== "ready" || (H(t).id === "pins" ? H(d) === "home" && !H(t).visible : H(d) !== "home" || !H(t).visible)))), X(r, "aria-label", (H(t), U(() => H(t).id === "pins" ? "Services" : H(t).id === "note" ? "Workspace note shortcut" : "Connections shortcut"))), i = Qr(r, 1, "", null, i, {
+			X(r, "data-home-panel", (H(t), U(() => H(t).id))), X(r, "hidden", (n(), H(t), H(d), U(() => n().phase !== "ready" || (H(t).id === "pins" ? H(d) === "home" && !H(t).visible : H(d) !== "home" || !H(t).visible)))), X(r, "aria-label", (H(t), U(() => H(t).id === "pins" ? "Services" : H(t).id === "note" ? "Workspace note shortcut" : "Connections shortcut"))), i = $r(r, 1, "", null, i, {
 				card: H(t).id !== "pins",
 				"small-card": H(t).id !== "pins",
 				"pins-panel": H(t).id === "pins"
 			});
 		}), q(e, r);
-	}), A(Ze), A(Be);
-	var Qe = R(Be, 2), $e = I(Qe), tt = L(R(I($e)), !0);
-	A($e);
-	var nt = R($e, 2), rt = (e) => {
-		var t = Xa(), n = R(I(t), 2), r = I(n), i = R(r);
+	}), A(et), Si(et, (e) => F(p, e), () => H(p)), A(Ue);
+	var rt = R(Ue, 2), it = I(rt), at = L(R(I(it)), !0);
+	A(it);
+	var ot = R(it, 2), st = (e) => {
+		var t = $a(), n = R(I(t), 2), r = I(n), i = R(r);
 		A(n), A(t), G("click", r, function(...e) {
 			l.recover?.apply(this, e);
 		}), G("click", i, () => l.resolve(!0)), q(e, t);
 	};
-	Y(nt, (e) => {
-		n(), U(() => n().recovery) && e(rt);
+	Y(ot, (e) => {
+		n(), U(() => n().recovery) && e(st);
 	});
-	var it = R(nt, 2), at = R(I(it), 2);
-	et(at);
-	var ot = R(at, 4), st = I(ot);
-	let ct;
-	var lt = L(st), ut = R(st), dt = L(ut, !0);
-	A(ot), A(it);
-	var mt = R(it, 2), ht = (e) => {
-		q(e, Za());
-	};
-	Y(mt, (e) => {
-		n(), U(() => n().storageLimited) && e(ht);
-	});
-	var gt = R(mt, 2), _t = (e) => {
-		q(e, Qa());
-	};
-	Y(gt, (e) => {
-		H(o) > 4096 && e(_t);
-	});
-	var vt = R(gt, 2), yt = (e) => {
-		var t = $a(), r = R(I(t), 2), i = L(r, !0), a = R(r), o = I(a), s = R(o);
-		A(a), A(t), z(() => J(i, (n(), U(() => n().snapshot?.note.body)))), G("click", o, () => l.resolve(!1)), G("click", s, () => l.resolve(!0)), q(e, t);
+	var ct = R(ot, 2), lt = R(I(ct), 2);
+	tt(lt);
+	var ut = R(lt, 4), dt = I(ut);
+	let ft;
+	var ht = L(dt), gt = R(dt), _t = L(gt, !0);
+	A(ut), A(ct);
+	var vt = R(ct, 2), yt = (e) => {
+		q(e, eo());
 	};
 	Y(vt, (e) => {
-		n(), U(() => n().save === "conflict") && e(yt);
+		n(), U(() => n().storageLimited) && e(yt);
 	});
-	var N = R(vt, 2), bt = (e) => {
-		var t = eo(), n = R(I(t), 2);
+	var bt = R(vt, 2), N = (e) => {
+		q(e, to());
+	};
+	Y(bt, (e) => {
+		H(o) > 4096 && e(N);
+	});
+	var xt = R(bt, 2), St = (e) => {
+		var t = no(), r = R(I(t), 2), i = L(r, !0), a = R(r), o = I(a), s = R(o);
+		A(a), A(t), z(() => J(i, (n(), U(() => n().snapshot?.note.body)))), G("click", o, () => l.resolve(!1)), G("click", s, () => l.resolve(!0)), q(e, t);
+	};
+	Y(xt, (e) => {
+		n(), U(() => n().save === "conflict") && e(St);
+	});
+	var Ct = R(xt, 2), wt = (e) => {
+		var t = ro(), n = R(I(t), 2);
 		A(t), G("click", n, () => l.check()), q(e, t);
 	};
-	Y(N, (e) => {
-		n(), U(() => n().save === "uncertain") && e(bt);
-	}), A(Qe);
-	var xt = R(Qe, 2), St = I(xt);
+	Y(Ct, (e) => {
+		n(), U(() => n().save === "uncertain") && e(wt);
+	}), A(rt);
+	var Tt = R(rt, 2), Et = I(Tt);
 	{
-		let e = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.crafty))), t = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.account.role === "owner"))), r = /* @__PURE__ */ pt(() => (H(d), n(), U(() => H(d) === "connections" && n().phase === "ready")));
-		ma(St, {
+		let e = /* @__PURE__ */ mt(() => (n(), U(() => n().snapshot?.crafty))), t = /* @__PURE__ */ mt(() => (n(), U(() => n().snapshot?.account.role === "owner"))), r = /* @__PURE__ */ mt(() => (H(d), n(), U(() => H(d) === "connections" && n().phase === "ready")));
+		_a(Et, {
 			history: () => {
 				F(d, "activity"), H(f)?.focus(), l.activity("connections", "");
 			},
@@ -3832,11 +3853,11 @@ function no(e, t) {
 			}
 		});
 	}
-	A(xt);
-	var Ct = R(xt, 2), wt = I(Ct);
+	A(Tt);
+	var Dt = R(Tt, 2), Ot = I(Dt);
 	{
-		let e = /* @__PURE__ */ pt(() => (n(), U(() => n().phase === "ready")));
-		Ra(wt, {
+		let e = /* @__PURE__ */ mt(() => (n(), U(() => n().phase === "ready")));
+		Va(Ot, {
 			get state() {
 				return n(), U(() => n().activity);
 			},
@@ -3848,11 +3869,11 @@ function no(e, t) {
 			}
 		});
 	}
-	A(Ct);
-	var Tt = R(Ct, 2), Et = I(Tt);
+	A(Dt);
+	var kt = R(Dt, 2), At = I(kt);
 	{
-		let e = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.notifications))), t = /* @__PURE__ */ pt(() => (n(), U(() => n().phase === "ready")));
-		Ua(Et, {
+		let e = /* @__PURE__ */ mt(() => (n(), U(() => n().snapshot?.notifications))), t = /* @__PURE__ */ mt(() => (n(), U(() => n().phase === "ready")));
+		Ka(At, {
 			get value() {
 				return H(e);
 			},
@@ -3873,26 +3894,26 @@ function no(e, t) {
 			}
 		});
 	}
-	A(Tt), Se(2), A(ke), A(y), z(() => {
-		X(S, "aria-current", H(d) === "home" ? "page" : void 0), C = Qr(S, 1, "", null, C, { active: H(d) === "home" }), X(w, "aria-current", H(d) === "note" ? "page" : void 0), T = Qr(w, 1, "", null, T, { active: H(d) === "note" }), ee = Qr(E, 1, "draft-dot", null, ee, { visible: n().dirty }), X(te, "aria-current", H(d) === "connections" ? "page" : void 0), ne = Qr(te, 1, "", null, ne, { active: H(d) === "connections" }), X(re, "aria-current", H(d) === "directory" ? "page" : void 0), ie = Qr(re, 1, "", null, ie, { active: H(d) === "directory" }), X(ae, "aria-current", H(d) === "activity" ? "page" : void 0), oe = Qr(ae, 1, "", null, oe, { active: H(d) === "activity" }), X(se, "aria-current", H(d) === "notifications" ? "page" : void 0), ce = Qr(se, 1, "", null, ce, { active: H(d) === "notifications" }), J(me, (n(), U(() => n().snapshot?.account.username ?? "Your account"))), J(he, (n(), U(() => n().snapshot?.account.role === "owner" ? "Owner" : n().snapshot?.account.role === "member" ? "Member" : "Check account access"))), di(_e, c()), J(ye, p), J(De, h), J(Oe, g), J(Ne, H(d) === "home" ? "Welcome home." : H(d) === "note" ? "A little space to think." : H(d) === "connections" ? "Your servers, at a glance." : H(d) === "directory" ? "Everything within reach." : H(d) === "activity" ? "Pick up the thread." : "Catch up at your pace."), J(Fe, (n(), U(() => n().phase === "ready" ? "Session checked" : n().phase === "checking" ? "Checking access" : "Access paused"))), J(Le, (n(), U(() => n().message))), X(Be, "hidden", (H(d), n(), U(() => H(d) !== "home" && H(d) !== "directory" || n().phase !== "ready"))), X(Be, "aria-label", H(d) === "directory" ? "Service directory view" : "Home"), X(Ve, "hidden", H(d) !== "home"), X(Ge, "hidden", H(d) !== "home"), J(qe, (n(), U(() => n().layoutMessage || "Your panels, in your own order."))), Je.disabled = (n(), U(() => !!n().layoutDraft || n().phase !== "ready" || n().layoutSave === "saving")), X(Ye, "hidden", H(d) !== "home"), M = Qr(Ze, 1, "home-grid", null, M, { "services-view": H(d) === "directory" }), X(Qe, "hidden", (H(d), n(), U(() => H(d) !== "note" || n().phase !== "ready"))), J(tt, (n(), U(() => n().dirty ? "Unsaved changes" : "Up to date"))), di(at, (n(), U(() => n().draft))), at.disabled = (n(), U(() => n().phase !== "ready")), ct = Qr(st, 1, "", null, ct, { "over-limit": H(o) > 4096 }), J(lt, `${H(o) ?? ""} / 4096 bytes`), ut.disabled = !H(s), J(dt, (n(), U(() => n().save === "saving" ? "Saving…" : "Save note"))), X(xt, "hidden", (H(d), n(), U(() => H(d) !== "connections" || n().phase !== "ready"))), X(Ct, "hidden", (H(d), n(), U(() => H(d) !== "activity" || n().phase !== "ready"))), X(Tt, "hidden", (H(d), n(), U(() => H(d) !== "notifications" || n().phase !== "ready")));
-	}), G("click", S, () => _("home")), G("click", w, () => _("note")), G("click", te, () => _("connections")), G("click", re, () => _("directory")), G("click", ae, () => _("activity")), G("click", se, () => _("notifications")), xr("submit", ge, () => l.signOut()), G("click", He, () => _("note")), G("click", Je, function(...e) {
+	A(kt), Se(2), A(Ne), A(C), z(() => {
+		X(E, "aria-current", H(d) === "home" ? "page" : void 0), ee = $r(E, 1, "", null, ee, { active: H(d) === "home" }), X(te, "aria-current", H(d) === "note" ? "page" : void 0), ne = $r(te, 1, "", null, ne, { active: H(d) === "note" }), ie = $r(re, 1, "draft-dot", null, ie, { visible: n().dirty }), X(ae, "aria-current", H(d) === "connections" ? "page" : void 0), oe = $r(ae, 1, "", null, oe, { active: H(d) === "connections" }), X(se, "aria-current", H(d) === "directory" ? "page" : void 0), ce = $r(se, 1, "", null, ce, { active: H(d) === "directory" }), X(le, "aria-current", H(d) === "activity" ? "page" : void 0), ue = $r(le, 1, "", null, ue, { active: H(d) === "activity" }), X(de, "aria-current", H(d) === "notifications" ? "page" : void 0), fe = $r(de, 1, "", null, fe, { active: H(d) === "notifications" }), J(ve, (n(), U(() => n().snapshot?.account.username ?? "Your account"))), J(O, (n(), U(() => n().snapshot?.account.role === "owner" ? "Owner" : n().snapshot?.account.role === "member" ? "Member" : "Check account access"))), fi(k, c()), J(Ce, g), J(je, v), J(Me, y), J(Le, H(d) === "home" ? "Welcome home." : H(d) === "note" ? "A little space to think." : H(d) === "connections" ? "Your servers, at a glance." : H(d) === "directory" ? "Everything within reach." : H(d) === "activity" ? "Pick up the thread." : "Catch up at your pace."), J(ze, (n(), U(() => n().phase === "ready" ? "Session checked" : n().phase === "checking" ? "Checking access" : "Access paused"))), J(Ve, (n(), U(() => n().message))), X(Ue, "hidden", (H(d), n(), U(() => H(d) !== "home" && H(d) !== "directory" || n().phase !== "ready"))), X(Ue, "aria-label", H(d) === "directory" ? "Service directory view" : "Home"), X(Ke, "hidden", H(d) !== "home"), X(Ye, "hidden", H(d) !== "home"), J(Ze, (n(), U(() => n().layoutMessage || "Your panels, in your own order."))), Qe.disabled = (n(), U(() => !!n().layoutDraft || n().phase !== "ready" || n().layoutSave === "saving")), X(M, "hidden", H(d) !== "home"), nt = $r(et, 1, "home-grid", null, nt, { "services-view": H(d) === "directory" }), X(rt, "hidden", (H(d), n(), U(() => H(d) !== "note" || n().phase !== "ready"))), J(at, (n(), U(() => n().dirty ? "Unsaved changes" : "Up to date"))), fi(lt, (n(), U(() => n().draft))), lt.disabled = (n(), U(() => n().phase !== "ready")), ft = $r(dt, 1, "", null, ft, { "over-limit": H(o) > 4096 }), J(ht, `${H(o) ?? ""} / 4096 bytes`), gt.disabled = !H(s), J(_t, (n(), U(() => n().save === "saving" ? "Saving…" : "Save note"))), X(Tt, "hidden", (H(d), n(), U(() => H(d) !== "connections" || n().phase !== "ready"))), X(Dt, "hidden", (H(d), n(), U(() => H(d) !== "activity" || n().phase !== "ready"))), X(kt, "hidden", (H(d), n(), U(() => H(d) !== "notifications" || n().phase !== "ready")));
+	}), G("click", E, () => b("home")), G("click", te, () => b("note")), G("click", ae, () => b("connections")), G("click", se, () => b("directory")), G("click", le, () => b("activity")), G("click", de, () => b("notifications")), Sr("submit", ye, () => l.signOut()), G("click", Je, () => b("note")), G("click", Qe, function(...e) {
 		l.beginLayout?.apply(this, e);
-	}), xr("submit", it, (e) => {
+	}), Sr("submit", ct, (e) => {
 		e.preventDefault(), l.save();
-	}), G("input", at, (e) => l.edit(e.currentTarget.value)), q(e, v), We(), i();
+	}), G("input", lt, (e) => l.edit(e.currentTarget.value)), q(e, S), Ge(), i();
 }
-Sr(["click", "input"]);
+Cr(["click", "input"]);
 // src/main.ts
-var ro = document.getElementById("workspace-root"), io = document.querySelector("meta[name=\"reborn-session-binding\"]")?.content, ao = document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content;
-if (ro && io && /^[a-f0-9]{64}$/.test(io) && ao === "reborn-workspace-v1") {
-	let e = Array.from(ro.childNodes);
-	ro.replaceChildren();
+var oo = document.getElementById("workspace-root"), so = document.querySelector("meta[name=\"reborn-session-binding\"]")?.content, co = document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content;
+if (oo && so && /^[a-f0-9]{64}$/.test(so) && co === "reborn-workspace-v1") {
+	let e = Array.from(oo.childNodes);
+	oo.replaceChildren();
 	try {
-		Fr(no, {
-			target: ro,
-			props: { binding: io }
+		Ir(ao, {
+			target: oo,
+			props: { binding: so }
 		});
 	} catch {
-		ro.replaceChildren(...e);
+		oo.replaceChildren(...e);
 	}
 }
