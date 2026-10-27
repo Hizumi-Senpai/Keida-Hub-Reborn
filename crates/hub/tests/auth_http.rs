@@ -2182,6 +2182,14 @@ async fn activity_is_private_stably_paginated_literal_searchable_and_restart_dur
         .unwrap();
     assert_eq!(response.status(), StatusCode::CREATED);
     let member = server.login("history_member", MEMBER_PASSWORD).await;
+    let rejected = workspace_request(&server, &member, Method::PUT, "/api/owner/directory")
+        .json(&json!({"base_revision":"0","change":{"action":"delete","id":"1"}}))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(rejected.status(), StatusCode::FORBIDDEN);
+    assert_eq!(history(&server, &member, "").await["entries"], json!([]));
+
     assert_eq!(
         history(&server, &member, &suffix).await["entries"],
         json!([])
@@ -2276,6 +2284,23 @@ async fn activity_and_mutations_commit_together_and_failed_or_forbidden_writes_c
             .unwrap();
         assert_eq!(response.status(), expected);
     }
+    for (base, action, extra) in [
+        (
+            "1",
+            "update",
+            json!({"id":"1","link":{"name":"Changed safe fixture","category":"Home","description":"","url":"https://example.test/"}}),
+        ),
+        ("2", "delete", json!({"id":"1"})),
+    ] {
+        let mut change = extra;
+        change["action"] = json!(action);
+        let response = workspace_request(&server, &owner, Method::PUT, "/api/owner/directory")
+            .json(&json!({"base_revision":base,"change":change}))
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+    }
     let page = history(&server, &owner, "").await;
     assert_eq!(
         page["entries"]
@@ -2284,7 +2309,13 @@ async fn activity_and_mutations_commit_together_and_failed_or_forbidden_writes_c
             .iter()
             .map(|e| e["kind"].as_str().unwrap())
             .collect::<Vec<_>>(),
-        ["connection_removed", "pins_saved", "service_added"]
+        [
+            "service_removed",
+            "service_updated",
+            "connection_removed",
+            "pins_saved",
+            "service_added"
+        ]
     );
     assert!(!page.to_string().contains("Private service"));
     assert!(!page.to_string().contains("example.test"));
