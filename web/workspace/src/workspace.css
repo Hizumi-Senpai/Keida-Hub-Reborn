@@ -671,3 +671,24 @@ textarea::placeholder {
 .connection-setup fieldset { min-width:0; display:grid; gap:.6rem; margin:1rem 0; padding:1rem; border:1px solid #b8b4ac; border-radius:.75rem; }
 .connection-setup legend { padding:0 .4rem; font-weight:600; }
 .connection-setup .button-row { flex-wrap:wrap; }
+
+/* Shared directory cards retain their identity between Home and Services. */
+.directory-heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1.5rem; }
+.directory-heading h2 { margin: .3rem 0; }
+.directory-status { color: var(--muted); min-height: 1.2em; font-size: .9rem; }
+.directory-filters { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 1rem; margin: 1rem 0 1.5rem; }
+.directory-filters label { display: block; margin-bottom: .5rem; font-weight: 600; }
+.directory-filters input, .directory-filters select, .directory-editor input, .directory-editor textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--line); border-radius: 10px; background: #101619; color: #e7eeee; padding: .8rem; font: inherit; }
+.directory-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 1rem; }
+.service-card { min-width: 0; }
+.service-card h3 { margin: .5rem 0; font-size: 1.2rem; }
+.service-link { color: #e7eeee; text-decoration: none; overflow-wrap: anywhere; }
+.service-link:hover { text-decoration: underline; }
+.service-address { overflow-wrap: anywhere; }
+.directory-editor { margin-top: 1.5rem; padding: 1.5rem; }
+.directory-editor form { display: grid; gap: .7rem; max-width: 42rem; }
+.directory-editor label { margin-top: .5rem; font-weight: 600; }
+.directory-grid .button-row { flex-wrap: wrap; }
+.directory-grid .button-row button { min-height: 44px; min-width: 44px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+@media (max-width: 600px) { .directory-filters { grid-template-columns: 1fr; } .directory-heading { flex-wrap: wrap; } }

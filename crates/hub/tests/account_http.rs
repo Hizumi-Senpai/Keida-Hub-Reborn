@@ -2,7 +2,7 @@ use hmac::{Hmac, KeyInit, Mac};
 use reqwest::{Client, Method, RequestBuilder, Response, StatusCode};
 use serde_json::{Value, json};
 use sha2::Sha256;
-use sqlx::{Connection, PgConnection, Row};
+use sqlx::{Connection, Executor, PgConnection, Row};
 use std::{
     collections::BTreeMap,
     fs::{self, DirBuilder, File},
@@ -1351,6 +1351,424 @@ async fn native_schema_fence_and_head_preserve_authority_until_matching_schema_r
 }
 
 const WORKSPACE: &str = "reborn-workspace-v1";
+async fn directory_write(
+    actor: &Actor,
+    binding: &str,
+    path: &str,
+    input: Value,
+    status: StatusCode,
+) -> Value {
+    let response = workspace_request(actor, Method::PUT, path, binding)
+        .header("Origin", ORIGIN)
+        .json(&input)
+        .send()
+        .await
+        .expect("directory mutation HTTP");
+    assert_eq!(response.status(), status);
+    no_store(&response);
+    response.json().await.expect("directory mutation JSON")
+}
+fn directory_link(name: &str) -> Value {
+    json!({"name":name,"category":"Media","description":"A deliberately reviewed service", "url":"https://services.example/library"})
+}
+#[tokio::test]
+async fn directory_links_and_personal_order_survive_refresh_conflicts_and_removal() {
+    let f = Fixture::new().await;
+    let setup = f.prepare().await;
+    let server = Server::start(&f, true).await;
+    let mut owner = claim(&f, &server, &setup).await;
+    let binding = workspace_binding(&mut owner).await;
+    let initial = workspace_snapshot(&owner, &binding, StatusCode::OK).await;
+    assert_eq!(
+        initial["directory"],
+        json!({"revision":"0","services":[],"pins_revision":"0","pins":[]})
+    );
+    let first = directory_write(
+        &owner,
+        &binding,
+        "/api/owner/directory",
+        json!({"base_revision":"0","change":{"action":"create","link":directory_link("Library")}}),
+        StatusCode::OK,
+    )
+    .await;
+    let first_id = first["directory"]["services"][0]["id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let a =
+        json!({"base_revision":"1","change":{"action":"create","link":directory_link("Requests")}});
+    let b =
+        json!({"base_revision":"1","change":{"action":"create","link":directory_link("Music")}});
+    let request = |input: Value| {
+        workspace_request(&owner, Method::PUT, "/api/owner/directory", &binding)
+            .header("Origin", ORIGIN)
+            .json(&input)
+            .send()
+    };
+    let (a, b) = tokio::join!(request(a), request(b));
+    let a = a.unwrap();
+    let b = b.unwrap();
+    assert!(
+        (a.status() == StatusCode::OK && b.status() == StatusCode::CONFLICT)
+            || (b.status() == StatusCode::OK && a.status() == StatusCode::CONFLICT)
+    );
+    let current = workspace_snapshot(&owner, &binding, StatusCode::OK).await;
+    assert_eq!(current["directory"]["revision"], "2");
+    assert_eq!(
+        current["directory"]["services"].as_array().unwrap().len(),
+        2
+    );
+    let second_id = current["directory"]["services"][1]["id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let pinned = directory_write(
+        &owner,
+        &binding,
+        "/api/workspace/pins",
+        json!({"base_directory_revision":"2","base_revision":"0","ids":[second_id,first_id]}),
+        StatusCode::OK,
+    )
+    .await;
+    assert_eq!(pinned["directory"]["pins"], json!([second_id, first_id]));
+    directory_write(
+        &owner,
+        &binding,
+        "/api/workspace/pins",
+        json!({"base_directory_revision":"2","base_revision":"0","ids":[]}),
+        StatusCode::CONFLICT,
+    )
+    .await;
+    // Use the actual owner/member API; no role promotion or inherited session.
+    let auth = owner.api_session(StatusCode::OK).await;
+    let response = owner
+        .request(Method::POST, "/api/owner/members")
+        .header("Origin", ORIGIN)
+        .header("X-Reborn-Product", PRODUCT)
+        .header("X-Reborn-Contract", "reborn-auth-v1")
+        .header("X-CSRF-Token", auth["csrf_token"].as_str().unwrap())
+        .json(&json!({"username":"directory_member","password":MEMBER_PASSWORD}))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::CREATED);
+    let mut member = server.actor();
+    member.api_login("directory_member", MEMBER_PASSWORD).await;
+    let member_binding = workspace_binding(&mut member).await;
+    assert_eq!(
+        workspace_snapshot(&member, &member_binding, StatusCode::OK).await["directory"]["pins"],
+        json!([])
+    );
+    directory_write(
+        &member,
+        &member_binding,
+        "/api/owner/directory",
+        json!({"base_revision":"2","change":{"action":"delete","id":first_id}}),
+        StatusCode::FORBIDDEN,
+    )
+    .await;
+    directory_write(
+        &member,
+        &member_binding,
+        "/api/workspace/pins",
+        json!({"base_directory_revision":"2","base_revision":"0","ids":[first_id]}),
+        StatusCode::OK,
+    )
+    .await;
+    assert_eq!(
+        workspace_snapshot(&owner, &binding, StatusCode::OK).await["directory"]["pins"],
+        json!([second_id, first_id])
+    );
+    let edited = directory_write(&owner, &binding, "/api/owner/directory", json!({"base_revision":"2","change":{"action":"update","id":first_id,"link":directory_link("Renamed Library")}}), StatusCode::OK).await;
+    assert_eq!(
+        edited["directory"]["services"][0]["name"],
+        "Renamed Library"
+    );
+    directory_write(
+        &owner,
+        &binding,
+        "/api/workspace/pins",
+        json!({"base_directory_revision":"2","base_revision":"1","ids":[]}),
+        StatusCode::CONFLICT,
+    )
+    .await;
+    let removed = directory_write(
+        &owner,
+        &binding,
+        "/api/owner/directory",
+        json!({"base_revision":"3","change":{"action":"delete","id":first_id}}),
+        StatusCode::OK,
+    )
+    .await;
+    assert_eq!(removed["directory"]["pins"], json!([second_id]));
+    assert_eq!(removed["directory"]["pins_revision"], "2");
+    let m = workspace_snapshot(&member, &member_binding, StatusCode::OK).await;
+    assert_eq!(m["directory"]["pins"], json!([]));
+    assert_eq!(m["directory"]["pins_revision"], "2");
+    drop(server);
+    let restarted = Server::start(&f, true).await;
+    let mut retained = owner.clone();
+    retained.origin = restarted.origin.clone();
+    let after = workspace_snapshot(&retained, &binding, StatusCode::OK).await;
+    assert_eq!(after["directory"], removed["directory"]);
+    restarted.private_logs(&[&setup, OWNER_PASSWORD, MEMBER_PASSWORD]);
+}
+#[tokio::test]
+async fn directory_rejects_unsafe_links_unscoped_pins_and_obsolete_authority_before_effects() {
+    let f = Fixture::new().await;
+    let setup = f.prepare().await;
+    let server = Server::start(&f, true).await;
+    let mut owner = claim(&f, &server, &setup).await;
+    let binding = workspace_binding(&mut owner).await;
+    for url in [
+        "javascript:alert(1)",
+        "http://example.test/",
+        "https://user:secret@example.test/",
+        "https://example.test/?token=secret",
+        "https://example.test/#secret",
+        "https:///example.test/",
+        "https://example.test/\n",
+        "https://example.test\\@evil.test/",
+    ] {
+        let mut link = directory_link("Rejected");
+        link["url"] = json!(url);
+        let v = directory_write(
+            &owner,
+            &binding,
+            "/api/owner/directory",
+            json!({"base_revision":"0","change":{"action":"create","link":link}}),
+            StatusCode::BAD_REQUEST,
+        )
+        .await;
+        assert_eq!(v, json!({"error":"invalid_request"}));
+    }
+    for fields in [
+        json!({"base_directory_revision":"0","base_revision":"0","ids":["999"]}),
+        json!({"base_directory_revision":"0","base_revision":"0","ids":["1","1"]}),
+        json!({"base_directory_revision":"0","base_revision":"0","ids":[],"account_id":"2"}),
+        json!({"base_directory_revision":"00","base_revision":"0","ids":[]}),
+    ] {
+        directory_write(
+            &owner,
+            &binding,
+            "/api/workspace/pins",
+            fields,
+            StatusCode::BAD_REQUEST,
+        )
+        .await;
+    }
+    for path in ["/api/owner/directory", "/api/workspace/pins"] {
+        for case in 0..4 {
+            let mut request = workspace_request(&owner, Method::PUT, path, &binding)
+                .header("Origin", ORIGIN)
+                .json(&json!({}))
+                .build()
+                .unwrap();
+            let expected = match case {
+                0 => {
+                    request.headers_mut().remove("x-reborn-contract");
+                    StatusCode::UPGRADE_REQUIRED
+                }
+                1 => {
+                    request.headers_mut().remove("origin");
+                    StatusCode::FORBIDDEN
+                }
+                2 => {
+                    request
+                        .headers_mut()
+                        .insert("x-csrf-token", "invalid".parse().unwrap());
+                    StatusCode::FORBIDDEN
+                }
+                _ => {
+                    request
+                        .headers_mut()
+                        .append("x-reborn-product", PRODUCT.parse().unwrap());
+                    StatusCode::UPGRADE_REQUIRED
+                }
+            };
+            let response = owner.client.execute(request).await.unwrap();
+            assert_eq!(response.status(), expected);
+            no_store(&response);
+        }
+    }
+    let mut db = f.connect().await;
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT revision FROM directory_state")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        0
+    );
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM directory_pins")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        0
+    );
+    sqlx::query("UPDATE sessions SET revoked = TRUE")
+        .execute(&mut db)
+        .await
+        .unwrap();
+    directory_write(
+        &owner,
+        &binding,
+        "/api/workspace/pins",
+        json!({"base_directory_revision":"0","base_revision":"0","ids":[]}),
+        StatusCode::UNAUTHORIZED,
+    )
+    .await;
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM directory_pins")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        0
+    );
+    server.private_logs(&[&setup, OWNER_PASSWORD]);
+}
+
+#[tokio::test]
+async fn directory_field_catalog_and_pin_bounds_do_not_change_accepted_data() {
+    let f = Fixture::new().await;
+    let setup = f.prepare().await;
+    let server = Server::start(&f, true).await;
+    let mut owner = claim(&f, &server, &setup).await;
+    let binding = workspace_binding(&mut owner).await;
+    for (field, value) in [
+        ("name", "海".repeat(27)),
+        ("category", String::new()),
+        ("description", "x".repeat(241)),
+        ("name", "Injected\nname".to_owned()),
+    ] {
+        let mut link = directory_link("Rejected");
+        link[field] = json!(value);
+        directory_write(
+            &owner,
+            &binding,
+            "/api/owner/directory",
+            json!({"base_revision":"0","change":{"action":"create","link":link}}),
+            StatusCode::BAD_REQUEST,
+        )
+        .await;
+    }
+    let mut db = f.connect().await;
+    // Only this disposable database is seeded, to exercise the actual bound
+    // without100 repeated API calls or inheriting a production catalog.
+    db.execute("INSERT INTO directory_services (name,category,description,url) SELECT 'Fixture ' || i,'Media','','https://services.example/' FROM generate_series(1,100) i").await.unwrap();
+    let snapshot = workspace_snapshot(&owner, &binding, StatusCode::OK).await;
+    let ids: Vec<_> = snapshot["directory"]["services"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| s["id"].as_str().unwrap().to_owned())
+        .collect();
+    directory_write(
+        &owner,
+        &binding,
+        "/api/owner/directory",
+        json!({"base_revision":"0","change":{"action":"create","link":directory_link("Excess")}}),
+        StatusCode::TOO_MANY_REQUESTS,
+    )
+    .await;
+    directory_write(
+        &owner,
+        &binding,
+        "/api/workspace/pins",
+        json!({"base_directory_revision":"0","base_revision":"0","ids":ids[..25]}),
+        StatusCode::BAD_REQUEST,
+    )
+    .await;
+    let pinned = directory_write(
+        &owner,
+        &binding,
+        "/api/workspace/pins",
+        json!({"base_directory_revision":"0","base_revision":"0","ids":ids[..24]}),
+        StatusCode::OK,
+    )
+    .await;
+    assert_eq!(pinned["directory"]["pins"], json!(ids[..24]));
+    assert_eq!(pinned["directory"]["revision"], "0");
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM directory_services")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        100
+    );
+}
+
+#[tokio::test]
+async fn directory_and_pin_writes_recheck_revocation_after_waiting_for_authority() {
+    for (path, input) in [
+        (
+            "/api/owner/directory",
+            json!({"base_revision":"0","change":{"action":"create","link":directory_link("Must not be admitted")}}),
+        ),
+        (
+            "/api/workspace/pins",
+            json!({"base_directory_revision":"0","base_revision":"0","ids":[]}),
+        ),
+    ] {
+        let f = Fixture::new().await;
+        let setup = f.prepare().await;
+        let server = Server::start(&f, true).await;
+        let mut owner = claim(&f, &server, &setup).await;
+        let binding = workspace_binding(&mut owner).await;
+        let mut db = f.connect().await;
+        let mut tx = db.begin().await.unwrap();
+        sqlx::query("SELECT singleton FROM auth_state FOR UPDATE")
+            .fetch_one(&mut *tx)
+            .await
+            .unwrap();
+        // Uncommitted revocation is invisible to the preliminary HTTP session
+        // check. The write must wait, then recheck current authority after commit.
+        sqlx::query("UPDATE sessions SET revoked=TRUE")
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        let request = workspace_request(&owner, Method::PUT, path, &binding)
+            .header("Origin", ORIGIN)
+            .json(&input);
+        let pending = tokio::spawn(async move { request.send().await.unwrap() });
+        let mut observer = f.connect().await;
+        let deadline = Instant::now() + Duration::from_secs(2);
+        loop {
+            let waiting: bool=sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%FROM auth_state WHERE singleton = TRUE FOR UPDATE%')").fetch_one(&mut observer).await.unwrap();
+            if waiting {
+                break;
+            }
+            assert!(
+                Instant::now() < deadline,
+                "directory mutation did not reach the actual authority wait"
+            );
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
+        tx.commit().await.unwrap();
+        assert_eq!(pending.await.unwrap().status(), StatusCode::UNAUTHORIZED);
+        assert_eq!(
+            sqlx::query_scalar::<_, i64>("SELECT revision FROM directory_state")
+                .fetch_one(&mut db)
+                .await
+                .unwrap(),
+            0
+        );
+        assert_eq!(
+            sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM directory_services")
+                .fetch_one(&mut db)
+                .await
+                .unwrap(),
+            0
+        );
+        assert_eq!(
+            sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM directory_pins")
+                .fetch_one(&mut db)
+                .await
+                .unwrap(),
+            0
+        );
+    }
+}
 fn workspace_request(actor: &Actor, method: Method, path: &str, binding: &str) -> RequestBuilder {
     actor
         .request(method, path)

@@ -99,7 +99,7 @@ async fn asset(Path(file): Path<String>) -> Response {
         None => StatusCode::NOT_FOUND.into_response(),
     }
 }
-fn wire(
+pub(super) fn wire(
     snapshot: store::workspace::Snapshot,
     overview: Option<crate::providers::crafty::Overview>,
 ) -> Response {
@@ -120,7 +120,7 @@ fn wire(
         .unwrap_or_else(waiting);
     Json(json!({"product":"keida-hub-reborn", "contract":CONTRACT, "schema":1,
         "account":account(snapshot.session.account), "session_generation":snapshot.session.generation.to_string(),
-        "note":{"body":snapshot.note.body,"revision":snapshot.note.revision.to_string()}, "crafty":overview})).into_response()
+        "note":{"body":snapshot.note.body,"revision":snapshot.note.revision.to_string()}, "crafty":overview, "directory":snapshot.directory})).into_response()
 }
 async fn snapshot(State(service): State<Service>, headers: HeaderMap) -> Response {
     let result = async {

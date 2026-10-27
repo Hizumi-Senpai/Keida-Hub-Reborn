@@ -2,10 +2,11 @@
   import { onMount } from 'svelte';
   import { workspace } from './controller';
   import Connections from './Connections.svelte';
+  import Directory from './Directory.svelte';
   export let binding: string;
   const controller = workspace(binding);
   const model = controller.model;
-  let view: 'home' | 'note' | 'connections' = 'home';
+  let view: 'home' | 'note' | 'connections' | 'directory' = 'home';
   let heading: HTMLHeadingElement;
   const version = document.querySelector<HTMLMetaElement>('meta[name="reborn-version"]')?.content ?? 'development';
   const commit = document.querySelector<HTMLMetaElement>('meta[name="reborn-commit"]')?.content ?? 'unqualified';
@@ -13,8 +14,8 @@
   const channel = document.querySelector<HTMLMetaElement>('meta[name="reborn-channel"]')?.content ?? 'development';
   $: bytes = new TextEncoder().encode($model.draft).length;
   $: canSave = $model.phase === 'ready' && $model.dirty && bytes <= 4096
-    && !['saving', 'conflict', 'uncertain'].includes($model.save);
-  function navigate(next: 'home' | 'note' | 'connections'): void { view = next; heading?.focus(); }
+    && !['saving', 'checking-conflict', 'conflict', 'uncertain'].includes($model.save);
+  function navigate(next: 'home' | 'note' | 'connections' | 'directory'): void { view = next; heading?.focus(); }
   onMount(controller.start);
 </script>
 
@@ -27,6 +28,7 @@
       <button class:active={view === 'home'} aria-current={view === 'home' ? 'page' : undefined} onclick={() => navigate('home')}><span aria-hidden="true">⌂</span>Home</button>
       <button class:active={view === 'note'} aria-current={view === 'note' ? 'page' : undefined} onclick={() => navigate('note')}><span aria-hidden="true">▤</span>Workspace note<span class="draft-dot" class:visible={$model.dirty} aria-hidden="true"></span></button>
       <button class:active={view === 'connections'} aria-current={view === 'connections' ? 'page' : undefined} onclick={() => navigate('connections')}><span aria-hidden="true">◇</span>Connections</button>
+      <button class:active={view === 'directory'} aria-current={view === 'directory' ? 'page' : undefined} onclick={() => navigate('directory')}><span aria-hidden="true">▦</span>Services</button>
     </nav>
     <div class="sidebar-bottom">
       <a href="/account" class="account-link"><span class="avatar" aria-hidden="true">K</span><span><strong>{$model.snapshot?.account.username ?? 'Your account'}</strong><small>{$model.snapshot?.account.role === 'owner' ? 'Owner' : $model.snapshot?.account.role === 'member' ? 'Member' : 'Check account access'}</small></span></a>
@@ -42,7 +44,7 @@
     </div>
   </aside>
   <main id="workspace-content" class="workspace-content">
-    <header class="page-header"><div><p class="eyebrow">YOUR OWN CORNER OF KEIDA</p><h1 tabindex="-1" bind:this={heading}>{view === 'home' ? 'Welcome home.' : view === 'note' ? 'A little space to think.' : 'Your servers, at a glance.'}</h1></div><span class="connection-state"><span aria-hidden="true">●</span>{$model.phase === 'ready' ? 'Session checked' : $model.phase === 'checking' ? 'Checking access' : 'Access paused'}</span></header>
+    <header class="page-header"><div><p class="eyebrow">YOUR OWN CORNER OF KEIDA</p><h1 tabindex="-1" bind:this={heading}>{view === 'home' ? 'Welcome home.' : view === 'note' ? 'A little space to think.' : view === 'connections' ? 'Your servers, at a glance.' : 'Everything within reach.'}</h1></div><span class="connection-state"><span aria-hidden="true">●</span>{$model.phase === 'ready' ? 'Session checked' : $model.phase === 'checking' ? 'Checking access' : 'Access paused'}</span></header>
     <p class="workspace-status" role="status">{$model.message}</p>
     {#if $model.phase !== 'ready'}
       <section class="recovery card"><p class="eyebrow">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class="button-row"><a class="button primary" href="/workspace">Open workspace again</a><a class="button secondary" href="/account">Your account</a></div></section>
@@ -71,6 +73,7 @@
       {#if $model.save === 'uncertain'}<section class="notice" aria-label="Uncertain save"><h2>Check before saving again</h2><p>The previous save may have completed. Your draft has not been sent again.</p><button class="button secondary" onclick={() => controller.check()}>Check saved note</button></section>{/if}
     </section>
     <section hidden={view !== 'connections' || $model.phase !== 'ready'} aria-label="Connections"><Connections {binding} overview={$model.snapshot?.crafty} owner={$model.snapshot?.account.role === 'owner'} active={view === 'connections' && $model.phase === 'ready'} refresh={controller.check} /></section>
+    <section hidden={(view !== 'home' && view !== 'directory') || $model.phase !== 'ready'} aria-label="Services"><Directory directory={$model.snapshot?.directory} authorized={$model.phase === 'ready'} owner={$model.snapshot?.account.role === 'owner'} compact={view === 'home'} state={$model.directorySave} message={$model.directoryMessage} browse={() => navigate('directory')} check={controller.check} edit={controller.editService} pin={controller.pins} /></section>
     <footer class="content-footer"><span>Keida Reborn</span><a href="/account">Account &amp; recovery</a></footer>
   </main>
 </div>

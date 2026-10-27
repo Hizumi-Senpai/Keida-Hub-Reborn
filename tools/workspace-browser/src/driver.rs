@@ -222,8 +222,11 @@ impl Browser {
         let id = self.element(selector).await?;
         self.call(
             Method::POST,
-            &format!("/element/{id}/clear"),
-            Some(json!({})),
+            &format!("/element/{id}/value"),
+            // WebDriver clear fires change but need not fire input. Use the
+            // actual Linux keyboard path so clearing also updates bound state,
+            // including when the replacement text below is empty.
+            Some(json!({"text":"\u{e009}a\u{e000}\u{e003}"})),
         )
         .await?;
         self.call(

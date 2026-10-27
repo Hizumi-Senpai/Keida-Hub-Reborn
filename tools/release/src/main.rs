@@ -47,7 +47,7 @@ impl Manifest {
             || self.ordinal == 0
             || self.channel != "accepted"
             || self.contract != "reborn-workspace-v1"
-            || self.database_schema != 4
+            || !(4..=5).contains(&self.database_schema)
             || !digest(&self.commit, 40)
             || !digest(&self.tree, 40)
             || !digest(&self.binary_sha256, 64)
@@ -423,7 +423,7 @@ mod tests {
             tree: "b".repeat(40),
             channel: "accepted".into(),
             contract: "reborn-workspace-v1".into(),
-            database_schema: 4,
+            database_schema: 5,
             binary_sha256: "c".repeat(64),
             image_id: format!("sha256:{}", "d".repeat(64)),
             archive_sha256: hash(&archive).unwrap(),
@@ -463,7 +463,9 @@ mod tests {
         let mut older = newer.clone();
         older.ordinal = 7;
         older.version = "0.1.7".into();
+        older.database_schema = 4;
         publish_qualified(&root.0, &older, &archive).unwrap();
+        assert_eq!(verified(&root.0, 7).unwrap().database_schema, 4);
         let channel: Channel =
             serde_json::from_slice(&fs::read(root.0.join("channel.json")).unwrap()).unwrap();
         assert_eq!(channel.ordinal, 8);
@@ -501,7 +503,7 @@ mod concurrent_publication {
             tree: "b".repeat(40),
             channel: "accepted".into(),
             contract: "reborn-workspace-v1".into(),
-            database_schema: 4,
+            database_schema: 5,
             binary_sha256: "c".repeat(64),
             image_id: format!("sha256:{}", "d".repeat(64)),
             archive_sha256: hash(&archive).unwrap(),

@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT revision, ids FROM directory_pins WHERE account_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "revision",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "directory_pins",
+            "name": "revision"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "ids",
+        "type_info": "Int8Array",
+        "origin": {
+          "Table": {
+            "table": "directory_pins",
+            "name": "ids"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "df21e77d25132fd04a9d7b1613ab224789fa8b1aa9e136f8fddbe245a56eeb4d"
+}

@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE directory_state SET revision = $1 WHERE singleton = TRUE",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "190e994fcf9e55241e36093f47f8d93fc0f9e6bd34fd7d878db6ad7348ecd47e"
+}

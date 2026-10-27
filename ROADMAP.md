@@ -9,9 +9,10 @@ of the original or the independent rewrite.
 [exact deployment/ownership receipts](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1),
 and [immediate M0 task](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/3).
 
-**M0 implementation is in progress.** Accepted source and current API work are in
-[CURRENT_STATE.md](CURRENT_STATE.md); the milestone remains open. No benchmark,
-deployment or live acceptance is claimed here. Existing accepted functionality in
+**M0/M1 live acceptance remains in progress.** Accepted source and current API work are in
+[CURRENT_STATE.md](CURRENT_STATE.md); the milestone remains open. Exact installation/acceptance receipts are in issues1/3; no benchmark or complete
+milestone acceptance is inferred. The first M2 source slice is the
+[directory/search/personal pins](docs/M2_DIRECTORY.md), tracked in issue10. Existing accepted functionality in
 another application is a behavior reference, not a completed Reborn milestone.
 
 The original **https://keida.me stays live and unchanged**. Existing rewrite

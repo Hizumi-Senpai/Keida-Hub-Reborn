@@ -158,7 +158,14 @@ async fn conflicts_and_pending_saves() -> Check<()> {
         .await?;
     b.click(".note-card button[type=submit]").await?;
     saved(&b).await?;
+    let canonical = f.hold("/api/workspace/snapshot");
     a.click(".note-card button[type=submit]").await?;
+    tokio::time::timeout(Duration::from_secs(3), canonical.entered.notified())
+        .await
+        .map_err(|_| "actual conflict canonical response hold")?;
+    check(a.evaluate("return !document.querySelector('section[aria-label=\"Save conflict\"]') && document.querySelector('.note-card button[type=submit]').disabled && document.querySelector('.workspace-status').textContent.includes('Checking the latest')",json!([])).await?==true,"conflict comparison and save stay unavailable until a fresh canonical note arrives")?;
+    body(&a, "First browser local draft").await?;
+    canonical.release.notify_one();
     a.wait(
         "return !!document.querySelector('section[aria-label=\"Save conflict\"]')",
         json!([]),
@@ -384,8 +391,9 @@ pub async fn run() -> Check<()> {
     revocation_and_optional_failures().await?;
     startup_failure_keeps_native_recovery().await?;
     dedicated_connection_overview().await?;
+    directory_and_personal_pins().await?;
     println!(
-        "Rust workspace browser acceptance: 6 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+        "Rust workspace browser acceptance: 7 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
     );
     Ok(())
 }
@@ -484,6 +492,134 @@ async fn dedicated_connection_overview() -> Check<()> {
     f.close().await?;
     println!(
         "PASS Rust browser: dedicated connection, zero versus unknown, cleared credentials and retained editor"
+    );
+    Ok(())
+}
+
+async fn directory_and_personal_pins() -> Check<()> {
+    step("service enrollment, search, personal order and committed lost response");
+    let f = Fixture::new().await?;
+    let mut b = f.browser(true).await?;
+    claim(&f, &b).await?;
+    let (member, password) = f.enroll_member(&b).await?;
+    workspace(&f, &b).await?;
+    note(&b).await?;
+    b.fill(
+        "#workspace-note",
+        "A note remains open while arranging services",
+    )
+    .await?;
+    b.evaluate(
+        "window.__directoryEditor=document.querySelector('#workspace-note');return true",
+        json!([]),
+    )
+    .await?;
+    b.click(".main-nav button:nth-child(4)").await?;
+    for (index, (name, category)) in [("My Library", "Media"), ("My Games", "Games")]
+        .into_iter()
+        .enumerate()
+    {
+        step(if index == 0 {
+            "directory first service enrollment"
+        } else {
+            "directory second service enrollment"
+        });
+        b.fill("#service-name", name).await?;
+        b.fill("#service-category", category).await?;
+        b.fill("#service-url", "https://services.example/library")
+            .await?;
+        b.fill("#service-description", "An owner-reviewed link")
+            .await?;
+        b.click(".directory-editor button[type=submit]").await?;
+        b.wait("return document.querySelector('.directory-status').textContent.includes('Saved') && document.querySelector('#service-name').value==='' && [...document.querySelectorAll('.service-card h3')].some(e=>e.textContent.includes(arguments[0]))", json!([name])).await?;
+    }
+    step("directory text and category filters");
+    b.fill("#service-search", "games").await?;
+    b.wait("return document.querySelectorAll('.service-card').length===1 && document.querySelector('.service-card h3').textContent.includes('My Games')", json!([])).await?;
+    b.fill("#service-search", "").await?;
+    b.evaluate("const s=document.querySelector('#service-filter');s.value='Media';s.dispatchEvent(new Event('change',{bubbles:true}));return true",json!([])).await?;
+    b.wait("return document.querySelectorAll('.service-card').length===1 && document.querySelector('.service-card h3').textContent.includes('My Library')",json!([])).await?;
+    b.evaluate("const s=document.querySelector('#service-filter');s.value='';s.dispatchEvent(new Event('change',{bubbles:true}));return true",json!([])).await?;
+    step("directory personal pin order");
+    b.click("button[aria-label='Pin My Library']").await?;
+    b.wait("return !!document.querySelector('button[aria-label=\"Unpin My Library\"]') && !document.querySelector('.pin-service').disabled",json!([])).await?;
+    b.click("button[aria-label='Pin My Games']").await?;
+    b.wait("return !!document.querySelector('button[aria-label=\"Unpin My Games\"]') && !document.querySelector('.pin-service').disabled",json!([])).await?;
+    b.click("button[aria-label='Move My Games up']").await?;
+    b.wait("return document.querySelector('.service-card h3').textContent.includes('My Games') && !document.querySelector('.pin-service').disabled",json!([])).await?;
+    b.evaluate("window.__libraryCard=[...document.querySelectorAll('.service-card')].find(e=>e.textContent.includes('My Library'));window.__linkForm=document.querySelector('#service-name');return true",json!([])).await?;
+    b.fill("#service-name", "An unfinished service draft")
+        .await?;
+    b.click(".main-nav button:first-child").await?;
+    check(b.evaluate("return document.querySelectorAll('.service-card').length===2 && window.__libraryCard===[...document.querySelectorAll('.service-card')].find(e=>e.textContent.includes('My Library')) && window.__directoryEditor===document.querySelector('#workspace-note') && window.__linkForm===document.querySelector('#service-name')",json!([])).await?==true,"home/directory navigation retains actual card, service form and note editor")?;
+    b.click(".main-nav button:nth-child(4)").await?;
+    check(
+        b.evaluate(
+            "return document.querySelector('#service-name').value==='An unfinished service draft'",
+            json!([]),
+        )
+        .await?
+            == true,
+        "directory draft survives navigation",
+    )?;
+    step("directory committed pin response loss");
+    let writes = f.writes();
+    let held = f.hold("/api/workspace/pins");
+    b.click("button[aria-label='Unpin My Games']").await?;
+    tokio::time::timeout(Duration::from_secs(3), held.entered.notified())
+        .await
+        .map_err(|_| "actual committed pin response hold")?;
+    b.wait("return document.querySelector('.directory-status').textContent.includes('may have completed')",json!([])).await?;
+    held.release.notify_one();
+    b.click("section[aria-label=Services] > .notice button")
+        .await?;
+    b.wait("return document.querySelector('.directory-status').textContent.includes('checked') && !!document.querySelector('button[aria-label=\"Pin My Games\"]')",json!([])).await?;
+    check(
+        f.writes() == writes + 1,
+        "lost pin response is reconciled without mutation replay",
+    )?;
+    step("directory privacy and refresh persistence");
+    check(b.evaluate("window.dispatchEvent(new Event('pagehide'));return !document.querySelector('#service-name') && document.querySelector('#service-search').value==='' && !document.querySelector('.service-card')",json!([])).await?==true,"privacy clearing removes service drafts, search, links and pin state synchronously")?;
+    workspace(&f, &b).await?;
+    b.click(".main-nav button:nth-child(4)").await?;
+    b.wait("return !!document.querySelector('button[aria-label=\"Unpin My Library\"]') && !!document.querySelector('button[aria-label=\"Pin My Games\"]')",json!([])).await?;
+    check(b.evaluate("return [...document.querySelectorAll('.service-link')].every(a=>a.protocol==='https:' && a.target==='_blank' && a.rel.includes('noopener') && a.rel.includes('noreferrer'))",json!([])).await?==true,"service navigation has explicit safe link attributes")?;
+    accessibility(&b).await?;
+    b.mobile().await?;
+    check(
+        b.evaluate(
+            "return innerWidth===390 && document.documentElement.scrollWidth<=innerWidth+1",
+            json!([]),
+        )
+        .await?
+            == true,
+        "directory and enrollment reflow at narrow viewport",
+    )?;
+    accessibility(&b).await?;
+    b.click(".sidebar form button[type=submit]").await?;
+    b.wait("return location.pathname==='/account/sign-in'", json!([]))
+        .await?;
+    sign_in(&f, &b, &member, &password).await?;
+    workspace(&f, &b).await?;
+    b.click(".main-nav button:nth-child(4)").await?;
+    check(b.evaluate("return !document.querySelector('.directory-editor') && [...document.querySelectorAll('.pin-service')].every(b=>b.getAttribute('aria-pressed')==='false')",json!([])).await?==true,"member sees directory without owner form or another account's pins")?;
+    b.click("button[aria-label='Pin My Games']").await?;
+    b.wait(
+        "return !!document.querySelector('button[aria-label=\"Unpin My Games\"]')",
+        json!([]),
+    )
+    .await?;
+    b.click(".sidebar form button[type=submit]").await?;
+    b.wait("return location.pathname==='/account/sign-in'", json!([]))
+        .await?;
+    sign_in(&f, &b, &f.username, &f.password).await?;
+    workspace(&f, &b).await?;
+    check(b.evaluate("return document.querySelectorAll('.service-card').length===1 && document.querySelector('.service-card h3').textContent.includes('My Library')",json!([])).await?==true,"owner pins persist independently after account switch")?;
+    b.close().await?;
+    drop(b);
+    f.close().await?;
+    println!(
+        "PASS Rust browser: service directory, search, stable cards/forms, personal order, lost response, privacy and mobile accessibility"
     );
     Ok(())
 }
