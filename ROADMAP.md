@@ -14,7 +14,8 @@ and [immediate M0 task](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues
 milestone acceptance is inferred. The directory/search/personal-pin M2 slice is installed as0.1.8 (issue10).
 Retained private Activity/history is installed as0.1.9 (issue12).
 Grouped notifications/read state are installed as0.1.10 (issue14).
-The next slice is [personal Home arrangement](docs/M2_LAYOUT.md), tracked in issue16. Existing accepted functionality in
+Personal Home arrangement is installed as0.1.11 (issue16).
+The current slice is the [integration catalog, retained sampled provider history and Roadmap note](docs/M2_CATALOG.md), tracked in issue18. Existing accepted functionality in
 another application is a behavior reference, not a completed Reborn milestone.
 
 The original **https://keida.me stays live and unchanged**. Existing rewrite

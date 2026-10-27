@@ -145,6 +145,10 @@ pub struct Server {
     pub provider_at: Option<i64>,
     pub freshness: &'static str,
     pub error: Option<&'static str>,
+    // Cached display freshness may age. Retained history uses the original
+    // collection classification instead of rewriting a past sample's meaning.
+    #[serde(skip)]
+    pub sampled_freshness: &'static str,
 }
 #[derive(Clone, Serialize)]
 pub struct Overview {
@@ -152,7 +156,14 @@ pub struct Overview {
     pub configured: bool,
     pub checked_at: Option<i64>,
     pub error: Option<&'static str>,
+    // History storage is optional and independent of the provider observation.
+    // Final workspace authorization still controls every disclosed result.
+    pub history_error: Option<&'static str>,
     pub servers: Vec<Server>,
+    // A private identity is minted only for a real collection attempt and reused
+    // by cached readers. It is never disclosed to a browser or provider.
+    #[serde(skip)]
+    pub sample_id: Option<Vec<u8>>,
 }
 pub fn now() -> i64 {
     SystemTime::now()
@@ -171,6 +182,7 @@ fn unknown(s: &Selected, error: &'static str) -> Server {
         provider_at: None,
         freshness: "unknown",
         error: Some(error),
+        sampled_freshness: "unknown",
     }
 }
 pub fn empty(revision: i64) -> Overview {
@@ -179,7 +191,9 @@ pub fn empty(revision: i64) -> Overview {
         configured: false,
         checked_at: None,
         error: None,
+        history_error: None,
         servers: Vec::new(),
+        sample_id: None,
     }
 }
 pub fn unavailable(revision: i64) -> Overview {
@@ -250,6 +264,7 @@ fn normalized(s: &Selected, body: &Value, at: i64, timezone: Tz) -> Server {
     row.provider_at = data.get("created").and_then(|v| timestamp(v, timezone));
     row.collected_at = Some(at);
     row.freshness = fresh(row.provider_at, at);
+    row.sampled_freshness = row.freshness;
     row.error = if row.state == "unknown" {
         Some("malformed")
     } else {
@@ -315,16 +330,22 @@ async fn get<T: serde::de::DeserializeOwned + Serialize>(
 }
 async fn collect(config: &Enrollment, revision: i64) -> Overview {
     let at = now();
+    let mut sample_id = vec![0; 16];
+    if getrandom::fill(&mut sample_id).is_err() {
+        return unavailable(revision);
+    }
     let mut out = Overview {
         revision: revision.to_string(),
         configured: true,
         checked_at: Some(at),
         error: None,
+        history_error: None,
         servers: config
             .servers
             .iter()
             .map(|s| unknown(s, "unavailable"))
             .collect(),
+        sample_id: Some(sample_id),
     };
     let run = async {
         let client = config.client()?;
@@ -379,6 +400,13 @@ struct Cached {
     at: Instant,
     value: Overview,
 }
+fn age_cached(value: &Overview) -> Overview {
+    let mut out = value.clone();
+    for server in &mut out.servers {
+        server.freshness = fresh(server.provider_at, now());
+    }
+    out
+}
 pub struct Observer {
     cache: Mutex<Option<Cached>>,
     flight: Semaphore,
@@ -397,11 +425,7 @@ impl Observer {
                 .as_ref()
                 .filter(|c| c.revision == revision && c.at.elapsed() < Duration::from_secs(15))
             {
-                let mut out = c.value.clone();
-                for s in &mut out.servers {
-                    s.freshness = fresh(s.provider_at, now());
-                }
-                return out;
+                return age_cached(&c.value);
             }
         }
         let Ok(_permit) = self.flight.try_acquire() else {
@@ -418,7 +442,7 @@ impl Observer {
                 .as_ref()
                 .filter(|c| c.revision == revision && c.at.elapsed() < Duration::from_secs(15))
             {
-                return c.value.clone();
+                return age_cached(&c.value);
             }
         }
         let out = collect(config, revision).await;
@@ -435,6 +459,42 @@ impl Observer {
 mod tests {
     use super::*;
     use serde_json::json;
+    #[test]
+    fn cached_display_ages_without_rewriting_or_disclosing_private_sample_metadata() {
+        let at = now() - 120;
+        let selected = Selected {
+            id: "12345678-1234-1234-1234-123456789abc".into(),
+            name: "Reviewed fixture".into(),
+            join: "play.example:25565".into(),
+        };
+        let timestamp = DateTime::<chrono::Utc>::from_timestamp(at, 0)
+            .unwrap()
+            .to_rfc3339();
+        let server = normalized(
+            &selected,
+            &json!({"status":"ok","data":{"running":true,"online":0,"max":20,"int_ping_results":true,"created":timestamp}}),
+            at,
+            chrono_tz::UTC,
+        );
+        let sample = Overview {
+            revision: "1".into(),
+            configured: true,
+            checked_at: Some(at),
+            error: None,
+            history_error: None,
+            servers: vec![server],
+            sample_id: Some(vec![7; 16]),
+        };
+        let display = age_cached(&sample);
+        assert_eq!(display.servers[0].freshness, "stale");
+        assert_eq!(display.servers[0].sampled_freshness, "fresh");
+        assert_eq!(sample.servers[0].freshness, "fresh");
+        assert_eq!(display.sample_id, sample.sample_id);
+        let wire = serde_json::to_value(display).unwrap();
+        assert!(wire.get("sample_id").is_none());
+        assert!(wire["servers"][0].get("sampled_freshness").is_none());
+        assert_eq!(wire["servers"][0]["players"], 0);
+    }
     #[test]
     fn configured_ca_requires_one_real_certificate_not_silently_ignored_text() {
         let mut config = Enrollment {

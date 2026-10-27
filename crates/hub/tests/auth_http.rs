@@ -3020,3 +3020,719 @@ async fn home_layout_authority_is_rechecked_after_waiting_for_the_write_lock() {
     }
     assert_eq!(home_layout(&server, &owner).await["revision"], "0");
 }
+
+async fn workspace_json(server: &Server, session: &Session, path: &str) -> Value {
+    let response = workspace_request(server, session, Method::GET, path)
+        .send()
+        .await
+        .expect("bound workspace read");
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_no_store(&response);
+    response.json().await.expect("workspace read JSON")
+}
+
+fn observation_enrollment(provider: &reborn_crafty_fixture::Crafty) -> Value {
+    json!({"endpoint":provider.origin,"token":reborn_crafty_fixture::TOKEN,
+        "ca_pem":provider.ca,"timezone":"UTC","servers":[{
+        "id":reborn_crafty_fixture::ID,"name":"Reviewed observation fixture",
+        "join":"private-reviewed-join.example:25565"}]})
+}
+
+async fn enroll_observation(server: &Server, owner: &Session, base: i64, connection: Value) {
+    let response = workspace_request(server, owner, Method::PUT, "/api/owner/crafty")
+        .json(&json!({"base_revision":base.to_string(),"connection":connection}))
+        .send()
+        .await
+        .expect("enroll dedicated fictional observation provider");
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_no_store(&response);
+    assert_eq!(
+        response.json::<Value>().await.unwrap()["revision"],
+        (base + 1).to_string()
+    );
+}
+
+#[tokio::test]
+async fn integration_catalog_and_roadmap_are_bound_read_only_and_preserve_the_private_note() {
+    let fixture = Fixture::new().await;
+    let (server, owner, setup) = claimed(&fixture).await;
+    let member = notification_member(&server, &owner, "guide_member").await;
+    let note = "Private writing must never be used as the project roadmap";
+    let response = workspace_request(&server, &owner, Method::PUT, "/api/workspace/note")
+        .json(&json!({"base_revision":"0","body":note}))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let before = workspace_json(&server, &owner, "/api/workspace/snapshot").await;
+    let before_activity = history(&server, &owner, "").await;
+    let before_notices = inbox(&server, &member).await;
+    let guide = workspace_json(&server, &owner, "/api/workspace/guide").await;
+    assert_eq!(guide["product"], PRODUCT);
+    assert_eq!(guide["contract"], "reborn-workspace-v1");
+    assert_eq!(guide["schema"], 1);
+    assert_eq!(guide["account"], owner.account);
+    assert_eq!(guide["session_generation"], "0");
+    let catalog = guide["catalog"].as_array().expect("revisitable catalog");
+    assert_eq!(
+        catalog
+            .iter()
+            .filter(|p| p["status"] == "available")
+            .count(),
+        1
+    );
+    assert!(
+        catalog
+            .iter()
+            .any(|p| p["id"] == "crafty" && p["status"] == "available")
+    );
+    for id in [
+        "jellyfin",
+        "seerr",
+        "sonarr",
+        "radarr",
+        "qbittorrent",
+        "discord",
+    ] {
+        assert!(
+            catalog
+                .iter()
+                .any(|p| p["id"] == id && p["status"] == "planned")
+        );
+    }
+    let milestones = guide["roadmap"]["milestones"]
+        .as_array()
+        .expect("shipped Roadmap note");
+    assert_eq!(milestones.len(), 9);
+    for (index, milestone) in milestones.iter().enumerate() {
+        assert_eq!(milestone["id"], format!("M{index}"));
+        assert!(milestone["remaining"].as_array().is_some_and(|items| {
+            !items.is_empty()
+                && items
+                    .iter()
+                    .all(|item| item.as_str().is_some_and(|s| !s.is_empty()))
+        }));
+    }
+    assert_eq!(guide["roadmap"]["as_of"], "2026-10-27");
+    assert_eq!(
+        guide["roadmap"]["tracker_url"],
+        "https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/2"
+    );
+    let member_guide = workspace_json(&server, &member, "/api/workspace/guide").await;
+    assert_eq!(member_guide["account"], member.account);
+    assert_eq!(member_guide["catalog"], guide["catalog"]);
+    assert_eq!(member_guide["roadmap"], guide["roadmap"]);
+    assert_private_text(
+        &guide.to_string(),
+        &[note, &owner.cookie, &setup, OWNER_PASSWORD],
+    );
+    let after = workspace_json(&server, &owner, "/api/workspace/snapshot").await;
+    assert_eq!(after["note"], before["note"]);
+    assert_eq!(after["layout"], before["layout"]);
+    assert_eq!(history(&server, &owner, "").await, before_activity);
+    assert_eq!(inbox(&server, &member).await, before_notices);
+    for (header, value, expected) in [
+        (
+            "X-Reborn-Product",
+            "keida-hub-rewrite",
+            StatusCode::UPGRADE_REQUIRED,
+        ),
+        (
+            "X-Reborn-Contract",
+            "wrong-contract",
+            StatusCode::UPGRADE_REQUIRED,
+        ),
+        ("X-CSRF-Token", "wrong-binding", StatusCode::FORBIDDEN),
+        ("Cookie", "", StatusCode::UNAUTHORIZED),
+    ] {
+        let response = workspace_request(&server, &owner, Method::GET, "/api/workspace/guide")
+            .header(header, value)
+            .send()
+            .await
+            .unwrap();
+        error(response, expected, &[note, &owner.cookie]).await;
+    }
+    assert_eq!(
+        server
+            .authorized(Method::POST, "/api/auth/revoke-all", &member)
+            .send()
+            .await
+            .unwrap()
+            .status(),
+        StatusCode::NO_CONTENT
+    );
+    error(
+        workspace_request(&server, &member, Method::GET, "/api/workspace/guide")
+            .send()
+            .await
+            .unwrap(),
+        StatusCode::UNAUTHORIZED,
+        &[note],
+    )
+    .await;
+}
+
+#[tokio::test]
+async fn real_tls_observation_history_preserves_zero_unknown_failures_and_cached_samples() {
+    use reborn_crafty_fixture as c;
+    let fixture = Fixture::new().await;
+    let (server, owner, setup) = claimed(&fixture).await;
+    let member = notification_member(&server, &owner, "observation_member").await;
+    let provider = c::Crafty::start()
+        .await
+        .expect("real HTTPS observation fixture");
+    let empty = workspace_json(&server, &owner, "/api/workspace/observations").await;
+    assert_eq!(empty["entries"], json!([]));
+    assert_eq!(empty["current_revision"], "0");
+    workspace_json(&server, &owner, "/api/workspace/snapshot").await;
+    let mut db = fixture.connect().await;
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM provider_observations")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        0,
+        "unconfigured snapshots create no history"
+    );
+    for (index, mode) in [
+        c::NORMAL,
+        c::NO_PLAYERS,
+        c::STALE,
+        c::MISSING,
+        c::MALFORMED,
+        c::DENIED,
+        c::TIMEOUT,
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        provider.mode(mode);
+        enroll_observation(
+            &server,
+            &owner,
+            index as i64,
+            observation_enrollment(&provider),
+        )
+        .await;
+        let activity_before = history(&server, &owner, "").await;
+        let notices_before = workspace_json(&server, &member, "/api/workspace/observations").await;
+        assert_eq!(
+            notices_before["entries"],
+            json!([]),
+            "new revision has no invented sample"
+        );
+        let snapshot = workspace_json(&server, &owner, "/api/workspace/snapshot").await;
+        let page = workspace_json(&server, &owner, "/api/workspace/observations").await;
+        let entry = &page["entries"][0];
+        assert_eq!(entry["revision"], (index + 1).to_string());
+        assert_eq!(
+            entry["checked_at"],
+            snapshot["crafty"]["checked_at"]
+                .as_i64()
+                .unwrap()
+                .to_string()
+        );
+        assert_eq!(entry["servers"][0]["name"], "Reviewed observation fixture");
+        let row = &entry["servers"][0];
+        match mode {
+            c::NORMAL => {
+                assert_eq!(row["players"], 0);
+                assert_eq!(row["freshness"], "fresh");
+                assert_eq!(entry["complete"], true);
+            }
+            c::STALE => {
+                assert_eq!(row["players"], 0);
+                assert_eq!(row["freshness"], "stale");
+            }
+            c::NO_PLAYERS => {
+                assert!(row["players"].is_null());
+                assert_eq!(row["state"], "running");
+                assert_eq!(entry["complete"], false);
+            }
+            c::MISSING => {
+                assert!(row["players"].is_null());
+                assert_eq!(row["error"], "not_discovered");
+                assert_eq!(entry["complete"], false);
+            }
+            c::MALFORMED => {
+                assert!(row["players"].is_null());
+                assert_eq!(row["error"], "malformed");
+            }
+            c::DENIED => {
+                assert!(row["players"].is_null());
+                assert_eq!(entry["error"], "denied");
+            }
+            c::TIMEOUT => {
+                assert!(row["players"].is_null());
+                assert_eq!(row["error"], "timeout");
+            }
+            _ => unreachable!(),
+        }
+        let requests = provider.requests();
+        let (first, second) = tokio::join!(
+            workspace_json(&server, &owner, "/api/workspace/snapshot"),
+            workspace_json(&server, &member, "/api/workspace/snapshot")
+        );
+        assert_eq!(first["crafty"]["revision"], (index + 1).to_string());
+        assert_eq!(second["crafty"]["revision"], (index + 1).to_string());
+        assert_eq!(
+            provider.requests(),
+            requests,
+            "cached readers do not collect again"
+        );
+        assert_eq!(
+            workspace_json(&server, &owner, "/api/workspace/observations").await,
+            page,
+            "cached/concurrent reads cannot duplicate or rewrite history"
+        );
+        let member_page = workspace_json(&server, &member, "/api/workspace/observations").await;
+        assert_eq!(member_page["entries"].as_array().unwrap().len(), 1);
+        assert_eq!(member_page["entries"][0], *entry);
+        assert_eq!(
+            history(&server, &owner, "").await,
+            activity_before,
+            "samples create no Activity events"
+        );
+        assert_private_text(
+            &page.to_string(),
+            &[
+                c::TOKEN,
+                &provider.origin,
+                &provider.ca,
+                c::ID,
+                "private-reviewed-join.example",
+                "Unreviewed provider metadata",
+                "/private/provider-path",
+                &owner.cookie,
+            ],
+        );
+    }
+    let retained = workspace_json(&server, &owner, "/api/workspace/observations").await;
+    assert_eq!(retained["entries"].as_array().unwrap().len(), 7);
+    let before_requests = provider.requests();
+    drop(server);
+    let server = Server::start(&fixture, Some(&fixture.key_file)).await;
+    assert_eq!(
+        workspace_json(&server, &owner, "/api/workspace/observations").await,
+        retained
+    );
+    assert_eq!(
+        provider.requests(),
+        before_requests,
+        "history GET never contacts the provider"
+    );
+    enroll_observation(&server, &owner, 7, Value::Null).await;
+    let member_page = workspace_json(&server, &member, "/api/workspace/observations").await;
+    assert_eq!(
+        member_page["entries"],
+        json!([]),
+        "removed enrollment hides former member history"
+    );
+    assert_eq!(
+        workspace_json(&server, &owner, "/api/workspace/observations").await["entries"],
+        retained["entries"],
+        "owner may revisit retained prior revisions"
+    );
+    assert!(
+        provider
+            .requests()
+            .iter()
+            .all(|(method, path)| method == "GET"
+                && (path == "/api/v2/servers"
+                    || path == &format!("/api/v2/servers/{}/stats", c::ID)))
+    );
+    server.assert_logs_private(&[
+        c::TOKEN,
+        &provider.origin,
+        &setup,
+        OWNER_PASSWORD,
+        &owner.cookie,
+    ]);
+}
+
+#[tokio::test]
+async fn observation_history_has_stable_bounded_pages_and_current_authority_without_provider_io() {
+    use sqlx::Executor;
+    let fixture = Fixture::new().await;
+    let (server, owner, _) = claimed(&fixture).await;
+    let member = notification_member(&server, &owner, "observation_page_member").await;
+    let provider = reborn_crafty_fixture::Crafty::start()
+        .await
+        .expect("TLS fixture");
+    enroll_observation(&server, &owner, 0, observation_enrollment(&provider)).await;
+    let mut db = fixture.connect().await;
+    db.execute("INSERT INTO provider_observations (sample_id,connection_revision,checked_at,complete,error) SELECT decode(md5('page-' || n::text),'hex'),1,n*60,FALSE,'unavailable' FROM generate_series(1,30) AS n").await.unwrap();
+    db.execute("INSERT INTO provider_server_observations (batch_id,ordinal,name,state,players,capacity,collected_at,provider_at,freshness,error) SELECT id,1,'Older reviewed server','unknown',NULL,NULL,NULL,NULL,'unknown','unavailable' FROM provider_observations").await.unwrap();
+    let first = workspace_json(&server, &owner, "/api/workspace/observations").await;
+    assert_eq!(first["current_revision"], "1");
+    assert_eq!(first["entries"].as_array().unwrap().len(), 25);
+    assert_eq!(first["through"], "30");
+    assert_eq!(first["entries"][0]["id"], "30");
+    assert_eq!(first["entries"][24]["id"], "6");
+    assert_eq!(first["next_before"], "6");
+    assert_eq!(
+        workspace_json(&server, &member, "/api/workspace/observations").await["entries"],
+        first["entries"]
+    );
+    db.execute("INSERT INTO provider_observations (sample_id,connection_revision,checked_at,complete,error) VALUES (decode(md5('newer-page-sample'),'hex'),1,1860,FALSE,'unavailable')").await.unwrap();
+    db.execute("INSERT INTO provider_server_observations (batch_id,ordinal,name,state,freshness,error) SELECT max(id),1,'Newer reviewed server','unknown','unknown','unavailable' FROM provider_observations").await.unwrap();
+    let older = workspace_json(
+        &server,
+        &owner,
+        "/api/workspace/observations?revision=1&through=30&before=6",
+    )
+    .await;
+    assert_eq!(older["through"], "30");
+    assert!(older["next_before"].is_null());
+    let ids = older["entries"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|entry| entry["id"].as_str().unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(ids, ["5", "4", "3", "2", "1"]);
+    assert_eq!(
+        workspace_json(&server, &owner, "/api/workspace/observations").await["through"],
+        "31"
+    );
+    for suffix in [
+        "?through=30",
+        "?before=6",
+        "?revision=1&through=30&before=31",
+        "?revision=01",
+        "?revision=-1",
+        "?revision=9223372036854775808",
+        "?revision=1&through=01",
+        "?revision=1&through=32",
+        "?revision=1&through=30&before=0",
+        "?revision=1&through=30&before=1&before=2",
+        "?account_id=1",
+        "?q=raw-provider-search",
+    ] {
+        error(
+            workspace_request(
+                &server,
+                &owner,
+                Method::GET,
+                &format!("/api/workspace/observations{suffix}"),
+            )
+            .send()
+            .await
+            .unwrap(),
+            StatusCode::BAD_REQUEST,
+            &[&owner.cookie],
+        )
+        .await;
+    }
+    for (header, value, expected) in [
+        (
+            "X-Reborn-Product",
+            "keida-hub-rewrite",
+            StatusCode::UPGRADE_REQUIRED,
+        ),
+        (
+            "X-Reborn-Contract",
+            "reborn-auth-v1",
+            StatusCode::UPGRADE_REQUIRED,
+        ),
+        ("X-CSRF-Token", "bad", StatusCode::FORBIDDEN),
+        ("Cookie", "", StatusCode::UNAUTHORIZED),
+    ] {
+        error(
+            workspace_request(&server, &member, Method::GET, "/api/workspace/observations")
+                .header(header, value)
+                .send()
+                .await
+                .unwrap(),
+            expected,
+            &[&member.cookie],
+        )
+        .await;
+    }
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM provider_observations")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        31
+    );
+    assert!(
+        provider.requests().is_empty(),
+        "history reads do not perform provider IO or create observations"
+    );
+    enroll_observation(&server, &owner, 1, Value::Null).await;
+    for actor in [&owner, &member] {
+        error(
+            workspace_request(
+                &server,
+                actor,
+                Method::GET,
+                "/api/workspace/observations?revision=1&through=30&before=6",
+            )
+            .send()
+            .await
+            .unwrap(),
+            StatusCode::CONFLICT,
+            &[],
+        )
+        .await;
+    }
+    assert_eq!(
+        workspace_json(&server, &member, "/api/workspace/observations").await["entries"],
+        json!([])
+    );
+    assert_eq!(
+        workspace_json(&server, &owner, "/api/workspace/observations").await["entries"]
+            .as_array()
+            .unwrap()
+            .len(),
+        25
+    );
+    assert_eq!(
+        server
+            .authorized(Method::POST, "/api/auth/revoke-all", &member)
+            .send()
+            .await
+            .unwrap()
+            .status(),
+        StatusCode::NO_CONTENT
+    );
+    error(
+        workspace_request(&server, &member, Method::GET, "/api/workspace/observations")
+            .send()
+            .await
+            .unwrap(),
+        StatusCode::UNAUTHORIZED,
+        &[&member.cookie],
+    )
+    .await;
+}
+
+#[tokio::test]
+async fn held_provider_results_cannot_persist_after_enrollment_or_session_authority_changes() {
+    use reborn_crafty_fixture as c;
+    let fixture = Fixture::new().await;
+    let (server, owner, _) = claimed(&fixture).await;
+    let member = notification_member(&server, &owner, "observation_hold_member").await;
+    let provider = c::Crafty::start().await.expect("real HTTPS hold fixture");
+    provider.mode(c::HOLD);
+    enroll_observation(&server, &owner, 0, observation_enrollment(&provider)).await;
+    let request = workspace_request(&server, &member, Method::GET, "/api/workspace/snapshot")
+        .build()
+        .unwrap();
+    let client = server.client.clone();
+    let waiting = tokio::spawn(async move { client.execute(request).await.unwrap() });
+    tokio::time::timeout(Duration::from_secs(2), provider.entered())
+        .await
+        .expect("real provider stats request entered");
+    let checking = workspace_json(&server, &owner, "/api/workspace/snapshot").await;
+    assert_eq!(checking["crafty"]["error"], "checking");
+    let mut db = fixture.connect().await;
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM provider_observations")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        0,
+        "checking does not invent an observation"
+    );
+    assert!(!sqlx::query_scalar::<_, bool>("SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND state LIKE 'idle in transaction%')")
+        .fetch_one(&mut db).await.unwrap(), "provider IO retained an open authority transaction");
+    enroll_observation(&server, &owner, 1, Value::Null).await;
+    provider.release();
+    let result = waiting.await.unwrap();
+    assert_eq!(result.status(), StatusCode::OK);
+    let value: Value = result.json().await.unwrap();
+    assert_eq!(value["crafty"]["configured"], false);
+    assert_eq!(value["crafty"]["revision"], "2");
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM provider_observations")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        0,
+        "obsolete provider result was persisted"
+    );
+    enroll_observation(&server, &owner, 2, observation_enrollment(&provider)).await;
+    let request = workspace_request(&server, &member, Method::GET, "/api/workspace/snapshot")
+        .build()
+        .unwrap();
+    let client = server.client.clone();
+    let waiting = tokio::spawn(async move { client.execute(request).await.unwrap() });
+    tokio::time::timeout(Duration::from_secs(2), provider.entered())
+        .await
+        .expect("second real provider stats request entered");
+    assert_eq!(
+        server
+            .authorized(Method::POST, "/api/auth/revoke-all", &member)
+            .send()
+            .await
+            .unwrap()
+            .status(),
+        StatusCode::NO_CONTENT
+    );
+    provider.release();
+    error(
+        waiting.await.unwrap(),
+        StatusCode::UNAUTHORIZED,
+        &[&member.cookie],
+    )
+    .await;
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM provider_observations")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        0,
+        "revoked provider result was persisted"
+    );
+}
+
+#[tokio::test]
+async fn observation_retention_prunes_only_oldest_batches_and_their_child_samples() {
+    use sqlx::Executor;
+    let fixture = Fixture::new().await;
+    let (server, owner, _) = claimed(&fixture).await;
+    let provider = reborn_crafty_fixture::Crafty::start()
+        .await
+        .expect("real HTTPS fixture");
+    enroll_observation(&server, &owner, 0, observation_enrollment(&provider)).await;
+    let mut db = fixture.connect().await;
+    db.execute("INSERT INTO provider_observations (sample_id,connection_revision,checked_at,complete,error) SELECT decode(md5('retained-' || n::text),'hex'),1,n*60,FALSE,'unavailable' FROM generate_series(1,10001) AS n").await.unwrap();
+    db.execute("INSERT INTO provider_server_observations (batch_id,ordinal,name,state,players,capacity,collected_at,provider_at,freshness,error) SELECT id,1,'Retained fixture','unknown',NULL,NULL,NULL,NULL,'unknown','unavailable' FROM provider_observations").await.unwrap();
+    let activity_before = history(&server, &owner, "").await;
+    let notices_before: Option<Value> = sqlx::query_scalar(
+        "SELECT jsonb_agg(g ORDER BY account_id,category) FROM notification_groups g",
+    )
+    .fetch_one(&mut db)
+    .await
+    .unwrap();
+    workspace_json(&server, &owner, "/api/workspace/snapshot").await;
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM provider_observations")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        10000
+    );
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM provider_server_observations")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        10000,
+        "retired batch children must cascade"
+    );
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT min(id) FROM provider_observations")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        3
+    );
+    assert_eq!(history(&server, &owner, "").await, activity_before);
+    let notices_after: Option<Value> = sqlx::query_scalar(
+        "SELECT jsonb_agg(g ORDER BY account_id,category) FROM notification_groups g",
+    )
+    .fetch_one(&mut db)
+    .await
+    .unwrap();
+    assert_eq!(
+        notices_after, notices_before,
+        "observation sampling/retention creates no notices"
+    );
+}
+
+#[tokio::test]
+async fn optional_observation_storage_failure_preserves_daily_work_and_retries_only_the_cached_sample()
+ {
+    use sqlx::Executor;
+    let fixture = Fixture::new().await;
+    let (server, owner, _) = claimed(&fixture).await;
+    let response = workspace_request(&server, &owner, Method::PUT, "/api/workspace/note")
+        .json(
+            &json!({"base_revision":"0","body":"Daily writing survives optional history failure"}),
+        )
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let saved: Value = response.json().await.unwrap();
+    let provider = reborn_crafty_fixture::Crafty::start()
+        .await
+        .expect("real HTTPS fixture");
+    enroll_observation(&server, &owner, 0, observation_enrollment(&provider)).await;
+    let activity_before = history(&server, &owner, "").await;
+    let mut db = fixture.connect().await;
+    // Break only this owned optional table. Authentication and schema authority
+    // remain intact, so an optional archive failure cannot hide ordinary work.
+    db.execute("ALTER TABLE provider_observations RENAME TO fixture_unavailable_observations")
+        .await
+        .unwrap();
+    let snapshot = workspace_json(&server, &owner, "/api/workspace/snapshot").await;
+    assert_eq!(snapshot["note"], saved["note"]);
+    assert_eq!(snapshot["directory"], saved["directory"]);
+    assert_eq!(snapshot["layout"], saved["layout"]);
+    assert_eq!(snapshot["crafty"]["servers"][0]["players"], 0);
+    assert_eq!(snapshot["crafty"]["history_error"], "unavailable");
+    error(
+        workspace_request(&server, &owner, Method::GET, "/api/workspace/observations")
+            .send()
+            .await
+            .unwrap(),
+        StatusCode::SERVICE_UNAVAILABLE,
+        &[&owner.cookie],
+    )
+    .await;
+    let requests = provider.requests();
+    assert_eq!(requests.len(), 2);
+    db.execute("ALTER TABLE fixture_unavailable_observations RENAME TO provider_observations")
+        .await
+        .unwrap();
+    let recovered = workspace_json(&server, &owner, "/api/workspace/snapshot").await;
+    assert!(recovered["crafty"]["history_error"].is_null());
+    assert_eq!(recovered["note"], saved["note"]);
+    assert_eq!(
+        provider.requests(),
+        requests,
+        "archive retry does not recollect provider data"
+    );
+    assert_eq!(
+        workspace_json(&server, &owner, "/api/workspace/observations").await["entries"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    assert_eq!(history(&server, &owner, "").await, activity_before);
+    enroll_observation(&server, &owner, 1, observation_enrollment(&provider)).await;
+    let activity_before = history(&server, &owner, "").await;
+    db.execute("ALTER TABLE provider_server_observations ADD CONSTRAINT fixture_reject_child CHECK (ordinal < 0) NOT VALID")
+        .await.unwrap();
+    let rejected_child = workspace_json(&server, &owner, "/api/workspace/snapshot").await;
+    assert_eq!(rejected_child["crafty"]["history_error"], "unavailable");
+    assert_eq!(rejected_child["note"], saved["note"]);
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM provider_observations")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        1,
+        "failed child sample must roll back its header batch"
+    );
+    let requests = provider.requests();
+    db.execute("ALTER TABLE provider_server_observations DROP CONSTRAINT fixture_reject_child")
+        .await
+        .unwrap();
+    let accepted_child = workspace_json(&server, &owner, "/api/workspace/snapshot").await;
+    assert!(accepted_child["crafty"]["history_error"].is_null());
+    assert_eq!(provider.requests(), requests);
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM provider_observations")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        2
+    );
+    assert_eq!(history(&server, &owner, "").await, activity_before);
+}

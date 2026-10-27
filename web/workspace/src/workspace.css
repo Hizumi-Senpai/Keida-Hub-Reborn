@@ -724,3 +724,40 @@ textarea::placeholder {
 .layout-move { display: flex; gap: .5rem; flex-shrink: 0; }
 .layout-move button { min-width: 44px; min-height: 44px; padding: .5rem; }
 @media(max-width:600px) { .layout-list > li { gap: .5rem; } .layout-list label { font-size: .85rem; } .layout-editor .button-row { gap: .7rem; } }
+
+/* Catalog and roadmap share the persistent workspace without touching private notes. */
+.guide-intro, .roadmap-note, .integration-card, .observation-history { padding: clamp(1.2rem, 3vw, 2rem); min-width: 0; }
+.guide-intro { margin-bottom: 1.25rem; }
+.guide-intro > p, .roadmap-note > p, .observation-history > p { max-width: 65ch; }
+.catalog-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 1.25rem; }
+.guide-card-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .5rem 1rem; }
+.guide-card-heading h2, .guide-card-heading h3 { margin: 0; }
+.integration-status { display: inline-block; padding: .2rem .65rem; border: 1px solid #526369; border-radius: 1rem; color: #c6d5da; font-size: .8rem; }
+.integration-status[data-status="available"] { color: #b9efd6; border-color: #4d826b; background: #1b3128; }
+.integration-card h3 { margin: 1.2rem 0 .5rem; font-size: .95rem; }
+.integration-card ul, .roadmap-note ul, .roadmap-priorities { padding-left: 1.25rem; }
+.integration-card li, .roadmap-note li { margin-bottom: .5rem; overflow-wrap: anywhere; }
+.integration-card > p { margin-top: 1rem; }
+.roadmap-note { max-width: 65rem; }
+.roadmap-note h3 { margin-top: 1.75rem; }
+.roadmap-milestones > section { border-top: 1px solid var(--line); padding: 1.4rem 0; }
+.roadmap-milestones h3 { margin: 0; }
+.roadmap-milestones h4 { color: #cfdbd8; font-size: .9rem; margin-bottom: .5rem; }
+.roadmap-milestones .guide-card-heading > span { max-width: 28rem; font-size: .85rem; }
+.roadmap-note a { text-underline-offset: .2em; overflow-wrap: anywhere; }
+.welcome-card .button-row { flex-wrap: wrap; gap: .7rem 1rem; }
+.observation-history { margin-top: 1rem; }
+.observation-history h2:focus { outline: none; }
+.observation-list { list-style: none; padding: 0; margin: 1.25rem 0; }
+.observation-list > li { border-top: 1px solid var(--line); padding: 1.5rem 0; overflow-wrap: anywhere; }
+.observation-list time { color: #b7c7ce; font-size: .85rem; }
+.observation-completeness { color: #c6d5d0; margin: .75rem 0; font-size: .9rem; }
+.observation-servers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 1rem; }
+.observation-servers > section { border: 1px solid var(--line); border-radius: .65rem; padding: 1rem; min-width: 0; }
+.observation-servers h4 { margin: 0 0 .75rem; }
+.observation-servers dl { margin: 0; }
+.observation-servers dt { color: var(--muted); font-size: .85rem; margin-top: .6rem; }
+.observation-servers dd { margin: .15rem 0 0; }
+.observation-history .button-row { flex-wrap: wrap; }
+.observation-history .button-row button { min-height: 44px; }
+.observation-back { margin-bottom: .5rem; }

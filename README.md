@@ -4,9 +4,9 @@ A fresh Rust-centered Keida Hub, authorized on **2026-10-25 America/Chicago**.
 The goal is a fast, reliable, feature-rich self-hosted dashboard and control platform
 with an optional editable 3D room and companion.
 
-**Reborn0.1.10 is installed at https://rewrite.keida.me.** Exact source, CI,
+**Reborn0.1.11 is installed at https://rewrite.keida.me.** Exact source, CI,
 artifact, independent PostgreSQL/key recovery and public HTTP receipts are in
-[deployment issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6434628882).
+[deployment issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6448326282).
 The owner reports successful sign-in; wider desktop/mobile workflow acceptance and
 real dedicated Crafty enrollment remain separate open gates. The original
 https://keida.me stays live and unchanged, and the independent Rewrite installation
@@ -14,9 +14,9 @@ is preserved for route reversal.
 
 The accepted foundation is Rust/PostgreSQL authentication, separate Askama account
 pages, one persistent Svelte workspace with private revisioned notes, and dedicated
-encrypted GET-only Crafty enrollment/observations. The service directory/search/categories and personal pins are installed. Retained private Activity and connection-enrollment history are installed. Grouped notifications/read state are installed. The next
-daily-use slice is [personal Home arrangement](docs/M2_LAYOUT.md), tracked in
-[issue16](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/16). Source, packaged
+encrypted GET-only Crafty enrollment/observations. The service directory/search/categories and personal pins are installed. Retained private Activity and connection-enrollment history are installed. Grouped notifications/read state and personal Home arrangement are installed. The current
+daily-use slice is the [integration catalog, provider observation history and Roadmap note](docs/M2_CATALOG.md), tracked in
+[issue18](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/18). Source, packaged
 verification, installation and live acceptance are recorded separately.
 
 ## Start here
@@ -59,11 +59,12 @@ Mobile retains a full useful 2D dashboard without downloading the 3D experience.
 
 ## What happens next
 
-**M0: build a secure, locally verifiable foundation** with pinned dependencies,
-PostgreSQL migrations, owner/session boundaries, source/version identity and a small
-persistent workspace. Then **M1: useful Crafty read-only server/player/join views**
-with deliberate credentials, valid TLS and honest freshness. Do not begin with
-another broad language conversion, a placeholder public deployment or game control.
+Continue **M2 daily workflows** with a revisitable optional-integration catalog,
+retained sampled Crafty observations and a dedicated read-only Roadmap note. M0/M1
+and full M2 remain open pending their complete acceptance. Real Crafty enrollment,
+valid TLS, dedicated access and real freshness/join acceptance are deliberate next
+provider gates. Jellyfin and Seerr observation workflows follow; game-control and
+host-updater responsibility keep their separate review gates.
 
 Performance goals are proposed budgets until measured on named hardware/browsers.
 The architecture is selected; it is not a benchmark victory or feature-parity claim.

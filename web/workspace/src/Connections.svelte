@@ -1,12 +1,15 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
-  import type { Crafty } from './controller';
+  import { onDestroy, tick } from 'svelte';
+  import type { Crafty, ObservationState } from './controller';
+  import ObservationHistory from './ObservationHistory.svelte';
   export let binding: string;
   export let history: () => void;
   export let overview: Crafty | null | undefined;
   export let owner = false;
   export let active = false;
   export let refresh: () => Promise<void>;
+  export let observationState: ObservationState;
+  export let loadObservations: (older?: boolean) => Promise<void>;
   let form: HTMLFormElement | undefined;
   let entries = [0];
   let serial = 0;
@@ -14,10 +17,19 @@
   let message = '';
   let uncertain = false;
   let epoch = 0;
+  let showHistory = false;
+  let historyButton: HTMLButtonElement | undefined;
+  let historyView: HTMLDivElement | undefined;
   const when = (seconds: number | null) => seconds === null ? 'Not reported' : new Date(seconds * 1000).toLocaleString();
   function clear(): void { ++epoch; pending?.abort(); pending = undefined; form?.reset(); entries = [++serial]; message = ''; uncertain = false; }
-  $: if (!active) clear();
+  $: if (!active) { clear(); showHistory = false; }
   onDestroy(clear);
+  async function openHistory(): Promise<void> {
+    if (!active) return;
+    showHistory = true; void loadObservations();
+    await tick(); historyView?.querySelector<HTMLHeadingElement>('h2')?.focus();
+  }
+  async function closeHistory(): Promise<void> { showHistory = false; await tick(); historyButton?.focus(); }
   async function submit(remove = false): Promise<void> {
     if (!active || !owner || pending || !overview || uncertain) return;
     const base = overview.revision;
@@ -48,7 +60,9 @@
   async function check(): Promise<void> { await refresh(); if (active) { uncertain = false; message = 'Review the current connection state before making another change.'; } }
 </script>
 
-<button class="text-button" onclick={history}>View connection enrollment history</button>
+<div hidden={showHistory}>
+<div class="button-row"><button class="text-button" onclick={history}>View connection enrollment history</button><button bind:this={historyButton} class="text-button view-observation-history" disabled={!active} onclick={() => void openHistory()}>View provider observation history</button></div>
+{#if overview?.history_error === 'unavailable'}<p class="notice" role="status">This observation could not be added to history. Your workspace is still available; retained history may be incomplete.</p>{/if}
 <div class="connections-intro"><p>Server observations from your deliberately enrolled Crafty connection.</p><span class="quiet-label">Read-only overview</span></div>
 {#if !overview || !overview.configured}
   <section class="card small-card"><h2>No Crafty connection enrolled</h2><p>An owner can add dedicated access and choose which servers to show.</p></section>
@@ -68,7 +82,6 @@
   </div>
   <p class="field-help">A running process does not establish game readiness. Join addresses are owner-reviewed; outside-network joining is accepted separately.</p>
 {/if}
-
 {#if owner && active}
   <section class="card connection-setup" aria-label="Dedicated Crafty enrollment"><h2>Dedicated Crafty access</h2>
     <p>Create access specifically for Reborn, limited to viewing the selected servers. Credentials are encrypted on the server and are not shown again.</p>
@@ -94,3 +107,8 @@
     {#if overview?.configured}<button class="text-button" type="button" disabled={!!pending || uncertain} onclick={() => void submit(true)}>Remove connection</button>{/if}
   </section>
 {/if}
+</div>
+<div bind:this={historyView} hidden={!showHistory}>
+  <button class="text-button observation-back" onclick={() => void closeHistory()}>Back to connections</button>
+  <ObservationHistory state={observationState} authorized={active} {owner} load={loadObservations} checkConnection={refresh} />
+</div>

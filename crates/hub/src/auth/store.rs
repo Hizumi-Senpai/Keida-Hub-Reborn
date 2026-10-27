@@ -8,6 +8,7 @@ pub(super) mod connections;
 pub(super) mod directory;
 pub(super) mod layout;
 pub(super) mod notifications;
+pub(super) mod observations;
 pub(super) mod workspace;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -415,6 +416,18 @@ pub async fn session(pool: &PgPool, key_id: &[u8], verifier: &[u8]) -> Result<Se
         },
         generation: row.generation,
     })
+}
+
+pub(super) async fn guide_session(
+    pool: &PgPool,
+    key_id: &[u8],
+    verifier: &[u8],
+) -> Result<Session, Error> {
+    let (mut tx, state) = locked(pool).await?;
+    checked_key(&state, key_id)?;
+    let session = actor(&mut tx, verifier, state.now).await?;
+    tx.commit().await.map_err(|_| Error::Unavailable)?;
+    Ok(session)
 }
 
 async fn actor(

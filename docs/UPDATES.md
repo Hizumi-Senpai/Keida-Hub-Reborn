@@ -1,10 +1,10 @@
 # Reborn versions and safe updating
 
-Status: source identity derivation and compiled HTTP/account/workspace metadata
-are implemented. Immutable artifact publication, release channel admission,
-browser update discovery and host updater remain unimplemented/unaccepted.
-`rewrite.keida.me` is recorded as the independent Keida-Hub-Rewrite v0.1.4;
-Reborn has not been installed. Exact source/CI receipts are in issues1/3.
+Status: deterministic source identity, immutable manual release publication and
+matched packaged recovery are implemented. Reborn0.1.11 is the installed baseline;
+[issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6448326282)
+contains exact evidence. Full draft-safe update discovery/refresh and an automatic
+host updater remain separate work. No daemon is activated by the manual release CLI.
 
 ## Numbered identity for every accepted main merge
 
