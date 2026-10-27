@@ -6,14 +6,14 @@ loaded browser and real-provider acceptance are separate. Exact receipts in
 
 ## Installed baseline
 
-Reborn0.1.8 serves https://rewrite.keida.me: main
-`568c75211cb8af4e87a3a10375ade375f31e9e50`, tree
-`ee77d15216756b97465449a19124fd63d354c5cb`, schema5.
-[Exact source/CI/artifact/current-data recovery/install/ownership receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6431455362).
-Exact head/main passed66 Rust tests,7 native +7 exact-image HTTPS browser
-workflows,11 retained account outcomes and packaged recovery. Actual-data4→5
+Reborn0.1.9 serves https://rewrite.keida.me: main
+`b692c1f32a3b5aa3291e2f5c85602eb05e1943d1`, tree
+`a291dc827f2109e7954268a7e8cfada81c75486a`, schema6.
+[Exact source/CI/artifact/current-data recovery/install/ownership receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6433320950).
+Exact head/main passed70 Rust tests,8 native +8 exact-image HTTPS browser
+workflows,11 retained account outcomes and packaged recovery. Actual-data5→6
 upgrade/restart/role and final fenced matched restore passed. Public source,
-binary, six assets and native existing owner-session HTTP match; Docker healthy.
+binary, eight assets and native existing owner-session HTTP match; Docker healthy.
 
 Authentication, separate Askama account pages, persistent Svelte notes,
 encrypted dedicated GET-only Crafty enrollment/observations, service directory,
@@ -24,16 +24,17 @@ M0/M1/full M2 are not closed. No real provider configuration is enrolled.
 
 ## Next source slice
 
-[Retained private Activity and connection-enrollment history](docs/M2_ACTIVITY.md),
-[issue12](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/12), is a new
-candidate after installed0.1.8. Events are per-account safe action metadata,
-committed atomically with local saves; search and fixed-size stable pagination
-add no provider polling or game authority. Schema6 requires exact-source/main CI,
-packaged Activity/newer-entry recovery and freshly reviewed actual-data upgrade
-qualification before replacement. Installed remains0.1.8 until an exact receipt
-records otherwise. Schema5 binaries refuse schema6. Exact0.1.8/0.1.7/0.1.6
-browser assets are retained; full future old-client/rollback compatibility remains
-gated. Grouped per-user notifications and broader arrangement follow this slice.
+[Grouped notifications and durable per-account read state](docs/M2_NOTIFICATIONS.md),
+[issue14](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/14), is a new
+candidate after installed0.1.9. Shared service/connection changes deliver safe
+metadata to other active accounts; private notes/pins and provider reads do not.
+Two groups per account retain monotonic read-through watermarks, so unseen racing
+updates remain unread. Schema7 requires exact-head/main CI, packaged inbox/read
+recovery and freshly reviewed actual-data6→7 qualification before replacement.
+Installed remains0.1.9 until an exact receipt records otherwise. Schema6 binaries
+refuse schema7; exact0.1.9/0.1.8/0.1.7/0.1.6 assets are retained. Full future
+old-client/rollback compatibility remains gated. Broader dashboard arrangement
+follows this bounded daily-use slice.
 
 ## Ownership and limits
 
@@ -47,7 +48,7 @@ Original https://keida.me, shared nginx/tunnel, games/controllers/proxy and upda
 remain unchanged. Rewritev0.1.4 stays preserved stopped with its independent data,
 key/image and matched recovery. Reborn uses its own PostgreSQL/key/network and
 restricted application/migrator roles, with no old-product credentials/data/socket.
-The prior0.1.7 and final matched recovery are retained; it cannot run schema5.
+The prior0.1.7 and final matched recovery are retained; it cannot run schema6.
 Never restore old data over accepted newer writes.
 
 Continue independent locked-stack roadmap work while owner/provider acceptance is

@@ -393,8 +393,9 @@ pub async fn run() -> Check<()> {
     dedicated_connection_overview().await?;
     directory_and_personal_pins().await?;
     retained_activity_history().await?;
+    grouped_notifications().await?;
     println!(
-        "Rust workspace browser acceptance: 8 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+        "Rust workspace browser acceptance: 9 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
     );
     Ok(())
 }
@@ -743,6 +744,112 @@ async fn retained_activity_history() -> Check<()> {
     f.close().await?;
     println!(
         "PASS Rust browser: private retained Activity, keyset pagination, literal search, editor lifetime, reflow and late-response privacy"
+    );
+    Ok(())
+}
+
+async fn grouped_notifications() -> Check<()> {
+    step("grouped inbox, durable read watermark, racing changes and lost response");
+    let f = Fixture::new().await?;
+    let mut owner = f.browser(true).await?;
+    claim(&f, &owner).await?;
+    let (name, password) = f.enroll_member(&owner).await?;
+    let mut b = f.browser(true).await?;
+    sign_in(&f, &b, &name, &password).await?;
+    workspace(&f, &b).await?;
+    note(&b).await?;
+    b.fill(
+        "#workspace-note",
+        "An unfinished thought across inbox checks",
+    )
+    .await?;
+    b.evaluate(
+        "window.__inboxEditor=document.querySelector('#workspace-note');return true",
+        json!([]),
+    )
+    .await?;
+    b.click(".main-nav button:nth-child(6)").await?;
+    b.wait(
+        "return !!document.querySelector('.notification-empty')",
+        json!([]),
+    )
+    .await?;
+    f.shared_service(&owner, 0).await?;
+    f.shared_service(&owner, 1).await?;
+    b.click(".check-notifications").await?;
+    b.wait("return document.querySelectorAll('.notification-list li').length===1 && document.querySelector('.notification-count').textContent==='2 unread changes' && document.querySelector('.notification-badge').textContent==='1'",json!([])).await?;
+    check(b.evaluate("return window.__inboxEditor===document.querySelector('#workspace-note') && window.__inboxEditor.value==='An unfinished thought across inbox checks' && !document.querySelector('.notification-card').textContent.includes('Fictional shared service') && !document.querySelector('.notification-card').textContent.includes('example.test')",json!([])).await?==true,"inbox retains actual editor/draft and safe group-only metadata")?;
+    let held = f.hold("/api/workspace/notifications/read");
+    b.click(".mark-notification-read").await?;
+    tokio::time::timeout(Duration::from_secs(3), held.entered.notified())
+        .await
+        .map_err(|_| "held committed read response")?;
+    f.shared_service(&owner, 2).await?;
+    held.release.notify_one();
+    b.wait("return document.querySelector('.notification-status').textContent.includes('Read marker saved')",json!([])).await?;
+    b.click(".check-notifications").await?;
+    b.wait(
+        "return document.querySelector('.notification-count')?.textContent==='1 unread change'",
+        json!([]),
+    )
+    .await?;
+    let writes = f.writes();
+    let lost = f.hold("/api/workspace/notifications/read");
+    b.click(".mark-notification-read").await?;
+    tokio::time::timeout(Duration::from_secs(3), lost.entered.notified())
+        .await
+        .map_err(|_| "lost committed read response")?;
+    f.shared_service(&owner, 3).await?;
+    b.wait("return document.querySelector('.notification-status').textContent.includes('may have saved')",json!([])).await?;
+    lost.release.notify_one();
+    b.click(".check-notifications").await?;
+    b.wait("return document.querySelector('.notification-status').textContent.includes('Current read markers checked') && document.querySelector('.notification-count')?.textContent==='1 unread change'",json!([])).await?;
+    check(
+        f.writes() == writes + 2,
+        "one read PUT plus one deliberate owner change; no replay",
+    )?;
+    b.click(".mark-notification-read").await?;
+    b.wait("return !!document.querySelector('.notification-empty') && !document.querySelector('.notification-badge')",json!([])).await?;
+    workspace(&f, &b).await?;
+    b.click(".main-nav button:nth-child(6)").await?;
+    b.click("#notification-show-read").await?;
+    b.wait(
+        "return document.querySelector('.notification-count')?.textContent==='Read'",
+        json!([]),
+    )
+    .await?;
+    accessibility(&b).await?;
+    b.mobile().await?;
+    accessibility(&b).await?;
+    check(
+        b.evaluate(
+            "return innerWidth===390 && document.documentElement.scrollWidth<=innerWidth+1",
+            json!([]),
+        )
+        .await?
+            == true,
+        "inbox and read controls reflow on narrow viewport",
+    )?;
+    let private = f.hold("/api/workspace/snapshot");
+    b.click(".check-notifications").await?;
+    tokio::time::timeout(Duration::from_secs(3), private.entered.notified())
+        .await
+        .map_err(|_| "held inbox snapshot")?;
+    b.evaluate(
+        "window.dispatchEvent(new Event('blur'));return true",
+        json!([]),
+    )
+    .await?;
+    check(b.evaluate("return !document.querySelector('.notification-list li') && !document.querySelector('#notification-show-read').checked && !document.querySelector('.notification-badge') && document.querySelector('#workspace-note').value==='';",json!([])).await?==true,"privacy clears groups/read toggle/badge/draft synchronously")?;
+    f.revoke_all(&b).await?;
+    private.release.notify_one();
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    check(b.evaluate("return !document.querySelector('.notification-list li') && !document.querySelector('.notification-badge');",json!([])).await?==true,"late snapshot cannot repopulate cleared notification scope")?;
+    b.close().await?;
+    owner.close().await?;
+    f.close().await?;
+    println!(
+        "PASS Rust browser: grouped notifications, racing watermark, lost read response without replay, reload, privacy and narrow accessibility"
     );
     Ok(())
 }

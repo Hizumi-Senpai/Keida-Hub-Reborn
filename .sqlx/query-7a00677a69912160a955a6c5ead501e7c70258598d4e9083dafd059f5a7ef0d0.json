@@ -1,0 +1,88 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT category, revision, read_through, kind, source_revision, occurred_at FROM notification_groups WHERE account_id = $1 ORDER BY category LIMIT 3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "category",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "notification_groups",
+            "name": "category"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "revision",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "notification_groups",
+            "name": "revision"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "read_through",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "notification_groups",
+            "name": "read_through"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "notification_groups",
+            "name": "kind"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "source_revision",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "notification_groups",
+            "name": "source_revision"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "occurred_at",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "notification_groups",
+            "name": "occurred_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "7a00677a69912160a955a6c5ead501e7c70258598d4e9083dafd059f5a7ef0d0"
+}

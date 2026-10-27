@@ -375,6 +375,53 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     let binding = claimed["csrf_token"]
         .as_str()
         .ok_or("packaged session binding missing")?;
+    let member_password = format!("Private-notification-member-{nonce}");
+    value(
+        admitted(
+            &client,
+            &origin,
+            "/api/owner/members",
+            reqwest::Method::POST,
+            &session,
+            binding,
+            "reborn-auth-v1",
+        )
+        .json(&json!({"username":"recovery_member","password":member_password}))
+        .send()
+        .await
+        .map_err(|_| "recovery member enrollment failed")?,
+        201,
+    )
+    .await?;
+    let form_response = client
+        .get(format!("{origin}/api/auth/form"))
+        .header("X-Reborn-Product", "keida-hub-reborn")
+        .header("X-Reborn-Contract", "reborn-auth-v1")
+        .send()
+        .await
+        .map_err(|_| "member form failed")?;
+    let member_form_cookie = cookie(&form_response, "__Host-keida-reborn-form")?;
+    let member_form = value(form_response, 200).await?;
+    let response = admitted(
+        &client,
+        &origin,
+        "/api/auth/login",
+        reqwest::Method::POST,
+        &member_form_cookie,
+        member_form["csrf_token"]
+            .as_str()
+            .ok_or("member form binding missing")?,
+        "reborn-auth-v1",
+    )
+    .json(&json!({"username":"recovery_member","password":member_password}))
+    .send()
+    .await
+    .map_err(|_| "recovery member login failed")?;
+    let member_session = cookie(&response, "__Host-keida-reborn-session")?;
+    let member_login = value(response, 200).await?;
+    let member_binding = member_login["csrf_token"]
+        .as_str()
+        .ok_or("member binding missing")?;
     let provider = reborn_crafty_fixture::Crafty::start().await?;
     let enrollment = json!({"base_revision":"0","connection":{"endpoint":provider.origin,"token":reborn_crafty_fixture::TOKEN,"ca_pem":provider.ca,"timezone":"UTC","servers":[{"id":reborn_crafty_fixture::ID,"name":"Restorable dedicated fixture","join":"play.example:25565"}]}});
     value(
@@ -474,6 +521,50 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         .is_none_or(|v| v.len() != 4)
     {
         return Err("initial Activity actions missing");
+    }
+    value(
+        admitted(
+            &client,
+            &origin,
+            "/api/workspace/notifications/read",
+            reqwest::Method::PUT,
+            &member_session,
+            member_binding,
+            "reborn-workspace-v1",
+        )
+        .json(&json!({"category":"services","through":"1"}))
+        .send()
+        .await
+        .map_err(|_| "initial notification read failed")?,
+        200,
+    )
+    .await?;
+    let member_initial = value(
+        admitted(
+            &client,
+            &origin,
+            "/api/workspace/snapshot",
+            reqwest::Method::GET,
+            &member_session,
+            member_binding,
+            "reborn-workspace-v1",
+        )
+        .send()
+        .await
+        .map_err(|_| "initial member notifications failed")?,
+        200,
+    )
+    .await?;
+    let initial_groups = &member_initial["notifications"]["groups"];
+    if member_initial["notifications"]["unread_groups"] != 1
+        || initial_groups.as_array().is_none_or(|g| g.len() != 2)
+        || initial_groups[0]["category"] != "connections"
+        || initial_groups[0]["revision"] != "1"
+        || initial_groups[0]["read_through"] != "0"
+        || initial_groups[1]["category"] != "services"
+        || initial_groups[1]["read_through"] != "1"
+    {
+        return Err("initial grouped notifications/read markers missing");
     }
     docker(&["stop", "--time", "5", &first])?;
     let dump = scope.root.join("database.dump");
@@ -635,6 +726,42 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     if restored_activity != initial_activity {
         return Err("restored Activity differs");
     }
+    let member_restored = value(
+        admitted(
+            &client,
+            &origin,
+            "/api/workspace/snapshot",
+            reqwest::Method::GET,
+            &member_session,
+            member_binding,
+            "reborn-workspace-v1",
+        )
+        .send()
+        .await
+        .map_err(|_| "restored member notifications failed")?,
+        200,
+    )
+    .await?;
+    if member_restored["notifications"] != member_initial["notifications"] {
+        return Err("restored notification/read state differs");
+    }
+    value(
+        admitted(
+            &client,
+            &origin,
+            "/api/workspace/notifications/read",
+            reqwest::Method::PUT,
+            &member_session,
+            member_binding,
+            "reborn-workspace-v1",
+        )
+        .json(&json!({"category":"connections","through":"1"}))
+        .send()
+        .await
+        .map_err(|_| "newer read marker failed")?,
+        200,
+    )
+    .await?;
     value(
         admitted(
             &client,
@@ -666,6 +793,23 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         .send()
         .await
         .map_err(|_| "newer personal pin write failed")?,
+        200,
+    )
+    .await?;
+    value(
+        admitted(
+            &client,
+            &origin,
+            "/api/owner/crafty",
+            reqwest::Method::PUT,
+            &session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .json(&json!({"base_revision":"1","connection":null}))
+        .send()
+        .await
+        .map_err(|_| "newer shared connection change failed")?,
         200,
     )
     .await?;
@@ -728,17 +872,46 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     let entries = current_activity["entries"]
         .as_array()
         .ok_or("newer Activity absent")?;
-    if entries.len() != 6
-        || entries[0]["kind"] != "pins_saved"
+    if entries.len() != 7
+        || entries[0]["kind"] != "connection_removed"
         || entries[0]["revision"] != "2"
-        || entries[1]["kind"] != "note_saved"
+        || entries[1]["kind"] != "pins_saved"
         || entries[1]["revision"] != "2"
-        || entries[2..]
+        || entries[2]["kind"] != "note_saved"
+        || entries[2]["revision"] != "2"
+        || entries[3..]
             != *initial_activity["entries"]
                 .as_array()
                 .ok_or("initial Activity absent")?
     {
         return Err("failed candidate lost newer Activity");
+    }
+    let member_preserved = value(
+        admitted(
+            &client,
+            &origin,
+            "/api/workspace/snapshot",
+            reqwest::Method::GET,
+            &member_session,
+            member_binding,
+            "reborn-workspace-v1",
+        )
+        .send()
+        .await
+        .map_err(|_| "newer member read failed")?,
+        200,
+    )
+    .await?;
+    let groups = &member_preserved["notifications"]["groups"];
+    if member_preserved["notifications"]["unread_groups"] != 1
+        || groups[0]["revision"] != "2"
+        || groups[0]["read_through"] != "1"
+        || groups[0]["unread"] != "1"
+        || groups[1] != member_initial["notifications"]["groups"][1]
+        || preserved["crafty"]["configured"] != false
+        || preserved["crafty"]["revision"] != "2"
+    {
+        return Err("failed candidate lost newer notifications/read state");
     }
     if provider
         .requests()
@@ -747,7 +920,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     {
         return Err("recovery observer attempted mutation");
     }
-    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":6,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
+    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":7,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"restored_notifications_and_read_state":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
     crate::write(
         &out.join("recovery-proof.json"),
         &serde_json::to_vec(&report).map_err(|_| "recovery proof encoding failed")?,

@@ -76,7 +76,10 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
     }
     if matches!(
         path,
-        "/api/workspace/note" | "/api/owner/directory" | "/api/workspace/pins"
+        "/api/workspace/note"
+            | "/api/owner/directory"
+            | "/api/workspace/pins"
+            | "/api/workspace/notifications/read"
     ) {
         proxy.writes.fetch_add(1, Ordering::SeqCst);
     }
@@ -683,11 +686,12 @@ impl Drop for Fixture {
 }
 
 impl Fixture {
-    async fn owner_api(
+    async fn api_write(
         &self,
         browser: &Browser,
         path: &str,
         payload: serde_json::Value,
+        workspace: bool,
     ) -> Check<()> {
         let cookie = browser.cookie("__Host-keida-reborn-session").await?;
         let certificate = reqwest::Certificate::from_pem(
@@ -726,13 +730,27 @@ impl Fixture {
             .as_str()
             .ok_or("fixture session guard")?;
         let mut request = client
-            .post(format!("{}{path}", self.origin))
+            .request(
+                if workspace {
+                    reqwest::Method::PUT
+                } else {
+                    reqwest::Method::POST
+                },
+                format!("{}{path}", self.origin),
+            )
             .header("Cookie", cookie)
             .header("Origin", &self.origin)
             .header("X-CSRF-Token", csrf)
             .json(&payload);
         for (k, v) in headers() {
-            request = request.header(k, v);
+            request = request.header(
+                k,
+                if workspace && k == "X-Reborn-Contract" {
+                    "reborn-workspace-v1"
+                } else {
+                    v
+                },
+            );
         }
         let response = request
             .send()
@@ -743,20 +761,29 @@ impl Fixture {
             "fixture API write admission",
         )
     }
+    pub async fn shared_service(&self, owner: &Browser, base: u32) -> Check<()> {
+        self.api_write(owner, "/api/owner/directory", serde_json::json!({"base_revision":base.to_string(),"change":{"action":"create","link":{"name":"Fictional shared service","category":"Home","description":"Notification fixture","url":"https://example.test/"}}}), true).await
+    }
     pub async fn enroll_member(&self, browser: &Browser) -> Check<(String, String)> {
         let name = format!("member_{}", random()?);
         let password = format!("member-fixture-{}", random()?);
-        self.owner_api(
+        self.api_write(
             browser,
             "/api/owner/members",
             serde_json::json!({"username":name,"password":password}),
+            false,
         )
         .await?;
         Ok((name, password))
     }
     pub async fn revoke_all(&self, browser: &Browser) -> Check<()> {
-        self.owner_api(browser, "/api/auth/revoke-all", serde_json::json!({}))
-            .await
+        self.api_write(
+            browser,
+            "/api/auth/revoke-all",
+            serde_json::json!({}),
+            false,
+        )
+        .await
     }
 }
 
