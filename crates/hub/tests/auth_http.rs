@@ -2348,3 +2348,286 @@ async fn activity_and_mutations_commit_together_and_failed_or_forbidden_writes_c
         assert_eq!(response.status(), expected);
     }
 }
+
+async fn notification_member(server: &Server, owner: &Session, name: &str) -> Session {
+    let r = server
+        .authorized(Method::POST, "/api/owner/members", owner)
+        .json(&json!({"username":name,"password":MEMBER_PASSWORD}))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(r.status(), StatusCode::CREATED);
+    server.login(name, MEMBER_PASSWORD).await
+}
+async fn inbox(server: &Server, actor: &Session) -> Value {
+    let r = workspace_request(server, actor, Method::GET, "/api/workspace/snapshot")
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(r.status(), StatusCode::OK);
+    assert_no_store(&r);
+    r.json::<Value>().await.unwrap()["notifications"].clone()
+}
+async fn shared_service(server: &Server, owner: &Session, base: i64) -> Response {
+    workspace_request(server, owner, Method::PUT, "/api/owner/directory")
+        .json(&json!({"base_revision":base.to_string(),"change":{"action":"create","link":{"name":"Never copy this name into notifications","category":"Home","description":"Private description","url":"https://example.test/private"}}})).send().await.unwrap()
+}
+async fn notification_read(
+    server: &Server,
+    actor: &Session,
+    category: &str,
+    through: &str,
+) -> Response {
+    workspace_request(
+        server,
+        actor,
+        Method::PUT,
+        "/api/workspace/notifications/read",
+    )
+    .json(&json!({"category":category,"through":through}))
+    .send()
+    .await
+    .unwrap()
+}
+#[tokio::test]
+async fn notifications_group_only_other_shared_writes_and_preserve_watermarks_across_restart() {
+    let fixture = Fixture::new().await;
+    let (server, owner, _) = claimed(&fixture).await;
+    let a = notification_member(&server, &owner, "notice_member_a").await;
+    let b = notification_member(&server, &owner, "notice_member_b").await;
+    for base in 0..2 {
+        assert_eq!(
+            shared_service(&server, &owner, base).await.status(),
+            StatusCode::OK
+        );
+    }
+    assert_eq!(
+        inbox(&server, &owner).await,
+        json!({"groups":[],"unread_groups":0})
+    );
+    let grouped = inbox(&server, &a).await;
+    assert_eq!(grouped, inbox(&server, &b).await);
+    assert_eq!(grouped["unread_groups"], 1);
+    assert_eq!(grouped["groups"].as_array().unwrap().len(), 1);
+    assert_eq!(grouped["groups"][0]["revision"], "2");
+    assert_eq!(grouped["groups"][0]["unread"], "2");
+    assert!(!grouped.to_string().contains("private"));
+    assert!(!grouped.to_string().contains("Never copy"));
+    assert_eq!(inbox(&server, &a).await, grouped, "GET never marks read");
+    let late = notification_member(&server, &owner, "notice_member_late").await;
+    assert_eq!(inbox(&server, &late).await["groups"], json!([]));
+    for (path, payload) in [
+        (
+            "/api/workspace/note",
+            json!({"base_revision":"0","body":"Personal only"}),
+        ),
+        (
+            "/api/workspace/pins",
+            json!({"base_directory_revision":"2","base_revision":"0","ids":[]}),
+        ),
+    ] {
+        assert_eq!(
+            workspace_request(&server, &owner, Method::PUT, path)
+                .json(&payload)
+                .send()
+                .await
+                .unwrap()
+                .status(),
+            StatusCode::OK
+        );
+    }
+    assert_eq!(inbox(&server, &a).await, grouped);
+    assert_eq!(
+        notification_read(&server, &a, "services", "1")
+            .await
+            .status(),
+        StatusCode::OK
+    );
+    assert_eq!(
+        shared_service(&server, &owner, 2).await.status(),
+        StatusCode::OK
+    );
+    for through in ["1", "0", "1"] {
+        assert_eq!(
+            notification_read(&server, &a, "services", through)
+                .await
+                .status(),
+            StatusCode::OK
+        );
+    }
+    let current = inbox(&server, &a).await;
+    assert_eq!(current["groups"][0]["read_through"], "1");
+    assert_eq!(current["groups"][0]["unread"], "2");
+    assert_eq!(inbox(&server, &b).await["groups"][0]["read_through"], "0");
+    assert_eq!(inbox(&server, &late).await["groups"][0]["revision"], "1");
+    assert_eq!(
+        workspace_request(&server, &owner, Method::PUT, "/api/owner/crafty")
+            .json(&json!({"base_revision":"0","connection":null}))
+            .send()
+            .await
+            .unwrap()
+            .status(),
+        StatusCode::OK
+    );
+    assert_eq!(inbox(&server, &a).await["unread_groups"], 2);
+    let retained = inbox(&server, &a).await;
+    server.assert_logs_private(&[&a.cookie, &b.cookie, MEMBER_PASSWORD]);
+    drop(server);
+    let restarted = Server::start(&fixture, Some(&fixture.key_file)).await;
+    assert_eq!(inbox(&restarted, &a).await, retained);
+}
+#[tokio::test]
+async fn notification_read_rejects_scope_forgery_future_and_revoked_requests_without_change() {
+    let fixture = Fixture::new().await;
+    let (server, owner, _) = claimed(&fixture).await;
+    let member = notification_member(&server, &owner, "notice_scope_member").await;
+    assert_eq!(
+        notification_read(&server, &member, "services", "0")
+            .await
+            .status(),
+        StatusCode::OK
+    );
+    assert_eq!(
+        notification_read(&server, &member, "services", "1")
+            .await
+            .status(),
+        StatusCode::CONFLICT
+    );
+    assert_eq!(
+        shared_service(&server, &owner, 0).await.status(),
+        StatusCode::OK
+    );
+    let before = inbox(&server, &member).await;
+    for payload in [
+        json!({"category":"services","through":"2"}),
+        json!({"category":"services","through":"01"}),
+        json!({"category":"services","through":"-1"}),
+        json!({"category":"other","through":"1"}),
+        json!({"category":"services","through":"9223372036854775808"}),
+        json!({"category":"services","through":"1","account_id":owner.account["id"]}),
+    ] {
+        let r = workspace_request(
+            &server,
+            &member,
+            Method::PUT,
+            "/api/workspace/notifications/read",
+        )
+        .json(&payload)
+        .send()
+        .await
+        .unwrap();
+        assert!(matches!(
+            r.status(),
+            StatusCode::BAD_REQUEST | StatusCode::CONFLICT
+        ));
+    }
+    for (header, value, expected) in [
+        ("X-CSRF-Token", "bad", StatusCode::FORBIDDEN),
+        ("Origin", "https://evil.example", StatusCode::FORBIDDEN),
+        ("X-Reborn-Contract", "old", StatusCode::UPGRADE_REQUIRED),
+    ] {
+        let r = workspace_request(
+            &server,
+            &member,
+            Method::PUT,
+            "/api/workspace/notifications/read",
+        )
+        .header(header, value)
+        .json(&json!({"category":"services","through":"1"}))
+        .send()
+        .await
+        .unwrap();
+        assert_eq!(r.status(), expected);
+    }
+    assert_eq!(inbox(&server, &member).await, before);
+    assert_eq!(
+        server
+            .authorized(Method::POST, "/api/auth/revoke-all", &member)
+            .send()
+            .await
+            .unwrap()
+            .status(),
+        StatusCode::NO_CONTENT
+    );
+    assert_eq!(
+        notification_read(&server, &member, "services", "1")
+            .await
+            .status(),
+        StatusCode::UNAUTHORIZED
+    );
+    let fresh = server.login("notice_scope_member", MEMBER_PASSWORD).await;
+    assert_eq!(inbox(&server, &fresh).await, before);
+}
+#[tokio::test]
+async fn notification_delivery_failure_rolls_back_shared_write_and_activity_and_inactive_users_are_excluded()
+ {
+    use sqlx::Executor;
+    let fixture = Fixture::new().await;
+    let (server, owner, _) = claimed(&fixture).await;
+    let member = notification_member(&server, &owner, "notice_atomic_member").await;
+    let mut db = PgConnection::connect(&fixture.database_url).await.unwrap();
+    db.execute("ALTER TABLE notification_groups ADD CONSTRAINT fixture_reject_notice CHECK (revision < 0) NOT VALID").await.unwrap();
+    assert_eq!(
+        shared_service(&server, &owner, 0).await.status(),
+        StatusCode::SERVICE_UNAVAILABLE
+    );
+    assert_eq!(history(&server, &owner, "").await["entries"], json!([]));
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT revision FROM directory_state")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        0
+    );
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM directory_services")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        0
+    );
+    db.execute("ALTER TABLE notification_groups DROP CONSTRAINT fixture_reject_notice")
+        .await
+        .unwrap();
+    assert_eq!(
+        shared_service(&server, &owner, 0).await.status(),
+        StatusCode::OK
+    );
+    let read = notification_read(&server, &member, "services", "1").await;
+    assert_eq!(read.status(), StatusCode::OK);
+    sqlx::query("UPDATE users SET active=FALSE WHERE username='notice_atomic_member'")
+        .execute(&mut db)
+        .await
+        .unwrap();
+    assert_eq!(
+        shared_service(&server, &owner, 1).await.status(),
+        StatusCode::OK
+    );
+    sqlx::query("UPDATE users SET active=TRUE WHERE username='notice_atomic_member'")
+        .execute(&mut db)
+        .await
+        .unwrap();
+    let current = inbox(&server, &member).await;
+    assert_eq!(current["groups"][0]["revision"], "1");
+    assert_eq!(current["groups"][0]["read_through"], "1");
+}
+#[tokio::test]
+async fn racing_shared_change_and_read_marker_leave_the_unseen_change_unread() {
+    let fixture = Fixture::new().await;
+    let (server, owner, _) = claimed(&fixture).await;
+    let member = notification_member(&server, &owner, "notice_racing_member").await;
+    assert_eq!(
+        shared_service(&server, &owner, 0).await.status(),
+        StatusCode::OK
+    );
+    let (change, read) = tokio::join!(
+        shared_service(&server, &owner, 1),
+        notification_read(&server, &member, "services", "1")
+    );
+    assert_eq!(change.status(), StatusCode::OK);
+    assert_eq!(read.status(), StatusCode::OK);
+    let current = inbox(&server, &member).await;
+    assert_eq!(current["groups"][0]["revision"], "2");
+    assert_eq!(current["groups"][0]["read_through"], "1");
+    assert_eq!(current["groups"][0]["unread"], "1");
+}

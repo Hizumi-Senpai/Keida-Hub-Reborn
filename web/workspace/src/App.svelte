@@ -4,10 +4,11 @@
   import Connections from './Connections.svelte';
   import Directory from './Directory.svelte';
   import Activity from './Activity.svelte';
+  import Notifications from './Notifications.svelte';
   export let binding: string;
   const controller = workspace(binding);
   const model = controller.model;
-  let view: 'home' | 'note' | 'connections' | 'directory' | 'activity' = 'home';
+  let view: 'home' | 'note' | 'connections' | 'directory' | 'activity' | 'notifications' = 'home';
   let heading: HTMLHeadingElement;
   const version = document.querySelector<HTMLMetaElement>('meta[name="reborn-version"]')?.content ?? 'development';
   const commit = document.querySelector<HTMLMetaElement>('meta[name="reborn-commit"]')?.content ?? 'unqualified';
@@ -15,8 +16,8 @@
   const channel = document.querySelector<HTMLMetaElement>('meta[name="reborn-channel"]')?.content ?? 'development';
   $: bytes = new TextEncoder().encode($model.draft).length;
   $: canSave = $model.phase === 'ready' && $model.dirty && bytes <= 4096
-    && !['saving', 'checking-conflict', 'conflict', 'uncertain'].includes($model.save);
-  function navigate(next: 'home' | 'note' | 'connections' | 'directory' | 'activity'): void { view = next; heading?.focus(); if (next === 'activity') void controller.activity(); }
+    && $model.notificationSave !== 'saving' && !['saving', 'checking-conflict', 'conflict', 'uncertain'].includes($model.save);
+  function navigate(next: 'home' | 'note' | 'connections' | 'directory' | 'activity' | 'notifications'): void { view = next; heading?.focus(); if (next === 'activity') void controller.activity(); if (next === 'notifications') void controller.check(); }
   onMount(controller.start);
 </script>
 
@@ -31,6 +32,7 @@
       <button class:active={view === 'connections'} aria-current={view === 'connections' ? 'page' : undefined} onclick={() => navigate('connections')}><span aria-hidden="true">◇</span>Connections</button>
       <button class:active={view === 'directory'} aria-current={view === 'directory' ? 'page' : undefined} onclick={() => navigate('directory')}><span aria-hidden="true">▦</span>Services</button>
       <button class:active={view === 'activity'} aria-current={view === 'activity' ? 'page' : undefined} onclick={() => navigate('activity')}><span aria-hidden="true">◷</span>Activity</button>
+      <button class:active={view === 'notifications'} aria-current={view === 'notifications' ? 'page' : undefined} onclick={() => navigate('notifications')}><span aria-hidden="true">♧</span>Notifications{#if $model.snapshot?.notifications.unread_groups}<span class="notification-badge" aria-label={`${$model.snapshot.notifications.unread_groups} unread groups`}>{$model.snapshot.notifications.unread_groups}</span>{/if}</button>
     </nav>
     <div class="sidebar-bottom">
       <a href="/account" class="account-link"><span class="avatar" aria-hidden="true">K</span><span><strong>{$model.snapshot?.account.username ?? 'Your account'}</strong><small>{$model.snapshot?.account.role === 'owner' ? 'Owner' : $model.snapshot?.account.role === 'member' ? 'Member' : 'Check account access'}</small></span></a>
@@ -46,7 +48,7 @@
     </div>
   </aside>
   <main id="workspace-content" class="workspace-content">
-    <header class="page-header"><div><p class="eyebrow">YOUR OWN CORNER OF KEIDA</p><h1 tabindex="-1" bind:this={heading}>{view === 'home' ? 'Welcome home.' : view === 'note' ? 'A little space to think.' : view === 'connections' ? 'Your servers, at a glance.' : view === 'directory' ? 'Everything within reach.' : 'Pick up the thread.'}</h1></div><span class="connection-state"><span aria-hidden="true">●</span>{$model.phase === 'ready' ? 'Session checked' : $model.phase === 'checking' ? 'Checking access' : 'Access paused'}</span></header>
+    <header class="page-header"><div><p class="eyebrow">YOUR OWN CORNER OF KEIDA</p><h1 tabindex="-1" bind:this={heading}>{view === 'home' ? 'Welcome home.' : view === 'note' ? 'A little space to think.' : view === 'connections' ? 'Your servers, at a glance.' : view === 'directory' ? 'Everything within reach.' : view === 'activity' ? 'Pick up the thread.' : 'Catch up at your pace.'}</h1></div><span class="connection-state"><span aria-hidden="true">●</span>{$model.phase === 'ready' ? 'Session checked' : $model.phase === 'checking' ? 'Checking access' : 'Access paused'}</span></header>
     <p class="workspace-status" role="status">{$model.message}</p>
     {#if $model.phase !== 'ready'}
       <section class="recovery card"><p class="eyebrow">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class="button-row"><a class="button primary" href="/workspace">Open workspace again</a><a class="button secondary" href="/account">Your account</a></div></section>
@@ -77,6 +79,7 @@
     <section hidden={view !== 'connections' || $model.phase !== 'ready'} aria-label="Connections"><Connections history={() => { view = 'activity'; heading?.focus(); void controller.activity('connections', ''); }} {binding} overview={$model.snapshot?.crafty} owner={$model.snapshot?.account.role === 'owner'} active={view === 'connections' && $model.phase === 'ready'} refresh={controller.check} /></section>
     <section hidden={(view !== 'home' && view !== 'directory') || $model.phase !== 'ready'} aria-label="Services"><Directory directory={$model.snapshot?.directory} authorized={$model.phase === 'ready'} owner={$model.snapshot?.account.role === 'owner'} compact={view === 'home'} state={$model.directorySave} message={$model.directoryMessage} browse={() => navigate('directory')} check={controller.check} edit={controller.editService} pin={controller.pins} /></section>
     <section hidden={view !== 'activity' || $model.phase !== 'ready'} aria-label="Activity"><Activity state={$model.activity} authorized={$model.phase === 'ready'} load={controller.activity} /></section>
+    <section hidden={view !== 'notifications' || $model.phase !== 'ready'} aria-label="Notifications"><Notifications value={$model.snapshot?.notifications} authorized={$model.phase === 'ready'} state={$model.notificationSave} message={$model.notificationMessage} check={controller.check} mark={controller.markNotification} /></section>
     <footer class="content-footer"><span>Keida Reborn</span><a href="/account">Account &amp; recovery</a></footer>
   </main>
 </div>

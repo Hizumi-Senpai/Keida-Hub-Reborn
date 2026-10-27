@@ -9,3 +9,5 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON users, sessions, auth_state,
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO reborn_app;
 -- Events are append-only for the ordinary runtime role.
 GRANT SELECT, INSERT ON activity_events TO reborn_app;
+-- Read watermarks can advance; the runtime cannot erase delivery groups.
+GRANT SELECT, INSERT, UPDATE ON notification_groups TO reborn_app;

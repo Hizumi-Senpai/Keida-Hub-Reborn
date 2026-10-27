@@ -71,7 +71,7 @@ pub(super) fn inspect(
     let labels = &metadata["Config"]["Labels"];
     for (name, expected) in [
         ("keida.product", "keida-hub-reborn"),
-        ("keida.schema", "6"),
+        ("keida.schema", "7"),
         ("keida.tree", tree),
         ("keida.channel", channel),
         ("org.opencontainers.image.version", version),
@@ -107,13 +107,13 @@ pub(super) fn inspect(
             return Err("packaged binary/source mismatch");
         }
     }
-    if public["database_schema"] != 6 || public["workspace_contract"] != "reborn-workspace-v1" {
+    if public["database_schema"] != 7 || public["workspace_contract"] != "reborn-workspace-v1" {
         return Err("packaged interface mismatch");
     }
     let assets = public["assets"]
         .as_array()
         .ok_or("packaged assets absent")?;
-    if assets.len() != 8
+    if assets.len() != 10
         || assets.iter().any(|a| {
             !a.as_str().is_some_and(|a| {
                 a.strip_prefix("/assets/workspace/")
@@ -162,7 +162,7 @@ pub(super) fn inspect(
         image,
     ])?;
     let archive_sha256 = hash(&archive)?;
-    let proof = json!({"format":1,"product":"keida-hub-reborn","identity":identity,"database_schema":6,"workspace_contract":"reborn-workspace-v1","assets":assets,"image_id":image,"binary_sha256":binary_sha256,"archive_sha256":archive_sha256});
+    let proof = json!({"format":1,"product":"keida-hub-reborn","identity":identity,"database_schema":7,"workspace_contract":"reborn-workspace-v1","assets":assets,"image_id":image,"binary_sha256":binary_sha256,"archive_sha256":archive_sha256});
     crate::write(
         &out.join("image-proof.json"),
         &serde_json::to_vec(&proof).map_err(|_| "image proof encoding failed")?,

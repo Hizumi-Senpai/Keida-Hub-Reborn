@@ -701,3 +701,6 @@ textarea::placeholder {
 .activity-list li { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid #42485f; overflow-wrap: anywhere; }
 .activity-list p { margin: .3rem 0; }
 .activity-list time { color: #c5c8d8; font-size: .85rem; }
+
+.notification-badge{margin-left:auto;border-radius:1rem;background:#b7c99d;color:#132017;padding:.12rem .48rem;font-size:.75rem;font-weight:700}
+.notification-heading,.notification-list li{display:flex;align-items:center;justify-content:space-between;gap:1rem}.notification-heading h2{margin:.3rem 0}.notification-filter{display:flex;align-items:center;gap:.6rem;margin:1.2rem 0}.notification-filter input{width:1.1rem;height:1.1rem;accent-color:#b7c99d}.notification-list{padding:0;list-style:none}.notification-list li{padding:1.2rem 0;border-top:1px solid var(--line,#424a46)}.notification-list h3{margin:0}.notification-list p{margin:.4rem 0;overflow-wrap:anywhere}.notification-count{color:#c9d8b8}.notification-empty{padding:1.5rem 0}.notification-list button{flex-shrink:0}@media(max-width:600px){.notification-heading,.notification-list li{align-items:stretch;flex-direction:column}.notification-heading button,.notification-list button{align-self:flex-start}}

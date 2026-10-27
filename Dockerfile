@@ -22,7 +22,7 @@ ARG REBORN_BUILD_VERSION
 ARG REBORN_BUILD_COMMIT
 ARG REBORN_BUILD_TREE
 ARG REBORN_BUILD_CHANNEL
-LABEL org.opencontainers.image.title="Keida Hub Reborn" org.opencontainers.image.source="https://github.com/Hizumi-Senpai/Keida-Hub-Reborn" org.opencontainers.image.version="$REBORN_BUILD_VERSION" org.opencontainers.image.revision="$REBORN_BUILD_COMMIT" keida.product="keida-hub-reborn" keida.tree="$REBORN_BUILD_TREE" keida.channel="$REBORN_BUILD_CHANNEL" keida.schema="6"
+LABEL org.opencontainers.image.title="Keida Hub Reborn" org.opencontainers.image.source="https://github.com/Hizumi-Senpai/Keida-Hub-Reborn" org.opencontainers.image.version="$REBORN_BUILD_VERSION" org.opencontainers.image.revision="$REBORN_BUILD_COMMIT" keida.product="keida-hub-reborn" keida.tree="$REBORN_BUILD_TREE" keida.channel="$REBORN_BUILD_CHANNEL" keida.schema="7"
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build /source/target/release/keida-hub-reborn /usr/local/bin/keida-hub-reborn
 USER 65532:65532

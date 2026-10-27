@@ -7,7 +7,8 @@ type Note = { body: string; revision: string };
 export type Crafty = { revision: string; configured: boolean; checked_at: number | null; error: string | null; servers: Array<{ name: string; join: string; state: string; players: number | null; capacity: number | null; collected_at: number | null; provider_at: number | null; freshness: string; error: string | null }> };
 export type ServiceLink = { id: string; name: string; category: string; description: string; url: string };
 export type Directory = { revision: string; services: ServiceLink[]; pins_revision: string; pins: string[] };
-type Snapshot = { schema: 1; account: { id: string; username: string; role: 'owner' | 'member' }; session_generation: string; note: Note; crafty?: Crafty | null; directory: Directory };
+export type Notifications = { unread_groups: number; groups: Array<{ category: 'services' | 'connections'; revision: string; read_through: string; unread: string; latest: { kind: string; label: string; source_revision: string; occurred_at: string } }> };
+type Snapshot = { schema: 1; account: { id: string; username: string; role: 'owner' | 'member' }; session_generation: string; note: Note; crafty?: Crafty | null; directory: Directory; notifications: Notifications };
 type Draft = { body: string; base: string };
 export type ActivityEntry = { id: string; occurred_at: string; revision: string; kind: string; category: string; label: string };
 export type Activity = { phase: 'idle' | 'loading' | 'ready' | 'error'; entries: ActivityEntry[]; through: string; next: string | null; category: string; query: string; message: string };
@@ -17,15 +18,28 @@ export type Model = {
   snapshot?: Snapshot; draft: string; base: string; dirty: boolean;
   save: 'idle' | 'saving' | 'saved' | 'checking-conflict' | 'conflict' | 'uncertain'; recovery?: Draft;
   storageLimited: boolean; activity: Activity;
+  notificationSave: 'idle' | 'saving' | 'uncertain'; notificationMessage: string;
   directorySave: 'idle' | 'saving' | 'conflict' | 'uncertain'; directoryMessage: string;
 };
-const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity() });
+const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '' });
 const record = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const decimal = (v: unknown, positive = false): v is string => typeof v === 'string' && /^(0|[1-9][0-9]{0,18})$/.test(v) && BigInt(v) <= MAX_REVISION && (!positive || v !== '0');
 const text = (v: unknown): v is string => typeof v === 'string' && !v.includes('\0') && new TextEncoder().encode(v).length <= 4096;
 export function safeLink(v: unknown): v is string {
   if (typeof v !== 'string' || new TextEncoder().encode(v).length > 1024 || !/^https:\/\/[^/]/.test(v) || /[\s\u0000-\u001f\u007f\\]/u.test(v)) return false;
   try { const u = new URL(v); return u.protocol === 'https:' && !!u.hostname && !u.username && !u.password && !v.includes('?') && !v.includes('#'); } catch { return false; }
+}
+function notifications(v: unknown): Notifications {
+  if (!record(v) || !Array.isArray(v.groups) || v.groups.length > 2 || !Number.isInteger(v.unread_groups)
+      || new Set(v.groups.map(g => record(g) ? g.category : null)).size !== v.groups.length
+      || v.groups.some((g: unknown) => !record(g) || !['services', 'connections'].includes(String(g.category))
+        || !decimal(g.revision, true) || !decimal(g.read_through) || !decimal(g.unread)
+        || BigInt(g.read_through) > BigInt(g.revision) || BigInt(g.unread) !== BigInt(g.revision) - BigInt(g.read_through)
+        || !record(g.latest) || !decimal(g.latest.source_revision, true) || !decimal(g.latest.occurred_at)
+        || BigInt(g.latest.occurred_at) > 253402300799n || typeof g.latest.label !== 'string' || !/^[A-Za-z ]{1,64}$/.test(g.latest.label)
+        || !(g.category === 'services' ? ['service_added', 'service_updated', 'service_removed'] : ['connection_saved', 'connection_removed']).includes(String(g.latest.kind)))
+      || v.unread_groups !== v.groups.filter(g => g.unread !== '0').length) throw new Error('Invalid notification response');
+  return v as unknown as Notifications;
 }
 function snapshot(value: unknown): Snapshot {
   if (!record(value) || value.product !== PRODUCT || value.contract !== CONTRACT || value.schema !== 1
@@ -49,6 +63,7 @@ function snapshot(value: unknown): Snapshot {
           || !['running', 'stopped', 'unknown'].includes(String(s.state)) || !['fresh', 'stale', 'unknown'].includes(String(s.freshness))
           || !count(s.players) || !count(s.capacity) || !count(s.collected_at) || !count(s.provider_at) || !message(s.error))) throw new Error('Invalid connection response');
   }
+  notifications(value.notifications);
   return value as unknown as Snapshot;
 }
 function stored(value: string | null): Draft | undefined {
@@ -67,6 +82,7 @@ export function workspace(binding: string) {
   let saving: AbortController | undefined;
   let editing: AbortController | undefined;
   let historyReading: AbortController | undefined;
+  let marking: AbortController | undefined;
   let historySerial = 0;
   let key: string | undefined;
   let held: { key: string; draft: Draft } | undefined;
@@ -95,6 +111,7 @@ export function workspace(binding: string) {
     reading?.abort(); saving?.abort(); reading = undefined; saving = undefined;
     editing?.abort(); editing = undefined;
     ++historySerial; historyReading?.abort(); historyReading = undefined;
+    marking?.abort(); marking = undefined;
   }
   function invalidate(message: string, blocked = false): void {
     cancel(); terminal ||= blocked;
@@ -102,7 +119,7 @@ export function workspace(binding: string) {
   }
   function schedule(): void {
     if (timer) clearTimeout(timer);
-    if (!disposed && !terminal && state().phase === 'ready' && document.visibilityState === 'visible') {
+    if (!disposed && !terminal && state().phase === 'ready' && state().notificationSave !== 'uncertain' && document.visibilityState === 'visible') {
       timer = setTimeout(() => { timer = undefined; void read(); }, 15000);
     }
   }
@@ -130,7 +147,7 @@ export function workspace(binding: string) {
     return !prior || (s.account.id === prior.account.id && s.session_generation === prior.session_generation && s.account.role === prior.account.role);
   }
   async function read(): Promise<void> {
-    if (disposed || terminal || reading || saving || editing || document.visibilityState !== 'visible') return;
+    if (disposed || terminal || reading || saving || editing || marking || document.visibilityState !== 'visible') return;
     const controller = new AbortController(); reading = controller; const current = epoch;
     try {
       const response = await request('/api/workspace/snapshot', controller);
@@ -147,6 +164,7 @@ export function workspace(binding: string) {
           base: before.dirty ? before.base : next.note.revision,
           save: conflict ? 'conflict' : ['uncertain', 'checking-conflict'].includes(before.save) ? 'idle' : before.save,
           message: conflict ? 'A newer saved note is available. Your draft is unchanged.' : 'Workspace checked.',
+          notificationSave: 'idle', notificationMessage: before.notificationSave === 'uncertain' ? 'Current read markers checked. Review newer changes before marking read.' : 'Notifications checked.',
           directorySave: before.directorySave === 'uncertain' ? 'idle' : before.directorySave,
           directoryMessage: before.directorySave === 'uncertain' ? 'Current saved directory and pins checked. Review them before making another change.' : before.directoryMessage });
         if (before.dirty && before.draft === next.note.body) {
@@ -184,7 +202,7 @@ export function workspace(binding: string) {
   }
   async function save(): Promise<void> {
     const s = state();
-    if (s.phase !== 'ready' || !s.dirty || !text(s.draft) || ['conflict', 'checking-conflict', 'uncertain'].includes(s.save) || saving) return;
+    if (s.phase !== 'ready' || !s.dirty || !text(s.draft) || ['conflict', 'checking-conflict', 'uncertain'].includes(s.save) || saving || marking) return;
     reading?.abort(); reading = undefined;
     if (timer) clearTimeout(timer); timer = undefined;
     const controller = new AbortController(); saving = controller; const current = epoch;
@@ -200,7 +218,7 @@ export function workspace(binding: string) {
       } else if (response.status === 200) {
         const next = snapshot(response.value);
         if (!authorized(next) || next.note.body !== submitted.body || BigInt(next.note.revision) !== BigInt(submitted.base) + 1n) throw new Error('Unqualified save result');
-        model.update((m) => ({ ...m, snapshot: { ...next, crafty: next.crafty ?? m.snapshot?.crafty, directory: m.snapshot?.directory ?? next.directory }, base: next.note.revision, dirty: m.draft !== next.note.body,
+        model.update((m) => ({ ...m, snapshot: { ...next, crafty: next.crafty ?? m.snapshot?.crafty, directory: m.snapshot?.directory ?? next.directory, notifications: m.snapshot?.notifications ?? next.notifications }, base: next.note.revision, dirty: m.draft !== next.note.body,
           save: 'saved', message: m.draft === next.note.body ? 'Saved to your account.' : 'Submitted version saved. Your newer edits are still unsaved.' })); persist();
       } else throw new Error('Save outcome unavailable');
     } catch {
@@ -215,7 +233,7 @@ export function workspace(binding: string) {
   }
   async function directoryMutation(path: string, payload: unknown): Promise<boolean> {
     const s = state();
-    if (s.phase !== 'ready' || !s.snapshot || editing || s.directorySave === 'uncertain') return false;
+    if (s.phase !== 'ready' || !s.snapshot || editing || marking || s.directorySave === 'uncertain') return false;
     reading?.abort(); reading = undefined;
     const controller = new AbortController(); editing = controller; const current = epoch;
     model.update((m) => ({ ...m, directorySave: 'saving', directoryMessage: 'Saving your change…' }));
@@ -249,6 +267,38 @@ export function workspace(binding: string) {
   function pins(ids: string[]): Promise<boolean> {
     const d = state().snapshot?.directory;
     return d ? directoryMutation('/api/workspace/pins', { base_directory_revision: d.revision, base_revision: d.pins_revision, ids }) : Promise.resolve(false);
+  }
+  async function markNotification(category: string, through: string): Promise<void> {
+    const s = state();
+    if (disposed || terminal || s.phase !== 'ready' || !s.snapshot || marking || saving || editing || s.notificationSave !== 'idle'
+        || !['services', 'connections'].includes(category) || !decimal(through, true)) return;
+    reading?.abort(); reading = undefined;
+    if (timer) clearTimeout(timer); timer = undefined;
+    const controller = new AbortController(); marking = controller; const current = epoch;
+    model.update(m => ({ ...m, notificationSave: 'saving', notificationMessage: 'Saving your read marker…' }));
+    try {
+      const response = await request('/api/workspace/notifications/read', controller, { category, through });
+      if (disposed || controller.signal.aborted || current !== epoch) return;
+      if (document.visibilityState !== 'visible') { invalidate('Workspace hidden. Checking access on return.'); return; }
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      if (response.status === 409) throw new Error('Read watermark changed');
+      const v = response.value;
+      if (response.status !== 200 || !record(v)) throw new Error('Read marker unavailable');
+      if (v.product !== PRODUCT || v.contract !== CONTRACT || v.schema !== 1 || !record(v.account)
+          || v.account.id !== s.snapshot.account.id || v.account.username !== s.snapshot.account.username
+          || v.account.role !== s.snapshot.account.role || v.session_generation !== s.snapshot.session_generation) {
+        invalidate('Your account scope changed. Open a fresh workspace.', true); return;
+      }
+      const next = notifications(v.notifications);
+      const group = next.groups.find(g => g.category === category);
+      if (!group || BigInt(group.read_through) < BigInt(through)) throw new Error('Unqualified read marker');
+      model.update(m => ({ ...m, snapshot: m.snapshot ? { ...m.snapshot, notifications: next } : undefined, notificationSave: 'idle', notificationMessage: 'Read marker saved. Newer changes remain unread.' }));
+    } catch {
+      if (marking === controller && current === epoch && !disposed) model.update(m => ({ ...m, notificationSave: 'uncertain', notificationMessage: 'The read marker may have saved. Check notifications to see the current state.' }));
+    } finally {
+      if (marking === controller) marking = undefined;
+      if (current === epoch && !disposed) schedule();
+    }
   }
   async function activity(category = state().activity.category, query = state().activity.query, older = false): Promise<void> {
     const s = state();
@@ -315,5 +365,5 @@ export function workspace(binding: string) {
       document.removeEventListener('visibilitychange', visibility);
     };
   }
-  return { model, start, edit, recover, resolve, save, signOut, check: read, editService, pins, activity };
+  return { model, start, edit, recover, resolve, save, signOut, check: read, editService, pins, activity, markNotification };
 }

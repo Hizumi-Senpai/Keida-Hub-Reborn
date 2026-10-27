@@ -72,6 +72,18 @@ pub async fn replace(
         state.now,
     )
     .await?;
+    super::notifications::emit(
+        &mut tx,
+        session.account.id,
+        if sealed.is_some() {
+            crate::activity::Kind::ConnectionSaved
+        } else {
+            crate::activity::Kind::ConnectionRemoved
+        },
+        next,
+        state.now,
+    )
+    .await?;
     tx.commit().await.map_err(|_| Error::Unavailable)?;
     Ok(next)
 }
