@@ -27,7 +27,7 @@ Ubuntu Noble bytes pinned by SHA256
 Node does not run this native browser driver. Svelte's compiled application is
 the code under test.
 
-Five independent workflows cover real native enrollment/TLS, persistent editor
+Eleven independent workflows cover real native enrollment/TLS, persistent editor
 identity and selection, one poll owner, draft/keyboard/reflow/accessibility,
 concurrent-device409, editing during a held successful save, committed lost
 response/no replay, cross-tab account switch/late response, explicit same-account
@@ -54,3 +54,9 @@ Primary protocol references: [W3C WebDriver](https://www.w3.org/TR/webdriver2/),
 [Chromium NSS trust](https://chromium.googlesource.com/chromium/src/+/main/docs/linux/cert_management.md).
 
 The ninth workflow verifies grouped notifications, read watermarks, racing/lost responses without replay, persisted reads, privacy and desktop/390px accessibility.
+
+The tenth workflow verifies personal Home arrangement with conflict/lost-response
+reconciliation, focus and component lifetimes. The eleventh verifies the integration
+catalog, separate dated Roadmap note, actual TLS observation capture, stable
+history pagination, owner archive/member narrowing, note-save enrollment races,
+late-response privacy and desktop/390px accessibility. No fixture touches production.

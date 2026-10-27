@@ -224,6 +224,17 @@ export function workspace(binding: string) {
       && captured.account.username === s.snapshot.account.username && captured.account.role === s.snapshot.account.role
       && captured.session_generation === s.snapshot.session_generation;
   }
+  function mergeCrafty(before: Model, incoming: Crafty | null | undefined, keepMatching = false): { crafty: Crafty | null | undefined; observations: ObservationState; changed: boolean } {
+    const prior = before.snapshot?.crafty;
+    // A note reply contains a waiting overview, not a new provider sample.
+    // Keep a checked overview on matching revisions and never let a delayed
+    // response move the browser back to an older enrollment scope.
+    const crafty = !incoming ? prior ?? incoming : prior
+      && (BigInt(incoming.revision) < BigInt(prior.revision) || (keepMatching && incoming.revision === prior.revision)) ? prior : incoming;
+    if (prior?.revision === crafty?.revision) return { crafty, observations: before.observations, changed: false };
+    ++observationsSerial; observationsReading?.abort(); observationsReading = undefined;
+    return { crafty, observations: { ...emptyObservations(), message: 'Connection enrollment changed. Check newest observations for the current scope.' }, changed: true };
+  }
   async function read(deliberate = false): Promise<void> {
     if (disposed || terminal || reading || saving || editing || marking || arranging || (!deliberate && state().layoutSave === 'uncertain') || document.visibilityState !== 'visible') return;
     const controller = new AbortController(); reading = controller; const current = epoch;
@@ -236,14 +247,13 @@ export function workspace(binding: string) {
       if (!authorized(next)) { invalidate('Your account scope changed. Open a fresh workspace.', true); return; }
       const before = state(); key = storageKey(next);
       if (before.phase === 'ready') {
-        const observationScopeChanged = before.snapshot?.crafty?.revision !== next.crafty?.revision;
-        if (observationScopeChanged) { ++observationsSerial; observationsReading?.abort(); observationsReading = undefined; }
+        const connection = mergeCrafty(before, next.crafty);
         const conflict = before.dirty && next.note.revision !== before.base;
         const layoutMatches = !!before.layoutDraft && samePanels(before.layoutDraft.panels, next.layout.panels);
         const layoutResolved = layoutMatches && deliberate && ['uncertain', 'checking-conflict'].includes(before.layoutSave);
         const layoutConflict = !!before.layoutDraft && !layoutResolved && before.layoutDraft.base !== next.layout.revision;
-        model.set({ ...before, snapshot: next,
-          observations: observationScopeChanged ? { ...emptyObservations(), message: 'Connection enrollment changed. Check newest observations for the current scope.' } : before.observations,
+        const checked: Model = { ...before, snapshot: { ...next, crafty: connection.crafty },
+          observations: connection.observations,
           layoutDraft: layoutResolved ? undefined : before.layoutDraft,
           layoutSave: layoutConflict ? 'conflict' : ['uncertain', 'checking-conflict'].includes(before.layoutSave) || layoutResolved ? 'idle' : before.layoutSave,
           layoutMessage: layoutResolved ? 'Saved layout checked. The current layout matches your changes.' : layoutConflict ? 'A newer layout was saved. Your arrangement is unchanged; compare before saving.' : before.layoutSave === 'uncertain' ? 'The saved layout was checked. Review your arrangement before saving deliberately.' : before.layoutMessage,
@@ -253,7 +263,8 @@ export function workspace(binding: string) {
           message: conflict ? 'A newer saved note is available. Your draft is unchanged.' : 'Workspace checked.',
           notificationSave: 'idle', notificationMessage: before.notificationSave === 'uncertain' ? 'Current read markers checked. Review newer changes before marking read.' : 'Notifications checked.',
           directorySave: before.directorySave === 'uncertain' ? 'idle' : before.directorySave,
-          directoryMessage: before.directorySave === 'uncertain' ? 'Current saved directory and pins checked. Review them before making another change.' : before.directoryMessage });
+          directoryMessage: before.directorySave === 'uncertain' ? 'Current saved directory and pins checked. Review them before making another change.' : before.directoryMessage };
+        if (connection.changed) flushSync(() => model.set(checked)); else model.set(checked);
         if (before.dirty && before.draft === next.note.body) {
           model.update((m) => ({ ...m, dirty: false, base: next.note.revision, save: 'saved', message: 'The current note is saved.' })); removeDraft();
         }
@@ -305,8 +316,11 @@ export function workspace(binding: string) {
       } else if (response.status === 200) {
         const next = snapshot(response.value);
         if (!authorized(next) || next.note.body !== submitted.body || BigInt(next.note.revision) !== BigInt(submitted.base) + 1n) throw new Error('Unqualified save result');
-        model.update((m) => ({ ...m, snapshot: { ...next, crafty: next.crafty ?? m.snapshot?.crafty, directory: m.snapshot?.directory ?? next.directory, notifications: m.snapshot?.notifications ?? next.notifications, layout: m.snapshot?.layout ?? next.layout }, base: next.note.revision, dirty: m.draft !== next.note.body,
-          save: 'saved', message: m.draft === next.note.body ? 'Saved to your account.' : 'Submitted version saved. Your newer edits are still unsaved.' })); persist();
+        const before = state(), connection = mergeCrafty(before, next.crafty, true);
+        const saved: Model = { ...before, snapshot: { ...next, crafty: connection.crafty, directory: before.snapshot?.directory ?? next.directory, notifications: before.snapshot?.notifications ?? next.notifications, layout: before.snapshot?.layout ?? next.layout }, observations: connection.observations, base: next.note.revision, dirty: before.draft !== next.note.body,
+          save: 'saved', message: before.draft === next.note.body ? 'Saved to your account.' : 'Submitted version saved. Your newer edits are still unsaved.' };
+        if (connection.changed) flushSync(() => model.set(saved)); else model.set(saved);
+        persist();
       } else throw new Error('Save outcome unavailable');
     } catch {
       if (saving === controller && current === epoch && !disposed) model.update((m) => ({ ...m, save: 'uncertain', message: 'Save outcome is uncertain. Check the saved note before trying again.' }));

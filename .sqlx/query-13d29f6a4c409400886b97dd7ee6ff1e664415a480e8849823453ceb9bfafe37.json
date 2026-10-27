@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM provider_observations WHERE id < (SELECT id FROM provider_observations ORDER BY id DESC OFFSET 9999 LIMIT 1)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "13d29f6a4c409400886b97dd7ee6ff1e664415a480e8849823453ceb9bfafe37"
+}

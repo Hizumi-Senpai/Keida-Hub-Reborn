@@ -2554,7 +2554,7 @@ function ua(e) {
 	}
 	function E() {
 		r && clearTimeout(r), !v && !y && b().phase === "ready" && b().notificationSave !== "uncertain" && b().layoutSave !== "uncertain" && document.visibilityState === "visible" && (r = setTimeout(() => {
-			r = void 0, ae();
+			r = void 0, oe();
 		}, 15e3));
 	}
 	async function ee(t, n, r) {
@@ -2597,7 +2597,22 @@ function ua(e) {
 		let t = b();
 		return t.phase === "ready" && !!t.snapshot && e.account.id === t.snapshot.account.id && e.account.username === t.snapshot.account.username && e.account.role === t.snapshot.account.role && e.session_generation === t.snapshot.session_generation;
 	}
-	async function ae(e = !1) {
+	function ae(e, t, n = !1) {
+		let r = e.snapshot?.crafty, i = t ? r && (BigInt(t.revision) < BigInt(r.revision) || n && t.revision === r.revision) ? r : t : r ?? t;
+		return r?.revision === i?.revision ? {
+			crafty: i,
+			observations: e.observations,
+			changed: !1
+		} : (++m, l?.abort(), l = void 0, {
+			crafty: i,
+			observations: {
+				...qi(),
+				message: "Connection enrollment changed. Check newest observations for the current scope."
+			},
+			changed: !0
+		});
+	}
+	async function oe(e = !1) {
 		if (v || y || i || a || o || u || d || !e && b().layoutSave === "uncertain" || document.visibilityState !== "visible") return;
 		let r = new AbortController();
 		i = r;
@@ -2620,16 +2635,13 @@ function ua(e) {
 			}
 			let o = b();
 			if (h = x(a), o.phase === "ready") {
-				let n = o.snapshot?.crafty?.revision !== a.crafty?.revision;
-				n && (++m, l?.abort(), l = void 0);
-				let r = o.dirty && a.note.revision !== o.base, i = !!o.layoutDraft && sa(o.layoutDraft.panels, a.layout.panels) && e && ["uncertain", "checking-conflict"].includes(o.layoutSave), s = !!o.layoutDraft && !i && o.layoutDraft.base !== a.layout.revision;
-				t.set({
+				let n = ae(o, a.crafty), r = o.dirty && a.note.revision !== o.base, i = !!o.layoutDraft && sa(o.layoutDraft.panels, a.layout.panels) && e && ["uncertain", "checking-conflict"].includes(o.layoutSave), s = !!o.layoutDraft && !i && o.layoutDraft.base !== a.layout.revision, c = {
 					...o,
-					snapshot: a,
-					observations: n ? {
-						...qi(),
-						message: "Connection enrollment changed. Check newest observations for the current scope."
-					} : o.observations,
+					snapshot: {
+						...a,
+						crafty: n.crafty
+					},
+					observations: n.observations,
 					layoutDraft: i ? void 0 : o.layoutDraft,
 					layoutSave: s ? "conflict" : ["uncertain", "checking-conflict"].includes(o.layoutSave) || i ? "idle" : o.layoutSave,
 					layoutMessage: i ? "Saved layout checked. The current layout matches your changes." : s ? "A newer layout was saved. Your arrangement is unchanged; compare before saving." : o.layoutSave === "uncertain" ? "The saved layout was checked. Review your arrangement before saving deliberately." : o.layoutMessage,
@@ -2641,7 +2653,8 @@ function ua(e) {
 					notificationMessage: o.notificationSave === "uncertain" ? "Current read markers checked. Review newer changes before marking read." : "Notifications checked.",
 					directorySave: o.directorySave === "uncertain" ? "idle" : o.directorySave,
 					directoryMessage: o.directorySave === "uncertain" ? "Current saved directory and pins checked. Review them before making another change." : o.directoryMessage
-				}), o.dirty && o.draft === a.note.body && (t.update((e) => ({
+				};
+				n.changed ? jt(() => t.set(c)) : t.set(c), o.dirty && o.draft === a.note.body && (t.update((e) => ({
 					...e,
 					dirty: !1,
 					base: a.note.revision,
@@ -2671,7 +2684,7 @@ function ua(e) {
 			i === r && (i = void 0);
 		}
 	}
-	function oe(e) {
+	function se(e) {
 		let n = b();
 		if (n.phase === "ready" && n.snapshot) {
 			if (t.set({
@@ -2685,7 +2698,7 @@ function ua(e) {
 			} catch {}
 		}
 	}
-	function se() {
+	function ce() {
 		let e = b();
 		e.recovery && e.snapshot && e.phase === "ready" && (t.set({
 			...e,
@@ -2697,7 +2710,7 @@ function ua(e) {
 			message: "Draft recovered. Review it before saving."
 		}), C());
 	}
-	function ce(e) {
+	function le(e) {
 		let n = b();
 		n.snapshot && n.phase === "ready" && (t.set({
 			...n,
@@ -2709,7 +2722,7 @@ function ua(e) {
 			message: e ? "Loaded the saved note." : "Draft kept against the latest saved revision. Review, then save deliberately."
 		}), C());
 	}
-	async function le() {
+	async function ue() {
 		let e = b();
 		if (e.phase !== "ready" || !e.dirty || !Yi(e.draft) || [
 			"conflict",
@@ -2754,20 +2767,22 @@ function ua(e) {
 			else if (e.status === 200) {
 				let n = ca(e.value);
 				if (!ne(n) || n.note.body !== c.body || BigInt(n.note.revision) !== BigInt(c.base) + 1n) throw Error("Unqualified save result");
-				t.update((e) => ({
-					...e,
+				let r = b(), i = ae(r, n.crafty, !0), a = {
+					...r,
 					snapshot: {
 						...n,
-						crafty: n.crafty ?? e.snapshot?.crafty,
-						directory: e.snapshot?.directory ?? n.directory,
-						notifications: e.snapshot?.notifications ?? n.notifications,
-						layout: e.snapshot?.layout ?? n.layout
+						crafty: i.crafty,
+						directory: r.snapshot?.directory ?? n.directory,
+						notifications: r.snapshot?.notifications ?? n.notifications,
+						layout: r.snapshot?.layout ?? n.layout
 					},
+					observations: i.observations,
 					base: n.note.revision,
-					dirty: e.draft !== n.note.body,
+					dirty: r.draft !== n.note.body,
 					save: "saved",
-					message: e.draft === n.note.body ? "Saved to your account." : "Submitted version saved. Your newer edits are still unsaved."
-				})), C();
+					message: r.draft === n.note.body ? "Saved to your account." : "Submitted version saved. Your newer edits are still unsaved."
+				};
+				i.changed ? jt(() => t.set(a)) : t.set(a), C();
 			} else throw Error("Save outcome unavailable");
 		} catch {
 			a === o && s === n && !v && t.update((e) => ({
@@ -2776,10 +2791,10 @@ function ua(e) {
 				message: "Save outcome is uncertain. Check the saved note before trying again."
 			}));
 		} finally {
-			a === o && (a = void 0), s === n && !v && (b().save === "checking-conflict" ? await ae() : E());
+			a === o && (a = void 0), s === n && !v && (b().save === "checking-conflict" ? await oe() : E());
 		}
 	}
-	async function ue(e, r) {
+	async function de(e, r) {
 		let a = b();
 		if (a.phase !== "ready" || !a.snapshot || o || u || d || a.layoutSave === "checking-conflict" || a.directorySave === "uncertain") return !1;
 		i?.abort(), i = void 0;
@@ -2834,21 +2849,21 @@ function ua(e) {
 			o === s && (o = void 0), c === n && !v && E();
 		}
 	}
-	function de(e, t) {
-		return ue("/api/owner/directory", {
+	function fe(e, t) {
+		return de("/api/owner/directory", {
 			base_revision: e,
 			change: t
 		});
 	}
-	function fe(e) {
+	function pe(e) {
 		let t = b().snapshot?.directory;
-		return t ? ue("/api/workspace/pins", {
+		return t ? de("/api/workspace/pins", {
 			base_directory_revision: t.revision,
 			base_revision: t.pins_revision,
 			ids: e
 		}) : Promise.resolve(!1);
 	}
-	async function pe(e, s) {
+	async function D(e, s) {
 		let c = b();
 		if (v || y || c.phase !== "ready" || !c.snapshot || u || a || o || d || c.layoutSave === "checking-conflict" || c.notificationSave !== "idle" || !["services", "connections"].includes(e) || !$(s, !0)) return;
 		i?.abort(), i = void 0, r && clearTimeout(r), r = void 0;
@@ -2906,7 +2921,7 @@ function ua(e) {
 			u === l && (u = void 0), f === n && !v && E();
 		}
 	}
-	function D() {
+	function me() {
 		let e = b();
 		e.phase !== "ready" || !e.snapshot || e.layoutDraft || a || o || u || d || (i?.abort(), i = void 0, r && clearTimeout(r), r = void 0, t.set({
 			...e,
@@ -2918,7 +2933,7 @@ function ua(e) {
 			layoutMessage: "Arrange your Home panels, then save to your account."
 		}), E());
 	}
-	function me(e) {
+	function he(e) {
 		let n = b();
 		n.phase === "ready" && n.layoutDraft && ![
 			"saving",
@@ -2933,22 +2948,22 @@ function ua(e) {
 			layoutMessage: "Your arrangement is unsaved."
 		});
 	}
-	function he(e, t) {
+	function ge(e, t) {
 		let n = b().layoutDraft?.panels.map((e) => ({ ...e }));
 		if (!n) return;
 		let r = n.findIndex((t) => t.id === e), i = r + t;
-		r < 0 || i < 0 || i >= n.length || ([n[r], n[i]] = [n[i], n[r]], me(n));
+		r < 0 || i < 0 || i >= n.length || ([n[r], n[i]] = [n[i], n[r]], he(n));
 	}
-	function ge(e) {
+	function _e(e) {
 		let t = b().layoutDraft?.panels.map((e) => ({ ...e }));
 		if (!t) return;
 		let n = t.find((t) => t.id === e);
-		!n || n.visible && t.filter((e) => e.visible).length === 1 || (n.visible = !n.visible, me(t));
-	}
-	function _e() {
-		me(Ui());
+		!n || n.visible && t.filter((e) => e.visible).length === 1 || (n.visible = !n.visible, he(t));
 	}
 	function ve() {
+		he(Ui());
+	}
+	function O() {
 		let e = b();
 		e.phase !== "ready" || [
 			"saving",
@@ -2961,9 +2976,9 @@ function ua(e) {
 			layoutMessage: "Your saved Home layout is in use."
 		}), E());
 	}
-	function O(e) {
+	function ye(e) {
 		let n = b();
-		n.phase === "ready" && n.snapshot && n.layoutDraft && n.layoutSave === "conflict" && (e ? ve() : t.set({
+		n.phase === "ready" && n.snapshot && n.layoutDraft && n.layoutSave === "conflict" && (e ? O() : t.set({
 			...n,
 			layoutDraft: {
 				...n.layoutDraft,
@@ -2973,7 +2988,7 @@ function ua(e) {
 			layoutMessage: "Your arrangement is kept against the checked saved layout. Review, then save deliberately."
 		}));
 	}
-	async function ye() {
+	async function k() {
 		let e = b();
 		if (v || y || e.phase !== "ready" || !e.snapshot || !e.layoutDraft || e.layoutSave !== "idle" || a || o || u || d) return;
 		let s = {
@@ -3050,10 +3065,10 @@ function ua(e) {
 				layoutMessage: "The layout may have saved. Check the saved layout before saving again; your changes have not been sent again."
 			}));
 		} finally {
-			d === c && (d = void 0), l === n && !v && (f ? await ae(!0) : E());
+			d === c && (d = void 0), l === n && !v && (f ? await oe(!0) : E());
 		}
 	}
-	async function k(e = b().activity.category, r = b().activity.query, i = !1) {
+	async function be(e = b().activity.category, r = b().activity.query, i = !1) {
 		let a = b();
 		if (v || y || a.phase !== "ready" || !a.snapshot || document.visibilityState !== "visible") return;
 		s?.abort();
@@ -3141,7 +3156,7 @@ function ua(e) {
 			s === o && (s = void 0);
 		}
 	}
-	async function be(e = !1) {
+	async function xe(e = !1) {
 		let r = b();
 		if (v || y || r.phase !== "ready" || !r.snapshot || document.visibilityState !== "visible" || c || !e && r.guide.phase === "ready") return;
 		let i = r.snapshot, a = new AbortController();
@@ -3195,7 +3210,7 @@ function ua(e) {
 			c === a && (c = void 0);
 		}
 	}
-	async function xe(e = !1) {
+	async function A(e = !1) {
 		let r = b();
 		if (v || y || r.phase !== "ready" || !r.snapshot || document.visibilityState !== "visible") return;
 		let i = r.observations;
@@ -3273,15 +3288,15 @@ function ua(e) {
 			l === o && (l = void 0);
 		}
 	}
-	function A() {
+	function Se() {
 		S(), T("Signing out…", !0);
 		try {
 			_?.postMessage({ kind: "auth-changed" });
 		} catch {}
 	}
-	function Se() {
+	function Ce() {
 		let e = () => T("Workspace hidden. Checking access on return."), n = () => {
-			ae();
+			oe();
 		}, r = () => {
 			document.visibilityState === "visible" ? n() : e();
 		};
@@ -3290,33 +3305,33 @@ function ua(e) {
 				Q(e.data) && e.data.kind === "auth-changed" && T("Your sign-in may have changed. Open a fresh workspace.", !0);
 			};
 		} catch {}
-		return window.addEventListener("blur", e), window.addEventListener("pagehide", e), window.addEventListener("focus", n), window.addEventListener("pageshow", n), document.addEventListener("visibilitychange", r), ae(), () => {
+		return window.addEventListener("blur", e), window.addEventListener("pagehide", e), window.addEventListener("focus", n), window.addEventListener("pageshow", n), document.addEventListener("visibilitychange", r), oe(), () => {
 			v = !0, w(), _?.close(), t.set(Ji("blocked", "Workspace closed.")), window.removeEventListener("blur", e), window.removeEventListener("pagehide", e), window.removeEventListener("focus", n), window.removeEventListener("pageshow", n), document.removeEventListener("visibilitychange", r);
 		};
 	}
 	return {
 		model: t,
-		start: Se,
-		edit: oe,
-		recover: se,
-		resolve: ce,
-		save: le,
-		signOut: A,
-		check: () => ae(!0),
-		editService: de,
-		pins: fe,
-		activity: k,
-		markNotification: pe,
-		beginLayout: D,
-		moveLayout: he,
-		toggleLayout: ge,
-		resetLayout: _e,
-		cancelLayout: ve,
-		resolveLayout: O,
-		saveLayout: ye,
-		checkLayout: () => ae(!0),
-		loadGuide: be,
-		observations: xe
+		start: Ce,
+		edit: se,
+		recover: ce,
+		resolve: le,
+		save: ue,
+		signOut: Se,
+		check: () => oe(!0),
+		editService: fe,
+		pins: pe,
+		activity: be,
+		markNotification: D,
+		beginLayout: me,
+		moveLayout: ge,
+		toggleLayout: _e,
+		resetLayout: ve,
+		cancelLayout: O,
+		resolveLayout: ye,
+		saveLayout: k,
+		checkLayout: () => oe(!0),
+		loadGuide: xe,
+		observations: A
 	};
 }
 // src/LayoutEditor.svelte

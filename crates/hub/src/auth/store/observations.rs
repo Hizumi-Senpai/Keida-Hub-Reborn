@@ -46,7 +46,7 @@ fn valid(value: &Overview, revision: i64) -> bool {
         })
 }
 
-pub(super) async fn record(
+pub async fn record(
     pool: &PgPool,
     key: &[u8],
     verifier: &[u8],

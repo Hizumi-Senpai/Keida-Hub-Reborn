@@ -543,7 +543,68 @@ async fn catalog_roadmap_and_observations() -> Check<()> {
         "catalog and Roadmap note reflow at390px",
     )?;
     let (member_name, member_password) = f.enroll_member(&owner).await?;
+    let mut member = f.browser(true).await?;
+    sign_in(&f, &member, &member_name, &member_password).await?;
+    workspace(&f, &member).await?;
+    body(&member, "").await?;
+    note(&member).await?;
+    let member_note = "A member note saved while reviewing an enrollment change";
+    member.fill("#workspace-note", member_note).await?;
+    member.click(".main-nav button:nth-child(3)").await?;
+    member.click(".view-observation-history").await?;
+    member.wait("return document.querySelectorAll('.observation-list > li').length===25 && document.querySelector('[data-current-revision]')?.dataset.currentRevision==='1'",json!([])).await?;
+
+    step("note mutation clears previously admitted member history before the next poll");
     owner.click(".main-nav button:nth-child(3)").await?;
+    owner.fill("#crafty-endpoint", &provider.origin).await?;
+    owner.fill("#crafty-token", c::TOKEN).await?;
+    owner.fill("#crafty-timezone", "UTC").await?;
+    owner.fill("#crafty-ca", &provider.ca).await?;
+    owner.fill("input[name=server-id]", c::ID).await?;
+    owner
+        .fill("input[name=server-name]", "Replacement history fixture")
+        .await?;
+    owner
+        .fill("input[name=server-join]", "play.example:25565")
+        .await?;
+    owner
+        .click(".connection-setup form button[type=submit]")
+        .await?;
+    owner.wait("return document.querySelector('.server-card')?.textContent.includes('Replacement history fixture')",json!([])).await?;
+    check(member.evaluate("return document.querySelectorAll('.observation-list > li').length===25 && document.querySelector('[data-current-revision]')?.dataset.currentRevision==='1'",json!([])).await?==true,"member still displays the previously admitted history before the note mutation")?;
+    let reads_before_save = f.reads();
+    // Submit the actual persistent native form while its sibling history is
+    // visible. Navigating away first would hide stale results and mask this
+    // regression; requestSubmit executes the same real note handler and PUT.
+    member
+        .evaluate(
+            "document.querySelector('.note-card').requestSubmit();return true",
+            json!([]),
+        )
+        .await?;
+    saved(&member).await?;
+    check(member.evaluate("return document.querySelectorAll('.observation-list > li').length===0 && document.querySelector('.observation-status').textContent.includes('Connection enrollment changed') && document.querySelector('#workspace-note').value===arguments[0]",json!([member_note])).await?==true,"successful note response synchronously removes obsolete member history without discarding the accepted note")?;
+    check(
+        f.reads() == reads_before_save,
+        "the note response itself clears history before any snapshot poll",
+    )?;
+
+    // Reload through the real document to observe revision2 and prepare a new
+    // note. A held old-revision history reply must then lose authority when a
+    // second successful note response discovers removal at revision3.
+    workspace(&f, &member).await?;
+    note(&member).await?;
+    body(&member, member_note).await?;
+    let newer_member_note = "A second member note accepted while an older history reply is held";
+    member.fill("#workspace-note", newer_member_note).await?;
+    member.click(".main-nav button:nth-child(3)").await?;
+    member.click(".view-observation-history").await?;
+    member.wait("return document.querySelectorAll('.observation-list > li').length===1 && document.querySelector('[data-current-revision]')?.dataset.currentRevision==='2'",json!([])).await?;
+    let prior_scope = f.hold("/api/workspace/observations");
+    member.click(".observation-newest").await?;
+    tokio::time::timeout(Duration::from_secs(3), prior_scope.entered.notified())
+        .await
+        .map_err(|_| "held prior-enrollment member history entered")?;
     owner
         .wait(
             "return !!document.querySelector('.connection-setup > button.text-button')",
@@ -554,16 +615,27 @@ async fn catalog_roadmap_and_observations() -> Check<()> {
         .click(".connection-setup > button.text-button")
         .await?;
     owner.wait("return document.querySelector('[aria-label=Connections]').textContent.includes('No Crafty connection enrolled') && !document.querySelector('.server-card')",json!([])).await?;
+    let reads_before_save = f.reads();
+    member
+        .evaluate(
+            "document.querySelector('.note-card').requestSubmit();return true",
+            json!([]),
+        )
+        .await?;
+    saved(&member).await?;
+    check(member.evaluate("return document.querySelectorAll('.observation-list > li').length===0 && document.querySelector('.observation-status').textContent.includes('Connection enrollment changed') && document.querySelector('#workspace-note').value===arguments[0]",json!([newer_member_note])).await?==true,"newer note response cancels the prior-enrollment history scope")?;
+    check(
+        f.reads() == reads_before_save,
+        "held history is invalidated by the mutation rather than a later poll",
+    )?;
+    prior_scope.release.notify_one();
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    check(member.evaluate("return document.querySelectorAll('.observation-list > li').length===0 && document.querySelector('.observation-status').textContent.includes('Connection enrollment changed') && document.querySelector('#workspace-note').value===arguments[0]",json!([newer_member_note])).await?==true,"late old-enrollment history cannot rehydrate after a successful note mutation")?;
+    member.click(".observation-newest").await?;
+    member.wait("return document.querySelector('.observation-status')?.textContent.includes('checked') && document.querySelectorAll('.observation-list > li').length===0 && document.querySelector('[data-current-revision]')?.dataset.currentRevision==='3'",json!([])).await?;
+    check(member.evaluate("return !document.querySelector('.observation-history').textContent.includes('Reviewed history fixture') && !document.querySelector('.observation-history').textContent.includes('Historical timeout fixture') && !document.querySelector('.observation-history').textContent.includes('Replacement history fixture') && !document.querySelector('#crafty-token')",json!([])).await?==true,"removed enrollment history remains owner-only and does not leak into a member")?;
     owner.click(".view-observation-history").await?;
-    owner.wait("return document.querySelectorAll('.observation-list > li').length===25 && document.querySelector('.observation-history').textContent.includes('Current enrollment revision 2')",json!([])).await?;
-    let mut member = f.browser(true).await?;
-    sign_in(&f, &member, &member_name, &member_password).await?;
-    workspace(&f, &member).await?;
-    body(&member, "").await?;
-    member.click(".main-nav button:nth-child(3)").await?;
-    member.click(".view-observation-history").await?;
-    member.wait("return document.querySelector('.observation-status')?.textContent.includes('checked') && document.querySelectorAll('.observation-list > li').length===0",json!([])).await?;
-    check(member.evaluate("return !document.querySelector('.observation-history').textContent.includes('Reviewed history fixture') && !document.querySelector('.observation-history').textContent.includes('Historical timeout fixture') && !document.querySelector('#crafty-token')",json!([])).await?==true,"removed enrollment history remains owner-only and does not leak into a member")?;
+    owner.wait("return document.querySelectorAll('.observation-list > li').length===25 && document.querySelector('.observation-history').textContent.includes('Current enrollment revision 3')",json!([])).await?;
     let held = f.hold("/api/workspace/observations");
     owner.click(".observation-newest").await?;
     tokio::time::timeout(Duration::from_secs(3), held.entered.notified())
