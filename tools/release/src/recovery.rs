@@ -193,6 +193,70 @@ async fn save_layout(
     )
     .await
 }
+async fn observation_page(
+    client: &Client,
+    origin: &str,
+    session: &str,
+    binding: &str,
+) -> Result<Value> {
+    let response = admitted(
+        client,
+        origin,
+        "/api/workspace/observations",
+        reqwest::Method::GET,
+        session,
+        binding,
+        "reborn-workspace-v1",
+    )
+    .send()
+    .await
+    .map_err(|_| "packaged observation history read failed")?;
+    if !response
+        .headers()
+        .get("cache-control")
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|v| v.contains("no-store"))
+    {
+        return Err("observation history admitted browser caching");
+    }
+    let page = value(response, 200).await?;
+    if page["product"] != "keida-hub-reborn"
+        || page["contract"] != "reborn-workspace-v1"
+        || page["schema"] != 1
+    {
+        return Err("observation history contract differs");
+    }
+    Ok(page)
+}
+
+fn runtime_denied(pg: &str, database: &str, sql: &str) -> Result<()> {
+    let output = Command::new("docker")
+        .args([
+            "exec",
+            pg,
+            "psql",
+            "-X",
+            "-U",
+            "reborn_app",
+            "-d",
+            database,
+            "-v",
+            "ON_ERROR_STOP=1",
+            "-v",
+            "VERBOSITY=sqlstate",
+            "-c",
+            sql,
+        ])
+        .output()
+        .map_err(|_| "runtime privilege check caller unavailable")?;
+    if output.status.success()
+        || output.stderr.len() > 1024
+        || !output.stderr.windows(5).any(|bytes| bytes == b"42501")
+    {
+        return Err("runtime database privilege denial was not established");
+    }
+    Ok(())
+}
 async fn wait(client: &Client, origin: &str) -> Result<()> {
     let deadline = tokio::time::Instant::now() + Duration::from_secs(12);
     loop {
@@ -649,6 +713,64 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     {
         return Err("initial grouped notifications/read markers missing");
     }
+    let observed_requests = provider.requests().len();
+    let initial_observations = observation_page(&client, &origin, &session, binding).await?;
+    let initial_samples = initial_observations["entries"]
+        .as_array()
+        .filter(|entries| !entries.is_empty())
+        .ok_or("actual packaged provider sample was not retained")?;
+    let initial_sample = &initial_samples[0];
+    if initial_observations["account"] != claimed["account"]
+        || initial_observations["session_generation"] != initial["session_generation"]
+        || initial_observations["current_revision"] != "1"
+        || initial_sample["revision"] != "1"
+        || initial_sample["complete"] != true
+        || !initial_sample["error"].is_null()
+        || initial_sample["checked_at"].as_str().is_none()
+        || initial_sample["servers"]
+            .as_array()
+            .is_none_or(|v| v.len() != 1)
+        || initial_sample["servers"][0]["name"] != "Restorable dedicated fixture"
+        || initial_sample["servers"][0]["state"] != "running"
+        || initial_sample["servers"][0]["players"] != 0
+        || initial_sample["servers"][0]["capacity"] != 20
+        || initial_sample["servers"][0]["freshness"] != "fresh"
+        || initial_sample["servers"][0]["provider_at"]
+            .as_str()
+            .is_none()
+        || initial_sample["servers"][0]["collected_at"]
+            .as_str()
+            .is_none()
+    {
+        return Err("retained packaged zero observation differs from the TLS provider");
+    }
+    let encoded_history = serde_json::to_string(&initial_observations)
+        .map_err(|_| "packaged observation history encoding failed")?;
+    if [
+        reborn_crafty_fixture::TOKEN,
+        reborn_crafty_fixture::ID,
+        provider.origin.as_str(),
+        provider.ca.as_str(),
+        "BEGIN CERTIFICATE",
+        "ca_pem",
+        "play.example:25565",
+        "/private/provider-path",
+        "Unreviewed provider metadata",
+        "sample_id",
+    ]
+    .iter()
+    .any(|value| encoded_history.contains(value))
+    {
+        return Err("packaged observation history retained non-allowlisted metadata");
+    }
+    let member_observations =
+        observation_page(&client, &origin, &member_session, member_binding).await?;
+    if member_observations["account"] != member_login["account"]
+        || member_observations["entries"] != initial_observations["entries"]
+        || provider.requests().len() != observed_requests
+    {
+        return Err("configured member history differs or history performed provider IO");
+    }
     docker(&["stop", "--time", "5", &first])?;
     let dump = scope.root.join("database.dump");
     let dump_file = std::fs::OpenOptions::new()
@@ -731,27 +853,15 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         "ALTER TABLE users ADD COLUMN runtime_must_not_ddl integer",
         "ALTER TABLE dashboard_layouts ADD COLUMN runtime_must_not_ddl integer",
         "DELETE FROM dashboard_layouts",
+        "ALTER TABLE provider_observations ADD COLUMN runtime_must_not_ddl integer",
+        "UPDATE provider_observations SET checked_at=checked_at WHERE id=1",
+        "UPDATE provider_server_observations SET players=players WHERE batch_id=1",
+        "DELETE FROM provider_server_observations WHERE batch_id=1",
         "UPDATE activity_events SET revision=revision WHERE id=1",
         "DELETE FROM activity_events WHERE id=1",
         "UPDATE _sqlx_migrations SET success=success WHERE version=1",
     ] {
-        if docker(&[
-            "exec",
-            &restore_pg,
-            "psql",
-            "-U",
-            "reborn_app",
-            "-d",
-            "restored",
-            "-v",
-            "ON_ERROR_STOP=1",
-            "-c",
-            sql,
-        ])
-        .is_ok()
-        {
-            return Err("runtime database role gained migration authority");
-        }
+        runtime_denied(&restore_pg, "restored", sql)?;
     }
     let restored = format!("reborn-recovery-restored-{nonce}");
     scope.containers.push(restored.clone());
@@ -768,6 +878,15 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     invoke(args, &["serve"])?;
     let origin = format!("http://127.0.0.1:{restored_port}");
     wait(&client, &origin).await?;
+    // Read retained data before requesting a new provider collection. A later
+    // minute's demand sample must not disguise missing restored history.
+    let restored_requests = provider.requests().len();
+    let restored_observations = observation_page(&client, &origin, &session, binding).await?;
+    if restored_observations != initial_observations
+        || provider.requests().len() != restored_requests
+    {
+        return Err("matched observation restore differs or history performed provider IO");
+    }
     let retained = value(
         admitted(
             &client,
@@ -920,6 +1039,12 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         200,
     )
     .await?;
+    // A deliberately replaced fixture enrollment gives the newer sample its
+    // own revision without waiting for, or weakening, the per-minute bound.
+    provider.mode(reborn_crafty_fixture::NO_PLAYERS);
+    let mut newer_enrollment = enrollment.clone();
+    newer_enrollment["base_revision"] = json!("1");
+    newer_enrollment["connection"]["servers"][0]["name"] = json!("Newer retained fixture");
     value(
         admitted(
             &client,
@@ -930,7 +1055,59 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
             binding,
             "reborn-workspace-v1",
         )
-        .json(&json!({"base_revision":"1","connection":null}))
+        .json(&newer_enrollment)
+        .send()
+        .await
+        .map_err(|_| "newer observation enrollment failed")?,
+        200,
+    )
+    .await?;
+    let newer_snapshot = value(
+        admitted(
+            &client,
+            &origin,
+            "/api/workspace/snapshot",
+            reqwest::Method::GET,
+            &session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .send()
+        .await
+        .map_err(|_| "newer actual provider sample failed")?,
+        200,
+    )
+    .await?;
+    let newer_observations = observation_page(&client, &origin, &session, binding).await?;
+    let newer_samples = newer_observations["entries"]
+        .as_array()
+        .ok_or("newer retained observation page absent")?;
+    if newer_snapshot["crafty"]["revision"] != "2"
+        || !newer_snapshot["crafty"]["servers"][0]["players"].is_null()
+        || newer_observations["current_revision"] != "2"
+        || newer_samples.len() <= initial_samples.len()
+        || newer_samples[0]["revision"] != "2"
+        || newer_samples[0]["complete"] != false
+        || newer_samples[0]["servers"][0]["name"] != "Newer retained fixture"
+        || !newer_samples[0]["servers"][0]["players"].is_null()
+        || newer_samples[0]["servers"][0]["state"] != "running"
+        || initial_samples
+            .iter()
+            .any(|old| !newer_samples.iter().any(|entry| entry == old))
+    {
+        return Err("newer real unknown-player observation was not retained beside old data");
+    }
+    value(
+        admitted(
+            &client,
+            &origin,
+            "/api/owner/crafty",
+            reqwest::Method::PUT,
+            &session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .json(&json!({"base_revision":"2","connection":null}))
         .send()
         .await
         .map_err(|_| "newer shared connection change failed")?,
@@ -997,14 +1174,16 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     let entries = current_activity["entries"]
         .as_array()
         .ok_or("newer Activity absent")?;
-    if entries.len() != 7
+    if entries.len() != 8
         || entries[0]["kind"] != "connection_removed"
-        || entries[0]["revision"] != "2"
-        || entries[1]["kind"] != "pins_saved"
+        || entries[0]["revision"] != "3"
+        || entries[1]["kind"] != "connection_saved"
         || entries[1]["revision"] != "2"
-        || entries[2]["kind"] != "note_saved"
+        || entries[2]["kind"] != "pins_saved"
         || entries[2]["revision"] != "2"
-        || entries[3..]
+        || entries[3]["kind"] != "note_saved"
+        || entries[3]["revision"] != "2"
+        || entries[4..]
             != *initial_activity["entries"]
                 .as_array()
                 .ok_or("initial Activity absent")?
@@ -1030,14 +1209,46 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     let groups = &member_preserved["notifications"]["groups"];
     if member_preserved["notifications"]["unread_groups"] != 1
         || member_preserved["layout"] != newer_member_layout
-        || groups[0]["revision"] != "2"
+        || groups[0]["revision"] != "3"
         || groups[0]["read_through"] != "1"
-        || groups[0]["unread"] != "1"
+        || groups[0]["unread"] != "2"
         || groups[1] != member_initial["notifications"]["groups"][1]
         || preserved["crafty"]["configured"] != false
-        || preserved["crafty"]["revision"] != "2"
+        || preserved["crafty"]["revision"] != "3"
     {
         return Err("failed candidate lost newer notifications/read state");
+    }
+    let archived_requests = provider.requests().len();
+    let archived = observation_page(&client, &origin, &session, binding).await?;
+    let member_removed =
+        observation_page(&client, &origin, &member_session, member_binding).await?;
+    if archived["current_revision"] != "3"
+        || archived["entries"] != newer_observations["entries"]
+        || archived["through"] != newer_observations["through"]
+        || member_removed["current_revision"] != "3"
+        || member_removed["entries"] != json!([])
+        || provider.requests().len() != archived_requests
+    {
+        return Err("failed candidate lost newer observations or removed member scope");
+    }
+    let through = newer_observations["through"]
+        .as_str()
+        .and_then(|v| v.parse::<u64>().ok())
+        .ok_or("newer observation window absent")?;
+    let stale_cursor = admitted(
+        &client,
+        &origin,
+        &format!("/api/workspace/observations?revision=2&through={through}"),
+        reqwest::Method::GET,
+        &session,
+        binding,
+        "reborn-workspace-v1",
+    )
+    .send()
+    .await
+    .map_err(|_| "obsolete history window check failed")?;
+    if stale_cursor.status().as_u16() != 409 {
+        return Err("changed enrollment admitted an obsolete observation window");
     }
     if provider
         .requests()
@@ -1046,7 +1257,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     {
         return Err("recovery observer attempted mutation");
     }
-    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":8,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"restored_notifications_and_read_state":true,"restored_personal_layout_and_newer_edits":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
+    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":9,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"restored_notifications_and_read_state":true,"restored_personal_layout_and_newer_edits":true,"restored_provider_observations_and_newer_samples":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
     crate::write(
         &out.join("recovery-proof.json"),
         &serde_json::to_vec(&report).map_err(|_| "recovery proof encoding failed")?,

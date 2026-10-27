@@ -14,6 +14,8 @@ const ACTIVITY_SCRIPT: &[u8] = include_bytes!("../../static/workspace-compat/0.1
 const ACTIVITY_STYLE: &[u8] = include_bytes!("../../static/workspace-compat/0.1.9.css");
 const NOTIFICATIONS_SCRIPT: &[u8] = include_bytes!("../../static/workspace-compat/0.1.10.js");
 const NOTIFICATIONS_STYLE: &[u8] = include_bytes!("../../static/workspace-compat/0.1.10.css");
+const LAYOUT_SCRIPT: &[u8] = include_bytes!("../../static/workspace-compat/0.1.11.js");
+const LAYOUT_STYLE: &[u8] = include_bytes!("../../static/workspace-compat/0.1.11.css");
 fn url(bytes: &[u8], extension: &str) -> String {
     let digest: String = Sha256::digest(bytes)
         .iter()
@@ -54,6 +56,10 @@ pub fn find(path: &str) -> Option<(&'static str, &'static [u8])> {
         Some(("text/javascript; charset=utf-8", NOTIFICATIONS_SCRIPT))
     } else if path == url(NOTIFICATIONS_STYLE, "css") {
         Some(("text/css; charset=utf-8", NOTIFICATIONS_STYLE))
+    } else if path == url(LAYOUT_SCRIPT, "js") {
+        Some(("text/javascript; charset=utf-8", LAYOUT_SCRIPT))
+    } else if path == url(LAYOUT_STYLE, "css") {
+        Some(("text/css; charset=utf-8", LAYOUT_STYLE))
     } else {
         None
     }
@@ -72,5 +78,7 @@ pub fn manifest() -> Vec<String> {
         url(ACTIVITY_STYLE, "css"),
         url(NOTIFICATIONS_SCRIPT, "js"),
         url(NOTIFICATIONS_STYLE, "css"),
+        url(LAYOUT_SCRIPT, "js"),
+        url(LAYOUT_STYLE, "css"),
     ]
 }

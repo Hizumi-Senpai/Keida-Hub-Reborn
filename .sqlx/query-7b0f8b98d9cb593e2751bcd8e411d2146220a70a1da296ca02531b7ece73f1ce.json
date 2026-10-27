@@ -1,0 +1,80 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, connection_revision, checked_at, complete, error FROM provider_observations WHERE ($1::boolean OR (connection_revision = $2 AND $3::boolean)) AND id <= $4 AND ($5::bigint IS NULL OR id < $5) ORDER BY id DESC LIMIT 26",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "provider_observations",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "connection_revision",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "provider_observations",
+            "name": "connection_revision"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "checked_at",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "provider_observations",
+            "name": "checked_at"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "complete",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "provider_observations",
+            "name": "complete"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "error",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "provider_observations",
+            "name": "error"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Bool",
+        "Int8",
+        "Bool",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "7b0f8b98d9cb593e2751bcd8e411d2146220a70a1da296ca02531b7ece73f1ce"
+}

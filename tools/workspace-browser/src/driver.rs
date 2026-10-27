@@ -9,6 +9,37 @@ use std::{
     time::Duration,
 };
 
+// Keep protocol failures useful without ever printing the browser's original
+// message, stack, DOM, URL, submitted values or request arguments.
+fn script_failure(value: &Value) -> &'static str {
+    let message = value["message"].as_str().unwrap_or("");
+    if message.contains("Cannot read properties of null")
+        || (message.contains("Cannot read property") && message.contains("null"))
+    {
+        "WebDriver browser primitive failed: null property"
+    } else if message.contains("Cannot read properties of undefined")
+        || (message.contains("Cannot read property") && message.contains("undefined"))
+    {
+        "WebDriver browser primitive failed: undefined property"
+    } else if message.contains("querySelector")
+        && (message.contains("not a valid selector") || message.contains("Failed to execute"))
+    {
+        "WebDriver browser primitive failed: selector syntax"
+    } else if [
+        "SyntaxError",
+        "ReferenceError",
+        "TypeError",
+        "is not defined",
+    ]
+    .iter()
+    .any(|kind| message.contains(kind))
+    {
+        "WebDriver browser primitive failed: script exception"
+    } else {
+        "WebDriver browser primitive failed: other script error"
+    }
+}
+
 pub struct Browser {
     child: Child,
     client: Client,
@@ -147,7 +178,7 @@ impl Browser {
                 "no such element" => "WebDriver element absent",
                 "element not interactable" => "WebDriver element not interactable",
                 "element click intercepted" => "WebDriver click intercepted",
-                "javascript error" => "WebDriver browser primitive failed",
+                "javascript error" => script_failure(&result["value"]),
                 "timeout" => "WebDriver command timeout",
                 _ => "WebDriver rejected command; private diagnostics suppressed",
             });

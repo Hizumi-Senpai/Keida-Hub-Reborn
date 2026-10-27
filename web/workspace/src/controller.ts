@@ -4,7 +4,7 @@ const PRODUCT = 'keida-hub-reborn';
 const CONTRACT = 'reborn-workspace-v1';
 const MAX_REVISION = 9223372036854775807n;
 type Note = { body: string; revision: string };
-export type Crafty = { revision: string; configured: boolean; checked_at: number | null; error: string | null; servers: Array<{ name: string; join: string; state: string; players: number | null; capacity: number | null; collected_at: number | null; provider_at: number | null; freshness: string; error: string | null }> };
+export type Crafty = { revision: string; configured: boolean; checked_at: number | null; error: string | null; history_error?: 'unavailable' | null; servers: Array<{ name: string; join: string; state: string; players: number | null; capacity: number | null; collected_at: number | null; provider_at: number | null; freshness: string; error: string | null }> };
 export type ServiceLink = { id: string; name: string; category: string; description: string; url: string };
 export type Directory = { revision: string; services: ServiceLink[]; pins_revision: string; pins: string[] };
 export type HomePanel = { id: 'note' | 'connections' | 'pins'; visible: boolean };
@@ -17,6 +17,15 @@ type Draft = { body: string; base: string };
 export type ActivityEntry = { id: string; occurred_at: string; revision: string; kind: string; category: string; label: string };
 export type Activity = { phase: 'idle' | 'loading' | 'ready' | 'error'; entries: ActivityEntry[]; through: string; next: string | null; category: string; query: string; message: string };
 const emptyActivity = (): Activity => ({ phase: 'idle', entries: [], through: '0', next: null, category: 'all', query: '', message: '' });
+export type Integration = { id: string; name: string; status: 'available' | 'planned'; summary: string; requirements: string[]; capabilities: string[] };
+export type Roadmap = { as_of: string; intro: string; priorities: string[]; milestones: Array<{ id: string; title: string; status: string; delivered: string[]; remaining: string[] }>; tracker_url: string };
+export type Guide = { catalog: Integration[]; roadmap: Roadmap };
+export type GuideState = { phase: 'idle' | 'loading' | 'ready' | 'error'; value?: Guide; message: string };
+export type ObservationServer = { name: string; state: 'running' | 'stopped' | 'unknown'; players: number | null; capacity: number | null; collected_at: string | null; provider_at: string | null; freshness: 'fresh' | 'stale' | 'unknown'; error: string | null };
+export type Observation = { id: string; revision: string; checked_at: string; error: string | null; complete: boolean; servers: ObservationServer[] };
+export type ObservationState = { phase: 'idle' | 'loading' | 'ready' | 'error'; entries: Observation[]; revision: string; through: string; next: string | null; message: string };
+const emptyGuide = (): GuideState => ({ phase: 'idle', message: '' });
+const emptyObservations = (): ObservationState => ({ phase: 'idle', entries: [], revision: '0', through: '0', next: null, message: '' });
 export type Model = {
   phase: 'checking' | 'ready' | 'paused' | 'blocked'; message: string;
   snapshot?: Snapshot; draft: string; base: string; dirty: boolean;
@@ -26,11 +35,18 @@ export type Model = {
   directorySave: 'idle' | 'saving' | 'conflict' | 'uncertain'; directoryMessage: string;
   layoutDraft?: { base: string; panels: HomePanel[] };
   layoutSave: 'idle' | 'saving' | 'checking-conflict' | 'conflict' | 'uncertain'; layoutMessage: string;
+  guide: GuideState; observations: ObservationState;
 };
-const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '', layoutSave: 'idle', layoutMessage: '' });
+const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '', layoutSave: 'idle', layoutMessage: '', guide: emptyGuide(), observations: emptyObservations() });
 const record = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const decimal = (v: unknown, positive = false): v is string => typeof v === 'string' && /^(0|[1-9][0-9]{0,18})$/.test(v) && BigInt(v) <= MAX_REVISION && (!positive || v !== '0');
 const text = (v: unknown): v is string => typeof v === 'string' && !v.includes('\0') && new TextEncoder().encode(v).length <= 4096;
+const field = (v: unknown, max: number, required = false): v is string => typeof v === 'string' && (!required || v.trim().length > 0) && new TextEncoder().encode(v).length <= max && !/[\u0000-\u001f\u007f]/u.test(v);
+const strings = (v: unknown, maxItems: number, maxBytes: number): v is string[] => Array.isArray(v) && v.length <= maxItems && v.every(s => field(s, maxBytes, true));
+const timestamp = (v: unknown): v is string => decimal(v) && BigInt(v) <= 253402300799n;
+const providerErrors = ['unavailable', 'invalid_configuration', 'timeout', 'transport', 'denied', 'provider_error', 'oversized', 'malformed', 'not_discovered'];
+const providerError = (v: unknown): v is string | null => v === null || (typeof v === 'string' && providerErrors.includes(v));
+const providerCount = (v: unknown): v is number | null => v === null || (typeof v === 'number' && Number.isSafeInteger(v) && v >= 0 && v <= 1_000_000);
 export function safeLink(v: unknown): v is string {
   if (typeof v !== 'string' || new TextEncoder().encode(v).length > 1024 || !/^https:\/\/[^/]/.test(v) || /[\s\u0000-\u001f\u007f\\]/u.test(v)) return false;
   try { const u = new URL(v); return u.protocol === 'https:' && !!u.hostname && !u.username && !u.password && !v.includes('?') && !v.includes('#'); } catch { return false; }
@@ -53,6 +69,34 @@ function layout(v: unknown): Layout {
       || new Set(v.panels.map(p => p.id)).size !== 3 || !v.panels.some(p => p.visible)) throw new Error('Invalid layout response');
   return v as unknown as Layout;
 }
+function parseGuide(v: Record<string, unknown>): Guide {
+  const ids = ['crafty', 'jellyfin', 'seerr', 'sonarr', 'radarr', 'qbittorrent', 'discord'];
+  const c = v.catalog, r = v.roadmap;
+  if (!Array.isArray(c) || c.length !== ids.length || new Set(c.map(i => record(i) ? i.id : null)).size !== ids.length
+      || c.some((i: unknown) => !record(i) || !ids.includes(String(i.id)) || !field(i.name, 80, true)
+        || i.status !== (i.id === 'crafty' ? 'available' : 'planned') || !field(i.summary, 512, true)
+        || !strings(i.requirements, 8, 512) || !strings(i.capabilities, 8, 512))
+      || !record(r) || typeof r.as_of !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.as_of) || !field(r.intro, 1024, true)
+      || !strings(r.priorities, 8, 512) || r.tracker_url !== 'https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/2'
+      || !Array.isArray(r.milestones) || r.milestones.length !== 9
+      || r.milestones.some((m: unknown, index: number) => !record(m) || m.id !== `M${index}` || !field(m.title, 120, true)
+        || !field(m.status, 160, true) || !strings(m.delivered, 8, 512) || !strings(m.remaining, 8, 512))) throw new Error('Invalid workspace guide');
+  return { catalog: c as Integration[], roadmap: r as Roadmap };
+}
+function observationPage(v: Record<string, unknown>, prior: ObservationState, older: boolean): ObservationState {
+  if (!decimal(v.current_revision) || !decimal(v.through) || (v.next_before !== null && !decimal(v.next_before, true))
+      || (older && (v.current_revision !== prior.revision || v.through !== prior.through))
+      || !Array.isArray(v.entries) || v.entries.length > 25
+      || v.entries.some((e: unknown) => !record(e) || !decimal(e.id, true) || !decimal(e.revision, true) || !timestamp(e.checked_at)
+        || !providerError(e.error) || typeof e.complete !== 'boolean' || !Array.isArray(e.servers) || e.servers.length > 8
+        || BigInt(e.id) > BigInt(v.through as string) || (older && BigInt(e.id) >= BigInt(prior.next!))
+        || e.servers.some((s: unknown) => !record(s) || !field(s.name, 80, true) || !['running', 'stopped', 'unknown'].includes(String(s.state))
+          || !providerCount(s.players) || !providerCount(s.capacity) || (s.collected_at !== null && !timestamp(s.collected_at))
+          || (s.provider_at !== null && !timestamp(s.provider_at)) || !['fresh', 'stale', 'unknown'].includes(String(s.freshness)) || !providerError(s.error)))
+      || v.entries.some((e, i) => i > 0 && BigInt(e.id) >= BigInt((v.entries as Observation[])[i - 1].id))
+      || (v.next_before !== null && (v.entries.length !== 25 || v.next_before !== v.entries.at(-1)?.id))) throw new Error('Invalid observation history');
+  return { phase: 'ready', entries: v.entries as Observation[], revision: v.current_revision as string, through: v.through as string, next: v.next_before as string | null, message: 'Retained provider observations checked.' };
+}
 const samePanels = (a: HomePanel[], b: HomePanel[]): boolean => a.length === b.length && a.every((p, i) => p.id === b[i].id && p.visible === b[i].visible);
 function snapshot(value: unknown): Snapshot {
   if (!record(value) || value.product !== PRODUCT || value.contract !== CONTRACT || value.schema !== 1
@@ -71,7 +115,8 @@ function snapshot(value: unknown): Snapshot {
     const c = value.crafty;
     const count = (v: unknown) => v === null || (typeof v === 'number' && Number.isSafeInteger(v) && v >= 0);
     const message = (v: unknown) => v === null || (typeof v === 'string' && /^[a-z_]{1,40}$/.test(v));
-    if (!record(c) || !decimal(c.revision) || typeof c.configured !== 'boolean' || !count(c.checked_at) || !message(c.error) || !Array.isArray(c.servers) || c.servers.length > 8
+    if (!record(c) || !decimal(c.revision) || typeof c.configured !== 'boolean' || !count(c.checked_at) || !message(c.error)
+        || (c.history_error !== undefined && c.history_error !== null && c.history_error !== 'unavailable') || !Array.isArray(c.servers) || c.servers.length > 8
         || c.servers.some((s: unknown) => !record(s) || typeof s.name !== 'string' || s.name.length > 80 || typeof s.join !== 'string' || s.join.length > 253
           || !['running', 'stopped', 'unknown'].includes(String(s.state)) || !['fresh', 'stale', 'unknown'].includes(String(s.freshness))
           || !count(s.players) || !count(s.capacity) || !count(s.collected_at) || !count(s.provider_at) || !message(s.error))) throw new Error('Invalid connection response');
@@ -96,9 +141,13 @@ export function workspace(binding: string) {
   let saving: AbortController | undefined;
   let editing: AbortController | undefined;
   let historyReading: AbortController | undefined;
+  let guideReading: AbortController | undefined;
+  let observationsReading: AbortController | undefined;
   let marking: AbortController | undefined;
   let arranging: AbortController | undefined;
   let historySerial = 0;
+  let guideSerial = 0;
+  let observationsSerial = 0;
   let key: string | undefined;
   let held: { key: string; draft: Draft } | undefined;
   let channel: BroadcastChannel | undefined;
@@ -126,6 +175,8 @@ export function workspace(binding: string) {
     reading?.abort(); saving?.abort(); reading = undefined; saving = undefined;
     editing?.abort(); editing = undefined;
     ++historySerial; historyReading?.abort(); historyReading = undefined;
+    ++guideSerial; guideReading?.abort(); guideReading = undefined;
+    ++observationsSerial; observationsReading?.abort(); observationsReading = undefined;
     marking?.abort(); marking = undefined;
     arranging?.abort(); arranging = undefined;
   }
@@ -162,6 +213,28 @@ export function workspace(binding: string) {
     const prior = state().snapshot;
     return !prior || (s.account.id === prior.account.id && s.session_generation === prior.session_generation && s.account.role === prior.account.role);
   }
+  function scoped(value: unknown, captured: Snapshot): value is Record<string, unknown> {
+    return record(value) && value.product === PRODUCT && value.contract === CONTRACT && value.schema === 1
+      && record(value.account) && value.account.id === captured.account.id && value.account.username === captured.account.username
+      && value.account.role === captured.account.role && value.session_generation === captured.session_generation;
+  }
+  function currentScope(captured: Snapshot): boolean {
+    const s = state();
+    return s.phase === 'ready' && !!s.snapshot && captured.account.id === s.snapshot.account.id
+      && captured.account.username === s.snapshot.account.username && captured.account.role === s.snapshot.account.role
+      && captured.session_generation === s.snapshot.session_generation;
+  }
+  function mergeCrafty(before: Model, incoming: Crafty | null | undefined, keepMatching = false): { crafty: Crafty | null | undefined; observations: ObservationState; changed: boolean } {
+    const prior = before.snapshot?.crafty;
+    // A note reply contains a waiting overview, not a new provider sample.
+    // Keep a checked overview on matching revisions and never let a delayed
+    // response move the browser back to an older enrollment scope.
+    const crafty = !incoming ? prior ?? incoming : prior
+      && (BigInt(incoming.revision) < BigInt(prior.revision) || (keepMatching && incoming.revision === prior.revision)) ? prior : incoming;
+    if (prior?.revision === crafty?.revision) return { crafty, observations: before.observations, changed: false };
+    ++observationsSerial; observationsReading?.abort(); observationsReading = undefined;
+    return { crafty, observations: { ...emptyObservations(), message: 'Connection enrollment changed. Check newest observations for the current scope.' }, changed: true };
+  }
   async function read(deliberate = false): Promise<void> {
     if (disposed || terminal || reading || saving || editing || marking || arranging || (!deliberate && state().layoutSave === 'uncertain') || document.visibilityState !== 'visible') return;
     const controller = new AbortController(); reading = controller; const current = epoch;
@@ -174,11 +247,13 @@ export function workspace(binding: string) {
       if (!authorized(next)) { invalidate('Your account scope changed. Open a fresh workspace.', true); return; }
       const before = state(); key = storageKey(next);
       if (before.phase === 'ready') {
+        const connection = mergeCrafty(before, next.crafty);
         const conflict = before.dirty && next.note.revision !== before.base;
         const layoutMatches = !!before.layoutDraft && samePanels(before.layoutDraft.panels, next.layout.panels);
         const layoutResolved = layoutMatches && deliberate && ['uncertain', 'checking-conflict'].includes(before.layoutSave);
         const layoutConflict = !!before.layoutDraft && !layoutResolved && before.layoutDraft.base !== next.layout.revision;
-        model.set({ ...before, snapshot: next,
+        const checked: Model = { ...before, snapshot: { ...next, crafty: connection.crafty },
+          observations: connection.observations,
           layoutDraft: layoutResolved ? undefined : before.layoutDraft,
           layoutSave: layoutConflict ? 'conflict' : ['uncertain', 'checking-conflict'].includes(before.layoutSave) || layoutResolved ? 'idle' : before.layoutSave,
           layoutMessage: layoutResolved ? 'Saved layout checked. The current layout matches your changes.' : layoutConflict ? 'A newer layout was saved. Your arrangement is unchanged; compare before saving.' : before.layoutSave === 'uncertain' ? 'The saved layout was checked. Review your arrangement before saving deliberately.' : before.layoutMessage,
@@ -188,7 +263,8 @@ export function workspace(binding: string) {
           message: conflict ? 'A newer saved note is available. Your draft is unchanged.' : 'Workspace checked.',
           notificationSave: 'idle', notificationMessage: before.notificationSave === 'uncertain' ? 'Current read markers checked. Review newer changes before marking read.' : 'Notifications checked.',
           directorySave: before.directorySave === 'uncertain' ? 'idle' : before.directorySave,
-          directoryMessage: before.directorySave === 'uncertain' ? 'Current saved directory and pins checked. Review them before making another change.' : before.directoryMessage });
+          directoryMessage: before.directorySave === 'uncertain' ? 'Current saved directory and pins checked. Review them before making another change.' : before.directoryMessage };
+        if (connection.changed) flushSync(() => model.set(checked)); else model.set(checked);
         if (before.dirty && before.draft === next.note.body) {
           model.update((m) => ({ ...m, dirty: false, base: next.note.revision, save: 'saved', message: 'The current note is saved.' })); removeDraft();
         }
@@ -240,8 +316,11 @@ export function workspace(binding: string) {
       } else if (response.status === 200) {
         const next = snapshot(response.value);
         if (!authorized(next) || next.note.body !== submitted.body || BigInt(next.note.revision) !== BigInt(submitted.base) + 1n) throw new Error('Unqualified save result');
-        model.update((m) => ({ ...m, snapshot: { ...next, crafty: next.crafty ?? m.snapshot?.crafty, directory: m.snapshot?.directory ?? next.directory, notifications: m.snapshot?.notifications ?? next.notifications, layout: m.snapshot?.layout ?? next.layout }, base: next.note.revision, dirty: m.draft !== next.note.body,
-          save: 'saved', message: m.draft === next.note.body ? 'Saved to your account.' : 'Submitted version saved. Your newer edits are still unsaved.' })); persist();
+        const before = state(), connection = mergeCrafty(before, next.crafty, true);
+        const saved: Model = { ...before, snapshot: { ...next, crafty: connection.crafty, directory: before.snapshot?.directory ?? next.directory, notifications: before.snapshot?.notifications ?? next.notifications, layout: before.snapshot?.layout ?? next.layout }, observations: connection.observations, base: next.note.revision, dirty: before.draft !== next.note.body,
+          save: 'saved', message: before.draft === next.note.body ? 'Saved to your account.' : 'Submitted version saved. Your newer edits are still unsaved.' };
+        if (connection.changed) flushSync(() => model.set(saved)); else model.set(saved);
+        persist();
       } else throw new Error('Save outcome unavailable');
     } catch {
       if (saving === controller && current === epoch && !disposed) model.update((m) => ({ ...m, save: 'uncertain', message: 'Save outcome is uncertain. Check the saved note before trying again.' }));
@@ -437,6 +516,56 @@ export function workspace(binding: string) {
       if (!disposed && serial === historySerial && current === epoch) model.update(m => ({ ...m, activity: { ...emptyActivity(), phase: 'error', category, query, message: 'Activity could not be checked. Retry deliberately; other workspace views remain available.' } }));
     } finally { if (historyReading === controller) historyReading = undefined; }
   }
+  async function loadGuide(force = false): Promise<void> {
+    const s = state();
+    if (disposed || terminal || s.phase !== 'ready' || !s.snapshot || document.visibilityState !== 'visible' || guideReading || (!force && s.guide.phase === 'ready')) return;
+    const captured = s.snapshot, controller = new AbortController(); guideReading = controller;
+    const serial = ++guideSerial, current = epoch;
+    model.update(m => ({ ...m, guide: { phase: 'loading', message: 'Checking the workspace guide…' } }));
+    try {
+      const response = await request('/api/workspace/guide', controller);
+      if (disposed || controller.signal.aborted || serial !== guideSerial || current !== epoch || !currentScope(captured)) return;
+      if (document.visibilityState !== 'visible') { invalidate('Workspace hidden. Checking access on return.'); return; }
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      if (response.status !== 200) throw new Error('Guide unavailable');
+      if (!scoped(response.value, captured)) { invalidate('Your account scope changed. Open a fresh workspace.', true); return; }
+      const value = parseGuide(response.value);
+      model.update(m => ({ ...m, guide: { phase: 'ready', value, message: 'Workspace guide checked.' } }));
+    } catch {
+      if (!disposed && serial === guideSerial && current === epoch && currentScope(captured)) model.update(m => ({ ...m, guide: { phase: 'error', message: 'The workspace guide could not be checked. Retry deliberately; your private note is unchanged.' } }));
+    } finally { if (guideReading === controller) guideReading = undefined; }
+  }
+  async function observations(older = false): Promise<void> {
+    const s = state();
+    if (disposed || terminal || s.phase !== 'ready' || !s.snapshot || document.visibilityState !== 'visible') return;
+    const prior = s.observations;
+    if (older && (!prior.next || prior.phase !== 'ready' || prior.revision !== s.snapshot.crafty?.revision)) return;
+    observationsReading?.abort();
+    const captured = s.snapshot, controller = new AbortController(); observationsReading = controller;
+    const serial = ++observationsSerial, current = epoch;
+    const params = new URLSearchParams();
+    if (older) { params.set('revision', prior.revision); params.set('through', prior.through); params.set('before', prior.next!); }
+    model.update(m => ({ ...m, observations: { ...emptyObservations(), phase: 'loading', message: 'Checking retained provider observations…' } }));
+    try {
+      const response = await request(`/api/workspace/observations${older ? `?${params}` : ''}`, controller);
+      if (disposed || controller.signal.aborted || serial !== observationsSerial || current !== epoch || !currentScope(captured)) return;
+      if (document.visibilityState !== 'visible') { invalidate('Workspace hidden. Checking access on return.'); return; }
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      if (response.status === 409) {
+        model.update(m => ({ ...m, observations: { ...emptyObservations(), phase: 'error', message: 'Connection enrollment changed. Check the current connection, then check newest observations.' } })); return;
+      }
+      if (response.status !== 200) throw new Error('Observation history unavailable');
+      if (!scoped(response.value, captured)) { invalidate('Your account scope changed. Open a fresh workspace.', true); return; }
+      const next = observationPage(response.value, prior, older);
+      if (next.revision !== captured.crafty?.revision || next.revision !== state().snapshot?.crafty?.revision) {
+        model.update(m => ({ ...m, observations: { ...emptyObservations(), phase: 'error', message: 'Connection enrollment changed. Check the current connection, then check newest observations.' } })); return;
+      }
+      if (captured.account.role === 'member' && next.entries.some(e => e.revision !== next.revision)) throw new Error('Observation revision outside member scope');
+      model.update(m => ({ ...m, observations: next }));
+    } catch {
+      if (!disposed && serial === observationsSerial && current === epoch && currentScope(captured)) model.update(m => ({ ...m, observations: { ...emptyObservations(), phase: 'error', message: 'Provider history could not be checked. Retry deliberately; current connections remain available.' } }));
+    } finally { if (observationsReading === controller) observationsReading = undefined; }
+  }
   function signOut(): void {
     removeDraft(); invalidate('Signing out…', true);
     try { channel?.postMessage({ kind: 'auth-changed' }); } catch { /* No optional feature blocks native submission. */ }
@@ -462,5 +591,5 @@ export function workspace(binding: string) {
       document.removeEventListener('visibilitychange', visibility);
     };
   }
-  return { model, start, edit, recover, resolve, save, signOut, check: () => read(true), editService, pins, activity, markNotification, beginLayout, moveLayout, toggleLayout, resetLayout, cancelLayout, resolveLayout, saveLayout, checkLayout: () => read(true) };
+  return { model, start, edit, recover, resolve, save, signOut, check: () => read(true), editService, pins, activity, markNotification, beginLayout, moveLayout, toggleLayout, resetLayout, cancelLayout, resolveLayout, saveLayout, checkLayout: () => read(true), loadGuide, observations };
 }

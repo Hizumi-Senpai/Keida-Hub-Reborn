@@ -4,8 +4,10 @@ mod activity;
 mod connections;
 pub mod crypto;
 mod directory;
+mod guide;
 mod layout;
 mod notifications;
+mod observations;
 pub mod store;
 #[cfg(test)]
 mod store_contracts;
@@ -106,9 +108,11 @@ pub fn router(service: Service) -> Router {
         .merge(account_pages::router(service.clone()))
         .merge(connections::router(service.clone()))
         .merge(directory::router(service.clone()))
+        .merge(guide::router(service.clone()))
         .merge(activity::router(service.clone()))
         .merge(notifications::router(service.clone()))
         .merge(layout::router(service.clone()))
+        .merge(observations::router(service.clone()))
         .merge(workspace::router(service))
 }
 

@@ -47,7 +47,7 @@ impl Manifest {
             || self.ordinal == 0
             || self.channel != "accepted"
             || self.contract != "reborn-workspace-v1"
-            || !(4..=8).contains(&self.database_schema)
+            || !(4..=9).contains(&self.database_schema)
             || !digest(&self.commit, 40)
             || !digest(&self.tree, 40)
             || !digest(&self.binary_sha256, 64)

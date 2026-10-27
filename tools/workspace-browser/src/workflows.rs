@@ -395,8 +395,306 @@ pub async fn run() -> Check<()> {
     retained_activity_history().await?;
     grouped_notifications().await?;
     personal_home_layout().await?;
+    catalog_roadmap_and_observations().await?;
     println!(
-        "Rust workspace browser acceptance: 10 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+        "Rust workspace browser acceptance: 11 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+    );
+    Ok(())
+}
+
+async fn catalog_roadmap_and_observations() -> Check<()> {
+    use reborn_crafty_fixture as c;
+    step("revisitable integration catalog, separate Roadmap note and retained provider history");
+    let f = Fixture::new().await?;
+    let provider = c::Crafty::start().await?;
+    let mut owner = f.browser(true).await?;
+    step("catalog phase01 owner claim and private draft");
+    claim(&f, &owner).await?;
+    workspace(&f, &owner).await?;
+    note(&owner).await?;
+    owner
+        .fill(
+            "#workspace-note",
+            "A personal note kept apart from the roadmap",
+        )
+        .await?;
+    owner.click(".note-card button[type=submit]").await?;
+    saved(&owner).await?;
+    let draft = "An unfinished private thought across catalog and history";
+    owner.fill("#workspace-note", draft).await?;
+    check(owner.evaluate("window.__guideEditor=document.querySelector('#workspace-note');if(!window.__guideEditor)return false;window.__guideEditor.setSelectionRange(3,12);return true",json!([])).await?==true,"capture the existing private editor before opening the guide")?;
+    let writes = f.writes();
+    step("catalog phase02 available and planned entries");
+    owner.click(".main-nav button:nth-child(7)").await?;
+    owner.wait("return document.querySelectorAll('.catalog-list > article[data-integration-id]').length===7",json!([])).await?;
+    check(owner.evaluate("const cards=[...document.querySelectorAll('.catalog-list > article[data-integration-id]')];return cards.length===7 && cards.map(c=>c.dataset.integrationId).join(',')==='crafty,jellyfin,seerr,sonarr,radarr,qbittorrent,discord' && cards[0].querySelectorAll('button').length===1 && cards.slice(1).every(c=>c.querySelectorAll('button').length===0 && c.textContent.includes('Planned'))",json!([])).await?==true,"catalog distinguishes the one available integration from planned capabilities")?;
+    step("catalog phase03 desktop catalog accessibility");
+    accessibility(&owner).await?;
+    step("catalog phase04 dated Roadmap and retained editor");
+    owner.click(".main-nav button:nth-child(8)").await?;
+    owner.wait("return !!document.querySelector('.roadmap-note') && Array.from({length:9},(_,i)=>'M'+i).every(id=>document.querySelector('.roadmap-note').textContent.includes(id))",json!([])).await?;
+    check(owner.evaluate("const roadmap=document.querySelector('.roadmap-note'),editor=document.querySelector('#workspace-note');return !!roadmap && !!editor && roadmap.querySelector('a[href=\"https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/2\"]')!==null && roadmap.textContent.includes('2026-10-27') && window.__guideEditor===editor && editor.value===arguments[0] && editor.selectionStart===3 && editor.selectionEnd===12",json!([draft])).await?==true,"dated M0–M8 Roadmap note preserves the actual private editor and selection")?;
+    check(
+        f.writes() == writes,
+        "catalog and Roadmap reads cannot save the personal note",
+    )?;
+    step("catalog phase05 desktop Roadmap accessibility");
+    accessibility(&owner).await?;
+    step("catalog phase06 available catalog action and TLS enrollment");
+    step("catalog phase06a navigate to catalog");
+    owner.click(".main-nav button:nth-child(7)").await?;
+    step("catalog phase06b wait for the available action");
+    owner
+        .wait(
+            "return !!document.querySelector('.catalog-list [data-integration-id=crafty] button')",
+            json!([]),
+        )
+        .await?;
+    step("catalog phase06c open Connections through the catalog");
+    owner
+        .click(".catalog-list [data-integration-id=crafty] button")
+        .await?;
+    step("catalog phase06d wait for the Connections form");
+    owner.wait("return document.querySelector('.main-nav button:nth-child(3)')?.getAttribute('aria-current')==='page' && !!document.querySelector('#crafty-endpoint')",json!([])).await?;
+    step("catalog phase06e enter the fictional provider address");
+    owner.fill("#crafty-endpoint", &provider.origin).await?;
+    step("catalog phase06f enter the fictional dedicated token");
+    owner.fill("#crafty-token", c::TOKEN).await?;
+    step("catalog phase06g enter the provider time zone");
+    owner.fill("#crafty-timezone", "UTC").await?;
+    step("catalog phase06h enter the fixture trust certificate");
+    owner.fill("#crafty-ca", &provider.ca).await?;
+    step("catalog phase06i enter the selected fixture identity");
+    owner.fill("input[name=server-id]", c::ID).await?;
+    step("catalog phase06j enter the reviewed fixture name");
+    owner
+        .fill("input[name=server-name]", "Reviewed history fixture")
+        .await?;
+    step("catalog phase06k enter the reviewed fictional join address");
+    owner
+        .fill("input[name=server-join]", "play.example:25565")
+        .await?;
+    step("catalog phase06l save the dedicated fixture connection");
+    owner
+        .click(".connection-setup form button[type=submit]")
+        .await?;
+    step("catalog phase06m wait for an actual zero-player observation");
+    owner
+        .wait(
+            "return document.querySelector('.server-card')?.textContent.includes('0 reported')",
+            json!([]),
+        )
+        .await?;
+    step("catalog phase06n verify a retained real sample exists");
+    check(
+        f.observation_count().await? == 1,
+        "actual TLS collection creates one retained sample",
+    )?;
+    step("catalog phase07 repeated real snapshot and sample deduplication");
+    let repeated=owner.evaluate("const binding=document.querySelector('meta[name=reborn-session-binding]')?.content;if(!binding)return false;const h={'X-Reborn-Product':'keida-hub-reborn','X-Reborn-Contract':'reborn-workspace-v1','X-CSRF-Token':binding};return (async()=>{for(let i=0;i<2;i++){const r=await fetch('/api/workspace/snapshot',{headers:h});if(!r.ok)return false;const v=await r.json();if(v?.crafty?.configured!==true||v.crafty.revision!=='1'||!Array.isArray(v.crafty.servers)||v.crafty.servers.length!==1||v.crafty.servers[0]?.players!==0)return false;}return true;})();",json!([])).await?;
+    check(
+        repeated == true && f.observation_count().await? == 1,
+        "cached repeated snapshots retain the sample once",
+    )?;
+    step("catalog phase08 initial retained history and normalized zero");
+    let requests = provider.requests().len();
+    owner.click(".view-observation-history").await?;
+    owner
+        .wait(
+            "return document.querySelectorAll('.observation-list > li').length===1",
+            json!([]),
+        )
+        .await?;
+    let first_id = owner
+        .evaluate(
+            "return document.querySelector('.observation-list > li')?.dataset.observationId ?? null",
+            json!([]),
+        )
+        .await?;
+    check(
+        first_id.as_str().is_some(),
+        "initial retained observation has an identity",
+    )?;
+    check(owner.evaluate("const row=document.querySelector('.observation-list > li'),history=document.querySelector('.observation-history');return !!row && !!history && row.dataset.observationRevision==='1' && row.textContent.includes('Reviewed history fixture') && row.textContent.includes('0 reported') && history.textContent.includes('10,000') && !history.textContent.includes(arguments[0]) && !history.textContent.includes(arguments[1]) && !history.textContent.includes(arguments[2]) && !history.textContent.includes('play.example:25565')",json!([c::TOKEN,c::ID,&provider.origin])).await?==true,"history presents normalized zero and sampling limits without private provider configuration")?;
+    check(
+        provider.requests().len() == requests,
+        "opening retained history does not contact the provider",
+    )?;
+    step("catalog phase09 retained failure page and fixed keyset window");
+    let seeded = f.seed_observations(1, 26, 2).await?;
+    owner.click(".observation-newest").await?;
+    owner
+        .wait(
+            "return document.querySelectorAll('.observation-list > li').length===25",
+            json!([]),
+        )
+        .await?;
+    check(owner.evaluate("const row=document.querySelector('.observation-list > li');return !!row && row.dataset.observationId===arguments[0] && row.textContent.includes('Not reported') && row.textContent.includes('Unknown')",json!([seeded.last().ok_or("historical seed absent")?])).await?==true,"retained failure remains unknown rather than an invented player zero")?;
+    let arriving = f.seed_observations(1, 1, 100).await?;
+    owner.click(".observation-older").await?;
+    owner
+        .wait(
+            "return document.querySelectorAll('.observation-list > li').length===2",
+            json!([]),
+        )
+        .await?;
+    check(owner.evaluate("return [...document.querySelectorAll('.observation-list > li')].map(row=>row.dataset.observationId).join(',')===[arguments[0],arguments[1]].join(',') && document.querySelector('.observation-older')?.disabled===true",json!([&seeded[0],first_id])).await?==true,"older keyset page preserves its window after a newly retained sample")?;
+    step("catalog phase10 explicit newest refresh and desktop history accessibility");
+    owner.click(".observation-newest").await?;
+    owner.wait("return document.querySelector('.observation-list > li')?.dataset.observationId===arguments[0]",json!([&arriving[0]])).await?;
+    check(owner.evaluate("const editor=document.querySelector('#workspace-note');return !!editor && window.__guideEditor===editor && editor.value===arguments[0]",json!([draft])).await?==true,"provider history preserves the existing unfinished private note")?;
+    accessibility(&owner).await?;
+    step("catalog phase11 mobile history catalog and Roadmap accessibility");
+    owner.mobile().await?;
+    check(
+        owner
+            .evaluate(
+                "return innerWidth===390 && document.documentElement.scrollWidth<=innerWidth+1",
+                json!([]),
+            )
+            .await?
+            == true,
+        "retained provider history reflows at390px",
+    )?;
+    accessibility(&owner).await?;
+    owner.click(".main-nav button:nth-child(7)").await?;
+    accessibility(&owner).await?;
+    owner.click(".main-nav button:nth-child(8)").await?;
+    accessibility(&owner).await?;
+    check(
+        owner
+            .evaluate(
+                "return document.documentElement.scrollWidth<=innerWidth+1",
+                json!([]),
+            )
+            .await?
+            == true,
+        "catalog and Roadmap note reflow at390px",
+    )?;
+    step("catalog phase12 member enrollment and current-scope history");
+    let (member_name, member_password) = f.enroll_member(&owner).await?;
+    let mut member = f.browser(true).await?;
+    sign_in(&f, &member, &member_name, &member_password).await?;
+    workspace(&f, &member).await?;
+    body(&member, "").await?;
+    note(&member).await?;
+    let member_note = "A member note saved while reviewing an enrollment change";
+    member.fill("#workspace-note", member_note).await?;
+    member.click(".main-nav button:nth-child(3)").await?;
+    member.click(".view-observation-history").await?;
+    member.wait("return document.querySelectorAll('.observation-list > li').length===25 && document.querySelector('[data-current-revision]')?.dataset.currentRevision==='1'",json!([])).await?;
+
+    step("note mutation clears previously admitted member history before the next poll");
+    owner.click(".main-nav button:nth-child(3)").await?;
+    owner.fill("#crafty-endpoint", &provider.origin).await?;
+    owner.fill("#crafty-token", c::TOKEN).await?;
+    owner.fill("#crafty-timezone", "UTC").await?;
+    owner.fill("#crafty-ca", &provider.ca).await?;
+    owner.fill("input[name=server-id]", c::ID).await?;
+    owner
+        .fill("input[name=server-name]", "Replacement history fixture")
+        .await?;
+    owner
+        .fill("input[name=server-join]", "play.example:25565")
+        .await?;
+    owner
+        .click(".connection-setup form button[type=submit]")
+        .await?;
+    owner.wait("return document.querySelector('.server-card')?.textContent.includes('Replacement history fixture')",json!([])).await?;
+    check(member.evaluate("return document.querySelectorAll('.observation-list > li').length===25 && document.querySelector('[data-current-revision]')?.dataset.currentRevision==='1'",json!([])).await?==true,"member still displays the previously admitted history before the note mutation")?;
+    let reads_before_save = f.reads();
+    // Submit the actual persistent native form while its sibling history is
+    // visible. Navigating away first would hide stale results and mask this
+    // regression; requestSubmit executes the same real note handler and PUT.
+    member
+        .evaluate(
+            "document.querySelector('.note-card').requestSubmit();return true",
+            json!([]),
+        )
+        .await?;
+    saved(&member).await?;
+    check(member.evaluate("return document.querySelectorAll('.observation-list > li').length===0 && document.querySelector('.observation-status').textContent.includes('Connection enrollment changed') && document.querySelector('#workspace-note').value===arguments[0]",json!([member_note])).await?==true,"successful note response synchronously removes obsolete member history without discarding the accepted note")?;
+    check(
+        f.reads() == reads_before_save,
+        "the note response itself clears history before any snapshot poll",
+    )?;
+
+    // Reload through the real document to observe revision2 and prepare a new
+    // note. A held old-revision history reply must then lose authority when a
+    // second successful note response discovers removal at revision3.
+    workspace(&f, &member).await?;
+    note(&member).await?;
+    body(&member, member_note).await?;
+    let newer_member_note = "A second member note accepted while an older history reply is held";
+    member.fill("#workspace-note", newer_member_note).await?;
+    member.click(".main-nav button:nth-child(3)").await?;
+    member.click(".view-observation-history").await?;
+    member.wait("return document.querySelectorAll('.observation-list > li').length===1 && document.querySelector('[data-current-revision]')?.dataset.currentRevision==='2'",json!([])).await?;
+    let prior_scope = f.hold("/api/workspace/observations");
+    member.click(".observation-newest").await?;
+    tokio::time::timeout(Duration::from_secs(3), prior_scope.entered.notified())
+        .await
+        .map_err(|_| "held prior-enrollment member history entered")?;
+    owner
+        .wait(
+            "return !!document.querySelector('.connection-setup > button.text-button')",
+            json!([]),
+        )
+        .await?;
+    owner
+        .click(".connection-setup > button.text-button")
+        .await?;
+    owner.wait("return document.querySelector('[aria-label=Connections]').textContent.includes('No Crafty connection enrolled') && !document.querySelector('.server-card')",json!([])).await?;
+    let reads_before_save = f.reads();
+    member
+        .evaluate(
+            "document.querySelector('.note-card').requestSubmit();return true",
+            json!([]),
+        )
+        .await?;
+    saved(&member).await?;
+    check(member.evaluate("return document.querySelectorAll('.observation-list > li').length===0 && document.querySelector('.observation-status').textContent.includes('Connection enrollment changed') && document.querySelector('#workspace-note').value===arguments[0]",json!([newer_member_note])).await?==true,"newer note response cancels the prior-enrollment history scope")?;
+    check(
+        f.reads() == reads_before_save,
+        "held history is invalidated by the mutation rather than a later poll",
+    )?;
+    prior_scope.release.notify_one();
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    check(member.evaluate("return document.querySelectorAll('.observation-list > li').length===0 && document.querySelector('.observation-status').textContent.includes('Connection enrollment changed') && document.querySelector('#workspace-note').value===arguments[0]",json!([newer_member_note])).await?==true,"late old-enrollment history cannot rehydrate after a successful note mutation")?;
+    member.click(".observation-newest").await?;
+    member.wait("return document.querySelector('.observation-status')?.textContent.includes('checked') && document.querySelectorAll('.observation-list > li').length===0 && document.querySelector('[data-current-revision]')?.dataset.currentRevision==='3'",json!([])).await?;
+    check(member.evaluate("return !document.querySelector('.observation-history').textContent.includes('Reviewed history fixture') && !document.querySelector('.observation-history').textContent.includes('Historical timeout fixture') && !document.querySelector('.observation-history').textContent.includes('Replacement history fixture') && !document.querySelector('#crafty-token')",json!([])).await?==true,"removed enrollment history remains owner-only and does not leak into a member")?;
+    owner.click(".view-observation-history").await?;
+    owner.wait("return document.querySelectorAll('.observation-list > li').length===25 && document.querySelector('.observation-history').textContent.includes('Current enrollment revision 3')",json!([])).await?;
+    let held = f.hold("/api/workspace/observations");
+    owner.click(".observation-newest").await?;
+    tokio::time::timeout(Duration::from_secs(3), held.entered.notified())
+        .await
+        .map_err(|_| "held observation page entered")?;
+    owner
+        .evaluate(
+            "window.dispatchEvent(new Event('blur'));return true",
+            json!([]),
+        )
+        .await?;
+    check(owner.evaluate("return document.querySelector('#workspace-note').value==='' && document.querySelectorAll('.observation-list > li').length===0 && !document.body.textContent.includes('Reviewed history fixture') && !document.body.textContent.includes(arguments[0])",json!([&f.username])).await?==true,"privacy loss synchronously clears new history and private workspace state")?;
+    held.release.notify_one();
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    check(owner.evaluate("return document.querySelectorAll('.observation-list > li').length===0 && document.querySelector('#workspace-note').value==='';",json!([])).await?==true,"late retained observation response cannot rehydrate a cleared account scope")?;
+    check(
+        provider
+            .requests()
+            .iter()
+            .all(|(method, _)| method == "GET"),
+        "catalog and provider history never acquire game-control authority",
+    )?;
+    member.close().await?;
+    owner.close().await?;
+    drop(member);
+    drop(owner);
+    f.close().await?;
+    println!(
+        "PASS Rust browser: revisitable catalog, dated Roadmap note, retained sampled provider history, stable pages, owner archive/member scope, draft lifetime, reflow and late-response privacy"
     );
     Ok(())
 }
@@ -705,7 +1003,8 @@ async fn retained_activity_history() -> Check<()> {
     )?;
 
     b.click(".main-nav button:nth-child(3)").await?;
-    b.click("section[aria-label=Connections] > button").await?;
+    b.click("section[aria-label=Connections] .button-row > button:first-child")
+        .await?;
     b.wait("return !!document.querySelector('.activity-empty') && document.querySelector('#activity-category').value==='connections'",json!([])).await?;
     let comparison = f.hold("/api/workspace/activity");
     b.fill("#activity-query", "saved").await?;

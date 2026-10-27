@@ -181,6 +181,8 @@ health/HTTP evidence, public/browser result and terminal success/failure/recover
 state. Record limitations and pending owner acceptance explicitly. Preserve prior
 checkpoint history rather than replacing it with an unqualified success claim.
 
-Current deployment acceptance: **not installed**. Source/fixture CI is separate
-from host bootstrap, updater activation, immutable publication, production
-migration, URL cutover and public/provider acceptance; all remain open.
+Current installed baseline: **Reborn0.1.11**, as recorded in the
+[exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6448326282).
+Source/fixture CI, publication, installation, loaded owner browser, real provider
+acceptance and separately authorized host-updater activation remain distinct.
+Refresh issue1 before any host action; bootstrap examples above are historical.

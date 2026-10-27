@@ -648,6 +648,50 @@ impl Fixture {
     pub fn writes(&self) -> u64 {
         self.proxy.writes.load(Ordering::SeqCst)
     }
+    // Only this freshly allocated, loopback-administered fixture database is
+    // seeded. Actual TLS collection is tested separately; these older samples
+    // provide enough independent rows to exercise the browser's keyset window
+    // without waiting for many real collection minutes.
+    pub async fn seed_observations(
+        &self,
+        revision: i64,
+        count: u32,
+        minute_offset: u32,
+    ) -> Check<Vec<String>> {
+        check(
+            revision > 0 && (1..=30).contains(&count) && (1..=1000).contains(&minute_offset),
+            "bounded owned observation seed",
+        )?;
+        let mut url = url::Url::parse(&self.admin).map_err(|_| "owned seed administrator URL")?;
+        url.set_path(&self.name);
+        let mut db = database(url.as_str()).await?;
+        let mut tx = db
+            .begin()
+            .await
+            .map_err(|_| "owned sample seed transaction")?;
+        let mut ids = Vec::new();
+        for n in 0..count {
+            let mut sample = [0u8; 16];
+            getrandom::fill(&mut sample).map_err(|_| "owned sample seed identity")?;
+            let id: i64 = sqlx::query_scalar("INSERT INTO provider_observations (sample_id, connection_revision, checked_at, complete, error) VALUES ($1, $2, floor(extract(epoch FROM clock_timestamp()))::bigint - $3 * 60, FALSE, 'timeout') RETURNING id")
+                .bind(sample.as_slice()).bind(revision).bind(i64::from(minute_offset + n))
+                .fetch_one(&mut *tx).await.map_err(|_| "owned historical batch seed")?;
+            sqlx::query("INSERT INTO provider_server_observations (batch_id, ordinal, name, state, players, capacity, collected_at, provider_at, freshness, error) VALUES ($1, 1, 'Historical timeout fixture', 'unknown', NULL, NULL, NULL, NULL, 'unknown', 'timeout')")
+                .bind(id).execute(&mut *tx).await.map_err(|_| "owned historical server seed")?;
+            ids.push(id.to_string());
+        }
+        tx.commit().await.map_err(|_| "owned sample seed commit")?;
+        Ok(ids)
+    }
+    pub async fn observation_count(&self) -> Check<i64> {
+        let mut url = url::Url::parse(&self.admin).map_err(|_| "owned sample count URL")?;
+        url.set_path(&self.name);
+        let mut db = database(url.as_str()).await?;
+        sqlx::query_scalar("SELECT COUNT(*) FROM provider_observations")
+            .fetch_one(&mut db)
+            .await
+            .map_err(|_| "owned observation count")
+    }
     pub async fn close(mut self) -> Check<()> {
         if let Some(ref name) = self.container {
             stop_container(name);

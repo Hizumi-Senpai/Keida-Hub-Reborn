@@ -6,10 +6,12 @@
   import Directory from './Directory.svelte';
   import Activity from './Activity.svelte';
   import Notifications from './Notifications.svelte';
+  import Guide from './Guide.svelte';
   export let binding: string;
   const controller = workspace(binding);
   const model = controller.model;
-  let view: 'home' | 'note' | 'connections' | 'directory' | 'activity' | 'notifications' = 'home';
+  type View = 'home' | 'note' | 'connections' | 'directory' | 'activity' | 'notifications' | 'integrations' | 'roadmap';
+  let view: View = 'home';
   let heading: HTMLHeadingElement;
   let panelGrid: HTMLDivElement;
   let panels: HomePanel[] = defaultPanels();
@@ -26,7 +28,7 @@
   $: bytes = new TextEncoder().encode($model.draft).length;
   $: canSave = $model.phase === 'ready' && $model.dirty && bytes <= 4096
     && !['saving', 'checking-conflict'].includes($model.layoutSave) && $model.notificationSave !== 'saving' && !['saving', 'checking-conflict', 'conflict', 'uncertain'].includes($model.save);
-  function navigate(next: 'home' | 'note' | 'connections' | 'directory' | 'activity' | 'notifications'): void { view = next; heading?.focus(); if (next === 'activity') void controller.activity(); if (next === 'notifications') void controller.check(); }
+  function navigate(next: View): void { view = next; heading?.focus(); if (next === 'activity') void controller.activity(); if (next === 'notifications') void controller.check(); if (next === 'integrations' || next === 'roadmap') void controller.loadGuide(); }
   const focusScope = () => $model.snapshot ? `${$model.snapshot.account.id}:${$model.snapshot.session_generation}:${$model.snapshot.account.role}` : '';
   beforeUpdate(() => {
     const element = document.activeElement;
@@ -56,6 +58,8 @@
       <button class:active={view === 'directory'} aria-current={view === 'directory' ? 'page' : undefined} onclick={() => navigate('directory')}><span aria-hidden="true">▦</span>Services</button>
       <button class:active={view === 'activity'} aria-current={view === 'activity' ? 'page' : undefined} onclick={() => navigate('activity')}><span aria-hidden="true">◷</span>Activity</button>
       <button class:active={view === 'notifications'} aria-current={view === 'notifications' ? 'page' : undefined} onclick={() => navigate('notifications')}><span aria-hidden="true">♧</span>Notifications{#if $model.snapshot?.notifications.unread_groups}<span class="notification-badge" aria-label={`${$model.snapshot.notifications.unread_groups} unread groups`}>{$model.snapshot.notifications.unread_groups}</span>{/if}</button>
+      <button class:active={view === 'integrations'} aria-current={view === 'integrations' ? 'page' : undefined} onclick={() => navigate('integrations')}><span aria-hidden="true">⊞</span>Integrations</button>
+      <button class:active={view === 'roadmap'} aria-current={view === 'roadmap' ? 'page' : undefined} onclick={() => navigate('roadmap')}><span aria-hidden="true">≡</span>Roadmap</button>
     </nav>
     <div class="sidebar-bottom">
       <a href="/account" class="account-link"><span class="avatar" aria-hidden="true">K</span><span><strong>{$model.snapshot?.account.username ?? 'Your account'}</strong><small>{$model.snapshot?.account.role === 'owner' ? 'Owner' : $model.snapshot?.account.role === 'member' ? 'Member' : 'Check account access'}</small></span></a>
@@ -71,13 +75,13 @@
     </div>
   </aside>
   <main id="workspace-content" class="workspace-content">
-    <header class="page-header"><div><p class="eyebrow">YOUR OWN CORNER OF KEIDA</p><h1 tabindex="-1" bind:this={heading}>{view === 'home' ? 'Welcome home.' : view === 'note' ? 'A little space to think.' : view === 'connections' ? 'Your servers, at a glance.' : view === 'directory' ? 'Everything within reach.' : view === 'activity' ? 'Pick up the thread.' : 'Catch up at your pace.'}</h1></div><span class="connection-state"><span aria-hidden="true">●</span>{$model.phase === 'ready' ? 'Session checked' : $model.phase === 'checking' ? 'Checking access' : 'Access paused'}</span></header>
+    <header class="page-header"><div><p class="eyebrow">YOUR OWN CORNER OF KEIDA</p><h1 tabindex="-1" bind:this={heading}>{view === 'home' ? 'Welcome home.' : view === 'note' ? 'A little space to think.' : view === 'connections' ? 'Your servers, at a glance.' : view === 'directory' ? 'Everything within reach.' : view === 'activity' ? 'Pick up the thread.' : view === 'notifications' ? 'Catch up at your pace.' : view === 'integrations' ? 'Make the right connections.' : 'See what comes next.'}</h1></div><span class="connection-state"><span aria-hidden="true">●</span>{$model.phase === 'ready' ? 'Session checked' : $model.phase === 'checking' ? 'Checking access' : 'Access paused'}</span></header>
     <p class="workspace-status" role="status">{$model.message}</p>
     {#if $model.phase !== 'ready'}
       <section class="recovery card"><p class="eyebrow">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class="button-row"><a class="button primary" href="/workspace">Open workspace again</a><a class="button secondary" href="/account">Your account</a></div></section>
     {/if}
     <section class="home-view" hidden={(view !== 'home' && view !== 'directory') || $model.phase !== 'ready'} aria-label={view === 'directory' ? 'Service directory view' : 'Home'}>
-      <div class="welcome-card card" hidden={view !== 'home'}><div><p class="eyebrow">MAKE YOURSELF AT HOME</p><h2>A useful place<br>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><button class="button primary" onclick={() => navigate('note')}>Open your note <span aria-hidden="true">↗</span></button></div><div class="orb" aria-hidden="true"><div>K</div></div></div>
+      <div class="welcome-card card" hidden={view !== 'home'}><div><p class="eyebrow">MAKE YOURSELF AT HOME</p><h2>A useful place<br>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><div class="button-row"><button class="button primary" onclick={() => navigate('note')}>Open your note <span aria-hidden="true">↗</span></button><button class="text-button" onclick={() => navigate('roadmap')}>Read the Roadmap note</button></div></div><div class="orb" aria-hidden="true"><div>K</div></div></div>
       <div class="home-layout-heading" hidden={view !== 'home'}><p class="layout-status" role="status">{$model.layoutMessage || 'Your panels, in your own order.'}</p><button class="button secondary customize-home" disabled={!!$model.layoutDraft || $model.phase !== 'ready' || $model.layoutSave === 'saving'} onclick={controller.beginLayout}>Customize Home</button></div>
       <div hidden={view !== 'home'}><LayoutEditor draft={$model.layoutDraft} saved={$model.snapshot?.layout} state={$model.layoutSave} authorized={$model.phase === 'ready'} move={controller.moveLayout} toggle={controller.toggleLayout} save={controller.saveLayout} cancel={controller.cancelLayout} reset={controller.resetLayout} resolve={controller.resolveLayout} check={controller.checkLayout} /></div>
       <div class="home-grid" bind:this={panelGrid} class:services-view={view === 'directory'}>
@@ -109,9 +113,10 @@
       {/if}
       {#if $model.save === 'uncertain'}<section class="notice" aria-label="Uncertain save"><h2>Check before saving again</h2><p>The previous save may have completed. Your draft has not been sent again.</p><button class="button secondary" onclick={() => controller.check()}>Check saved note</button></section>{/if}
     </section>
-    <section hidden={view !== 'connections' || $model.phase !== 'ready'} aria-label="Connections"><Connections history={() => { view = 'activity'; heading?.focus(); void controller.activity('connections', ''); }} {binding} overview={$model.snapshot?.crafty} owner={$model.snapshot?.account.role === 'owner'} active={view === 'connections' && $model.phase === 'ready'} refresh={controller.check} /></section>
+    <section hidden={view !== 'connections' || $model.phase !== 'ready'} aria-label="Connections"><Connections history={() => { view = 'activity'; heading?.focus(); void controller.activity('connections', ''); }} {binding} overview={$model.snapshot?.crafty} owner={$model.snapshot?.account.role === 'owner'} active={view === 'connections' && $model.phase === 'ready'} refresh={controller.check} observationState={$model.observations} loadObservations={controller.observations} /></section>
     <section hidden={view !== 'activity' || $model.phase !== 'ready'} aria-label="Activity"><Activity state={$model.activity} authorized={$model.phase === 'ready'} load={controller.activity} /></section>
     <section hidden={view !== 'notifications' || $model.phase !== 'ready'} aria-label="Notifications"><Notifications value={$model.snapshot?.notifications} authorized={$model.phase === 'ready'} state={$model.notificationSave} message={$model.notificationMessage} check={controller.check} mark={controller.markNotification} /></section>
+    <section hidden={(view !== 'integrations' && view !== 'roadmap') || $model.phase !== 'ready'} aria-label={view === 'roadmap' ? 'Roadmap note' : 'Integration catalog'}><Guide mode={view === 'roadmap' ? 'roadmap' : 'catalog'} state={$model.guide} authorized={$model.phase === 'ready'} retry={() => controller.loadGuide(true)} connections={() => navigate('connections')} /></section>
     <footer class="content-footer"><span>Keida Reborn</span><a href="/account">Account &amp; recovery</a></footer>
   </main>
 </div>

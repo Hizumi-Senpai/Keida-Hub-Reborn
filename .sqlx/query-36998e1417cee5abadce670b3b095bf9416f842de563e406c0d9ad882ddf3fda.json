@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT COALESCE(MAX(id), 0) AS \"latest!\" FROM provider_observations WHERE $1::boolean OR (connection_revision = $2 AND $3::boolean)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "latest!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Bool",
+        "Int8",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "36998e1417cee5abadce670b3b095bf9416f842de563e406c0d9ad882ddf3fda"
+}

@@ -85,7 +85,30 @@ pub(super) async fn observe(service: &Service, verifier: &[u8]) -> Result<Overvi
         Ok(v) if v.validate().is_ok() => v,
         _ => return Ok(crafty::unavailable(capture.revision)),
     };
-    // No transaction remains open here. The final workspace read reauthorizes
-    // after provider IO and captures the current connection revision atomically.
-    Ok(service.observer.observe(&config, capture.revision).await)
+    // No transaction remains open here. History admission takes the same current
+    // authority lock after IO and rejects obsolete enrollment results. A cached
+    // sample keeps its private identity and original collection freshness.
+    let mut overview = service.observer.observe(&config, capture.revision).await;
+    if overview.sample_id.is_some() {
+        let recorded = store::observations::record(
+            &service.pool,
+            &service.key_id,
+            verifier,
+            capture.revision,
+            &overview,
+        )
+        .await;
+        match recorded {
+            Ok(()) => {}
+            // An optional archive-table/ACL fault need not hide private notes
+            // and directory state. Final snapshot admission below remains an
+            // independent key/session/revision check, including when this was
+            // an authority-read failure rather than a storage-table failure.
+            Err(store::Error::Unavailable) => overview.history_error = Some("unavailable"),
+            Err(error) => return Err(error.into()),
+        }
+    }
+    // Final workspace disclosure reauthorizes again and atomically captures the
+    // current revision, so a replacement after history admission hides old data.
+    Ok(overview)
 }
