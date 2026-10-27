@@ -441,37 +441,51 @@ async fn catalog_roadmap_and_observations() -> Check<()> {
     step("catalog phase05 desktop Roadmap accessibility");
     accessibility(&owner).await?;
     step("catalog phase06 available catalog action and TLS enrollment");
+    step("catalog phase06a navigate to catalog");
     owner.click(".main-nav button:nth-child(7)").await?;
+    step("catalog phase06b wait for the available action");
     owner
         .wait(
-            "return !!document.querySelector('.catalog-list [data-integration-id=crafty] button)",
+            "return !!document.querySelector('.catalog-list [data-integration-id=crafty] button')",
             json!([]),
         )
         .await?;
+    step("catalog phase06c open Connections through the catalog");
     owner
         .click(".catalog-list [data-integration-id=crafty] button")
         .await?;
+    step("catalog phase06d wait for the Connections form");
     owner.wait("return document.querySelector('.main-nav button:nth-child(3)')?.getAttribute('aria-current')==='page' && !!document.querySelector('#crafty-endpoint')",json!([])).await?;
+    step("catalog phase06e enter the fictional provider address");
     owner.fill("#crafty-endpoint", &provider.origin).await?;
+    step("catalog phase06f enter the fictional dedicated token");
     owner.fill("#crafty-token", c::TOKEN).await?;
+    step("catalog phase06g enter the provider time zone");
     owner.fill("#crafty-timezone", "UTC").await?;
+    step("catalog phase06h enter the fixture trust certificate");
     owner.fill("#crafty-ca", &provider.ca).await?;
+    step("catalog phase06i enter the selected fixture identity");
     owner.fill("input[name=server-id]", c::ID).await?;
+    step("catalog phase06j enter the reviewed fixture name");
     owner
         .fill("input[name=server-name]", "Reviewed history fixture")
         .await?;
+    step("catalog phase06k enter the reviewed fictional join address");
     owner
         .fill("input[name=server-join]", "play.example:25565")
         .await?;
+    step("catalog phase06l save the dedicated fixture connection");
     owner
         .click(".connection-setup form button[type=submit]")
         .await?;
+    step("catalog phase06m wait for an actual zero-player observation");
     owner
         .wait(
             "return document.querySelector('.server-card')?.textContent.includes('0 reported')",
             json!([]),
         )
         .await?;
+    step("catalog phase06n verify a retained real sample exists");
     check(
         f.observation_count().await? == 1,
         "actual TLS collection creates one retained sample",
