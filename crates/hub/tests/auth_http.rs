@@ -2631,3 +2631,392 @@ async fn racing_shared_change_and_read_marker_leave_the_unseen_change_unread() {
     assert_eq!(current["groups"][0]["read_through"], "1");
     assert_eq!(current["groups"][0]["unread"], "1");
 }
+
+fn home_panels(order: [&str; 3], hidden: Option<&str>) -> Value {
+    json!(
+        order
+            .into_iter()
+            .map(|id| json!({"id":id,"visible":Some(id) != hidden}))
+            .collect::<Vec<_>>()
+    )
+}
+async fn home_layout(server: &Server, actor: &Session) -> Value {
+    let response = workspace_request(server, actor, Method::GET, "/api/workspace/snapshot")
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_no_store(&response);
+    response.json::<Value>().await.unwrap()["layout"].clone()
+}
+async fn save_home_layout(
+    server: &Server,
+    actor: &Session,
+    base: &str,
+    panels: &Value,
+) -> Response {
+    workspace_request(server, actor, Method::PUT, "/api/workspace/layout")
+        .json(&json!({"base_revision":base,"panels":panels}))
+        .send()
+        .await
+        .unwrap()
+}
+
+#[tokio::test]
+async fn personal_home_layouts_are_account_scoped_durable_and_quiet() {
+    let fixture = Fixture::new().await;
+    let (server, owner, setup) = claimed(&fixture).await;
+    let member = notification_member(&server, &owner, "layout_personal_member").await;
+    let defaults = json!({"revision":"0","panels":home_panels(["note","connections","pins"],None)});
+    assert_eq!(home_layout(&server, &owner).await, defaults);
+    assert_eq!(home_layout(&server, &member).await, defaults);
+    let mut db = fixture.connect().await;
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM dashboard_layouts")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        0,
+        "reading defaults creates no layout record"
+    );
+    let owner_panels = home_panels(["pins", "connections", "note"], Some("connections"));
+    let response = save_home_layout(&server, &owner, "0", &owner_panels).await;
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_no_store(&response);
+    let saved: Value = response.json().await.unwrap();
+    assert_eq!(saved["product"], PRODUCT);
+    assert_eq!(saved["contract"], "reborn-workspace-v1");
+    assert_eq!(saved["schema"], 1);
+    assert_eq!(saved["account"], owner.account);
+    assert_eq!(saved["session_generation"], "0");
+    assert_eq!(
+        saved["layout"],
+        json!({"revision":"1","panels":owner_panels})
+    );
+    assert_eq!(home_layout(&server, &member).await, defaults);
+    let member_panels = home_panels(["connections", "note", "pins"], Some("pins"));
+    assert_eq!(
+        save_home_layout(&server, &member, "0", &member_panels)
+            .await
+            .status(),
+        StatusCode::OK
+    );
+    assert_eq!(home_layout(&server, &owner).await, saved["layout"]);
+    for actor in [&owner, &member] {
+        assert_eq!(history(&server, actor, "").await["entries"], json!([]));
+        assert_eq!(inbox(&server, actor).await["groups"], json!([]));
+    }
+    let note_response = workspace_request(&server, &owner, Method::PUT, "/api/workspace/note")
+        .json(
+            &json!({"base_revision":"0","body":"A note remains independent of Home presentation"}),
+        )
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(note_response.status(), StatusCode::OK);
+    assert_eq!(
+        note_response.json::<Value>().await.unwrap()["layout"],
+        saved["layout"]
+    );
+    server.assert_logs_private(&[
+        &setup,
+        OWNER_PASSWORD,
+        MEMBER_PASSWORD,
+        &owner.cookie,
+        &member.cookie,
+    ]);
+    drop(server);
+    let server = Server::start(&fixture, Some(&fixture.key_file)).await;
+    assert_eq!(home_layout(&server, &owner).await, saved["layout"]);
+    assert_eq!(
+        home_layout(&server, &member).await,
+        json!({"revision":"1","panels":member_panels})
+    );
+    let fresh = server
+        .login("layout_personal_member", MEMBER_PASSWORD)
+        .await;
+    assert_eq!(
+        home_layout(&server, &fresh).await,
+        home_layout(&server, &member).await
+    );
+}
+
+#[tokio::test]
+async fn home_layout_writes_reject_malformed_scope_and_stale_authority_without_changes() {
+    let fixture = Fixture::new().await;
+    let (server, owner, _) = claimed(&fixture).await;
+    let member = notification_member(&server, &owner, "layout_admission_member").await;
+    let panels = home_panels(["note", "connections", "pins"], None);
+    let before = home_layout(&server, &member).await;
+    for payload in [
+        json!({"base_revision":"01","panels":panels}),
+        json!({"base_revision":"-1","panels":panels}),
+        json!({"base_revision":"9223372036854775808","panels":panels}),
+        json!({"base_revision":0,"panels":panels}),
+        json!({"base_revision":"0","panels":panels,"account_id":owner.account["id"]}),
+        json!({"base_revision":"0","panels":[]}),
+        json!({"base_revision":"0","panels":home_panels(["note","note","pins"],None)}),
+        json!({"base_revision":"0","panels":home_panels(["note","connections","unknown"],None)}),
+        json!({"base_revision":"0","panels":[{"id":"note","visible":false},{"id":"connections","visible":false},{"id":"pins","visible":false}]}),
+        json!({"base_revision":"0","panels":[{"id":"note","visible":true,"position":0},{"id":"connections","visible":true},{"id":"pins","visible":true}]}),
+        json!({"base_revision":"0","panels":[{"id":"note","visible":"yes"},{"id":"connections","visible":true},{"id":"pins","visible":true}]}),
+        json!({"base_revision":"0","panels":[{"id":"note"},{"id":"connections","visible":true},{"id":"pins","visible":true}]}),
+    ] {
+        let response = workspace_request(&server, &member, Method::PUT, "/api/workspace/layout")
+            .json(&payload)
+            .send()
+            .await
+            .unwrap();
+        error(response, StatusCode::BAD_REQUEST, &[&member.cookie]).await;
+    }
+    for (header, value, expected) in [
+        ("Origin", "https://elsewhere.example", StatusCode::FORBIDDEN),
+        ("X-CSRF-Token", "bad", StatusCode::FORBIDDEN),
+        (
+            "X-Reborn-Product",
+            "keida-hub-rewrite",
+            StatusCode::UPGRADE_REQUIRED,
+        ),
+        (
+            "X-Reborn-Contract",
+            "reborn-auth-v1",
+            StatusCode::UPGRADE_REQUIRED,
+        ),
+    ] {
+        let response = workspace_request(&server, &member, Method::PUT, "/api/workspace/layout")
+            .header(header, value)
+            .json(&json!({"base_revision":"0","panels":panels}))
+            .send()
+            .await
+            .unwrap();
+        error(response, expected, &[&member.cookie]).await;
+    }
+    let oversized = workspace_request(&server, &member, Method::PUT, "/api/workspace/layout")
+        .header("Content-Type", "application/json")
+        .body(" ".repeat(2049))
+        .send()
+        .await
+        .unwrap();
+    error(oversized, StatusCode::PAYLOAD_TOO_LARGE, &[&member.cookie]).await;
+    let anonymous = server
+        .client
+        .put(server.url("/api/workspace/layout"))
+        .header("Origin", ORIGIN)
+        .header("X-Reborn-Product", PRODUCT)
+        .header("X-Reborn-Contract", "reborn-workspace-v1")
+        .header("X-CSRF-Token", &member.csrf)
+        .json(&json!({"base_revision":"0","panels":panels}))
+        .send()
+        .await
+        .unwrap();
+    error(anonymous, StatusCode::UNAUTHORIZED, &[]).await;
+    assert_eq!(home_layout(&server, &member).await, before);
+    let mut db = fixture.connect().await;
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM dashboard_layouts")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        0
+    );
+    assert_eq!(
+        server
+            .authorized(Method::POST, "/api/auth/revoke-all", &member)
+            .send()
+            .await
+            .unwrap()
+            .status(),
+        StatusCode::NO_CONTENT
+    );
+    error(
+        save_home_layout(&server, &member, "0", &panels).await,
+        StatusCode::UNAUTHORIZED,
+        &[&member.cookie],
+    )
+    .await;
+    let fresh = server
+        .login("layout_admission_member", MEMBER_PASSWORD)
+        .await;
+    assert_eq!(home_layout(&server, &fresh).await, before);
+}
+
+#[tokio::test]
+async fn home_layout_compare_and_save_preserves_winners_and_failed_or_unread_responses() {
+    use sqlx::Executor;
+    let fixture = Fixture::new().await;
+    let (server, owner, _) = claimed(&fixture).await;
+    let a = home_panels(["pins", "note", "connections"], Some("note"));
+    let b = home_panels(["connections", "pins", "note"], Some("pins"));
+    let (a_response, b_response) = tokio::join!(
+        save_home_layout(&server, &owner, "0", &a),
+        save_home_layout(&server, &owner, "0", &b)
+    );
+    let (winner, expected) = match (a_response.status(), b_response.status()) {
+        (StatusCode::OK, StatusCode::CONFLICT) => (a_response, a),
+        (StatusCode::CONFLICT, StatusCode::OK) => (b_response, b),
+        statuses => panic!("same-base layout saves did not serialize: {statuses:?}"),
+    };
+    // Discard a successfully committed response body. Reconcile by GET, then
+    // prove a replay with the old base cannot advance or replace the winner.
+    drop(winner);
+    let retained = home_layout(&server, &owner).await;
+    assert_eq!(retained, json!({"revision":"1","panels":expected}));
+    let defaults = home_panels(["note", "connections", "pins"], None);
+    error(
+        save_home_layout(&server, &owner, "0", &defaults).await,
+        StatusCode::CONFLICT,
+        &[],
+    )
+    .await;
+    assert_eq!(home_layout(&server, &owner).await, retained);
+    let mut db = fixture.connect().await;
+    db.execute("ALTER TABLE dashboard_layouts ADD CONSTRAINT fixture_reject_layout CHECK (revision < 0) NOT VALID").await.unwrap();
+    error(
+        save_home_layout(&server, &owner, "1", &defaults).await,
+        StatusCode::SERVICE_UNAVAILABLE,
+        &[],
+    )
+    .await;
+    db.execute("ALTER TABLE dashboard_layouts DROP CONSTRAINT fixture_reject_layout")
+        .await
+        .unwrap();
+    assert_eq!(home_layout(&server, &owner).await, retained);
+    assert_eq!(history(&server, &owner, "").await["entries"], json!([]));
+    assert_eq!(inbox(&server, &owner).await["groups"], json!([]));
+    sqlx::query("UPDATE dashboard_layouts SET revision = $1 WHERE account_id = $2")
+        .bind(i64::MAX)
+        .bind(
+            owner.account["id"]
+                .as_str()
+                .unwrap()
+                .parse::<i64>()
+                .unwrap(),
+        )
+        .execute(&mut db)
+        .await
+        .unwrap();
+    error(
+        save_home_layout(&server, &owner, &i64::MAX.to_string(), &defaults).await,
+        StatusCode::SERVICE_UNAVAILABLE,
+        &[],
+    )
+    .await;
+    let overflow = home_layout(&server, &owner).await;
+    assert_eq!(overflow["revision"], i64::MAX.to_string());
+    assert_eq!(overflow["panels"], retained["panels"]);
+}
+
+#[tokio::test]
+async fn home_layout_authority_is_rechecked_after_waiting_for_the_write_lock() {
+    let fixture = Fixture::new().await;
+    let (server, owner, _) = claimed(&fixture).await;
+    let panels = home_panels(["pins", "note", "connections"], None);
+    for (index, change) in ["revoked", "expired", "generation", "inactive", "key"]
+        .into_iter()
+        .enumerate()
+    {
+        let name = format!("layout_lock_member_{index}");
+        let member = notification_member(&server, &owner, &name).await;
+        let id = member.account["id"]
+            .as_str()
+            .unwrap()
+            .parse::<i64>()
+            .unwrap();
+        let mut locking = fixture.connect().await;
+        let mut tx = locking.begin().await.unwrap();
+        let _: bool = sqlx::query_scalar(
+            "SELECT singleton FROM auth_state WHERE singleton = TRUE FOR UPDATE",
+        )
+        .fetch_one(&mut *tx)
+        .await
+        .unwrap();
+        let request = workspace_request(&server, &member, Method::PUT, "/api/workspace/layout")
+            .json(&json!({"base_revision":"0","panels":panels}))
+            .build()
+            .unwrap();
+        let client = server.client.clone();
+        let waiting = tokio::spawn(async move { client.execute(request).await.unwrap() });
+        let mut observer = fixture.connect().await;
+        let deadline = Instant::now() + Duration::from_millis(2500);
+        loop {
+            let blocked: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname = current_database() AND wait_event_type = 'Lock' AND query LIKE 'SELECT key_id, setup_hash,%FOR UPDATE%')")
+                .fetch_one(&mut observer).await.unwrap();
+            if blocked {
+                break;
+            }
+            assert!(
+                Instant::now() < deadline,
+                "layout save never reached authority lock"
+            );
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+        let old_key: Option<Vec<u8>> =
+            sqlx::query_scalar("SELECT key_id FROM auth_state WHERE singleton = TRUE")
+                .fetch_one(&mut *tx)
+                .await
+                .unwrap();
+        match change {
+            "revoked" => {
+                sqlx::query("UPDATE sessions SET revoked = TRUE WHERE account_id = $1")
+                    .bind(id)
+                    .execute(&mut *tx)
+                    .await
+                    .unwrap();
+            }
+            "expired" => {
+                sqlx::query("UPDATE sessions SET created_at = 0, expires_at = floor(extract(epoch FROM clock_timestamp()))::BIGINT - 1 WHERE account_id = $1").bind(id).execute(&mut *tx).await.unwrap();
+            }
+            "generation" => {
+                sqlx::query("UPDATE users SET generation = generation + 1 WHERE id = $1")
+                    .bind(id)
+                    .execute(&mut *tx)
+                    .await
+                    .unwrap();
+            }
+            "inactive" => {
+                sqlx::query("UPDATE users SET active = FALSE WHERE id = $1")
+                    .bind(id)
+                    .execute(&mut *tx)
+                    .await
+                    .unwrap();
+            }
+            "key" => {
+                sqlx::query("UPDATE auth_state SET key_id = $1 WHERE singleton = TRUE")
+                    .bind(vec![71_u8; 32])
+                    .execute(&mut *tx)
+                    .await
+                    .unwrap();
+            }
+            _ => unreachable!(),
+        }
+        tx.commit().await.unwrap();
+        error(
+            waiting.await.unwrap(),
+            if change == "key" {
+                StatusCode::SERVICE_UNAVAILABLE
+            } else {
+                StatusCode::UNAUTHORIZED
+            },
+            &[&member.cookie],
+        )
+        .await;
+        if change == "key" {
+            sqlx::query("UPDATE auth_state SET key_id = $1 WHERE singleton = TRUE")
+                .bind(old_key)
+                .execute(&mut observer)
+                .await
+                .unwrap();
+        }
+        assert_eq!(
+            sqlx::query_scalar::<_, i64>(
+                "SELECT COUNT(*) FROM dashboard_layouts WHERE account_id = $1"
+            )
+            .bind(id)
+            .fetch_one(&mut observer)
+            .await
+            .unwrap(),
+            0
+        );
+    }
+    assert_eq!(home_layout(&server, &owner).await["revision"], "0");
+}

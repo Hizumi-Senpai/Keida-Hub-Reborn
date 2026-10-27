@@ -706,3 +706,21 @@ textarea::placeholder {
 
 .notification-badge{margin-left:auto;border-radius:1rem;background:#b7c99d;color:#132017;padding:.12rem .48rem;font-size:.75rem;font-weight:700}
 .notification-heading,.notification-list li{display:flex;align-items:center;justify-content:space-between;gap:1rem}.notification-heading h2{margin:.3rem 0}.notification-filter{display:flex;align-items:center;gap:.6rem;margin:1.2rem 0}.notification-filter input{width:1.1rem;height:1.1rem;accent-color:#b7c99d}.notification-list{padding:0;list-style:none}.notification-list li{padding:1.2rem 0;border-top:1px solid var(--line,#424a46)}.notification-list h3{margin:0}.notification-list p{margin:.4rem 0;overflow-wrap:anywhere}.notification-count{color:#c9d8b8}.notification-empty{padding:1.5rem 0}.notification-list button{flex-shrink:0}@media(max-width:600px){.notification-heading,.notification-list li{align-items:stretch;flex-direction:column}.notification-heading button,.notification-list button{align-self:flex-start}}
+
+/* Keyed Home panels move their existing DOM and keep form ownership intact. */
+.home-grid > [data-home-panel] { min-width: 0; }
+.home-grid > .pins-panel { grid-column: 1 / -1; }
+.home-grid.services-view { display: block; margin-top: 0; }
+.home-layout-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; }
+.layout-status { color: var(--muted); font-size: .85rem; margin: 0; flex: 1 1 12rem; }
+.layout-editor { padding: clamp(1.2rem, 3vw, 2rem); margin-top: 1rem; }
+.layout-editor > p { max-width: 42rem; font-size: .9rem; color: var(--muted); }
+.layout-list { padding: 0; margin: 1.5rem 0; list-style: none; }
+.layout-list > li { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); padding: .75rem 0; }
+.layout-list > li:focus { outline: 2px solid var(--accent); outline-offset: .3rem; }
+.layout-list label { display: flex; align-items: center; gap: .7rem; cursor: pointer; min-width: 0; }
+.layout-list label > span { overflow-wrap: anywhere; }
+.layout-list input { accent-color: var(--accent); width: 1.2rem; height: 1.2rem; flex-shrink: 0; }
+.layout-move { display: flex; gap: .5rem; flex-shrink: 0; }
+.layout-move button { min-width: 44px; min-height: 44px; padding: .5rem; }
+@media(max-width:600px) { .layout-list > li { gap: .5rem; } .layout-list label { font-size: .85rem; } .layout-editor .button-row { gap: .7rem; } }

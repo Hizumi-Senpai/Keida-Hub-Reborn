@@ -11,3 +11,6 @@ GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO reborn_app;
 GRANT SELECT, INSERT ON activity_events TO reborn_app;
 -- Read watermarks can advance; the runtime cannot erase delivery groups.
 GRANT SELECT, INSERT, UPDATE ON notification_groups TO reborn_app;
+
+-- Personal layouts can be replaced but never erased by the runtime role.
+GRANT SELECT, INSERT, UPDATE ON dashboard_layouts TO reborn_app;
