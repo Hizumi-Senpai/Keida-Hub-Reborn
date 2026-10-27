@@ -2073,3 +2073,247 @@ async fn password_scalar_boundaries_and_no_unicode_normalization_are_real_http_c
     assert_eq!(member.account["role"], "member");
     server.assert_logs_private(&[&secret, &password, &maximum, &owner.cookie, &member.cookie]);
 }
+
+fn workspace_request(
+    server: &Server,
+    session: &Session,
+    method: Method,
+    path: &str,
+) -> RequestBuilder {
+    server
+        .client
+        .request(method, server.url(path))
+        .header("Cookie", &session.cookie)
+        .header("X-Reborn-Product", PRODUCT)
+        .header("X-Reborn-Contract", "reborn-workspace-v1")
+        .header("X-CSRF-Token", &session.csrf)
+        .header("Origin", ORIGIN)
+}
+async fn history(server: &Server, session: &Session, suffix: &str) -> Value {
+    let response = workspace_request(
+        server,
+        session,
+        Method::GET,
+        &format!("/api/workspace/activity{suffix}"),
+    )
+    .send()
+    .await
+    .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_no_store(&response);
+    response.json().await.unwrap()
+}
+#[tokio::test]
+async fn activity_is_private_stably_paginated_literal_searchable_and_restart_durable() {
+    let fixture = Fixture::new().await;
+    let (server, owner, _) = claimed(&fixture).await;
+    let empty = history(&server, &owner, "").await;
+    assert_eq!(empty["entries"], json!([]));
+    assert_eq!(empty["through"], "0");
+    for n in 0..28 {
+        let response = workspace_request(&server, &owner, Method::PUT, "/api/workspace/note")
+            .json(&json!({"base_revision":n.to_string(),"body":"Private note content must never enter Activity"})).send().await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+    let first = history(&server, &owner, "").await;
+    assert_eq!(first["entries"].as_array().unwrap().len(), 25);
+    assert_eq!(first["entries"][0]["revision"], "28");
+    assert_eq!(first["entries"][24]["revision"], "4");
+    assert!(!first.to_string().contains("Private note content"));
+    let response = workspace_request(&server, &owner, Method::PUT, "/api/workspace/note")
+        .json(&json!({"base_revision":"28","body":"A newer save outside the prior window"}))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let suffix = format!(
+        "?through={}&before={}",
+        first["through"].as_str().unwrap(),
+        first["next_before"].as_str().unwrap()
+    );
+    let older = history(&server, &owner, &suffix).await;
+    assert_eq!(older["entries"].as_array().unwrap().len(), 3);
+    assert_eq!(older["entries"][0]["revision"], "3");
+    assert_eq!(older["entries"][2]["revision"], "1");
+    assert_eq!(older["through"], first["through"]);
+    assert_eq!(older["next_before"], Value::Null);
+    assert_eq!(
+        history(&server, &owner, "?category=workspace&q=SaVeD").await["entries"][0]["revision"],
+        "29"
+    );
+    assert_eq!(
+        history(&server, &owner, "?q=%25").await["entries"],
+        json!([])
+    );
+    assert_eq!(
+        history(&server, &owner, "?category=connections").await["entries"],
+        json!([])
+    );
+    for suffix in [
+        "?account=1",
+        "?through=01",
+        "?before=1",
+        "?through=0&before=1",
+        "?category=unknown",
+        "?q=%00",
+        "?q=a&q=b",
+    ] {
+        let response = workspace_request(
+            &server,
+            &owner,
+            Method::GET,
+            &format!("/api/workspace/activity{suffix}"),
+        )
+        .send()
+        .await
+        .unwrap();
+        assert_eq!(
+            response.status(),
+            StatusCode::BAD_REQUEST,
+            "invalid history filter accepted"
+        );
+        assert_no_store(&response);
+    }
+    let response = server
+        .authorized(Method::POST, "/api/owner/members", &owner)
+        .json(&json!({"username":"history_member","password":MEMBER_PASSWORD}))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::CREATED);
+    let member = server.login("history_member", MEMBER_PASSWORD).await;
+    assert_eq!(
+        history(&server, &member, &suffix).await["entries"],
+        json!([])
+    );
+    let response = workspace_request(&server, &member, Method::PUT, "/api/workspace/note")
+        .json(&json!({"base_revision":"0","body":"Another private account"}))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let own = history(&server, &member, "").await;
+    assert_eq!(own["entries"].as_array().unwrap().len(), 1);
+    assert_eq!(own["entries"][0]["revision"], "1");
+    let before_restart = history(&server, &owner, "").await;
+    drop(server);
+    let server = Server::start(&fixture, Some(&fixture.key_file)).await;
+    assert_eq!(history(&server, &owner, "").await, before_restart);
+    let mut db = PgConnection::connect(&fixture.database_url).await.unwrap();
+    sqlx::query("UPDATE users SET generation=generation+1 WHERE id=$1")
+        .bind(
+            owner.account["id"]
+                .as_str()
+                .unwrap()
+                .parse::<i64>()
+                .unwrap(),
+        )
+        .execute(&mut db)
+        .await
+        .unwrap();
+    let response = workspace_request(&server, &owner, Method::GET, "/api/workspace/activity")
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+}
+#[tokio::test]
+async fn activity_and_mutations_commit_together_and_failed_or_forbidden_writes_create_no_event() {
+    use sqlx::Executor;
+    let fixture = Fixture::new().await;
+    let (server, owner, _) = claimed(&fixture).await;
+    let mut db = PgConnection::connect(&fixture.database_url).await.unwrap();
+    db.execute("ALTER TABLE activity_events ADD CONSTRAINT fixture_reject_event CHECK (revision < 0) NOT VALID").await.unwrap();
+    let response = workspace_request(&server, &owner, Method::PUT, "/api/workspace/note")
+        .json(&json!({"base_revision":"0","body":"Must be rolled back"}))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+    let snapshot: Value =
+        workspace_request(&server, &owner, Method::GET, "/api/workspace/snapshot")
+            .send()
+            .await
+            .unwrap()
+            .json()
+            .await
+            .unwrap();
+    assert_eq!(snapshot["note"], json!({"body":"","revision":"0"}));
+    assert_eq!(history(&server, &owner, "").await["entries"], json!([]));
+    db.execute("ALTER TABLE activity_events DROP CONSTRAINT fixture_reject_event")
+        .await
+        .unwrap();
+    for (method, path, payload, expected) in [
+        (
+            Method::PUT,
+            "/api/workspace/note",
+            json!({"base_revision":"9","body":"stale"}),
+            StatusCode::CONFLICT,
+        ),
+        (
+            Method::PUT,
+            "/api/owner/directory",
+            json!({"base_revision":"0","change":{"action":"create","link":{"name":"Private service label","category":"Personal","description":"Private description","url":"https://example.test/"}}}),
+            StatusCode::OK,
+        ),
+        (
+            Method::PUT,
+            "/api/workspace/pins",
+            json!({"base_directory_revision":"1","base_revision":"0","ids":[]}),
+            StatusCode::OK,
+        ),
+        (
+            Method::PUT,
+            "/api/owner/crafty",
+            json!({"base_revision":"0","connection":null}),
+            StatusCode::OK,
+        ),
+    ] {
+        let response = workspace_request(&server, &owner, method, path)
+            .json(&payload)
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(response.status(), expected);
+    }
+    let page = history(&server, &owner, "").await;
+    assert_eq!(
+        page["entries"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|e| e["kind"].as_str().unwrap())
+            .collect::<Vec<_>>(),
+        ["connection_removed", "pins_saved", "service_added"]
+    );
+    assert!(!page.to_string().contains("Private service"));
+    assert!(!page.to_string().contains("example.test"));
+    assert_eq!(
+        history(&server, &owner, "?category=connections").await["entries"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    for (product, contract, csrf, expected) in [
+        (
+            PRODUCT,
+            "old",
+            owner.csrf.as_str(),
+            StatusCode::UPGRADE_REQUIRED,
+        ),
+        (PRODUCT, "reborn-workspace-v1", "bad", StatusCode::FORBIDDEN),
+    ] {
+        let response = server
+            .client
+            .get(server.url("/api/workspace/activity"))
+            .header("Cookie", &owner.cookie)
+            .header("X-Reborn-Product", product)
+            .header("X-Reborn-Contract", contract)
+            .header("X-CSRF-Token", csrf)
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(response.status(), expected);
+    }
+}

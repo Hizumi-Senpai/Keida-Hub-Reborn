@@ -60,6 +60,18 @@ pub async fn replace(
     .execute(&mut *tx)
     .await
     .map_err(|_| Error::Unavailable)?;
+    super::activity::record(
+        &mut tx,
+        session.account.id,
+        if sealed.is_some() {
+            crate::activity::Kind::ConnectionSaved
+        } else {
+            crate::activity::Kind::ConnectionRemoved
+        },
+        next,
+        state.now,
+    )
+    .await?;
     tx.commit().await.map_err(|_| Error::Unavailable)?;
     Ok(next)
 }

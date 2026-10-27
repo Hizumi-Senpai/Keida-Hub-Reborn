@@ -2,6 +2,7 @@
   import { onDestroy } from 'svelte';
   import type { Crafty } from './controller';
   export let binding: string;
+  export let history: () => void;
   export let overview: Crafty | null | undefined;
   export let owner = false;
   export let active = false;
@@ -47,6 +48,7 @@
   async function check(): Promise<void> { await refresh(); if (active) { uncertain = false; message = 'Review the current connection state before making another change.'; } }
 </script>
 
+<button class="text-button" onclick={history}>View connection enrollment history</button>
 <div class="connections-intro"><p>Server observations from your deliberately enrolled Crafty connection.</p><span class="quiet-label">Read-only overview</span></div>
 {#if !overview || !overview.configured}
   <section class="card small-card"><h2>No Crafty connection enrolled</h2><p>An owner can add dedicated access and choose which servers to show.</p></section>

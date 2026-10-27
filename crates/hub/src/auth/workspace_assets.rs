@@ -8,6 +8,8 @@ const PREVIOUS_SCRIPT: &[u8] = include_bytes!("../../static/workspace-compat/0.1
 const PREVIOUS_STYLE: &[u8] = include_bytes!("../../static/workspace-compat/0.1.6.css");
 const ALPHA_SCRIPT: &[u8] = include_bytes!("../../static/workspace-compat/0.1.7.js");
 const ALPHA_STYLE: &[u8] = include_bytes!("../../static/workspace-compat/0.1.7.css");
+const DIRECTORY_SCRIPT: &[u8] = include_bytes!("../../static/workspace-compat/0.1.8.js");
+const DIRECTORY_STYLE: &[u8] = include_bytes!("../../static/workspace-compat/0.1.8.css");
 fn url(bytes: &[u8], extension: &str) -> String {
     let digest: String = Sha256::digest(bytes)
         .iter()
@@ -36,6 +38,10 @@ pub fn find(path: &str) -> Option<(&'static str, &'static [u8])> {
         Some(("text/javascript; charset=utf-8", ALPHA_SCRIPT))
     } else if path == url(ALPHA_STYLE, "css") {
         Some(("text/css; charset=utf-8", ALPHA_STYLE))
+    } else if path == url(DIRECTORY_SCRIPT, "js") {
+        Some(("text/javascript; charset=utf-8", DIRECTORY_SCRIPT))
+    } else if path == url(DIRECTORY_STYLE, "css") {
+        Some(("text/css; charset=utf-8", DIRECTORY_STYLE))
     } else {
         None
     }
@@ -48,5 +54,7 @@ pub fn manifest() -> Vec<String> {
         url(PREVIOUS_STYLE, "css"),
         url(ALPHA_SCRIPT, "js"),
         url(ALPHA_STYLE, "css"),
+        url(DIRECTORY_SCRIPT, "js"),
+        url(DIRECTORY_STYLE, "css"),
     ]
 }

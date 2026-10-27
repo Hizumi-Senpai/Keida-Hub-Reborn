@@ -7,3 +7,5 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON users, sessions, auth_state,
     auth_throttles, workspace_notes, crafty_connection,
     directory_state, directory_services, directory_pins TO reborn_app;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO reborn_app;
+-- Events are append-only for the ordinary runtime role.
+GRANT SELECT, INSERT ON activity_events TO reborn_app;
