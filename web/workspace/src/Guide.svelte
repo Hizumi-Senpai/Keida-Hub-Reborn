@@ -5,13 +5,15 @@
   export let authorized = false;
   export let retry: () => Promise<void>;
   export let connections: () => void;
+  export let media: () => void;
+  export let owner = false;
 </script>
 
 <div class="guide-card">
   <p class="workspace-status" role="status">{state.message}</p>
   {#if authorized && state.phase === 'ready' && state.value}
     {#if mode === 'catalog'}
-      <section class="card guide-intro"><p class="eyebrow">OPTIONAL CONNECTIONS</p><h2>Integration catalog</h2><p>Come back here to see what is available and what is planned. Each connection needs deliberate setup and its own access permissions.</p><p class="field-help">Available means the Reborn feature exists. Your Connections view shows whether Crafty is enrolled; credentials and real provider acceptance are separate.</p></section>
+      <section class="card guide-intro"><p class="eyebrow">OPTIONAL CONNECTIONS</p><h2>Integration catalog</h2><p>Come back here to see what is available and what is planned. Each connection needs deliberate setup and its own access permissions.</p><p class="field-help">Available means the Reborn feature exists. Connections shows Crafty enrollment. Media provides owner-only Jellyfin and Seerr observations; credentials and real provider acceptance are separate.</p></section>
       <div class="catalog-list">
         {#each state.value.catalog as integration (integration.id)}
           <article class="card integration-card" data-integration-id={integration.id}>
@@ -19,7 +21,7 @@
             <p>{integration.summary}</p>
             <h3>What it offers</h3><ul>{#each integration.capabilities as capability}<li>{capability}</li>{/each}</ul>
             <h3>Setup requirements</h3><ul>{#each integration.requirements as requirement}<li>{requirement}</li>{/each}</ul>
-            {#if integration.status === 'available'}<button class="button secondary" onclick={connections}>Open Connections</button>{:else}<p class="field-help">Setup will be available when this integration is implemented and qualified.</p>{/if}
+            {#if integration.status === 'available'}{#if integration.id === 'crafty'}<button class="button secondary" onclick={connections}>Open Connections</button>{:else if owner}<button class="button secondary" onclick={media}>Open Media</button>{:else}<p class="field-help">Media enrollment and observations require owner access.</p>{/if}{:else}<p class="field-help">Setup will be available when this integration is implemented and qualified.</p>{/if}
           </article>
         {/each}
       </div>

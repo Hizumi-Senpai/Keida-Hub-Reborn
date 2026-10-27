@@ -15,7 +15,10 @@ milestone acceptance is inferred. The directory/search/personal-pin M2 slice is 
 Retained private Activity/history is installed as0.1.9 (issue12).
 Grouped notifications/read state are installed as0.1.10 (issue14).
 Personal Home arrangement is installed as0.1.11 (issue16).
-The current slice is the [integration catalog, retained sampled provider history and Roadmap note](docs/M2_CATALOG.md), tracked in issue18. Existing accepted functionality in
+The [integration catalog, retained sampled provider history and Roadmap note](docs/M2_CATALOG.md)
+are installed as0.1.12 (issue18). The current independent slice is
+[owner-only Jellyfin/Seerr observations](docs/M3_MEDIA.md), tracked in issue20.
+Existing accepted functionality in
 another application is a behavior reference, not a completed Reborn milestone.
 
 The original **https://keida.me stays live and unchanged**. Existing rewrite

@@ -6,6 +6,7 @@ pub mod crypto;
 mod directory;
 mod guide;
 mod layout;
+mod media;
 mod notifications;
 mod observations;
 pub mod store;
@@ -52,6 +53,7 @@ pub struct Service {
     key_id: Arc<Vec<u8>>,
     origin: Arc<str>,
     observer: Arc<crate::providers::crafty::Observer>,
+    media_observer: Arc<crate::providers::media::Observer>,
 }
 
 impl Service {
@@ -64,6 +66,7 @@ impl Service {
             key_id,
             origin: origin.into(),
             observer: Arc::new(crate::providers::crafty::Observer::new()),
+            media_observer: Arc::new(crate::providers::media::Observer::new()),
         })
     }
 
@@ -112,6 +115,7 @@ pub fn router(service: Service) -> Router {
         .merge(activity::router(service.clone()))
         .merge(notifications::router(service.clone()))
         .merge(layout::router(service.clone()))
+        .merge(media::router(service.clone()))
         .merge(observations::router(service.clone()))
         .merge(workspace::router(service))
 }

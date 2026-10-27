@@ -26,6 +26,12 @@ export type Observation = { id: string; revision: string; checked_at: string; er
 export type ObservationState = { phase: 'idle' | 'loading' | 'ready' | 'error'; entries: Observation[]; revision: string; through: string; next: string | null; message: string };
 const emptyGuide = (): GuideState => ({ phase: 'idle', message: '' });
 const emptyObservations = (): ObservationState => ({ phase: 'idle', entries: [], revision: '0', through: '0', next: null, message: '' });
+export type MediaProvider = 'jellyfin' | 'seerr';
+export type MediaEnrollment = { endpoint: string; token: string; ca_pem: string; library_id: string | null; acknowledge_broad_access: boolean };
+export type MediaObservation = { revision: string; configured: boolean; checked_at: number | null; freshness: 'fresh' | 'stale' | 'unknown'; error: string | null; complete: boolean; offset: number; next_offset: number | null; total: number | null; truncated: boolean; items: Array<{ id: string; title: string | null; kind: 'movie' | 'series'; year: number | null; request_status: 'pending' | 'approved' | 'declined' | 'failed' | 'completed' | 'unknown' | null; detail_error: string | null }>; playback: { playing: number | null; paused: number | null; error: string | null } | null };
+export type MediaState = { phase: 'idle' | 'loading' | 'ready' | 'error'; status?: { revision: string; configured: boolean }; observation?: MediaObservation; save: 'idle' | 'saving' | 'conflict' | 'uncertain'; message: string };
+const mediaProviders: MediaProvider[] = ['jellyfin', 'seerr'];
+const emptyMedia = (): Record<MediaProvider, MediaState> => ({ jellyfin: { phase: 'idle', save: 'idle', message: '' }, seerr: { phase: 'idle', save: 'idle', message: '' } });
 export type Model = {
   phase: 'checking' | 'ready' | 'paused' | 'blocked'; message: string;
   snapshot?: Snapshot; draft: string; base: string; dirty: boolean;
@@ -35,9 +41,9 @@ export type Model = {
   directorySave: 'idle' | 'saving' | 'conflict' | 'uncertain'; directoryMessage: string;
   layoutDraft?: { base: string; panels: HomePanel[] };
   layoutSave: 'idle' | 'saving' | 'checking-conflict' | 'conflict' | 'uncertain'; layoutMessage: string;
-  guide: GuideState; observations: ObservationState;
+  guide: GuideState; observations: ObservationState; media: Record<MediaProvider, MediaState>;
 };
-const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '', layoutSave: 'idle', layoutMessage: '', guide: emptyGuide(), observations: emptyObservations() });
+const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '', layoutSave: 'idle', layoutMessage: '', guide: emptyGuide(), observations: emptyObservations(), media: emptyMedia() });
 const record = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const decimal = (v: unknown, positive = false): v is string => typeof v === 'string' && /^(0|[1-9][0-9]{0,18})$/.test(v) && BigInt(v) <= MAX_REVISION && (!positive || v !== '0');
 const text = (v: unknown): v is string => typeof v === 'string' && !v.includes('\0') && new TextEncoder().encode(v).length <= 4096;
@@ -74,7 +80,7 @@ function parseGuide(v: Record<string, unknown>): Guide {
   const c = v.catalog, r = v.roadmap;
   if (!Array.isArray(c) || c.length !== ids.length || new Set(c.map(i => record(i) ? i.id : null)).size !== ids.length
       || c.some((i: unknown) => !record(i) || !ids.includes(String(i.id)) || !field(i.name, 80, true)
-        || i.status !== (i.id === 'crafty' ? 'available' : 'planned') || !field(i.summary, 512, true)
+        || i.status !== (['crafty', 'jellyfin', 'seerr'].includes(String(i.id)) ? 'available' : 'planned') || !field(i.summary, 512, true)
         || !strings(i.requirements, 8, 512) || !strings(i.capabilities, 8, 512))
       || !record(r) || typeof r.as_of !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.as_of) || !field(r.intro, 1024, true)
       || !strings(r.priorities, 8, 512) || r.tracker_url !== 'https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/2'
@@ -133,6 +139,33 @@ function stored(value: string | null): Draft | undefined {
   } catch { /* Corrupt local drafts never grant authority or break the workspace. */ }
 }
 
+const mediaError = (v: unknown): v is string | null => v === null || (typeof v === 'string' && ['checking', 'unavailable', 'invalid_configuration', 'timeout', 'transport', 'denied', 'provider_error', 'oversized', 'malformed'].includes(v));
+const boundedNumber = (v: unknown, max: number, min = 0): v is number => typeof v === 'number' && Number.isSafeInteger(v) && v >= min && v <= max;
+const mediaOffset = (v: unknown): v is number => boundedNumber(v, 48) && v % 12 === 0;
+function mediaObservation(v: unknown, provider: MediaProvider, offset: number): MediaObservation {
+  if (!record(v) || !decimal(v.revision) || typeof v.configured !== 'boolean' || !(v.checked_at === null || boundedNumber(v.checked_at, 253402300799))
+      || !['fresh', 'stale', 'unknown'].includes(String(v.freshness)) || !mediaError(v.error) || typeof v.complete !== 'boolean'
+      || v.offset !== offset || !mediaOffset(v.offset) || !(v.next_offset === null || (mediaOffset(v.next_offset) && v.next_offset === offset + 12))
+      || !(v.total === null || boundedNumber(v.total, 1_000_000_000)) || typeof v.truncated !== 'boolean'
+      || !Array.isArray(v.items) || v.items.length > 12 || new Set(v.items.map(i => record(i) ? i.id : null)).size !== v.items.length
+      || v.items.some((i: unknown) => !record(i) || typeof i.id !== 'string' || !/^[a-f0-9]{64}$/.test(i.id)
+        || !(i.title === null || field(i.title, 240, true)) || !['movie', 'series'].includes(String(i.kind))
+        || !(i.year === null || boundedNumber(i.year, 9999, 1)) || !mediaError(i.detail_error)
+        || (provider === 'jellyfin' ? i.request_status !== null : !['pending', 'approved', 'declined', 'failed', 'completed', 'unknown'].includes(String(i.request_status))))
+      || (provider === 'seerr' ? v.playback !== null : !(v.playback === null || (record(v.playback)
+        && (v.playback.playing === null || boundedNumber(v.playback.playing, 256)) && (v.playback.paused === null || boundedNumber(v.playback.paused, 256)) && mediaError(v.playback.error))))
+      || (!v.configured && (v.items.length !== 0 || v.complete || v.checked_at !== null || v.next_offset !== null))) throw new Error('Invalid media response');
+  const value = v as unknown as MediaObservation;
+  // Keep only the current presentation contract. Extra provider or future
+  // response fields cannot become private browser state through a broad cast.
+  return {
+    revision: value.revision, configured: value.configured, checked_at: value.checked_at,
+    freshness: value.freshness, error: value.error, complete: value.complete,
+    offset: value.offset, next_offset: value.next_offset, total: value.total, truncated: value.truncated,
+    items: value.items.map(({ id, title, kind, year, request_status, detail_error }) => ({ id, title, kind, year, request_status, detail_error })),
+    playback: value.playback === null ? null : { playing: value.playback.playing, paused: value.playback.paused, error: value.playback.error },
+  };
+}
 export function workspace(binding: string) {
   const model = writable<Model>(empty('checking', 'Checking your workspace…'));
   let epoch = 0;
@@ -148,6 +181,12 @@ export function workspace(binding: string) {
   let historySerial = 0;
   let guideSerial = 0;
   let observationsSerial = 0;
+  let mediaActive = false;
+  const mediaReading: Partial<Record<MediaProvider, AbortController>> = {};
+  const mediaStatusReading: Partial<Record<MediaProvider, AbortController>> = {};
+  const mediaSaving: Partial<Record<MediaProvider, AbortController>> = {};
+  const mediaSerial: Record<MediaProvider, number> = { jellyfin: 0, seerr: 0 };
+  const mediaStatusSerial: Record<MediaProvider, number> = { jellyfin: 0, seerr: 0 };
   let key: string | undefined;
   let held: { key: string; draft: Draft } | undefined;
   let channel: BroadcastChannel | undefined;
@@ -169,7 +208,12 @@ export function workspace(binding: string) {
     catch { model.update((m) => ({ ...m, storageLimited: true })); }
   }
   function cancel(): void {
-    ++epoch;
+    ++epoch; mediaActive = false;
+    for (const provider of mediaProviders) {
+      ++mediaSerial[provider]; ++mediaStatusSerial[provider];
+      mediaReading[provider]?.abort(); mediaStatusReading[provider]?.abort(); mediaSaving[provider]?.abort();
+      delete mediaReading[provider]; delete mediaStatusReading[provider]; delete mediaSaving[provider];
+    }
     if (timer) clearTimeout(timer);
     timer = undefined;
     reading?.abort(); saving?.abort(); reading = undefined; saving = undefined;
@@ -196,7 +240,7 @@ export function workspace(binding: string) {
     try {
       const response = await fetch(path, {
         method: body ? 'PUT' : 'GET', credentials: 'same-origin', cache: 'no-store', redirect: 'error', signal: controller.signal,
-        headers: { 'X-Reborn-Product': PRODUCT, 'X-Reborn-Contract': CONTRACT, 'X-CSRF-Token': binding, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+        headers: { 'X-Reborn-Product': PRODUCT, 'X-Reborn-Contract': CONTRACT, 'X-CSRF-Token': binding, ...(path === '/api/workspace/guide' ? { 'X-Reborn-Guide': 'media-v1' } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
         body: body ? JSON.stringify(body) : undefined,
       });
       const value: unknown = response.ok ? await response.json() : undefined;
@@ -274,6 +318,12 @@ export function workspace(binding: string) {
         try { draft ??= stored(sessionStorage.getItem(key)); } catch { limited = true; }
         if (draft?.body === next.note.body) { removeDraft(); draft = undefined; }
         model.set({ ...empty('ready', 'Workspace checked.'), snapshot: next, draft: next.note.body, base: next.note.revision, recovery: draft, storageLimited: limited });
+      }
+      if (mediaActive && state().snapshot?.account.role === 'owner') {
+        for (const provider of mediaProviders) {
+          const pending = state().media[provider].observation;
+          if (pending?.error === 'checking' && !mediaReading[provider] && !mediaSaving[provider]) void loadMedia(provider, pending.offset);
+        }
       }
       schedule();
     } catch {
@@ -566,6 +616,103 @@ export function workspace(binding: string) {
       if (!disposed && serial === observationsSerial && current === epoch && currentScope(captured)) model.update(m => ({ ...m, observations: { ...emptyObservations(), phase: 'error', message: 'Provider history could not be checked. Retry deliberately; current connections remain available.' } }));
     } finally { if (observationsReading === controller) observationsReading = undefined; }
   }
+  function setMedia(provider: MediaProvider, value: MediaState, flush = false): void {
+    const update = () => model.update(m => ({ ...m, media: { ...m.media, [provider]: value } }));
+    if (flush) flushSync(update); else update();
+  }
+  function ownerSnapshot(): Snapshot | undefined {
+    const s = state();
+    return !disposed && !terminal && s.phase === 'ready' && s.snapshot?.account.role === 'owner' && document.visibilityState === 'visible' ? s.snapshot : undefined;
+  }
+  function clearMediaRead(provider: MediaProvider): void {
+    ++mediaSerial[provider]; mediaReading[provider]?.abort(); delete mediaReading[provider];
+  }
+  function closeMedia(): void {
+    mediaActive = false;
+    for (const provider of mediaProviders) {
+      clearMediaRead(provider); ++mediaStatusSerial[provider]; mediaStatusReading[provider]?.abort(); delete mediaStatusReading[provider];
+      const prior = state().media[provider], savingNow = !!mediaSaving[provider];
+      mediaSaving[provider]?.abort(); delete mediaSaving[provider];
+      setMedia(provider, { phase: 'idle', save: savingNow ? 'uncertain' : prior.save, message: savingNow ? 'The save may have completed. Check the connection state before another change.' : prior.save === 'uncertain' || prior.save === 'conflict' ? prior.message : '' }, true);
+    }
+  }
+  async function checkMedia(provider: MediaProvider, observe = true): Promise<void> {
+    const captured = ownerSnapshot(); if (!captured || mediaSaving[provider]) return;
+    mediaActive = true; clearMediaRead(provider);
+    mediaStatusReading[provider]?.abort();
+    const controller = new AbortController(); mediaStatusReading[provider] = controller;
+    const serial = ++mediaStatusSerial[provider], current = epoch, prior = state().media[provider];
+    setMedia(provider, { ...prior, phase: 'loading', observation: undefined, message: 'Checking the current enrollment…' }, true);
+    try {
+      const response = await request(`/api/owner/media/${provider}`, controller);
+      if (disposed || controller.signal.aborted || serial !== mediaStatusSerial[provider] || current !== epoch || !currentScope(captured)) return;
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      const value = response.value;
+      if (response.status !== 200 || !record(value) || !decimal(value.revision) || typeof value.configured !== 'boolean') throw new Error('Media enrollment unavailable');
+      const existing = state().media[provider].status;
+      if (existing && BigInt(value.revision) < BigInt(existing.revision)) throw new Error('Older enrollment reply');
+      setMedia(provider, { phase: 'ready', status: { revision: value.revision, configured: value.configured }, save: 'idle', message: value.configured ? 'Enrollment checked. Only observation requests are sent.' : 'No connection is enrolled.' }, true);
+      if (observe && value.configured) await loadMedia(provider);
+    } catch {
+      if (!disposed && serial === mediaStatusSerial[provider] && current === epoch && currentScope(captured)) {
+        const latest = state().media[provider];
+        setMedia(provider, { ...latest, phase: 'error', observation: undefined, message: 'The connection state could not be checked. Retry deliberately before entering credentials.' }, true);
+      }
+    } finally { if (mediaStatusReading[provider] === controller) delete mediaStatusReading[provider]; }
+  }
+  async function openMedia(): Promise<void> {
+    if (!ownerSnapshot()) return;
+    mediaActive = true; await Promise.all(mediaProviders.map(provider => checkMedia(provider)));
+  }
+  async function loadMedia(provider: MediaProvider, offset = 0): Promise<void> {
+    const captured = ownerSnapshot(); if (!captured || !mediaOffset(offset) || mediaSaving[provider]) return;
+    mediaActive = true; clearMediaRead(provider);
+    const controller = new AbortController(); mediaReading[provider] = controller;
+    const serial = mediaSerial[provider], current = epoch, prior = state().media[provider];
+    setMedia(provider, { ...prior, phase: 'loading', observation: undefined, message: 'Checking sampled media observations…' }, true);
+    try {
+      const response = await request(`/api/workspace/media/${provider}?offset=${offset}`, controller);
+      if (disposed || controller.signal.aborted || serial !== mediaSerial[provider] || current !== epoch || !currentScope(captured)) return;
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      if (response.status === 409) {
+        clearMediaRead(provider);
+        setMedia(provider, { phase: 'error', save: prior.save, message: 'Enrollment changed. Check the connection state before reading its new scope.' }, true); return;
+      }
+      if (response.status !== 200) throw new Error('Media unavailable');
+      if (!scoped(response.value, captured)) { invalidate('Your account scope changed. Open a fresh workspace.', true); return; }
+      if (response.value.provider !== provider) throw new Error('Wrong media provider');
+      const observation = mediaObservation(response.value.observation, provider, offset), status = state().media[provider].status;
+      if (status && BigInt(observation.revision) < BigInt(status.revision)) throw new Error('Older media scope');
+      // A separately opened tab can replace enrollment. The current response is
+      // authorized by Rust; abort any older status reply before adopting scope.
+      if (status?.revision !== observation.revision) { ++mediaStatusSerial[provider]; mediaStatusReading[provider]?.abort(); delete mediaStatusReading[provider]; }
+      const message = !observation.configured ? 'No connection is enrolled.' : observation.error === 'checking' ? 'A sample is being collected. Check observations again, or wait for the existing workspace access check.'
+        : observation.error ? 'This provider sample is unavailable or incomplete. Unknown values stay unknown.' : observation.complete ? 'Media observations checked.' : 'A partial media sample is available; some details are unknown.';
+      setMedia(provider, { phase: 'ready', status: { revision: observation.revision, configured: observation.configured }, observation, save: state().media[provider].save, message }, true);
+    } catch {
+      if (!disposed && serial === mediaSerial[provider] && current === epoch && currentScope(captured)) setMedia(provider, { ...state().media[provider], phase: 'error', observation: undefined, message: 'Media observations could not be checked. Retry deliberately; your workspace note is unchanged.' }, true);
+    } finally { if (mediaReading[provider] === controller) delete mediaReading[provider]; }
+  }
+  async function saveMedia(provider: MediaProvider, base: string, connection: MediaEnrollment | null): Promise<void> {
+    const captured = ownerSnapshot(), prior = state().media[provider];
+    if (!captured || mediaSaving[provider] || prior.phase !== 'ready' || prior.save !== 'idle' || prior.status?.revision !== base || !decimal(base)) return;
+    mediaActive = true; clearMediaRead(provider); ++mediaStatusSerial[provider]; mediaStatusReading[provider]?.abort(); delete mediaStatusReading[provider];
+    const controller = new AbortController(); mediaSaving[provider] = controller;
+    const current = epoch;
+    setMedia(provider, { ...prior, observation: undefined, save: 'saving', message: connection ? 'Saving the dedicated connection…' : 'Removing the connection…' }, true);
+    try {
+      const response = await request(`/api/owner/media/${provider}`, controller, { base_revision: base, connection });
+      if (disposed || controller.signal.aborted || current !== epoch || !currentScope(captured) || mediaSaving[provider] !== controller) return;
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      if (response.status === 409) { setMedia(provider, { phase: 'error', save: 'conflict', message: 'The connection changed elsewhere. Check its current state before enrolling again.' }, true); return; }
+      if ([400, 413, 429].includes(response.status)) { setMedia(provider, { ...prior, observation: undefined, save: 'idle', message: 'Connection not accepted. Check the address, library, certificate and broad-access acknowledgement.' }, true); return; }
+      const value = response.value;
+      if (response.status !== 200 || !record(value) || !decimal(value.revision, true) || BigInt(value.revision) !== BigInt(base) + 1n || value.configured !== (connection !== null)) throw new Error('Uncertain media save');
+      setMedia(provider, { phase: 'ready', status: { revision: value.revision, configured: value.configured as boolean }, save: 'idle', message: connection ? 'Connection saved. Check its observations.' : 'Connection removed.' }, true);
+    } catch {
+      if (!disposed && current === epoch && currentScope(captured) && mediaSaving[provider] === controller) setMedia(provider, { phase: 'error', save: 'uncertain', message: 'The save may have completed. Check the connection state before entering credentials again.' }, true);
+    } finally { if (mediaSaving[provider] === controller) delete mediaSaving[provider]; }
+  }
   function signOut(): void {
     removeDraft(); invalidate('Signing out…', true);
     try { channel?.postMessage({ kind: 'auth-changed' }); } catch { /* No optional feature blocks native submission. */ }
@@ -591,5 +738,5 @@ export function workspace(binding: string) {
       document.removeEventListener('visibilitychange', visibility);
     };
   }
-  return { model, start, edit, recover, resolve, save, signOut, check: () => read(true), editService, pins, activity, markNotification, beginLayout, moveLayout, toggleLayout, resetLayout, cancelLayout, resolveLayout, saveLayout, checkLayout: () => read(true), loadGuide, observations };
+  return { model, start, edit, recover, resolve, save, signOut, check: () => read(true), editService, pins, activity, markNotification, beginLayout, moveLayout, toggleLayout, resetLayout, cancelLayout, resolveLayout, saveLayout, checkLayout: () => read(true), loadGuide, observations, openMedia, closeMedia, checkMedia, loadMedia, saveMedia };
 }

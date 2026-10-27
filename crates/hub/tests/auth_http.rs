@@ -13,6 +13,9 @@ use std::{
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
+#[path = "support/media_contracts.rs"]
+mod media_contracts;
+
 const BINARY: &str = env!("CARGO_BIN_EXE_keida-hub-reborn");
 const ORIGIN: &str = "https://reborn.example";
 const PRODUCT: &str = "keida-hub-reborn";
@@ -3122,6 +3125,48 @@ async fn integration_catalog_and_roadmap_are_bound_read_only_and_preserve_the_pr
     assert_eq!(member_guide["account"], member.account);
     assert_eq!(member_guide["catalog"], guide["catalog"]);
     assert_eq!(member_guide["roadmap"], guide["roadmap"]);
+    let response = workspace_request(&server, &owner, Method::GET, "/api/workspace/guide")
+        .header("X-Reborn-Guide", "media-v1")
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_no_store(&response);
+    let media_guide: Value = response.json().await.unwrap();
+    let media_catalog = media_guide["catalog"].as_array().unwrap();
+    assert_eq!(
+        media_catalog
+            .iter()
+            .filter(|p| p["status"] == "available")
+            .count(),
+        3
+    );
+    for id in ["crafty", "jellyfin", "seerr"] {
+        assert!(
+            media_catalog
+                .iter()
+                .any(|p| p["id"] == id && p["status"] == "available")
+        );
+    }
+    for header in ["unknown-guide", "media-v2"] {
+        error(
+            workspace_request(&server, &owner, Method::GET, "/api/workspace/guide")
+                .header("X-Reborn-Guide", header)
+                .send()
+                .await
+                .unwrap(),
+            StatusCode::UPGRADE_REQUIRED,
+            &[note],
+        )
+        .await;
+    }
+    let duplicate = workspace_request(&server, &owner, Method::GET, "/api/workspace/guide")
+        .header("X-Reborn-Guide", "media-v1")
+        .header("X-Reborn-Guide", "media-v1")
+        .send()
+        .await
+        .unwrap();
+    error(duplicate, StatusCode::UPGRADE_REQUIRED, &[note]).await;
     assert_private_text(
         &guide.to_string(),
         &[note, &owner.cookie, &setup, OWNER_PASSWORD],

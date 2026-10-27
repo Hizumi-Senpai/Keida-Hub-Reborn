@@ -64,6 +64,134 @@ async fn accessibility(b: &Browser) -> Check<()> {
         "workspace accessibility rules",
     )
 }
+
+async fn media_enroll(
+    b: &Browser,
+    provider: &reborn_crafty_fixture::media::Media,
+    name: &'static str,
+) -> Check<()> {
+    use reborn_crafty_fixture::media as m;
+    check(
+        matches!(name, "jellyfin" | "seerr"),
+        "closed media fixture provider",
+    )?;
+    b.wait(
+        "const s=document.querySelector('[data-media-provider='+arguments[0]+']');return !!s && /^(0|[1-9][0-9]*)$/.test(s.dataset.mediaRevision) && !s.querySelector('.media-save').disabled;",
+        json!([name]),
+    )
+    .await?;
+    if b
+        .evaluate(
+            "return document.querySelector('[data-media-provider='+arguments[0]+'] details.media-enrollment').open;",
+            json!([name]),
+        )
+        .await?
+        != true
+    {
+        b.click(&format!(
+            "[data-media-provider={name}] details.media-enrollment > summary"
+        ))
+        .await?;
+    }
+    let revision = b
+        .evaluate(
+            "return document.querySelector('[data-media-provider='+arguments[0]+']').dataset.mediaRevision;",
+            json!([name]),
+        )
+        .await?
+        .as_str()
+        .and_then(|value| value.parse::<u64>().ok())
+        .ok_or("observed canonical media enrollment revision")?;
+    b.fill(&format!("#{name}-endpoint"), &provider.origin)
+        .await?;
+    b.fill(&format!("#{name}-token"), m::TOKEN).await?;
+    b.fill(&format!("#{name}-ca"), &provider.ca).await?;
+    if name == "jellyfin" {
+        b.fill("#jellyfin-library", m::LIBRARY_ID).await?;
+    }
+    if b.evaluate(
+        "return document.querySelector('#'+arguments[0]+'-ack').checked;",
+        json!([name]),
+    )
+    .await?
+        != true
+    {
+        b.click(&format!("#{name}-ack")).await?;
+    }
+    b.click(&format!("[data-media-provider={name}] .media-save"))
+        .await?;
+    b.wait(
+        "const s=document.querySelector('[data-media-provider='+arguments[0]+']');return s?.dataset.mediaRevision===arguments[1] && s.dataset.mediaConfigured==='true' && document.querySelector('#'+arguments[0]+'-token').value==='' && document.querySelector('#'+arguments[0]+'-endpoint').value==='' && document.querySelector('#'+arguments[0]+'-ca').value==='';",
+        json!([name, (revision + 1).to_string()]),
+    )
+    .await
+}
+
+async fn media_observed(b: &Browser, name: &'static str, expected: &str) -> Check<()> {
+    // The UI deliberately does not create another timer. Each click here is an
+    // actual user refresh while Rust owns the bounded in-flight collection.
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(8);
+    loop {
+        if b
+            .evaluate(
+                "const s=document.querySelector('[data-media-provider='+arguments[0]+']');return !!s && s.dataset.mediaError!=='checking' && s.textContent.includes(arguments[1]);",
+                json!([name, expected]),
+            )
+            .await?
+            == true
+        {
+            return Ok(());
+        }
+        check(
+            tokio::time::Instant::now() < deadline,
+            "bounded user-driven media observation completion",
+        )?;
+        let selector = format!("[data-media-provider={name}] .media-check-observations");
+        if b
+            .evaluate(
+                "const b=document.querySelector('[data-media-provider='+arguments[0]+'] .media-check-observations');return !!b && !b.disabled;",
+                json!([name]),
+            )
+            .await?
+            == true
+        {
+            b.click(&selector).await?;
+        }
+        tokio::time::sleep(Duration::from_millis(80)).await;
+    }
+}
+
+async fn media_error(b: &Browser, name: &'static str, expected: &str) -> Check<()> {
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(8);
+    loop {
+        if b
+            .evaluate(
+                "return document.querySelector('[data-media-provider='+arguments[0]+']')?.dataset.mediaError===arguments[1];",
+                json!([name, expected]),
+            )
+            .await?
+            == true
+        {
+            return Ok(());
+        }
+        check(
+            tokio::time::Instant::now() < deadline,
+            "bounded media failure presentation",
+        )?;
+        if b
+            .evaluate(
+                "const b=document.querySelector('[data-media-provider='+arguments[0]+'] .media-check-observations');return !!b && !b.disabled;",
+                json!([name]),
+            )
+            .await?
+            == true
+        {
+            b.click(&format!("[data-media-provider={name}] .media-check-observations"))
+                .await?;
+        }
+        tokio::time::sleep(Duration::from_millis(80)).await;
+    }
+}
 async fn lifetime_and_recovery() -> Check<()> {
     step("native TLS, persistent editor, one poll owner and deliberate draft recovery");
     let f = Fixture::new().await?;
@@ -396,8 +524,221 @@ pub async fn run() -> Check<()> {
     grouped_notifications().await?;
     personal_home_layout().await?;
     catalog_roadmap_and_observations().await?;
+    owner_media_observations().await?;
     println!(
-        "Rust workspace browser acceptance: 11 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+        "Rust workspace browser acceptance: 12 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+    );
+    Ok(())
+}
+
+async fn owner_media_observations() -> Check<()> {
+    use reborn_crafty_fixture::media as m;
+    step("media phase01 owner-only native enrollment and persistent private editor");
+    let f = Fixture::new().await?;
+    let provider = m::Media::start().await?;
+    let mut owner = f.browser(true).await?;
+    claim(&f, &owner).await?;
+    let (member, password) = f.enroll_member(&owner).await?;
+    workspace(&f, &owner).await?;
+    note(&owner).await?;
+    let draft = "An unfinished private note while browsing my media";
+    owner.fill("#workspace-note", draft).await?;
+    check(owner.evaluate("window.__mediaEditor=document.querySelector('#workspace-note');window.__mediaEditor.setSelectionRange(4,13);return window.__mediaEditor.value===arguments[0];", json!([draft])).await? == true, "capture the actual private editor before opening Media")?;
+    owner.click(".main-nav button:nth-child(9)").await?;
+    owner.wait("return !!document.querySelector('#jellyfin-token') && !!document.querySelector('#seerr-token');", json!([])).await?;
+    check(owner.evaluate("const nav=[...document.querySelectorAll('.main-nav button')],labels=['Home','Workspace note','Connections','Services','Activity','Notifications','Integrations','Roadmap','Media'];return nav.length===labels.length && labels.every((label,index)=>nav[index].textContent.includes(label)) && document.querySelectorAll('[data-home-panel]').length===3;", json!([])).await? == true, "Media is appended after eight existing navigation positions without adding Home panels")?;
+    media_enroll(&owner, &provider, "jellyfin").await?;
+    media_enroll(&owner, &provider, "seerr").await?;
+    media_observed(&owner, "jellyfin", "Fixture movie").await?;
+    media_observed(&owner, "seerr", "Requested movie").await?;
+    check(owner.evaluate("const j=document.querySelector('[data-media-provider=jellyfin]'),s=document.querySelector('[data-media-provider=seerr]');return j.dataset.mediaComplete==='true' && s.dataset.mediaComplete==='true' && j.querySelectorAll('[data-media-item]').length===12 && s.querySelectorAll('[data-media-item]').length===12 && j.textContent.includes('Fixture series') && j.querySelector('[data-media-playback]').textContent.includes('1 playing') && j.querySelector('[data-media-playback]').textContent.includes('1 paused') && s.textContent.includes('Requested series') && s.textContent.toLowerCase().includes('pending') && s.textContent.toLowerCase().includes('completed');", json!([])).await? == true, "real media HTTPS observations render library titles, count-only playback and independent request status rows")?;
+    check(owner.evaluate("const canaries=arguments[0],values=[document.body.textContent,...[...document.querySelectorAll('input,textarea')].map(e=>e.value),...Object.values(sessionStorage),...Object.values(localStorage)];return canaries.every(c=>values.every(v=>!v.includes(c))) && document.querySelector('#jellyfin-library').value==='';", json!([[m::TOKEN, &provider.origin, "PRIVATE_MEDIA", "PRIVATE_WATCH", "PRIVATE_PAUSED", "PRIVATE_IDLE", "PRIVATE_REQUESTER", "PRIVATE_MODIFIER", "PRIVATE_PROFILE", "private-media-email@example.invalid", "198.51.100.77", "/private/media-fixture-path"]])).await? == true, "native enrollment clears secrets and no provider identity, watch title, path, key or endpoint reaches DOM or storage")?;
+
+    step("media phase02 bounded pages, independent cached reads and preserved note state");
+    let writes = f.writes();
+    let requests = provider.requests().len();
+    for _ in 0..3 {
+        owner
+            .click("[data-media-provider=jellyfin] .media-check-observations")
+            .await?;
+        owner
+            .click("[data-media-provider=seerr] .media-check-observations")
+            .await?;
+    }
+    check(
+        provider.requests().len() == requests,
+        "repeated owner reads use the same bounded cached samples without new provider work",
+    )?;
+    owner
+        .click("[data-media-provider=jellyfin] .media-next")
+        .await?;
+    media_observed(&owner, "jellyfin", "Fixture item 13").await?;
+    check(owner.evaluate("const s=document.querySelector('[data-media-provider=jellyfin]');return s.dataset.mediaOffset==='12' && s.querySelectorAll('[data-media-item]').length===12 && !s.textContent.includes('Fixture movie') && !s.querySelector('.media-previous').disabled;", json!([])).await? == true, "next library page uses bounded offset12 rather than mixing earlier rows")?;
+    owner
+        .click("[data-media-provider=jellyfin] .media-next")
+        .await?;
+    media_observed(&owner, "jellyfin", "Fixture item 25").await?;
+    check(owner.evaluate("const s=document.querySelector('[data-media-provider=jellyfin]');return s.dataset.mediaOffset==='24' && s.querySelectorAll('[data-media-item]').length===2 && s.querySelector('.media-next').disabled;", json!([])).await? == true, "final partial library page has two genuine rows and no invented continuation")?;
+    owner
+        .click("[data-media-provider=jellyfin] .media-previous")
+        .await?;
+    media_observed(&owner, "jellyfin", "Fixture item 13").await?;
+    owner
+        .click("[data-media-provider=jellyfin] .media-previous")
+        .await?;
+    media_observed(&owner, "jellyfin", "Fixture movie").await?;
+    check(
+        f.writes() == writes,
+        "library and request page reads cannot mutate notes, layout or enrollment",
+    )?;
+    owner
+        .fill(
+            "#seerr-token",
+            "Never retain this unsubmitted fictional key",
+        )
+        .await?;
+    note(&owner).await?;
+    body(&owner, draft).await?;
+    check(owner.evaluate("return window.__mediaEditor===document.querySelector('#workspace-note') && window.__mediaEditor.selectionStart===4 && window.__mediaEditor.selectionEnd===13;", json!([])).await? == true, "Media paging preserves actual note component, draft and selection")?;
+    owner.click(".main-nav button:nth-child(9)").await?;
+    check(owner.evaluate("return document.querySelector('#seerr-token').value==='' && document.querySelector('#seerr-endpoint').value==='';", json!([])).await? == true, "leaving Media removes unsubmitted provider secrets from persistent form state")?;
+    accessibility(&owner).await?;
+    owner.mobile().await?;
+    check(
+        owner
+            .evaluate(
+                "return innerWidth===390 && document.documentElement.scrollWidth<=innerWidth+1;",
+                json!([]),
+            )
+            .await?
+            == true,
+        "owner Media forms and rows reflow at390px without horizontal overflow",
+    )?;
+    accessibility(&owner).await?;
+
+    step("media phase03 observed zero, missing playback and malformed data stay distinct");
+    provider.mode(m::EMPTY);
+    media_enroll(&owner, &provider, "jellyfin").await?;
+    media_observed(&owner, "jellyfin", "0 playing").await?;
+    check(owner.evaluate("const s=document.querySelector('[data-media-provider=jellyfin]');return s.dataset.mediaComplete==='true' && s.querySelectorAll('[data-media-item]').length===0 && s.querySelector('[data-media-playback]').textContent.includes('0 paused');", json!([])).await? == true, "a valid empty library and session list are explicit observed empty and zero")?;
+    provider.mode(m::MISSING);
+    media_enroll(&owner, &provider, "jellyfin").await?;
+    media_observed(&owner, "jellyfin", "Playback counts unavailable").await?;
+    check(owner.evaluate("const s=document.querySelector('[data-media-provider=jellyfin]');return s.dataset.mediaComplete==='false' && !s.querySelector('[data-media-playback]').textContent.includes('0 playing') && s.querySelectorAll('[data-media-item]').length===12;", json!([])).await? == true, "missing playing state keeps counts unknown and usable library rows rather than fabricating zero")?;
+    media_enroll(&owner, &provider, "seerr").await?;
+    media_observed(&owner, "seerr", "Title unavailable").await?;
+    check(owner.evaluate("const s=document.querySelector('[data-media-provider=seerr]');return s.dataset.mediaComplete==='false' && s.querySelectorAll('[data-media-item]').length===12 && s.textContent.toLowerCase().includes('pending') && s.textContent.toLowerCase().includes('completed') && !s.textContent.includes('Requested movie');", json!([])).await? == true, "missing detail titles preserve valid Seerr request status rows without invented names")?;
+    provider.mode(m::MALFORMED);
+    media_enroll(&owner, &provider, "jellyfin").await?;
+    media_error(&owner, "jellyfin", "malformed").await?;
+    check(owner.evaluate("const s=document.querySelector('[data-media-provider=jellyfin]');return s.dataset.mediaComplete==='false' && s.querySelectorAll('[data-media-item]').length===0 && !s.querySelector('[data-media-playback]').textContent.includes('0 playing');", json!([])).await? == true, "malformed provider data is unavailable and cannot appear as empty success")?;
+    provider.mode(m::NORMAL);
+    media_enroll(&owner, &provider, "jellyfin").await?;
+    media_enroll(&owner, &provider, "seerr").await?;
+    media_observed(&owner, "jellyfin", "Fixture movie").await?;
+    media_observed(&owner, "seerr", "Requested movie").await?;
+
+    step("media phase04 committed lost enrollment reply is reconciled without replay");
+    let writes = f.writes();
+    let lost = f.hold("/api/owner/media/seerr");
+    owner.fill("#seerr-endpoint", &provider.origin).await?;
+    owner.fill("#seerr-token", m::TOKEN).await?;
+    owner.fill("#seerr-ca", &provider.ca).await?;
+    owner.click("#seerr-ack").await?;
+    owner
+        .click("[data-media-provider=seerr] .media-save")
+        .await?;
+    tokio::time::timeout(Duration::from_secs(3), lost.entered.notified())
+        .await
+        .map_err(|_| "actual committed media enrollment response hold")?;
+    owner.wait("const s=document.querySelector('[data-media-provider=seerr]');return s.dataset.mediaSave==='uncertain' && s.querySelector('.media-save').disabled && document.querySelector('#seerr-token').value==='';", json!([])).await?;
+    lost.release.notify_one();
+    owner
+        .click("[data-media-provider=seerr] .media-check-state")
+        .await?;
+    owner.wait("const s=document.querySelector('[data-media-provider=seerr]');return s.dataset.mediaSave!=='uncertain' && s.dataset.mediaConfigured==='true';", json!([])).await?;
+    check(
+        f.writes() == writes + 1,
+        "a lost committed enrollment is reconciled by a read and never replays the PUT",
+    )?;
+
+    step("media phase05 obsolete authorized response cannot survive enrollment removal");
+    let mut other = f.browser(true).await?;
+    sign_in(&f, &other, &f.username, &f.password).await?;
+    workspace(&f, &other).await?;
+    other.click(".main-nav button:nth-child(9)").await?;
+    other.wait("return document.querySelector('[data-media-provider=jellyfin]')?.dataset.mediaConfigured==='true';", json!([])).await?;
+    media_observed(&other, "jellyfin", "Fixture movie").await?;
+    media_observed(&other, "seerr", "Requested movie").await?;
+    let held = f.hold("/api/workspace/media/jellyfin");
+    owner
+        .click("[data-media-provider=jellyfin] .media-check-observations")
+        .await?;
+    tokio::time::timeout(Duration::from_secs(3), held.entered.notified())
+        .await
+        .map_err(|_| "actual authorized old Jellyfin observation response hold")?;
+    other
+        .click("[data-media-provider=jellyfin] .media-remove")
+        .await?;
+    other.wait("return document.querySelector('[data-media-provider=jellyfin]')?.dataset.mediaConfigured==='false';", json!([])).await?;
+    owner
+        .click("[data-media-provider=jellyfin] .media-check-state")
+        .await?;
+    owner.wait("const s=document.querySelector('[data-media-provider=jellyfin]');return s.dataset.mediaConfigured==='false' && s.querySelectorAll('[data-media-item]').length===0 && !s.textContent.includes('Fixture movie');", json!([])).await?;
+    held.release.notify_one();
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    check(owner.evaluate("const s=document.querySelector('[data-media-provider=jellyfin]');return s.dataset.mediaConfigured==='false' && s.querySelectorAll('[data-media-item]').length===0 && !s.textContent.includes('Fixture movie');", json!([])).await? == true, "late old enrollment payload cannot repopulate cleared media rows")?;
+
+    step("media phase06 revocation clears private results and members have no provider access");
+    media_observed(&owner, "seerr", "Requested movie").await?;
+    let held = f.hold("/api/workspace/media/seerr");
+    owner
+        .click("[data-media-provider=seerr] .media-check-observations")
+        .await?;
+    tokio::time::timeout(Duration::from_secs(3), held.entered.notified())
+        .await
+        .map_err(|_| "actual authorized Seerr payload hold before owner revocation")?;
+    f.revoke_all(&other).await?;
+    owner
+        .evaluate(
+            "window.dispatchEvent(new Event('focus'));return true;",
+            json!([]),
+        )
+        .await?;
+    cleared(&owner, &f.username).await?;
+    check(owner.evaluate("return document.querySelectorAll('[data-media-item]').length===0 && !document.body.textContent.includes('Requested movie') && [...document.querySelectorAll('[id$=\"-token\"],[id$=\"-ca\"]')].every(e=>e.value==='');", json!([])).await? == true, "access loss synchronously clears private media rows and every secret field")?;
+    held.release.notify_one();
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    cleared(&owner, "Requested movie").await?;
+    other.close().await?;
+    drop(other);
+    let requests = provider.requests().len();
+    sign_in(&f, &owner, &member, &password).await?;
+    workspace(&f, &owner).await?;
+    owner.click(".main-nav button:nth-child(9)").await?;
+    check(owner.evaluate("const section=document.querySelector('[aria-label=Media]');return !!section && section.textContent.toLowerCase().includes('owner') && !section.querySelector('form') && !section.querySelector('[data-media-item]') && !document.body.textContent.includes('Requested movie');", json!([])).await? == true, "member Media view explains owner-only access and inherits no owner results or enrollment form")?;
+    check(
+        provider.requests().len() == requests,
+        "member navigation cannot trigger privileged media provider collection",
+    )?;
+    check(
+        provider.requests().iter().all(|(method, path)| {
+            method == "GET"
+                && !path.contains(m::TOKEN)
+                && (path.starts_with("/Items?")
+                    || path == "/Sessions?activeWithinSeconds=120"
+                    || path.starts_with("/api/v1/request?")
+                    || path.starts_with("/api/v1/movie/")
+                    || path.starts_with("/api/v1/tv/"))
+        }),
+        "the complete media browser workflow sent only allowlisted GET observations and no key in URLs",
+    )?;
+    accessibility(&owner).await?;
+    owner.close().await?;
+    drop(owner);
+    f.close().await?;
+    println!(
+        "PASS Rust browser: owner-only media, native enrollment, paging/empty/unknown, secret clearing, lost replies and obsolete authority results"
     );
     Ok(())
 }
@@ -427,7 +768,7 @@ async fn catalog_roadmap_and_observations() -> Check<()> {
     step("catalog phase02 available and planned entries");
     owner.click(".main-nav button:nth-child(7)").await?;
     owner.wait("return document.querySelectorAll('.catalog-list > article[data-integration-id]').length===7",json!([])).await?;
-    check(owner.evaluate("const cards=[...document.querySelectorAll('.catalog-list > article[data-integration-id]')];return cards.length===7 && cards.map(c=>c.dataset.integrationId).join(',')==='crafty,jellyfin,seerr,sonarr,radarr,qbittorrent,discord' && cards[0].querySelectorAll('button').length===1 && cards.slice(1).every(c=>c.querySelectorAll('button').length===0 && c.textContent.includes('Planned'))",json!([])).await?==true,"catalog distinguishes the one available integration from planned capabilities")?;
+    check(owner.evaluate("const cards=[...document.querySelectorAll('.catalog-list > article[data-integration-id]')];return cards.length===7 && cards.map(c=>c.dataset.integrationId).join(',')==='crafty,jellyfin,seerr,sonarr,radarr,qbittorrent,discord' && cards.slice(0,3).every(c=>c.querySelectorAll('button').length===1) && cards.slice(3).every(c=>c.querySelectorAll('button').length===0 && c.textContent.includes('Planned')) && cards.slice(1,3).every(c=>c.textContent.toLowerCase().includes('owner'))",json!([])).await?==true,"catalog distinguishes Crafty and owner-only media observations from four planned integrations")?;
     step("catalog phase03 desktop catalog accessibility");
     accessibility(&owner).await?;
     step("catalog phase04 dated Roadmap and retained editor");

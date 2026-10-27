@@ -7,6 +7,7 @@ pub(super) mod activity;
 pub(super) mod connections;
 pub(super) mod directory;
 pub(super) mod layout;
+pub(super) mod media;
 pub(super) mod notifications;
 pub(super) mod observations;
 pub(super) mod workspace;

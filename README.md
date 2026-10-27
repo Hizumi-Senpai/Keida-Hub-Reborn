@@ -15,8 +15,9 @@ is preserved for route reversal.
 The accepted foundation is Rust/PostgreSQL authentication, separate Askama account
 pages, one persistent Svelte workspace with private revisioned notes, and dedicated
 encrypted GET-only Crafty enrollment/observations. The service directory/search/categories and personal pins are installed. Retained private Activity and connection-enrollment history are installed. Grouped notifications/read state and personal Home arrangement are installed. The current
-daily-use slice is the [integration catalog, provider observation history and Roadmap note](docs/M2_CATALOG.md), tracked in
-[issue18](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/18). Source, packaged
+daily-use catalog, sampled Crafty history and Roadmap note are installed. The next
+slice is [owner-only Jellyfin/Seerr observations](docs/M3_MEDIA.md), tracked in
+[issue20](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/20). Source, packaged
 verification, installation and live acceptance are recorded separately.
 
 ## Start here
@@ -59,11 +60,12 @@ Mobile retains a full useful 2D dashboard without downloading the 3D experience.
 
 ## What happens next
 
-Continue **M2 daily workflows** with a revisitable optional-integration catalog,
-retained sampled Crafty observations and a dedicated read-only Roadmap note. M0/M1
-and full M2 remain open pending their complete acceptance. Real Crafty enrollment,
+Continue **M3 media observations** with deliberate owner-only Jellyfin/Seerr
+enrollment, bounded library/request rows and counts-only playback. Broad API keys
+are not called read-only merely because the adapter sends GET. M0/M1/full M2/M3
+remain open pending their complete acceptance. Real Crafty enrollment,
 valid TLS, dedicated access and real freshness/join acceptance are deliberate next
-provider gates. Jellyfin and Seerr observation workflows follow; game-control and
+provider gates. Real media enrollment/privacy/TLS acceptance is separate; game-control and
 host-updater responsibility keep their separate review gates.
 
 Performance goals are proposed budgets until measured on named hardware/browsers.
