@@ -164,7 +164,7 @@ async fn media_enrollment_is_owner_only_canonical_encrypted_and_has_no_secret_re
             &[m::TOKEN],
         )
         .await;
-        error(
+        let no_binding = error(
             server
                 .client
                 .get(server.url(&format!("/api/workspace/media/{name}")))
@@ -173,10 +173,33 @@ async fn media_enrollment_is_owner_only_canonical_encrypted_and_has_no_secret_re
                 .send()
                 .await
                 .unwrap(),
+            StatusCode::FORBIDDEN,
+            &[m::TOKEN],
+        )
+        .await;
+        assert_eq!(no_binding["error"], "csrf_rejected");
+        // An unknown canonical token with its genuinely valid fixture-key CSRF
+        // binding reaches session admission and is rejected as invalid_session.
+        // This is distinct from the missing-binding rejection above.
+        let token = "a9".repeat(32);
+        let key = fs::read(&fixture.key_file).unwrap();
+        let csrf = protocol_mac(&key, b"reborn/session-csrf/v1\0", &token);
+        let invalid = error(
+            server
+                .client
+                .get(server.url(&format!("/api/workspace/media/{name}")))
+                .header("X-Reborn-Product", PRODUCT)
+                .header("X-Reborn-Contract", "reborn-workspace-v1")
+                .header("Cookie", format!("{SESSION_COOKIE}={token}"))
+                .header("X-CSRF-Token", csrf)
+                .send()
+                .await
+                .unwrap(),
             StatusCode::UNAUTHORIZED,
             &[m::TOKEN],
         )
         .await;
+        assert_eq!(invalid["error"], "invalid_session");
     }
     for body in [
         json!({"base_revision":"0"}),
@@ -657,12 +680,30 @@ async fn media_rechecks_revoked_owner_key_and_provider_bound_ciphertext_before_d
         .execute(&mut db)
         .await
         .unwrap();
-    db.execute("UPDATE users SET role='member' WHERE username='keida_owner'")
+    let role_error = db
+        .execute("UPDATE users SET role='member' WHERE username='keida_owner'")
+        .await
+        .expect_err("the bound owner's durable role must not be demoted");
+    assert_eq!(
+        role_error
+            .as_database_error()
+            .and_then(|e| e.code())
+            .as_deref(),
+        Some("23503")
+    );
+    assert_eq!(
+        sqlx::query_scalar::<_, String>("SELECT role FROM users WHERE username='keida_owner'")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        "owner"
+    );
+    db.execute("UPDATE users SET active=FALSE WHERE username='keida_owner'")
         .await
         .unwrap();
     error(
         read(&server, &fresh, "jellyfin", "").await,
-        StatusCode::FORBIDDEN,
+        StatusCode::UNAUTHORIZED,
         &[m::TOKEN],
     )
     .await;
