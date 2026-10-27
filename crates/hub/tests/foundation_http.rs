@@ -365,8 +365,15 @@ async fn sigterm_finishes_with_a_held_incomplete_http_connection() {
 
     // Signal only this test's directly spawned child, retaining the incomplete
     // connection until that process reaches its honest terminal outcome.
-    let signaled = Command::new("kill")
-        .args(["-TERM", &server.child.id().to_string()])
+    // POSIX sh provides kill as a builtin even in the pinned minimal Rust image.
+    // The PID remains a separately passed argument, never interpolated shell code.
+    let signaled = Command::new("sh")
+        .args([
+            "-c",
+            "kill -TERM \"$1\"",
+            "reborn-owned-signal",
+            &server.child.id().to_string(),
+        ])
         .status()
         .expect("signal owned HTTP fixture");
     assert!(signaled.success());
