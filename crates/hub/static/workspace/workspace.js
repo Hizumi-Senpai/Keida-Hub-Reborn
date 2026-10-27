@@ -4436,7 +4436,7 @@ function Xo(e, t) {
 			});
 			var se = R(ae, 2), ce = I(se), le = L(ce), ue = R(ce), de = R(ue, 2), fe = R(de), pe = R(fe, 2), me = (e) => {
 				var t = Go(), n = R(ln(t));
-				X(n, "pattern", "[a-f0-9]32|[a-f0-9]8-[a-f0-9]4-[a-f0-9]4-[a-f0-9]4-[a-f0-9]12"), Se(), z(() => n.disabled = !H(p)), q(e, t);
+				X(n, "pattern", "[a-f0-9]{32}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"), Se(), z(() => n.disabled = !H(p)), q(e, t);
 			};
 			Y(pe, (e) => {
 				H(t) === "jellyfin" && e(me);

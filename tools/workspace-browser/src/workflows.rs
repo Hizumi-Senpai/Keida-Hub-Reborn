@@ -125,7 +125,52 @@ async fn media_enroll(
     {
         b.click(&format!("#{name}-ack")).await?;
     }
-    check(b.evaluate("const f=document.querySelector('[data-media-provider='+arguments[0]+'] form');return !!f && f.checkValidity();", json!([name])).await? == true, "native media enrollment constraints accept the actually entered HTTPS fixture")?;
+    let native_valid = b.evaluate("const f=document.querySelector('[data-media-provider='+arguments[0]+'] form');return !!f && f.checkValidity();", json!([name])).await? == true;
+    if !native_valid {
+        // Return only closed numeric field/validity classes. Never emit values,
+        // validationMessage, DOM, page text, URLs or credential material.
+        let classes = b.evaluate("const fields=['endpoint','token','ca','library','ack'],out=[];fields.forEach((field,index)=>{if(field==='library'&&arguments[0]!=='jellyfin')return;const e=document.getElementById(field==='library'?'jellyfin-library':arguments[0]+'-'+field);if(!e){out.push(index*11);return}const v=e.validity;[false,v.valueMissing,v.typeMismatch,v.patternMismatch,v.tooLong,v.tooShort,v.rangeUnderflow,v.rangeOverflow,v.stepMismatch,v.badInput,v.customError].forEach((bad,flag)=>{if(bad)out.push(index*11+flag)})});return out;", json!([name])).await?;
+        const FIELDS: [&str; 5] = [
+            "address",
+            "key",
+            "certificate",
+            "library",
+            "acknowledgement",
+        ];
+        const FLAGS: [&str; 11] = [
+            "missing-element",
+            "value-missing",
+            "type-mismatch",
+            "pattern-mismatch",
+            "too-long",
+            "too-short",
+            "range-underflow",
+            "range-overflow",
+            "step-mismatch",
+            "bad-input",
+            "custom-error",
+        ];
+        for code in classes
+            .as_array()
+            .ok_or("closed media validity class response")?
+            .iter()
+            .take(FIELDS.len() * FLAGS.len())
+        {
+            let code = code
+                .as_u64()
+                .filter(|code| *code < (FIELDS.len() * FLAGS.len()) as u64)
+                .ok_or("bounded media validity class")? as usize;
+            eprintln!(
+                "RUST_BROWSER_MEDIA_VALIDITY {name} {} {}",
+                FIELDS[code / FLAGS.len()],
+                FLAGS[code % FLAGS.len()]
+            );
+        }
+    }
+    check(
+        native_valid,
+        "native media enrollment constraints accept the actually entered HTTPS fixture",
+    )?;
     println!("RUST_BROWSER_STEP media enrollment {name} native-submit");
     b.click(&format!("[data-media-provider={name}] .media-save"))
         .await?;
