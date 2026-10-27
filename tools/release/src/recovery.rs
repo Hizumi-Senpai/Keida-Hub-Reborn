@@ -453,6 +453,28 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     if initial["crafty"]["servers"][0]["players"] != 0 {
         return Err("packaged dedicated decryption/GET failed");
     }
+    let initial_activity = value(
+        admitted(
+            &client,
+            &origin,
+            "/api/workspace/activity",
+            reqwest::Method::GET,
+            &session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .send()
+        .await
+        .map_err(|_| "initial Activity read failed")?,
+        200,
+    )
+    .await?;
+    if initial_activity["entries"]
+        .as_array()
+        .is_none_or(|v| v.len() != 4)
+    {
+        return Err("initial Activity actions missing");
+    }
     docker(&["stop", "--time", "5", &first])?;
     let dump = scope.root.join("database.dump");
     let dump_file = std::fs::OpenOptions::new()
@@ -533,6 +555,8 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     )?;
     for sql in [
         "ALTER TABLE users ADD COLUMN runtime_must_not_ddl integer",
+        "UPDATE activity_events SET revision=revision WHERE id=1",
+        "DELETE FROM activity_events WHERE id=1",
         "UPDATE _sqlx_migrations SET success=success WHERE version=1",
     ] {
         if docker(&[
@@ -591,6 +615,25 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         || hash(&restored_root.join("instance.key"))? != key_before
     {
         return Err("matched auth/note/secret restore rejected");
+    }
+    let restored_activity = value(
+        admitted(
+            &client,
+            &origin,
+            "/api/workspace/activity",
+            reqwest::Method::GET,
+            &session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .send()
+        .await
+        .map_err(|_| "restored Activity read failed")?,
+        200,
+    )
+    .await?;
+    if restored_activity != initial_activity {
+        return Err("restored Activity differs");
     }
     value(
         admitted(
@@ -666,6 +709,37 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     {
         return Err("failed candidate lost newer accepted writes");
     }
+    let current_activity = value(
+        admitted(
+            &client,
+            &origin,
+            "/api/workspace/activity",
+            reqwest::Method::GET,
+            &session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .send()
+        .await
+        .map_err(|_| "newer Activity read failed")?,
+        200,
+    )
+    .await?;
+    let entries = current_activity["entries"]
+        .as_array()
+        .ok_or("newer Activity absent")?;
+    if entries.len() != 6
+        || entries[0]["kind"] != "pins_saved"
+        || entries[0]["revision"] != "2"
+        || entries[1]["kind"] != "note_saved"
+        || entries[1]["revision"] != "2"
+        || entries[2..]
+            != *initial_activity["entries"]
+                .as_array()
+                .ok_or("initial Activity absent")?
+    {
+        return Err("failed candidate lost newer Activity");
+    }
     if provider
         .requests()
         .iter()
@@ -673,7 +747,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     {
         return Err("recovery observer attempted mutation");
     }
-    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":5,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
+    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":6,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
     crate::write(
         &out.join("recovery-proof.json"),
         &serde_json::to_vec(&report).map_err(|_| "recovery proof encoding failed")?,

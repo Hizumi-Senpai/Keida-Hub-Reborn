@@ -80,6 +80,14 @@ pub async fn save(
         "INSERT INTO workspace_notes (account_id, body, revision) VALUES ($1, $2, $3) ON CONFLICT (account_id) DO UPDATE SET body = EXCLUDED.body, revision = EXCLUDED.revision RETURNING body, revision",
         session.account.id, body, next
     ).fetch_one(&mut *tx).await.map_err(|_| Error::Unavailable)?;
+    super::activity::record(
+        &mut tx,
+        session.account.id,
+        crate::activity::Kind::Note,
+        next,
+        state.now,
+    )
+    .await?;
     let connection =
         sqlx::query!("SELECT revision, sealed FROM crafty_connection WHERE singleton = TRUE")
             .fetch_one(&mut *tx)

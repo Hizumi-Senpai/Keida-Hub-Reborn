@@ -4,9 +4,9 @@ A fresh Rust-centered Keida Hub, authorized on **2026-10-25 America/Chicago**.
 The goal is a fast, reliable, feature-rich self-hosted dashboard and control platform
 with an optional editable 3D room and companion.
 
-**Reborn0.1.7 is installed at https://rewrite.keida.me.** Exact source, CI,
+**Reborn0.1.8 is installed at https://rewrite.keida.me.** Exact source, CI,
 artifact, independent PostgreSQL/key recovery and public HTTP receipts are in
-[deployment issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6427420318).
+[deployment issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6431455362).
 The owner reports successful sign-in; wider desktop/mobile workflow acceptance and
 real dedicated Crafty enrollment remain separate open gates. The original
 https://keida.me stays live and unchanged, and the independent Rewrite installation
@@ -14,9 +14,9 @@ is preserved for route reversal.
 
 The accepted foundation is Rust/PostgreSQL authentication, separate Askama account
 pages, one persistent Svelte workspace with private revisioned notes, and dedicated
-encrypted GET-only Crafty enrollment/observations. The next daily-use slice is the
-[service directory and personal pins](docs/M2_DIRECTORY.md), tracked in
-[issue10](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/10). Source, packaged
+encrypted GET-only Crafty enrollment/observations. The service directory/search/categories and personal pins are installed. The next
+daily-use slice is [retained private Activity](docs/M2_ACTIVITY.md), tracked in
+[issue12](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/12). Source, packaged
 verification, installation and live acceptance are recorded separately.
 
 ## Start here

@@ -9,14 +9,17 @@ export type ServiceLink = { id: string; name: string; category: string; descript
 export type Directory = { revision: string; services: ServiceLink[]; pins_revision: string; pins: string[] };
 type Snapshot = { schema: 1; account: { id: string; username: string; role: 'owner' | 'member' }; session_generation: string; note: Note; crafty?: Crafty | null; directory: Directory };
 type Draft = { body: string; base: string };
+export type ActivityEntry = { id: string; occurred_at: string; revision: string; kind: string; category: string; label: string };
+export type Activity = { phase: 'idle' | 'loading' | 'ready' | 'error'; entries: ActivityEntry[]; through: string; next: string | null; category: string; query: string; message: string };
+const emptyActivity = (): Activity => ({ phase: 'idle', entries: [], through: '0', next: null, category: 'all', query: '', message: '' });
 export type Model = {
   phase: 'checking' | 'ready' | 'paused' | 'blocked'; message: string;
   snapshot?: Snapshot; draft: string; base: string; dirty: boolean;
   save: 'idle' | 'saving' | 'saved' | 'checking-conflict' | 'conflict' | 'uncertain'; recovery?: Draft;
-  storageLimited: boolean;
+  storageLimited: boolean; activity: Activity;
   directorySave: 'idle' | 'saving' | 'conflict' | 'uncertain'; directoryMessage: string;
 };
-const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '' });
+const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity() });
 const record = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const decimal = (v: unknown, positive = false): v is string => typeof v === 'string' && /^(0|[1-9][0-9]{0,18})$/.test(v) && BigInt(v) <= MAX_REVISION && (!positive || v !== '0');
 const text = (v: unknown): v is string => typeof v === 'string' && !v.includes('\0') && new TextEncoder().encode(v).length <= 4096;
@@ -63,6 +66,8 @@ export function workspace(binding: string) {
   let reading: AbortController | undefined;
   let saving: AbortController | undefined;
   let editing: AbortController | undefined;
+  let historyReading: AbortController | undefined;
+  let historySerial = 0;
   let key: string | undefined;
   let held: { key: string; draft: Draft } | undefined;
   let channel: BroadcastChannel | undefined;
@@ -89,6 +94,7 @@ export function workspace(binding: string) {
     timer = undefined;
     reading?.abort(); saving?.abort(); reading = undefined; saving = undefined;
     editing?.abort(); editing = undefined;
+    ++historySerial; historyReading?.abort(); historyReading = undefined;
   }
   function invalidate(message: string, blocked = false): void {
     cancel(); terminal ||= blocked;
@@ -244,6 +250,46 @@ export function workspace(binding: string) {
     const d = state().snapshot?.directory;
     return d ? directoryMutation('/api/workspace/pins', { base_directory_revision: d.revision, base_revision: d.pins_revision, ids }) : Promise.resolve(false);
   }
+  async function activity(category = state().activity.category, query = state().activity.query, older = false): Promise<void> {
+    const s = state();
+    if (disposed || terminal || s.phase !== 'ready' || !s.snapshot || document.visibilityState !== 'visible') return;
+    historyReading?.abort();
+    const controller = new AbortController(); historyReading = controller;
+    const serial = ++historySerial, current = epoch;
+    const prior = s.activity;
+    const params = new URLSearchParams({ category, q: query });
+    if (older) {
+      if (!prior.next || prior.category !== category || prior.query !== query) return;
+      params.set('through', prior.through); params.set('before', prior.next);
+    }
+    model.update(m => ({ ...m, activity: { ...emptyActivity(), phase: 'loading', category, query, message: 'Checking your retained activity…' } }));
+    try {
+      const response = await request(`/api/workspace/activity?${params}`, controller);
+      if (disposed || controller.signal.aborted || serial !== historySerial || current !== epoch) return;
+      if (document.visibilityState !== 'visible') { invalidate('Workspace hidden. Checking access on return.'); return; }
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      const v = response.value;
+      if (response.status !== 200 || !record(v) || v.product !== PRODUCT || v.contract !== CONTRACT || v.schema !== 1
+          || !record(v.account) || v.account.id !== s.snapshot.account.id || v.account.role !== s.snapshot.account.role || v.account.username !== s.snapshot.account.username
+          || v.session_generation !== s.snapshot.session_generation) {
+        if (response.status === 200) { invalidate('Your account scope changed. Open a fresh workspace.', true); return; }
+        throw new Error('Activity unavailable');
+      }
+      const categories = ['workspace', 'directory', 'connections'];
+      const kinds = ['note_saved', 'pins_saved', 'service_added', 'service_updated', 'service_removed', 'connection_saved', 'connection_removed'];
+      if (v.category !== category || v.q !== query || !decimal(v.through) || (v.next_before !== null && !decimal(v.next_before, true))
+          || (older && v.through !== prior.through) || !Array.isArray(v.entries) || v.entries.length > 25
+          || v.entries.some((e: unknown) => !record(e) || !decimal(e.id, true) || !decimal(e.revision, true) || !decimal(e.occurred_at)
+            || BigInt(e.occurred_at) > 253402300799n || !kinds.includes(String(e.kind)) || !categories.includes(String(e.category))
+            || typeof e.label !== 'string' || !/^[A-Za-z ]{1,64}$/.test(e.label) || BigInt(e.id) > BigInt(v.through as string)
+            || (older && BigInt(e.id) >= BigInt(prior.next!)))
+          || v.entries.some((e, i) => i > 0 && BigInt(e.id) >= BigInt((v.entries as ActivityEntry[])[i - 1].id))
+          || (v.next_before !== null && (v.entries.length !== 25 || v.next_before !== v.entries.at(-1)?.id))) throw new Error('Invalid activity response');
+      model.update(m => ({ ...m, activity: { phase: 'ready', category, query, entries: v.entries as ActivityEntry[], through: v.through as string, next: v.next_before as string | null, message: 'Retained activity checked.' } }));
+    } catch {
+      if (!disposed && serial === historySerial && current === epoch) model.update(m => ({ ...m, activity: { ...emptyActivity(), phase: 'error', category, query, message: 'Activity could not be checked. Retry deliberately; other workspace views remain available.' } }));
+    } finally { if (historyReading === controller) historyReading = undefined; }
+  }
   function signOut(): void {
     removeDraft(); invalidate('Signing out…', true);
     try { channel?.postMessage({ kind: 'auth-changed' }); } catch { /* No optional feature blocks native submission. */ }
@@ -269,5 +315,5 @@ export function workspace(binding: string) {
       document.removeEventListener('visibilitychange', visibility);
     };
   }
-  return { model, start, edit, recover, resolve, save, signOut, check: read, editService, pins };
+  return { model, start, edit, recover, resolve, save, signOut, check: read, editService, pins, activity };
 }

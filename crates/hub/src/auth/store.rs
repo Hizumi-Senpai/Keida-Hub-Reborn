@@ -3,6 +3,7 @@
 
 use sqlx::{PgPool, Postgres, Transaction};
 
+pub(super) mod activity;
 pub(super) mod connections;
 pub(super) mod directory;
 pub(super) mod workspace;

@@ -65,6 +65,11 @@ pub async fn edit(
         return Err(Error::Conflict);
     }
     let next = current.checked_add(1).ok_or(Error::Unavailable)?;
+    let kind = match &change {
+        Change::Create { .. } => crate::activity::Kind::ServiceAdded,
+        Change::Update { .. } => crate::activity::Kind::ServiceUpdated,
+        Change::Delete { .. } => crate::activity::Kind::ServiceRemoved,
+    };
     match change {
         Change::Create { link } => {
             if !link.validate() {
@@ -115,6 +120,7 @@ pub async fn edit(
     .execute(&mut *tx)
     .await
     .map_err(|_| Error::Unavailable)?;
+    super::activity::record(&mut tx, session.account.id, kind, next, state.now).await?;
     tx.commit().await.map_err(|_| Error::Unavailable)
 }
 pub async fn pins(
@@ -147,5 +153,13 @@ pub async fn pins(
     let next = base.checked_add(1).ok_or(Error::Unavailable)?;
     sqlx::query!("INSERT INTO directory_pins (account_id, revision, ids) VALUES ($1, $2, $3) ON CONFLICT (account_id) DO UPDATE SET revision = EXCLUDED.revision, ids = EXCLUDED.ids", session.account.id, next, ids)
         .execute(&mut *tx).await.map_err(|_| Error::Unavailable)?;
+    super::activity::record(
+        &mut tx,
+        session.account.id,
+        crate::activity::Kind::Pins,
+        next,
+        state.now,
+    )
+    .await?;
     tx.commit().await.map_err(|_| Error::Unavailable)
 }

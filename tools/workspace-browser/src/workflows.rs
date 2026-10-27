@@ -392,8 +392,9 @@ pub async fn run() -> Check<()> {
     startup_failure_keeps_native_recovery().await?;
     dedicated_connection_overview().await?;
     directory_and_personal_pins().await?;
+    retained_activity_history().await?;
     println!(
-        "Rust workspace browser acceptance: 7 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+        "Rust workspace browser acceptance: 8 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
     );
     Ok(())
 }
@@ -620,6 +621,128 @@ async fn directory_and_personal_pins() -> Check<()> {
     f.close().await?;
     println!(
         "PASS Rust browser: service directory, search, stable cards/forms, personal order, lost response, privacy and mobile accessibility"
+    );
+    Ok(())
+}
+
+async fn retained_activity_history() -> Check<()> {
+    step("retained private Activity, stable history window and scope clearing");
+    let f = Fixture::new().await?;
+    let mut b = f.browser(true).await?;
+    claim(&f, &b).await?;
+    workspace(&f, &b).await?;
+    note(&b).await?;
+    b.fill(
+        "#workspace-note",
+        "A saved fictional note excluded from Activity",
+    )
+    .await?;
+    b.click(".note-card button[type=submit]").await?;
+    saved(&b).await?;
+    b.fill(
+        "#workspace-note",
+        "An unfinished fictional draft preserved across Activity",
+    )
+    .await?;
+    check(
+        b.evaluate(
+            "window.__activityEditor=document.querySelector('#workspace-note'); return true",
+            json!([]),
+        )
+        .await?
+            == true,
+        "capture actual editor",
+    )?;
+    let seeded=b.evaluate("const h={'X-Reborn-Product':'keida-hub-reborn','X-Reborn-Contract':'reborn-workspace-v1','X-CSRF-Token':document.querySelector('meta[name=reborn-session-binding]').content,'Content-Type':'application/json'}; return (async()=>{for(let n=1;n<28;n++){let r=await fetch('/api/workspace/note',{method:'PUT',headers:h,body:JSON.stringify({base_revision:String(n),body:'Retained fixture note'})});if(r.status!==200)return false;}return true;})();",json!([])).await?;
+    check(seeded == true, "seed actual successful HTTP changes")?;
+    b.click(".main-nav button:nth-child(5)").await?;
+    b.wait(
+        "return document.querySelectorAll('.activity-list li').length===25",
+        json!([]),
+    )
+    .await?;
+    check(b.evaluate("return document.querySelector('.activity-list li').textContent.includes('Revision 28') && !document.querySelector('.activity-card').textContent.includes('fictional note') && window.__activityEditor===document.querySelector('#workspace-note') && window.__activityEditor.value.includes('unfinished fictional draft')",json!([])).await?==true,"private action-only page and editor lifetime")?;
+    let newest = b
+        .evaluate(
+            "return document.querySelector('.activity-list li').dataset.activityId",
+            json!([]),
+        )
+        .await?;
+    let inserted=b.evaluate("return fetch('/api/workspace/note',{method:'PUT',headers:{'X-Reborn-Product':'keida-hub-reborn','X-Reborn-Contract':'reborn-workspace-v1','X-CSRF-Token':document.querySelector('meta[name=reborn-session-binding]').content,'Content-Type':'application/json'},body:JSON.stringify({base_revision:'28',body:'Newer than the history window'})}).then(r=>r.status===200)",json!([])).await?;
+    check(inserted == true, "insert between history pages")?;
+    b.click(".activity-card .button-row button:last-child")
+        .await?;
+    b.wait(
+        "return document.querySelectorAll('.activity-list li').length===3",
+        json!([]),
+    )
+    .await?;
+    check(b.evaluate("return document.querySelector('.activity-list li').textContent.includes('Revision 3') && document.querySelector('.activity-list li:last-child').textContent.includes('Revision 1') && document.querySelector('.activity-card .button-row button:last-child').disabled",json!([])).await?==true,"older page stable with no shifted or duplicate entries")?;
+    b.fill("#activity-query", "%").await?;
+    b.click(".activity-search button").await?;
+    b.wait(
+        "return !!document.querySelector('.activity-empty')",
+        json!([]),
+    )
+    .await?;
+    b.fill("#activity-query", "saved").await?;
+    b.click(".activity-search button").await?;
+    b.wait("return document.querySelectorAll('.activity-list li').length===25 && document.querySelector('.activity-list li').textContent.includes('Revision 29')",json!([])).await?;
+    check(b.evaluate("return document.querySelector('.activity-list li').dataset.activityId !== arguments[0]",json!([newest])).await?==true,"new search starts latest history window")?;
+    accessibility(&b).await?;
+    b.mobile().await?;
+    accessibility(&b).await?;
+    check(
+        b.evaluate(
+            "return document.documentElement.scrollWidth<=innerWidth+1",
+            json!([]),
+        )
+        .await?
+            == true,
+        "history narrow reflow",
+    )?;
+
+    b.click(".main-nav button:nth-child(3)").await?;
+    b.click("section[aria-label=Connections] > button").await?;
+    b.wait("return !!document.querySelector('.activity-empty') && document.querySelector('#activity-category').value==='connections'",json!([])).await?;
+    let comparison = f.hold("/api/workspace/activity");
+    b.fill("#activity-query", "saved").await?;
+    b.click(".activity-search button").await?;
+    tokio::time::timeout(Duration::from_secs(3), comparison.entered.notified())
+        .await
+        .map_err(|_| "held search response entered")?;
+    b.fill("#activity-query", "A newer unsubmitted search")
+        .await?;
+    comparison.release.notify_one();
+    b.wait("return document.querySelector('.activity-card .workspace-status').textContent.includes('checked')",json!([])).await?;
+    check(
+        b.evaluate(
+            "return document.querySelector('#activity-query').value==='A newer unsubmitted search'",
+            json!([]),
+        )
+        .await?
+            == true,
+        "completed search does not replace newer typed search text",
+    )?;
+    let held = f.hold("/api/workspace/activity");
+    b.fill("#activity-query", "private history search").await?;
+    b.click(".activity-search button").await?;
+    tokio::time::timeout(Duration::from_secs(3), held.entered.notified())
+        .await
+        .map_err(|_| "held Activity read entered")?;
+    b.evaluate(
+        "window.dispatchEvent(new Event('blur'));return true",
+        json!([]),
+    )
+    .await?;
+    check(b.evaluate("return document.querySelector('#activity-query').value==='' && document.querySelectorAll('.activity-list li').length===0 && document.querySelector('#workspace-note').value===''",json!([])).await?==true,"privacy loss synchronously clears results, query and draft DOM")?;
+    held.release.notify_one();
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    check(b.evaluate("return document.querySelectorAll('.activity-list li').length===0 && document.querySelector('#activity-query').value==='';",json!([])).await?==true,"late Activity response cannot repopulate cleared scope")?;
+    b.close().await?;
+    f.close().await?;
+    println!(
+        "PASS Rust browser: private retained Activity, keyset pagination, literal search, editor lifetime, reflow and late-response privacy"
     );
     Ok(())
 }

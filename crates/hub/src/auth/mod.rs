@@ -1,5 +1,6 @@
 mod account_pages;
 mod account_view;
+mod activity;
 mod connections;
 pub mod crypto;
 mod directory;
@@ -103,6 +104,7 @@ pub fn router(service: Service) -> Router {
         .merge(account_pages::router(service.clone()))
         .merge(connections::router(service.clone()))
         .merge(directory::router(service.clone()))
+        .merge(activity::router(service.clone()))
         .merge(workspace::router(service))
 }
 
