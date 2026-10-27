@@ -80,6 +80,7 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
             | "/api/owner/directory"
             | "/api/workspace/pins"
             | "/api/workspace/notifications/read"
+            | "/api/workspace/layout"
     ) {
         proxy.writes.fetch_add(1, Ordering::SeqCst);
     }

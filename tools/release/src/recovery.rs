@@ -167,6 +167,32 @@ fn admitted(
         .header("X-Reborn-Contract", contract)
         .header("X-CSRF-Token", binding)
 }
+async fn save_layout(
+    client: &Client,
+    origin: &str,
+    session: &str,
+    binding: &str,
+    base_revision: &str,
+    panels: &Value,
+) -> Result<Value> {
+    value(
+        admitted(
+            client,
+            origin,
+            "/api/workspace/layout",
+            reqwest::Method::PUT,
+            session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .json(&json!({"base_revision":base_revision,"panels":panels}))
+        .send()
+        .await
+        .map_err(|_| "packaged personal layout save failed")?,
+        200,
+    )
+    .await
+}
 async fn wait(client: &Client, origin: &str) -> Result<()> {
     let deadline = tokio::time::Instant::now() + Duration::from_secs(12);
     loop {
@@ -422,6 +448,62 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     let member_binding = member_login["csrf_token"]
         .as_str()
         .ok_or("member binding missing")?;
+    let owner_panels = json!([
+        {"id":"pins","visible":true},
+        {"id":"note","visible":false},
+        {"id":"connections","visible":true}
+    ]);
+    let owner_layout = json!({"revision":"1","panels":owner_panels});
+    let saved = save_layout(&client, &origin, &session, binding, "0", &owner_panels).await?;
+    if saved["account"] != claimed["account"] || saved["layout"] != owner_layout {
+        return Err("packaged owner layout receipt differs");
+    }
+    // The member has no saved row yet: the owner's private arrangement must not
+    // replace its canonical default or create a shared notification.
+    let member_default = value(
+        admitted(
+            &client,
+            &origin,
+            "/api/workspace/snapshot",
+            reqwest::Method::GET,
+            &member_session,
+            member_binding,
+            "reborn-workspace-v1",
+        )
+        .send()
+        .await
+        .map_err(|_| "packaged member default layout failed")?,
+        200,
+    )
+    .await?;
+    if member_default["layout"]
+        != json!({"revision":"0","panels":[
+            {"id":"note","visible":true},
+            {"id":"connections","visible":true},
+            {"id":"pins","visible":true}
+        ]})
+        || member_default["notifications"]["unread_groups"] != 0
+    {
+        return Err("owner layout leaked into member defaults or notifications");
+    }
+    let member_panels = json!([
+        {"id":"connections","visible":false},
+        {"id":"pins","visible":true},
+        {"id":"note","visible":true}
+    ]);
+    let member_layout = json!({"revision":"1","panels":member_panels});
+    let saved = save_layout(
+        &client,
+        &origin,
+        &member_session,
+        member_binding,
+        "0",
+        &member_panels,
+    )
+    .await?;
+    if saved["account"] != member_login["account"] || saved["layout"] != member_layout {
+        return Err("packaged member layout receipt differs");
+    }
     let provider = reborn_crafty_fixture::Crafty::start().await?;
     let enrollment = json!({"base_revision":"0","connection":{"endpoint":provider.origin,"token":reborn_crafty_fixture::TOKEN,"ca_pem":provider.ca,"timezone":"UTC","servers":[{"id":reborn_crafty_fixture::ID,"name":"Restorable dedicated fixture","join":"play.example:25565"}]}});
     value(
@@ -497,7 +579,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         200,
     )
     .await?;
-    if initial["crafty"]["servers"][0]["players"] != 0 {
+    if initial["crafty"]["servers"][0]["players"] != 0 || initial["layout"] != owner_layout {
         return Err("packaged dedicated decryption/GET failed");
     }
     let initial_activity = value(
@@ -557,6 +639,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     .await?;
     let initial_groups = &member_initial["notifications"]["groups"];
     if member_initial["notifications"]["unread_groups"] != 1
+        || member_initial["layout"] != member_layout
         || initial_groups.as_array().is_none_or(|g| g.len() != 2)
         || initial_groups[0]["category"] != "connections"
         || initial_groups[0]["revision"] != "1"
@@ -646,6 +729,8 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     )?;
     for sql in [
         "ALTER TABLE users ADD COLUMN runtime_must_not_ddl integer",
+        "ALTER TABLE dashboard_layouts ADD COLUMN runtime_must_not_ddl integer",
+        "DELETE FROM dashboard_layouts",
         "UPDATE activity_events SET revision=revision WHERE id=1",
         "DELETE FROM activity_events WHERE id=1",
         "UPDATE _sqlx_migrations SET success=success WHERE version=1",
@@ -703,6 +788,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         || retained["note"] != json!({"body":"A committed note to restore 海","revision":"1"})
         || retained["crafty"]["servers"][0]["players"] != 0
         || retained["directory"] != initial["directory"]
+        || retained["layout"] != owner_layout
         || hash(&restored_root.join("instance.key"))? != key_before
     {
         return Err("matched auth/note/secret restore rejected");
@@ -742,8 +828,46 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         200,
     )
     .await?;
-    if member_restored["notifications"] != member_initial["notifications"] {
-        return Err("restored notification/read state differs");
+    if member_restored["notifications"] != member_initial["notifications"]
+        || member_restored["layout"] != member_layout
+    {
+        return Err("restored notification/read or personal layout state differs");
+    }
+    let newer_owner_panels = json!([
+        {"id":"connections","visible":true},
+        {"id":"note","visible":true},
+        {"id":"pins","visible":false}
+    ]);
+    let newer_owner_layout = json!({"revision":"2","panels":newer_owner_panels});
+    let saved = save_layout(
+        &client,
+        &origin,
+        &session,
+        binding,
+        "1",
+        &newer_owner_panels,
+    )
+    .await?;
+    if saved["account"] != claimed["account"] || saved["layout"] != newer_owner_layout {
+        return Err("newer owner layout receipt differs");
+    }
+    let newer_member_panels = json!([
+        {"id":"note","visible":false},
+        {"id":"connections","visible":false},
+        {"id":"pins","visible":true}
+    ]);
+    let newer_member_layout = json!({"revision":"2","panels":newer_member_panels});
+    let saved = save_layout(
+        &client,
+        &origin,
+        &member_session,
+        member_binding,
+        "1",
+        &newer_member_panels,
+    )
+    .await?;
+    if saved["account"] != member_login["account"] || saved["layout"] != newer_member_layout {
+        return Err("newer member layout receipt differs");
     }
     value(
         admitted(
@@ -850,6 +974,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         || preserved["directory"]["pins"] != json!([])
         || preserved["directory"]["pins_revision"] != "2"
         || preserved["directory"]["services"] != initial["directory"]["services"]
+        || preserved["layout"] != newer_owner_layout
     {
         return Err("failed candidate lost newer accepted writes");
     }
@@ -904,6 +1029,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     .await?;
     let groups = &member_preserved["notifications"]["groups"];
     if member_preserved["notifications"]["unread_groups"] != 1
+        || member_preserved["layout"] != newer_member_layout
         || groups[0]["revision"] != "2"
         || groups[0]["read_through"] != "1"
         || groups[0]["unread"] != "1"
@@ -920,7 +1046,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     {
         return Err("recovery observer attempted mutation");
     }
-    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":7,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"restored_notifications_and_read_state":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
+    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":8,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"restored_notifications_and_read_state":true,"restored_personal_layout_and_newer_edits":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
     crate::write(
         &out.join("recovery-proof.json"),
         &serde_json::to_vec(&report).map_err(|_| "recovery proof encoding failed")?,

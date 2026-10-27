@@ -7,8 +7,12 @@ type Note = { body: string; revision: string };
 export type Crafty = { revision: string; configured: boolean; checked_at: number | null; error: string | null; servers: Array<{ name: string; join: string; state: string; players: number | null; capacity: number | null; collected_at: number | null; provider_at: number | null; freshness: string; error: string | null }> };
 export type ServiceLink = { id: string; name: string; category: string; description: string; url: string };
 export type Directory = { revision: string; services: ServiceLink[]; pins_revision: string; pins: string[] };
+export type HomePanel = { id: 'note' | 'connections' | 'pins'; visible: boolean };
+export type Layout = { revision: string; panels: HomePanel[] };
+export const defaultPanels = (): HomePanel[] => [{ id: 'note', visible: true }, { id: 'connections', visible: true }, { id: 'pins', visible: true }];
+export const panelLabel = (id: HomePanel['id']): string => id === 'note' ? 'Workspace note' : id === 'connections' ? 'Connections' : 'Pinned services';
 export type Notifications = { unread_groups: number; groups: Array<{ category: 'services' | 'connections'; revision: string; read_through: string; unread: string; latest: { kind: string; label: string; source_revision: string; occurred_at: string } }> };
-type Snapshot = { schema: 1; account: { id: string; username: string; role: 'owner' | 'member' }; session_generation: string; note: Note; crafty?: Crafty | null; directory: Directory; notifications: Notifications };
+type Snapshot = { schema: 1; account: { id: string; username: string; role: 'owner' | 'member' }; session_generation: string; note: Note; crafty?: Crafty | null; directory: Directory; notifications: Notifications; layout: Layout };
 type Draft = { body: string; base: string };
 export type ActivityEntry = { id: string; occurred_at: string; revision: string; kind: string; category: string; label: string };
 export type Activity = { phase: 'idle' | 'loading' | 'ready' | 'error'; entries: ActivityEntry[]; through: string; next: string | null; category: string; query: string; message: string };
@@ -20,8 +24,10 @@ export type Model = {
   storageLimited: boolean; activity: Activity;
   notificationSave: 'idle' | 'saving' | 'uncertain'; notificationMessage: string;
   directorySave: 'idle' | 'saving' | 'conflict' | 'uncertain'; directoryMessage: string;
+  layoutDraft?: { base: string; panels: HomePanel[] };
+  layoutSave: 'idle' | 'saving' | 'checking-conflict' | 'conflict' | 'uncertain'; layoutMessage: string;
 };
-const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '' });
+const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '', layoutSave: 'idle', layoutMessage: '' });
 const record = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const decimal = (v: unknown, positive = false): v is string => typeof v === 'string' && /^(0|[1-9][0-9]{0,18})$/.test(v) && BigInt(v) <= MAX_REVISION && (!positive || v !== '0');
 const text = (v: unknown): v is string => typeof v === 'string' && !v.includes('\0') && new TextEncoder().encode(v).length <= 4096;
@@ -41,6 +47,13 @@ function notifications(v: unknown): Notifications {
       || v.unread_groups !== v.groups.filter(g => g.unread !== '0').length) throw new Error('Invalid notification response');
   return v as unknown as Notifications;
 }
+function layout(v: unknown): Layout {
+  if (!record(v) || !decimal(v.revision) || !Array.isArray(v.panels) || v.panels.length !== 3
+      || v.panels.some((p: unknown) => !record(p) || !['note', 'connections', 'pins'].includes(String(p.id)) || typeof p.visible !== 'boolean')
+      || new Set(v.panels.map(p => p.id)).size !== 3 || !v.panels.some(p => p.visible)) throw new Error('Invalid layout response');
+  return v as unknown as Layout;
+}
+const samePanels = (a: HomePanel[], b: HomePanel[]): boolean => a.length === b.length && a.every((p, i) => p.id === b[i].id && p.visible === b[i].visible);
 function snapshot(value: unknown): Snapshot {
   if (!record(value) || value.product !== PRODUCT || value.contract !== CONTRACT || value.schema !== 1
       || !record(value.account) || !decimal(value.account.id, true)
@@ -64,6 +77,7 @@ function snapshot(value: unknown): Snapshot {
           || !count(s.players) || !count(s.capacity) || !count(s.collected_at) || !count(s.provider_at) || !message(s.error))) throw new Error('Invalid connection response');
   }
   notifications(value.notifications);
+  layout(value.layout);
   return value as unknown as Snapshot;
 }
 function stored(value: string | null): Draft | undefined {
@@ -83,6 +97,7 @@ export function workspace(binding: string) {
   let editing: AbortController | undefined;
   let historyReading: AbortController | undefined;
   let marking: AbortController | undefined;
+  let arranging: AbortController | undefined;
   let historySerial = 0;
   let key: string | undefined;
   let held: { key: string; draft: Draft } | undefined;
@@ -112,6 +127,7 @@ export function workspace(binding: string) {
     editing?.abort(); editing = undefined;
     ++historySerial; historyReading?.abort(); historyReading = undefined;
     marking?.abort(); marking = undefined;
+    arranging?.abort(); arranging = undefined;
   }
   function invalidate(message: string, blocked = false): void {
     cancel(); terminal ||= blocked;
@@ -119,7 +135,7 @@ export function workspace(binding: string) {
   }
   function schedule(): void {
     if (timer) clearTimeout(timer);
-    if (!disposed && !terminal && state().phase === 'ready' && state().notificationSave !== 'uncertain' && document.visibilityState === 'visible') {
+    if (!disposed && !terminal && state().phase === 'ready' && state().notificationSave !== 'uncertain' && state().layoutSave !== 'uncertain' && document.visibilityState === 'visible') {
       timer = setTimeout(() => { timer = undefined; void read(); }, 15000);
     }
   }
@@ -146,8 +162,8 @@ export function workspace(binding: string) {
     const prior = state().snapshot;
     return !prior || (s.account.id === prior.account.id && s.session_generation === prior.session_generation && s.account.role === prior.account.role);
   }
-  async function read(): Promise<void> {
-    if (disposed || terminal || reading || saving || editing || marking || document.visibilityState !== 'visible') return;
+  async function read(deliberate = false): Promise<void> {
+    if (disposed || terminal || reading || saving || editing || marking || arranging || (!deliberate && state().layoutSave === 'uncertain') || document.visibilityState !== 'visible') return;
     const controller = new AbortController(); reading = controller; const current = epoch;
     try {
       const response = await request('/api/workspace/snapshot', controller);
@@ -159,7 +175,13 @@ export function workspace(binding: string) {
       const before = state(); key = storageKey(next);
       if (before.phase === 'ready') {
         const conflict = before.dirty && next.note.revision !== before.base;
+        const layoutMatches = !!before.layoutDraft && samePanels(before.layoutDraft.panels, next.layout.panels);
+        const layoutResolved = layoutMatches && deliberate && ['uncertain', 'checking-conflict'].includes(before.layoutSave);
+        const layoutConflict = !!before.layoutDraft && !layoutResolved && before.layoutDraft.base !== next.layout.revision;
         model.set({ ...before, snapshot: next,
+          layoutDraft: layoutResolved ? undefined : before.layoutDraft,
+          layoutSave: layoutConflict ? 'conflict' : ['uncertain', 'checking-conflict'].includes(before.layoutSave) || layoutResolved ? 'idle' : before.layoutSave,
+          layoutMessage: layoutResolved ? 'Saved layout checked. The current layout matches your changes.' : layoutConflict ? 'A newer layout was saved. Your arrangement is unchanged; compare before saving.' : before.layoutSave === 'uncertain' ? 'The saved layout was checked. Review your arrangement before saving deliberately.' : before.layoutMessage,
           draft: before.dirty ? before.draft : next.note.body,
           base: before.dirty ? before.base : next.note.revision,
           save: conflict ? 'conflict' : ['uncertain', 'checking-conflict'].includes(before.save) ? 'idle' : before.save,
@@ -202,7 +224,7 @@ export function workspace(binding: string) {
   }
   async function save(): Promise<void> {
     const s = state();
-    if (s.phase !== 'ready' || !s.dirty || !text(s.draft) || ['conflict', 'checking-conflict', 'uncertain'].includes(s.save) || saving || marking) return;
+    if (s.phase !== 'ready' || !s.dirty || !text(s.draft) || ['conflict', 'checking-conflict', 'uncertain'].includes(s.save) || saving || marking || arranging || s.layoutSave === 'checking-conflict') return;
     reading?.abort(); reading = undefined;
     if (timer) clearTimeout(timer); timer = undefined;
     const controller = new AbortController(); saving = controller; const current = epoch;
@@ -218,7 +240,7 @@ export function workspace(binding: string) {
       } else if (response.status === 200) {
         const next = snapshot(response.value);
         if (!authorized(next) || next.note.body !== submitted.body || BigInt(next.note.revision) !== BigInt(submitted.base) + 1n) throw new Error('Unqualified save result');
-        model.update((m) => ({ ...m, snapshot: { ...next, crafty: next.crafty ?? m.snapshot?.crafty, directory: m.snapshot?.directory ?? next.directory, notifications: m.snapshot?.notifications ?? next.notifications }, base: next.note.revision, dirty: m.draft !== next.note.body,
+        model.update((m) => ({ ...m, snapshot: { ...next, crafty: next.crafty ?? m.snapshot?.crafty, directory: m.snapshot?.directory ?? next.directory, notifications: m.snapshot?.notifications ?? next.notifications, layout: m.snapshot?.layout ?? next.layout }, base: next.note.revision, dirty: m.draft !== next.note.body,
           save: 'saved', message: m.draft === next.note.body ? 'Saved to your account.' : 'Submitted version saved. Your newer edits are still unsaved.' })); persist();
       } else throw new Error('Save outcome unavailable');
     } catch {
@@ -233,7 +255,7 @@ export function workspace(binding: string) {
   }
   async function directoryMutation(path: string, payload: unknown): Promise<boolean> {
     const s = state();
-    if (s.phase !== 'ready' || !s.snapshot || editing || marking || s.directorySave === 'uncertain') return false;
+    if (s.phase !== 'ready' || !s.snapshot || editing || marking || arranging || s.layoutSave === 'checking-conflict' || s.directorySave === 'uncertain') return false;
     reading?.abort(); reading = undefined;
     const controller = new AbortController(); editing = controller; const current = epoch;
     model.update((m) => ({ ...m, directorySave: 'saving', directoryMessage: 'Saving your change…' }));
@@ -270,7 +292,7 @@ export function workspace(binding: string) {
   }
   async function markNotification(category: string, through: string): Promise<void> {
     const s = state();
-    if (disposed || terminal || s.phase !== 'ready' || !s.snapshot || marking || saving || editing || s.notificationSave !== 'idle'
+    if (disposed || terminal || s.phase !== 'ready' || !s.snapshot || marking || saving || editing || arranging || s.layoutSave === 'checking-conflict' || s.notificationSave !== 'idle'
         || !['services', 'connections'].includes(category) || !decimal(through, true)) return;
     reading?.abort(); reading = undefined;
     if (timer) clearTimeout(timer); timer = undefined;
@@ -298,6 +320,81 @@ export function workspace(binding: string) {
     } finally {
       if (marking === controller) marking = undefined;
       if (current === epoch && !disposed) schedule();
+    }
+  }
+
+  function beginLayout(): void {
+    const s = state();
+    if (s.phase !== 'ready' || !s.snapshot || s.layoutDraft || saving || editing || marking || arranging) return;
+    reading?.abort(); reading = undefined;
+    if (timer) clearTimeout(timer); timer = undefined;
+    model.set({ ...s, layoutDraft: { base: s.snapshot.layout.revision, panels: s.snapshot.layout.panels.map(p => ({ ...p })) }, layoutSave: 'idle', layoutMessage: 'Arrange your Home panels, then save to your account.' });
+    schedule();
+  }
+  function changeLayout(panels: HomePanel[]): void {
+    const s = state();
+    if (s.phase !== 'ready' || !s.layoutDraft || ['saving', 'checking-conflict', 'uncertain'].includes(s.layoutSave)) return;
+    model.set({ ...s, layoutDraft: { ...s.layoutDraft, panels }, layoutMessage: 'Your arrangement is unsaved.' });
+  }
+  function moveLayout(id: HomePanel['id'], offset: -1 | 1): void {
+    const panels = state().layoutDraft?.panels.map(p => ({ ...p })); if (!panels) return;
+    const index = panels.findIndex(p => p.id === id), next = index + offset;
+    if (index < 0 || next < 0 || next >= panels.length) return;
+    [panels[index], panels[next]] = [panels[next], panels[index]]; changeLayout(panels);
+  }
+  function toggleLayout(id: HomePanel['id']): void {
+    const panels = state().layoutDraft?.panels.map(p => ({ ...p })); if (!panels) return;
+    const panel = panels.find(p => p.id === id); if (!panel || (panel.visible && panels.filter(p => p.visible).length === 1)) return;
+    panel.visible = !panel.visible; changeLayout(panels);
+  }
+  function resetLayout(): void { changeLayout(defaultPanels()); }
+  function cancelLayout(): void {
+    const s = state();
+    if (s.phase !== 'ready' || ['saving', 'checking-conflict', 'uncertain'].includes(s.layoutSave)) return;
+    model.set({ ...s, layoutDraft: undefined, layoutSave: 'idle', layoutMessage: 'Your saved Home layout is in use.' }); schedule();
+  }
+  function resolveLayout(useSaved: boolean): void {
+    const s = state(); if (s.phase !== 'ready' || !s.snapshot || !s.layoutDraft || s.layoutSave !== 'conflict') return;
+    if (useSaved) { cancelLayout(); return; }
+    model.set({ ...s, layoutDraft: { ...s.layoutDraft, base: s.snapshot.layout.revision }, layoutSave: 'idle', layoutMessage: 'Your arrangement is kept against the checked saved layout. Review, then save deliberately.' });
+  }
+  async function saveLayout(): Promise<void> {
+    const s = state();
+    if (disposed || terminal || s.phase !== 'ready' || !s.snapshot || !s.layoutDraft || s.layoutSave !== 'idle' || saving || editing || marking || arranging) return;
+    const submitted = { base: s.layoutDraft.base, panels: s.layoutDraft.panels.map(p => ({ ...p })) };
+    if (!submitted.panels.some(p => p.visible) || samePanels(submitted.panels, s.snapshot.layout.panels)) return;
+    reading?.abort(); reading = undefined;
+    if (timer) clearTimeout(timer); timer = undefined;
+    const controller = new AbortController(); arranging = controller; const current = epoch;
+    model.update(m => ({ ...m, layoutSave: 'saving', layoutMessage: 'Saving your Home layout…' }));
+    let conflict = false;
+    try {
+      const response = await request('/api/workspace/layout', controller, { base_revision: submitted.base, panels: submitted.panels });
+      if (disposed || controller.signal.aborted || current !== epoch) return;
+      if (document.visibilityState !== 'visible') { invalidate('Workspace hidden. Checking access on return.'); return; }
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      if (response.status === 409) {
+        conflict = true;
+        model.update(m => ({ ...m, layoutSave: 'checking-conflict', layoutMessage: 'Another layout was saved first. Checking the saved arrangement before comparing; your changes are unchanged.' }));
+      } else if ([400, 413, 429].includes(response.status)) {
+        model.update(m => ({ ...m, layoutSave: 'idle', layoutMessage: 'The layout was not accepted. Keep at least one panel visible and review your changes.' }));
+      } else {
+        const v = response.value;
+        if (response.status !== 200 || !record(v)) throw new Error('Layout unavailable');
+        if (v.product !== PRODUCT || v.contract !== CONTRACT || v.schema !== 1 || !record(v.account)
+            || v.account.id !== s.snapshot.account.id || v.account.username !== s.snapshot.account.username
+            || v.account.role !== s.snapshot.account.role || v.session_generation !== s.snapshot.session_generation) {
+          invalidate('Your account scope changed. Open a fresh workspace.', true); return;
+        }
+        const next = layout(v.layout);
+        if (BigInt(next.revision) !== BigInt(submitted.base) + 1n || !samePanels(next.panels, submitted.panels)) throw new Error('Unqualified layout result');
+        model.update(m => ({ ...m, snapshot: m.snapshot ? { ...m.snapshot, layout: next } : undefined, layoutDraft: undefined, layoutSave: 'idle', layoutMessage: 'Layout saved to your account.' }));
+      }
+    } catch {
+      if (arranging === controller && current === epoch && !disposed) model.update(m => ({ ...m, layoutSave: 'uncertain', layoutMessage: 'The layout may have saved. Check the saved layout before saving again; your changes have not been sent again.' }));
+    } finally {
+      if (arranging === controller) arranging = undefined;
+      if (current === epoch && !disposed) { if (conflict) await read(true); else schedule(); }
     }
   }
   async function activity(category = state().activity.category, query = state().activity.query, older = false): Promise<void> {
@@ -365,5 +462,5 @@ export function workspace(binding: string) {
       document.removeEventListener('visibilitychange', visibility);
     };
   }
-  return { model, start, edit, recover, resolve, save, signOut, check: read, editService, pins, activity, markNotification };
+  return { model, start, edit, recover, resolve, save, signOut, check: () => read(true), editService, pins, activity, markNotification, beginLayout, moveLayout, toggleLayout, resetLayout, cancelLayout, resolveLayout, saveLayout, checkLayout: () => read(true) };
 }

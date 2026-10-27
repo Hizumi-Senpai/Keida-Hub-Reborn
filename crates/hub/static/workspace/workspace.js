@@ -17,49 +17,49 @@ function m() {
 		reject: t
 	};
 }
-var h = 1024, g = 2048, _ = 4096, v = 8192, y = 16384, b = 32768, x = 1 << 25, S = 65536, C = 1 << 19, w = 1 << 20, T = 1 << 25, ee = 1 << 21, te = 1 << 22, ne = 1 << 23, re = Symbol("$state"), ie = Symbol("component"), ae = Symbol("legacy props"), oe = Symbol(""), se = Symbol("attributes"), ce = Symbol("class"), le = Symbol("style"), ue = Symbol("text"), de = Symbol("form reset"), fe = new class extends Error {
+var h = 1024, g = 2048, _ = 4096, v = 8192, y = 16384, b = 32768, x = 1 << 25, S = 65536, C = 1 << 19, w = 1 << 20, T = 1 << 25, E = 1 << 21, ee = 1 << 22, te = 1 << 23, ne = Symbol("$state"), re = Symbol("component"), ie = Symbol("legacy props"), ae = Symbol(""), oe = Symbol("attributes"), se = Symbol("class"), ce = Symbol("style"), le = Symbol("text"), ue = Symbol("form reset"), de = new class extends Error {
 	name = "StaleReactionError";
 	message = "The reaction that called `getAbortSignal()` was re-run or destroyed";
-}(), pe = !!globalThis.document?.contentType && /* @__PURE__ */ globalThis.document.contentType.includes("xml"), me = {}, E = Symbol("uninitialized"), he = "http://www.w3.org/1999/xhtml";
-function ge() {
+}(), fe = !!globalThis.document?.contentType && /* @__PURE__ */ globalThis.document.contentType.includes("xml"), pe = {}, D = Symbol("uninitialized"), me = "http://www.w3.org/1999/xhtml";
+function he() {
 	console.warn("https://svelte.dev/e/derived_inert");
 }
-function _e(e) {
+function ge(e) {
 	console.warn("https://svelte.dev/e/hydration_mismatch");
 }
-function ve() {
+function _e() {
 	console.warn("https://svelte.dev/e/select_multiple_invalid_value");
 }
-function ye() {
+function ve() {
 	console.warn("https://svelte.dev/e/svelte_boundary_reset_noop");
 }
 // ../node_modules/svelte/src/internal/client/dom/hydration.js
-var D = !1;
-function be(e) {
-	D = e;
+var O = !1;
+function ye(e) {
+	O = e;
 }
-var O;
-function k(e) {
-	if (e === null) throw _e(), me;
-	return O = e;
+var k;
+function be(e) {
+	if (e === null) throw ge(), pe;
+	return k = e;
 }
 function xe() {
-	return k(/* @__PURE__ */ on(O));
+	return be(/* @__PURE__ */ on(k));
 }
 function A(e) {
-	if (D) {
-		if (/* @__PURE__ */ on(O) !== null) throw _e(), me;
-		O = e;
+	if (O) {
+		if (/* @__PURE__ */ on(k) !== null) throw ge(), pe;
+		k = e;
 	}
 }
 function Se(e = 1) {
-	if (D) {
-		for (var t = e, n = O; t--;) n = /* @__PURE__ */ on(n);
-		O = n;
+	if (O) {
+		for (var t = e, n = k; t--;) n = /* @__PURE__ */ on(n);
+		k = n;
 	}
 }
 function Ce(e = !0) {
-	for (var t = 0, n = O;;) {
+	for (var t = 0, n = k;;) {
 		if (n.nodeType === 8) {
 			var r = n.data;
 			if (r === "]") {
@@ -72,7 +72,7 @@ function Ce(e = !0) {
 	}
 }
 function we(e) {
-	if (!e || e.nodeType !== 8) throw _e(), me;
+	if (!e || e.nodeType !== 8) throw ge(), pe;
 	return e.data;
 }
 // ../node_modules/svelte/src/internal/client/reactivity/equality.js
@@ -157,7 +157,7 @@ function We(e) {
 	return e !== void 0 && (t.x = e), t.i = !0, j = t.p, Ge(e);
 }
 function Ge(e = {}) {
-	return i(e, ie, { value: !0 }), e;
+	return i(e, re, { value: !0 }), e;
 }
 function Ke() {
 	return !Be || j !== null && j.l === null;
@@ -194,13 +194,13 @@ function $e(e, t, n) {
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/misc.js
 function et(e) {
-	D && /* @__PURE__ */ an(e) !== null && cn(e);
+	O && /* @__PURE__ */ an(e) !== null && cn(e);
 }
 var tt = !1;
 function nt() {
 	tt || (tt = !0, document.addEventListener("reset", (e) => {
 		Promise.resolve().then(() => {
-			if (!e.defaultPrevented) for (let t of e.target.elements) t[de]?.();
+			if (!e.defaultPrevented) for (let t of e.target.elements) t[ue]?.();
 		});
 	}, { capture: !0 }));
 }
@@ -216,8 +216,8 @@ function rt(e) {
 }
 function it(e, t, n, r = n) {
 	e.addEventListener(t, () => rt(n));
-	let i = e[de];
-	e[de] = i ? () => {
+	let i = e[ue];
+	e[ue] = i ? () => {
 		i(), r(!0);
 	} : () => r(!0), nt();
 }
@@ -280,7 +280,7 @@ function lt(e) {
 		fn: e,
 		reactions: null,
 		rv: 0,
-		v: E,
+		v: D,
 		wv: 0,
 		parent: V,
 		ac: null
@@ -291,13 +291,13 @@ var ut = Symbol("obsolete");
 function dt(e, t, n) {
 	let r = V;
 	r === null && ke();
-	var i = void 0, a = Bt(E), o = !B, s = /* @__PURE__ */ new Set();
+	var i = void 0, a = Bt(D), o = !B, s = /* @__PURE__ */ new Set();
 	return En(() => {
 		var t = V, n = m();
 		i = n.promise;
 		try {
 			Promise.resolve(e()).then(n.resolve, (e) => {
-				e !== fe && n.reject(e);
+				e !== de && n.reject(e);
 			}).finally(st);
 		} catch (e) {
 			n.reject(e), st();
@@ -310,7 +310,7 @@ function dt(e, t, n) {
 			s.add(n), c.async_deriveds.set(t, n);
 		}
 		let u = (e, t = void 0) => {
-			l?.(), s.delete(n), t !== ut && (c.activate(), t ? (a.f |= ne, Wt(a, t)) : (a.f & 8388608 && (a.f ^= ne), Wt(a, e)), c.deactivate());
+			l?.(), s.delete(n), t !== ut && (c.activate(), t ? (a.f |= te, Wt(a, t)) : (a.f & 8388608 && (a.f ^= te), Wt(a, e)), c.deactivate());
 		};
 		n.promise.then(u, (e) => u(null, e || "unknown"));
 	}), vn(() => {
@@ -344,7 +344,7 @@ function mt(e) {
 }
 function ht(e) {
 	var t, n = V, r = e.parent;
-	if (!Hn && r !== null && e.v !== E && r.f & 24576) return ge(), e.v;
+	if (!Hn && r !== null && e.v !== D && r.f & 24576) return he(), e.v;
 	Kn(r);
 	try {
 		mt(e), t = or(e);
@@ -359,7 +359,7 @@ function gt(e) {
 }
 function _t(e) {
 	if (e.effects !== null) for (let t of e.effects) (t.teardown || t.ac) && (t.teardown?.(), t.ac !== null && rt(() => {
-		t.ac.abort(fe), t.ac = null;
+		t.ac.abort(de), t.ac = null;
 	}), t.fn !== null && (t.teardown = d), lr(t, 0), jn(t));
 }
 function vt(e) {
@@ -533,7 +533,7 @@ var yt = null, N = null, bt = null, xt = null, St = null, Ct = !1, wt = !1, Tt =
 		for (var t = 0; t < e.length; t += 1) $e(e[t], this.#u, this.#d);
 	}
 	capture(e, t, n = !1) {
-		e.v !== E && !this.previous.has(e) && this.previous.set(e, e.v), e.f & 8388608 || (this.current.set(e, [t, n]), xt?.set(e, t)), this.is_fork || (e.v = t);
+		e.v !== D && !this.previous.has(e) && this.previous.set(e, e.v), e.f & 8388608 || (this.current.set(e, [t, n]), xt?.set(e, t)), this.is_fork || (e.v = t);
 	}
 	activate() {
 		N = this;
@@ -748,7 +748,7 @@ function Jt(e, t, n) {
 	}
 }
 function Yt(t) {
-	if (typeof t != "object" || !t || re in t || ie in t) return t;
+	if (typeof t != "object" || !t || ne in t || re in t) return t;
 	let n = l(t);
 	if (n !== s && n !== c) return t;
 	var r = /* @__PURE__ */ new Map(), i = e(t), o = /* @__PURE__ */ Vt(0), u = null, d = tr, f = (e) => {
@@ -771,18 +771,18 @@ function Yt(t) {
 			var n = r.get(t);
 			if (n === void 0) {
 				if (t in e) {
-					let e = f(() => /* @__PURE__ */ Vt(E, u));
+					let e = f(() => /* @__PURE__ */ Vt(D, u));
 					r.set(t, e), qt(o);
 				}
-			} else F(n, E), qt(o);
+			} else F(n, D), qt(o);
 			return !0;
 		},
 		get(e, n, i) {
-			if (n === re) return t;
+			if (n === ne) return t;
 			var o = r.get(n), s = n in e;
-			if (o === void 0 && (!s || a(e, n)?.writable) && (o = f(() => /* @__PURE__ */ Vt(Yt(s ? e[n] : E), u)), r.set(n, o)), o !== void 0) {
+			if (o === void 0 && (!s || a(e, n)?.writable) && (o = f(() => /* @__PURE__ */ Vt(Yt(s ? e[n] : D), u)), r.set(n, o)), o !== void 0) {
 				var c = H(o);
-				return c === E ? void 0 : c;
+				return c === D ? void 0 : c;
 			}
 			return Reflect.get(e, n, i);
 		},
@@ -791,7 +791,7 @@ function Yt(t) {
 			var n = Reflect.getOwnPropertyDescriptor(e, t), i = r.get(t);
 			if (i !== void 0) {
 				var a = H(i);
-				if (a === E) return;
+				if (a === D) return;
 				if (n && "value" in n) n.value = a;
 				else return {
 					enumerable: !0,
@@ -803,19 +803,19 @@ function Yt(t) {
 			return n;
 		},
 		has(e, t) {
-			if (t === re) return !0;
-			var n = r.get(t), i = n !== void 0 && n.v !== E || Reflect.has(e, t);
-			return (n !== void 0 || V !== null && (!i || a(e, t)?.writable)) && (n === void 0 && (n = f(() => /* @__PURE__ */ Vt(i ? Yt(e[t]) : E, u)), r.set(t, n)), H(n) === E) ? !1 : i;
+			if (t === ne) return !0;
+			var n = r.get(t), i = n !== void 0 && n.v !== D || Reflect.has(e, t);
+			return (n !== void 0 || V !== null && (!i || a(e, t)?.writable)) && (n === void 0 && (n = f(() => /* @__PURE__ */ Vt(i ? Yt(e[t]) : D, u)), r.set(t, n)), H(n) === D) ? !1 : i;
 		},
 		set(e, t, n, s) {
 			var c = r.get(t), l = t in e;
 			if (i && t === "length") for (var d = n; d < c.v; d += 1) {
 				var p = r.get(d + "");
-				p === void 0 ? d in e && (p = f(() => /* @__PURE__ */ Vt(E, u)), r.set(d + "", p)) : F(p, E);
+				p === void 0 ? d in e && (p = f(() => /* @__PURE__ */ Vt(D, u)), r.set(d + "", p)) : F(p, D);
 			}
 			if (c === void 0) (!l || a(e, t)?.writable) && (c = f(() => /* @__PURE__ */ Vt(void 0, u)), F(c, Yt(n)), r.set(t, c));
 			else {
-				l = c.v !== E;
+				l = c.v !== D;
 				var m = f(() => Yt(n));
 				F(c, m);
 			}
@@ -833,9 +833,9 @@ function Yt(t) {
 			H(o);
 			var t = Reflect.ownKeys(e).filter((e) => {
 				var t = r.get(e);
-				return t === void 0 || t.v !== E;
+				return t === void 0 || t.v !== D;
 			});
-			for (var [n, i] of r) i.v !== E && !(n in e) && t.push(n);
+			for (var [n, i] of r) i.v !== D && !(n in e) && t.push(n);
 			return t;
 		},
 		setPrototypeOf() {
@@ -845,7 +845,7 @@ function Yt(t) {
 }
 function Xt(e) {
 	try {
-		if (typeof e == "object" && e && re in e) return e[re];
+		if (typeof e == "object" && e && ne in e) return e[ne];
 	} catch {}
 	return e;
 }
@@ -857,7 +857,7 @@ function nn() {
 	if (Qt === void 0) {
 		Qt = window, $t = /Firefox/.test(navigator.userAgent);
 		var e = Element.prototype, t = Node.prototype, n = Text.prototype;
-		en = a(t, "firstChild").get, tn = a(t, "nextSibling").get, u(e) && (e[ce] = void 0, e[se] = null, e[le] = void 0, e.__e = void 0), u(n) && (n[ue] = void 0);
+		en = a(t, "firstChild").get, tn = a(t, "nextSibling").get, u(e) && (e[se] = void 0, e[oe] = null, e[ce] = void 0, e.__e = void 0), u(n) && (n[le] = void 0);
 	}
 }
 function rn(e = "") {
@@ -872,46 +872,46 @@ function on(e) {
 	return tn.call(e);
 }
 function I(e, t) {
-	if (!D) return /* @__PURE__ */ an(e);
-	var n = /* @__PURE__ */ an(O);
-	if (n === null) n = O.appendChild(rn());
+	if (!O) return /* @__PURE__ */ an(e);
+	var n = /* @__PURE__ */ an(k);
+	if (n === null) n = k.appendChild(rn());
 	else if (t && n.nodeType !== 3) {
 		var r = rn();
-		return n?.before(r), k(r), r;
+		return n?.before(r), be(r), r;
 	}
-	return t && dn(n), k(n), n;
+	return t && dn(n), be(n), n;
 }
 function sn(e, t = !1) {
-	if (!D) {
+	if (!O) {
 		var n = /* @__PURE__ */ an(e);
 		return n instanceof Comment && n.data === "" ? /* @__PURE__ */ on(n) : n;
 	}
 	if (t) {
-		if (O?.nodeType !== 3) {
+		if (k?.nodeType !== 3) {
 			var r = rn();
-			return O?.before(r), k(r), r;
+			return k?.before(r), be(r), r;
 		}
-		dn(O);
+		dn(k);
 	}
-	return O;
+	return k;
 }
 function L(e, t = !1) {
-	if (!D) return /* @__PURE__ */ an(e);
+	if (!O) return /* @__PURE__ */ an(e);
 	var n = I(e, t);
 	return A(e), n;
 }
 function R(e, t = 1, n = !1) {
-	let r = D ? O : e;
+	let r = O ? k : e;
 	for (var i; t--;) i = r, r = /* @__PURE__ */ on(r);
-	if (!D) return r;
+	if (!O) return r;
 	if (n) {
 		if (r?.nodeType !== 3) {
 			var a = rn();
-			return r === null ? i?.after(a) : r.before(a), k(a), a;
+			return r === null ? i?.after(a) : r.before(a), be(a), a;
 		}
 		dn(r);
 	}
-	return k(r), r;
+	return be(r), r;
 }
 function cn(e) {
 	e.textContent = "";
@@ -929,12 +929,12 @@ function dn(e) {
 }
 function fn(e) {
 	var t = V;
-	if (t === null) return B.f |= ne, e;
+	if (t === null) return B.f |= te, e;
 	if (!(t.f & 32768) && !(t.f & 4)) throw e;
 	pn(e, t);
 }
 function pn(e, t) {
-	if (e === me) throw e;
+	if (e === pe) throw e;
 	if (!(t !== null && t.f & 16384)) {
 		for (; t !== null;) {
 			if (t.f & 128 && !(t.f & 33570816)) {
@@ -1057,7 +1057,7 @@ function Tn() {
 	});
 }
 function En(e) {
-	return gn(te | C, e);
+	return gn(ee | C, e);
 }
 function Dn(e, t = 0) {
 	return gn(8 | t, e);
@@ -1094,7 +1094,7 @@ function jn(e, t = !1) {
 	for (e.first = e.last = null; n !== null;) {
 		let e = n.ac;
 		e !== null && rt(() => {
-			e.abort(fe);
+			e.abort(de);
 		});
 		var r = n.next;
 		n.f & 64 ? n.parent = null : Nn(n, t), n = r;
@@ -1221,10 +1221,10 @@ function ar(e, t, n = !0) {
 function or(e) {
 	var t = Yn, n = Xn, r = Zn, i = B, a = qn, o = j, s = Wn, c = tr, l = e.f;
 	Yn = null, Xn = 0, Zn = null, B = l & 96 ? null : e, qn = null, He(e.ctx), Wn = !1, tr = ++er, e.ac !== null && (rt(() => {
-		e.ac.abort(fe);
+		e.ac.abort(de);
 	}), e.ac = null);
 	try {
-		e.f |= ee;
+		e.f |= E;
 		var u = e.fn, d = u();
 		e.f |= b;
 		var f = sr(e);
@@ -1234,11 +1234,11 @@ function or(e) {
 			if (t !== null) for (let e of t) e.rv = er;
 			Zn !== null && (r === null ? r = Zn : r.push(...Zn));
 		}
-		return e.f & 8388608 && (e.f ^= ne), d;
+		return e.f & 8388608 && (e.f ^= te), d;
 	} catch (t) {
 		return sr(e), fn(t);
 	} finally {
-		e.f ^= ee, Yn = t, Xn = n, Zn = r, B = i, qn = a, He(o), Wn = s, tr = c;
+		e.f ^= E, Yn = t, Xn = n, Zn = r, B = i, qn = a, He(o), Wn = s, tr = c;
 	}
 }
 function sr(e) {
@@ -1262,8 +1262,8 @@ function cr(e, r) {
 	}
 	if (i === null && r.f & 2 && (Yn === null || !n.call(Yn, r))) {
 		var s = r;
-		s.f & 512 && (s.f ^= 512), s.v !== E && Qe(s), s.ac !== null && rt(() => {
-			s.ac.abort(fe), s.ac = null, M(s, g);
+		s.f & 512 && (s.f ^= 512), s.v !== D && Qe(s), s.ac !== null && rt(() => {
+			s.ac.abort(de), s.ac = null, M(s, g);
 		}), _t(s), lr(s, 0);
 	}
 }
@@ -1321,7 +1321,7 @@ function fr(e) {
 	}
 }
 function pr(e) {
-	if (e.v === E) return !0;
+	if (e.v === D) return !0;
 	if (e.deps === null) return !1;
 	for (let t of e.deps) if (Rt.has(t) || t.f & 2 && pr(t)) return !0;
 	return !1;
@@ -1336,10 +1336,10 @@ function U(e) {
 }
 function W(e) {
 	if (!(typeof e != "object" || !e || e instanceof EventTarget)) {
-		if (re in e) mr(e);
+		if (ne in e) mr(e);
 		else if (!Array.isArray(e)) for (let t in e) {
 			let n = e[t];
-			typeof n == "object" && n && re in n && mr(n);
+			typeof n == "object" && n && ne in n && mr(n);
 		}
 	}
 }
@@ -1463,7 +1463,7 @@ function kr(e, t) {
 function K(e, t) {
 	var n = !!(t & 1), r = !!(t & 2), i, a = !e.startsWith("<!>");
 	return () => {
-		if (D) return kr(O, null), O;
+		if (O) return kr(k, null), k;
 		i === void 0 && (i = Or(a ? e : "<!>" + e), n || (i = /* @__PURE__ */ an(i)));
 		var t = r || $t ? document.importNode(i, !0) : i.cloneNode(!0);
 		if (n) {
@@ -1474,17 +1474,17 @@ function K(e, t) {
 	};
 }
 function Ar(e = "") {
-	if (!D) {
+	if (!O) {
 		var t = rn(e + "");
 		return kr(t, t), t;
 	}
-	var n = O;
-	return n.nodeType === 3 ? dn(n) : (n.before(n = rn()), k(n)), kr(n, n), n;
+	var n = k;
+	return n.nodeType === 3 ? dn(n) : (n.before(n = rn()), be(n)), kr(n, n), n;
 }
 function q(e, t) {
-	if (D) {
+	if (O) {
 		var n = V;
-		n.f & 32768 && n.nodes.end !== null || (n.nodes.end = O), xe();
+		n.f & 32768 && n.nodes.end !== null || (n.nodes.end = k), xe();
 	} else e !== null && e.before(t);
 }
 // ../node_modules/svelte/src/reactivity/create-subscriber.js
@@ -1508,7 +1508,7 @@ var Pr = class {
 	is_pending = !1;
 	transform_error;
 	#e;
-	#t = D ? O : null;
+	#t = O ? k : null;
 	#n;
 	#r;
 	#i;
@@ -1530,7 +1530,7 @@ var Pr = class {
 			var t = V;
 			t.b = this, t.f |= 128, n(e);
 		}, this.parent = V.b, this.transform_error = r ?? this.parent?.transform_error ?? ((e) => e), this.#i = On(() => {
-			if (D) {
+			if (O) {
 				let e = we(this.#t);
 				xe();
 				let t = e === "[!";
@@ -1539,7 +1539,7 @@ var Pr = class {
 					this.#_(t);
 				} else t ? this.#b() : this.#g();
 			} else this.#x();
-		}, Mr), D && (this.#e = O);
+		}, Mr), O && (this.#e = k);
 	}
 	#g() {
 		try {
@@ -1557,7 +1557,7 @@ var Pr = class {
 	#v(e) {
 		var t = !1, n = !1;
 		let r = () => {
-			this.#y() || (t ? ye() : (t = !0, n && ze(), this.#s !== null && In(this.#s, () => {
+			this.#y() || (t ? ve() : (t = !0, n && ze(), this.#s !== null && In(this.#s, () => {
 				this.#s = null;
 			}), this.#C(() => {
 				this.#x();
@@ -1648,13 +1648,13 @@ var Pr = class {
 		return this.#h(), H(this.#m);
 	}
 	error(e) {
-		if (e === me || !this.#n.onerror && !this.#n.failed) throw e;
+		if (e === pe || !this.#n.onerror && !this.#n.failed) throw e;
 		N?.is_fork ? (this.#a && N.skip_effect(this.#a), this.#o && N.skip_effect(this.#o), this.#s && N.skip_effect(this.#s), N.oncommit(() => {
 			this.#y() || this.#T(e);
 		})) : this.#T(e);
 	}
 	#T(e) {
-		this.#a &&= (Nn(this.#a), null), this.#o &&= (Nn(this.#o), null), this.#s &&= (Nn(this.#s), null), D && (k(this.#t), Se(), k(Ce()));
+		this.#a &&= (Nn(this.#a), null), this.#o &&= (Nn(this.#o), null), this.#s &&= (Nn(this.#s), null), O && (be(this.#t), Se(), be(Ce()));
 		let t = this.#n.failed, n = (e) => {
 			if (this.#y()) return;
 			let { reset: n, invoke_onerror: r } = this.#v(e);
@@ -1685,7 +1685,7 @@ var Pr = class {
 };
 function J(e, t) {
 	var n = t == null ? "" : typeof t == "object" ? `${t}` : t;
-	n !== (e[ue] ??= e.nodeValue) && (e[ue] = n, e.nodeValue = `${n}`);
+	n !== (e[le] ??= e.nodeValue) && (e[le] = n, e.nodeValue = `${n}`);
 }
 function Fr(e, t) {
 	return Lr(e, t);
@@ -1698,7 +1698,7 @@ function Lr(e, { target: t, anchor: n, props: i = {}, events: a, context: o, int
 		Nr(s, { pending: () => {} }, (t) => {
 			Ue({});
 			var n = j;
-			if (o && (n.c = o), a && (i.$$events = a), D && kr(t, null), l = e(t, i) || Ge(), D && (V.nodes.end = O, O === null || O.nodeType !== 8 || O.data !== "]")) throw _e(), me;
+			if (o && (n.c = o), a && (i.$$events = a), O && kr(t, null), l = e(t, i) || Ge(), O && (V.nodes.end = k, k === null || k.nodeType !== 8 || k.data !== "]")) throw ge(), pe;
 			We();
 		}, c);
 		var u = /* @__PURE__ */ new Set(), d = (e) => {
@@ -1785,20 +1785,20 @@ var Rr = /* @__PURE__ */ new WeakMap(), zr = class {
 			for (let [t, r] of this.#t) t === e ? n.unskip_effect(r) : n.skip_effect(r);
 			for (let [t, r] of this.#n) t === e ? n.unskip_effect(r.effect) : n.skip_effect(r.effect);
 			n.oncommit(this.#a), n.ondiscard(this.#o);
-		} else D && (this.anchor = O), this.#a(n);
+		} else O && (this.anchor = k), this.#a(n);
 	}
 };
 // ../node_modules/svelte/src/internal/client/dom/blocks/if.js
 function Y(e, t, n = !1) {
 	var r;
-	D && (r = O, xe());
+	O && (r = k, xe());
 	var i = new zr(e), a = n ? S : 0;
 	function o(e, t) {
-		if (D) {
+		if (O) {
 			var n = we(r);
 			if (e !== parseInt(n.substring(1))) {
 				var a = Ce();
-				k(a), i.anchor = a, be(!1), i.ensure(e, t), be(!0);
+				be(a), i.anchor = a, ye(!1), i.ensure(e, t), ye(!0);
 				return;
 			}
 		}
@@ -1855,9 +1855,9 @@ function Wr(t, n, i, a, o, s = null) {
 	var c = t, l = /* @__PURE__ */ new Map();
 	if (n & 4) {
 		var u = t;
-		c = D ? k(/* @__PURE__ */ an(u)) : u.appendChild(rn());
+		c = O ? be(/* @__PURE__ */ an(u)) : u.appendChild(rn());
 	}
-	D && xe();
+	O && xe();
 	var d = null, f = /* @__PURE__ */ pt(() => {
 		var t = i();
 		return e(t) ? t : t == null ? [] : r(t);
@@ -1878,19 +1878,19 @@ function Wr(t, n, i, a, o, s = null) {
 		effect: On(() => {
 			var e = H(f), t = e.length;
 			let r = !1;
-			D && we(c) === "[!" != (t === 0) && (c = Ce(), k(c), be(!1), r = !0);
+			O && we(c) === "[!" != (t === 0) && (c = Ce(), be(c), ye(!1), r = !0);
 			for (var u = /* @__PURE__ */ new Set(), _ = N, v = ln(), y = 0; y < t; y += 1) {
-				D && O.nodeType === 8 && O.data === "]" && (c = O, r = !0, be(!1));
+				O && k.nodeType === 8 && k.data === "]" && (c = k, r = !0, ye(!1));
 				var b = e[y], x = a(b, y), S = m ? null : l.get(x);
 				S ? (S.v && Wt(S.v, b), S.i && Wt(S.i, y), v && _.unskip_effect(S.e)) : (S = qr(l, m ? c : Ur ??= rn(), b, x, y, o, n, i), m || (S.e.f |= T), l.set(x, S)), u.add(x);
 			}
-			if (t === 0 && s && !d && (m ? d = kn(() => s(c)) : (d = kn(() => s(Ur ??= rn())), d.f |= T)), t > u.size && Ae("", "", ""), D && t > 0 && k(Ce()), !m) {
+			if (t === 0 && s && !d && (m ? d = kn(() => s(c)) : (d = kn(() => s(Ur ??= rn())), d.f |= T)), t > u.size && Ae("", "", ""), O && t > 0 && be(Ce()), !m) {
 				if (p.set(_, u), v) {
 					for (let [e, t] of l) u.has(e) || _.skip_effect(t.e);
 					_.oncommit(h), _.ondiscard(g);
 				} else h(_);
 			}
-			r && be(!0), H(f);
+			r && ye(!0), H(f);
 		}),
 		flags: n,
 		items: l,
@@ -1898,7 +1898,7 @@ function Wr(t, n, i, a, o, s = null) {
 		outrogroups: null,
 		fallback: d
 	};
-	m = !1, D && (c = O);
+	m = !1, O && (c = k);
 }
 function Gr(e) {
 	for (; e !== null && !(e.f & 32);) e = e.next;
@@ -1942,14 +1942,14 @@ function Kr(e, t, n, i, a) {
 		var w = [];
 		if (u !== void 0) for (_ of u) _.f & 8192 || w.push(_);
 		for (; l !== null;) !(l.f & 8192) && l !== e.fallback && w.push(l), l = Gr(l.next);
-		var ee = w.length;
-		if (ee > 0) {
-			var te = i & 4 && s === 0 ? n : null;
+		var E = w.length;
+		if (E > 0) {
+			var ee = i & 4 && s === 0 ? n : null;
 			if (o) {
-				for (v = 0; v < ee; v += 1) w[v].nodes?.a?.measure();
-				for (v = 0; v < ee; v += 1) w[v].nodes?.a?.fix();
+				for (v = 0; v < E; v += 1) w[v].nodes?.a?.measure();
+				for (v = 0; v < E; v += 1) w[v].nodes?.a?.fix();
 			}
-			Vr(e, w, te);
+			Vr(e, w, ee);
 		}
 	}
 	o && Ye(() => {
@@ -1991,10 +1991,10 @@ function Zr(e, t, n) {
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/class.js
 function Qr(e, t, n, r, i, a) {
-	var o = e[ce];
-	if (D || o !== n || o === void 0) {
+	var o = e[se];
+	if (O || o !== n || o === void 0) {
 		var s = Zr(n, r, a);
-		D && s === e.getAttribute("class") || (s == null ? e.removeAttribute("class") : t ? e.className = s : e.setAttribute("class", s)), e[ce] = n;
+		O && s === e.getAttribute("class") || (s == null ? e.removeAttribute("class") : t ? e.className = s : e.setAttribute("class", s)), e[se] = n;
 	} else if (a && i !== a) for (var c in a) {
 		var l = !!a[c];
 		(i == null || l !== !!i[c]) && e.classList.toggle(c, l);
@@ -2025,7 +2025,7 @@ function ei(t, n) {
 function ti(t, n, r = !1) {
 	if (t.multiple) {
 		if (n == null) return;
-		if (!e(n)) return ve();
+		if (!e(n)) return _e();
 		for (var i of t.options) i.selected = n.includes(ii(i));
 	} else {
 		for (i of t.options) if (Zt(ii(i), n)) {
@@ -2083,9 +2083,9 @@ function ai(e) {
 	return !1;
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/attributes.js
-var oi = Symbol("is custom element"), si = Symbol("is html"), ci = pe ? "link" : "LINK", li = pe ? "progress" : "PROGRESS";
+var oi = Symbol("is custom element"), si = Symbol("is html"), ci = fe ? "link" : "LINK", li = fe ? "progress" : "PROGRESS";
 function ui(e) {
-	if (D) {
+	if (O) {
 		var t = !1, n = () => {
 			if (!t) {
 				if (t = !0, e.hasAttribute("value")) {
@@ -2098,28 +2098,32 @@ function ui(e) {
 				}
 			}
 		};
-		e[de] = n, Ye(n), nt();
+		e[ue] = n, Ye(n), nt();
 	}
 }
 function di(e, t) {
-	var n = fi(e);
+	var n = pi(e);
 	n.value !== (n.value = t ?? void 0) && (e.value !== t || t === 0 && e.nodeName === li) && (e.value = t ?? "");
 }
-function X(e, t, n, r) {
-	var i = fi(e);
-	D && (i[t] = e.getAttribute(t), t === "src" || t === "srcset" || t === "href" && e.nodeName === ci) || i[t] !== (i[t] = n) && (t === "loading" && (e[oe] = n), n == null ? e.removeAttribute(t) : typeof n != "string" && mi(e).has(t) ? e[t] = n : e.setAttribute(t, n));
+function fi(e, t) {
+	var n = pi(e);
+	n.checked !== (n.checked = t ?? void 0) && (e.checked = t);
 }
-function fi(e) {
-	return e[se] ??= {
+function X(e, t, n, r) {
+	var i = pi(e);
+	O && (i[t] = e.getAttribute(t), t === "src" || t === "srcset" || t === "href" && e.nodeName === ci) || i[t] !== (i[t] = n) && (t === "loading" && (e[ae] = n), n == null ? e.removeAttribute(t) : typeof n != "string" && hi(e).has(t) ? e[t] = n : e.setAttribute(t, n));
+}
+function pi(e) {
+	return e[oe] ??= {
 		[oi]: e.nodeName.includes("-"),
-		[si]: e.namespaceURI === he
+		[si]: e.namespaceURI === me
 	};
 }
-var pi = /* @__PURE__ */ new Map();
-function mi(e) {
-	var t = e.getAttribute("is") || e.nodeName, n = pi.get(t);
+var mi = /* @__PURE__ */ new Map();
+function hi(e) {
+	var t = e.getAttribute("is") || e.nodeName, n = mi.get(t);
 	if (n) return n;
-	pi.set(t, n = /* @__PURE__ */ new Set());
+	mi.set(t, n = /* @__PURE__ */ new Set());
 	for (var r, i = e, a = Element.prototype; a !== i;) {
 		for (var s in r = o(i), r) r[s].set && s !== "innerHTML" && s !== "textContent" && s !== "innerText" && n.add(s);
 		i = l(i);
@@ -2127,57 +2131,57 @@ function mi(e) {
 	return n;
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/bindings/input.js
-function hi(e, t, n = t) {
+function gi(e, t, n = t) {
 	var r = /* @__PURE__ */ new WeakSet();
 	it(e, "input", async (i) => {
 		var a = i ? e.defaultValue : e.value;
-		if (a = _i(e) ? vi(a) : a, n(a), N !== null && r.add(N), await dr(), a !== (a = t())) {
+		if (a = vi(e) ? yi(a) : a, n(a), N !== null && r.add(N), await dr(), a !== (a = t())) {
 			var o = e.selectionStart, s = e.selectionEnd, c = e.value.length;
 			if (e.value = a ?? "", s !== null) {
 				var l = e.value.length;
 				o === s && s === c && l > c ? (e.selectionStart = l, e.selectionEnd = l) : (e.selectionStart = o, e.selectionEnd = Math.min(s, l));
 			}
 		}
-	}), (D && e.defaultValue !== e.value || U(t) == null && e.value) && (n(_i(e) ? vi(e.value) : e.value), N !== null && r.add(N)), Dn(() => {
+	}), (O && e.defaultValue !== e.value || U(t) == null && e.value) && (n(vi(e) ? yi(e.value) : e.value), N !== null && r.add(N)), Dn(() => {
 		var n = t();
 		if (e === document.activeElement) {
 			var i = N;
 			if (r.has(i)) return;
 		}
-		_i(e) && n === vi(e.value) || (e.type !== "date" || n || e.value) && n !== e.value && (e.value = n ?? "");
+		vi(e) && n === yi(e.value) || (e.type !== "date" || n || e.value) && n !== e.value && (e.value = n ?? "");
 	});
 }
-function gi(e, t, n = t) {
+function _i(e, t, n = t) {
 	it(e, "change", (t) => {
 		n(t ? e.defaultChecked : e.checked);
-	}), (D && e.defaultChecked !== e.checked || U(t) == null) && n(e.checked), Dn(() => {
+	}), (O && e.defaultChecked !== e.checked || U(t) == null) && n(e.checked), Dn(() => {
 		e.checked = !!t();
 	});
 }
-function _i(e) {
+function vi(e) {
 	var t = e.type;
 	return t === "number" || t === "range";
 }
-function vi(e) {
+function yi(e) {
 	return e === "" ? null : +e;
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/bindings/this.js
-function yi(e, t) {
-	return e === t || e?.[re] === t;
+function bi(e, t) {
+	return e === t || e?.[ne] === t;
 }
-function bi(e = Ge(), t, n, r) {
+function xi(e = Ge(), t, n, r) {
 	var i = j.r, a = V;
 	return Cn(() => {
 		var o, s;
 		return Dn(() => {
 			o = s, s = r?.() || [], U(() => {
-				yi(n(...s), e) || (t(e, ...s), o && yi(n(...o), e) && t(null, ...o));
+				bi(n(...s), e) || (t(e, ...s), o && bi(n(...o), e) && t(null, ...o));
 			});
 		}), () => {
 			let r = a;
 			for (; r !== i && r.parent !== null && r.parent.f & 33554432;) r = r.parent;
 			let o = () => {
-				s && yi(n(...s), e) && t(null, ...s);
+				s && bi(n(...s), e) && t(null, ...s);
 			}, c = r.teardown;
 			r.teardown = () => {
 				o(), c?.();
@@ -2186,7 +2190,7 @@ function bi(e = Ge(), t, n, r) {
 	}), e;
 }
 // ../node_modules/svelte/src/internal/client/dom/legacy/lifecycle.js
-function xi(e = !1) {
+function Si(e = !1) {
 	let t = j, n = t.l.u;
 	if (!n) return;
 	let r = () => W(t.s);
@@ -2199,37 +2203,37 @@ function xi(e = !1) {
 		r = () => H(i);
 	}
 	n.b.length && xn(() => {
-		Si(t, r), p(n.b);
+		Ci(t, r), p(n.b);
 	}), yn(() => {
 		let e = U(() => n.m.map(f));
 		return () => {
 			for (let t of e) typeof t == "function" && t();
 		};
 	}), n.a.length && yn(() => {
-		Si(t, r), p(n.a);
+		Ci(t, r), p(n.a);
 	});
 }
-function Si(e, t) {
+function Ci(e, t) {
 	if (e.l.s) for (let t of e.l.s) H(t);
 	t();
 }
 // ../node_modules/svelte/src/store/utils.js
-function Ci(e, t, n) {
+function wi(e, t, n) {
 	if (e == null) return t(void 0), n && n(void 0), d;
 	let r = U(() => e.subscribe(t, n));
 	return r.unsubscribe ? () => r.unsubscribe() : r;
 }
 // ../node_modules/svelte/src/store/shared/index.js
-var wi = [];
-function Ti(e, t = d) {
+var Ti = [];
+function Ei(e, t = d) {
 	let n = null, r = /* @__PURE__ */ new Set();
 	function i(t) {
 		if (Ee(e, t) && (e = t, n)) {
-			let t = !wi.length;
-			for (let t of r) t[1](), wi.push(t, e);
+			let t = !Ti.length;
+			for (let t of r) t[1](), Ti.push(t, e);
 			if (t) {
-				for (let e = 0; e < wi.length; e += 2) wi[e][0](wi[e + 1]);
-				wi.length = 0;
+				for (let e = 0; e < Ti.length; e += 2) Ti[e][0](Ti[e + 1]);
+				Ti.length = 0;
 			}
 		}
 	}
@@ -2248,35 +2252,35 @@ function Ti(e, t = d) {
 		subscribe: o
 	};
 }
-function Ei(e) {
+function Di(e) {
 	let t;
-	return Ci(e, (e) => t = e)(), t;
+	return wi(e, (e) => t = e)(), t;
 }
 // ../node_modules/svelte/src/internal/client/reactivity/store.js
-var Di = !1, Oi = Symbol("unmounted");
-function ki(e, t, n) {
+var Oi = !1, ki = Symbol("unmounted");
+function Ai(e, t, n) {
 	let r = n[t] ??= {
 		store: null,
 		source: /* @__PURE__ */ P(void 0),
 		unsubscribe: d
 	};
-	if (r.store !== e && !(Oi in n)) {
+	if (r.store !== e && !(ki in n)) {
 		if (r.unsubscribe(), r.store = e ?? null, e == null) r.source.v = void 0, r.unsubscribe = d;
 		else {
 			var i = !0;
-			r.unsubscribe = Ci(e, (e) => {
+			r.unsubscribe = wi(e, (e) => {
 				i ? r.source.v = e : F(r.source, e);
 			}), i = !1;
 		}
 	}
-	return e && Oi in n ? Ei(e) : H(r.source);
+	return e && ki in n ? Di(e) : H(r.source);
 }
-function Ai() {
+function ji() {
 	let e = {};
 	function t() {
 		vn(() => {
 			for (var t in e) e[t].unsubscribe();
-			i(e, Oi, {
+			i(e, ki, {
 				enumerable: !1,
 				value: !0
 			});
@@ -2284,12 +2288,12 @@ function Ai() {
 	}
 	return [e, t];
 }
-function ji(e) {
-	var t = Di;
+function Mi(e) {
+	var t = Oi;
 	try {
-		return Di = !1, [e(), Di];
+		return Oi = !1, [e(), Oi];
 	} finally {
-		Di = t;
+		Oi = t;
 	}
 }
 // ../node_modules/svelte/src/internal/client/reactivity/props.js
@@ -2297,11 +2301,11 @@ function Z(e, t, n, r) {
 	var i = !Be || !!(n & 2), o = !!(n & 8), s = !!(n & 16), c = r, l = !0, u = void 0, d = () => s && i ? (u ??= /* @__PURE__ */ lt(r), H(u)) : (l && (l = !1, c = s ? U(r) : r), c);
 	let f;
 	if (o) {
-		var p = re in e || ae in e;
+		var p = ne in e || ie in e;
 		f = a(e, t)?.set ?? (p && t in e ? (n) => e[t] = n : void 0);
 	}
 	var m, h = !1;
-	o ? [m, h] = ji(() => e[t]) : m = e[t], m === void 0 && r !== void 0 && (m = d(), f && (i && Fe(t), f(m)));
+	o ? [m, h] = Mi(() => e[t]) : m = e[t], m === void 0 && r !== void 0 && (m = d(), f && (i && Fe(t), f(m)));
 	var g = i ? () => {
 		var n = e[t];
 		return n === void 0 ? d() : (l = !0, n);
@@ -2327,16 +2331,16 @@ function Z(e, t, n, r) {
 		return Hn && v || b.f & 16384 ? y.v : H(y);
 	});
 }
-function Mi(e) {
-	j === null && Oe("onMount"), Be && j.l !== null ? Pi(j).m.push(e) : yn(() => {
+function Ni(e) {
+	j === null && Oe("onMount"), Be && j.l !== null ? Fi(j).m.push(e) : yn(() => {
 		let t = U(e);
 		if (typeof t == "function") return t;
 	});
 }
-function Ni(e) {
-	j === null && Oe("onDestroy"), Mi(() => () => U(e));
-}
 function Pi(e) {
+	j === null && Oe("onDestroy"), Ni(() => () => U(e));
+}
+function Fi(e) {
 	var t = e.l;
 	return t.u ??= {
 		a: [],
@@ -2347,7 +2351,20 @@ function Pi(e) {
 // ../node_modules/svelte/src/internal/flags/legacy.js
 typeof window < "u" && ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5"), Ve();
 // src/controller.ts
-var Fi = "keida-hub-reborn", Ii = "reborn-workspace-v1", Li = 9223372036854775807n, Ri = () => ({
+var Ii = "keida-hub-reborn", Li = "reborn-workspace-v1", Ri = 9223372036854775807n, zi = () => [
+	{
+		id: "note",
+		visible: !0
+	},
+	{
+		id: "connections",
+		visible: !0
+	},
+	{
+		id: "pins",
+		visible: !0
+	}
+], Bi = (e) => e === "note" ? "Workspace note" : e === "connections" ? "Connections" : "Pinned services", Vi = () => ({
 	phase: "idle",
 	entries: [],
 	through: "0",
@@ -2355,7 +2372,7 @@ var Fi = "keida-hub-reborn", Ii = "reborn-workspace-v1", Li = 922337203685477580
 	category: "all",
 	query: "",
 	message: ""
-}), zi = (e, t) => ({
+}), Hi = (e, t) => ({
 	phase: e,
 	message: t,
 	draft: "",
@@ -2365,11 +2382,13 @@ var Fi = "keida-hub-reborn", Ii = "reborn-workspace-v1", Li = 922337203685477580
 	storageLimited: !1,
 	directorySave: "idle",
 	directoryMessage: "",
-	activity: Ri(),
+	activity: Vi(),
 	notificationSave: "idle",
-	notificationMessage: ""
-}), Q = (e) => typeof e == "object" && !!e && !Array.isArray(e), $ = (e, t = !1) => typeof e == "string" && /^(0|[1-9][0-9]{0,18})$/.test(e) && BigInt(e) <= Li && (!t || e !== "0"), Bi = (e) => typeof e == "string" && !e.includes("\0") && new TextEncoder().encode(e).length <= 4096;
-function Vi(e) {
+	notificationMessage: "",
+	layoutSave: "idle",
+	layoutMessage: ""
+}), Q = (e) => typeof e == "object" && !!e && !Array.isArray(e), $ = (e, t = !1) => typeof e == "string" && /^(0|[1-9][0-9]{0,18})$/.test(e) && BigInt(e) <= Ri && (!t || e !== "0"), Ui = (e) => typeof e == "string" && !e.includes("\0") && new TextEncoder().encode(e).length <= 4096;
+function Wi(e) {
 	if (typeof e != "string" || new TextEncoder().encode(e).length > 1024 || !/^https:\/\/[^/]/.test(e) || /[\s\u0000-\u001f\u007f\\]/u.test(e)) return !1;
 	try {
 		let t = new URL(e);
@@ -2378,7 +2397,7 @@ function Vi(e) {
 		return !1;
 	}
 }
-function Hi(e) {
+function Gi(e) {
 	if (!Q(e) || !Array.isArray(e.groups) || e.groups.length > 2 || !Number.isInteger(e.unread_groups) || new Set(e.groups.map((e) => Q(e) ? e.category : null)).size !== e.groups.length || e.groups.some((e) => !Q(e) || !["services", "connections"].includes(String(e.category)) || !$(e.revision, !0) || !$(e.read_through) || !$(e.unread) || BigInt(e.read_through) > BigInt(e.revision) || BigInt(e.unread) !== BigInt(e.revision) - BigInt(e.read_through) || !Q(e.latest) || !$(e.latest.source_revision, !0) || !$(e.latest.occurred_at) || BigInt(e.latest.occurred_at) > 253402300799n || typeof e.latest.label != "string" || !/^[A-Za-z ]{1,64}$/.test(e.latest.label) || !(e.category === "services" ? [
 		"service_added",
 		"service_updated",
@@ -2386,10 +2405,19 @@ function Hi(e) {
 	] : ["connection_saved", "connection_removed"]).includes(String(e.latest.kind))) || e.unread_groups !== e.groups.filter((e) => e.unread !== "0").length) throw Error("Invalid notification response");
 	return e;
 }
-function Ui(e) {
-	if (!Q(e) || e.product !== Fi || e.contract !== Ii || e.schema !== 1 || !Q(e.account) || !$(e.account.id, !0) || typeof e.account.username != "string" || !/^[a-z0-9_-]{3,32}$/.test(e.account.username) || e.account.role !== "owner" && e.account.role !== "member" || !$(e.session_generation) || !Q(e.note) || !Bi(e.note.body) || !$(e.note.revision)) throw Error("Invalid workspace response");
+function Ki(e) {
+	if (!Q(e) || !$(e.revision) || !Array.isArray(e.panels) || e.panels.length !== 3 || e.panels.some((e) => !Q(e) || ![
+		"note",
+		"connections",
+		"pins"
+	].includes(String(e.id)) || typeof e.visible != "boolean") || new Set(e.panels.map((e) => e.id)).size !== 3 || !e.panels.some((e) => e.visible)) throw Error("Invalid layout response");
+	return e;
+}
+var qi = (e, t) => e.length === t.length && e.every((e, n) => e.id === t[n].id && e.visible === t[n].visible);
+function Ji(e) {
+	if (!Q(e) || e.product !== Ii || e.contract !== Li || e.schema !== 1 || !Q(e.account) || !$(e.account.id, !0) || typeof e.account.username != "string" || !/^[a-z0-9_-]{3,32}$/.test(e.account.username) || e.account.role !== "owner" && e.account.role !== "member" || !$(e.session_generation) || !Q(e.note) || !Ui(e.note.body) || !$(e.note.revision)) throw Error("Invalid workspace response");
 	let t = e.directory, n = (e, t, n = !1) => typeof e == "string" && (!n || e.length > 0) && new TextEncoder().encode(e).length <= t && !/[\u0000-\u001f\u007f]/u.test(e);
-	if (!Q(t) || !$(t.revision) || !$(t.pins_revision) || !Array.isArray(t.services) || t.services.length > 100 || t.services.some((e) => !Q(e) || !$(e.id, !0) || !n(e.name, 80, !0) || !n(e.category, 40, !0) || !n(e.description, 240) || !Vi(e.url)) || new Set(t.services.map((e) => e.id)).size !== t.services.length || !Array.isArray(t.pins) || t.pins.length > 24 || new Set(t.pins).size !== t.pins.length || t.pins.some((e) => !$(e, !0) || !t.services.some((t) => t.id === e))) throw Error("Invalid directory response");
+	if (!Q(t) || !$(t.revision) || !$(t.pins_revision) || !Array.isArray(t.services) || t.services.length > 100 || t.services.some((e) => !Q(e) || !$(e.id, !0) || !n(e.name, 80, !0) || !n(e.category, 40, !0) || !n(e.description, 240) || !Wi(e.url)) || new Set(t.services.map((e) => e.id)).size !== t.services.length || !Array.isArray(t.pins) || t.pins.length > 24 || new Set(t.pins).size !== t.pins.length || t.pins.some((e) => !$(e, !0) || !t.services.some((t) => t.id === e))) throw Error("Invalid directory response");
 	if (e.crafty != null) {
 		let t = e.crafty, n = (e) => e === null || typeof e == "number" && Number.isSafeInteger(e) && e >= 0, r = (e) => e === null || typeof e == "string" && /^[a-z_]{1,40}$/.test(e);
 		if (!Q(t) || !$(t.revision) || typeof t.configured != "boolean" || !n(t.checked_at) || !r(t.error) || !Array.isArray(t.servers) || t.servers.length > 8 || t.servers.some((e) => !Q(e) || typeof e.name != "string" || e.name.length > 80 || typeof e.join != "string" || e.join.length > 253 || ![
@@ -2402,41 +2430,41 @@ function Ui(e) {
 			"unknown"
 		].includes(String(e.freshness)) || !n(e.players) || !n(e.capacity) || !n(e.collected_at) || !n(e.provider_at) || !r(e.error))) throw Error("Invalid connection response");
 	}
-	return Hi(e.notifications), e;
+	return Gi(e.notifications), Ki(e.layout), e;
 }
-function Wi(e) {
+function Yi(e) {
 	if (!(!e || e.length > 25e3)) try {
 		let t = JSON.parse(e);
-		if (Q(t) && t.schema === 1 && Bi(t.body) && $(t.base)) return {
+		if (Q(t) && t.schema === 1 && Ui(t.body) && $(t.base)) return {
 			body: t.body,
 			base: t.base
 		};
 	} catch {}
 }
-function Gi(e) {
-	let t = Ti(zi("checking", "Checking your workspace…")), n = 0, r, i, a, o, s, c, l = 0, u, d, f, p = !1, m = !1, h = () => Ei(t), g = (e) => `${Fi}.workspace.v1:${e.account.id}:${e.session_generation}`;
-	function _() {
-		if (d = void 0, u) try {
-			sessionStorage.removeItem(u);
+function Xi(e) {
+	let t = Ei(Hi("checking", "Checking your workspace…")), n = 0, r, i, a, o, s, c, l, u = 0, d, f, p, m = !1, h = !1, g = () => Di(t), _ = (e) => `${Ii}.workspace.v1:${e.account.id}:${e.session_generation}`;
+	function v() {
+		if (f = void 0, d) try {
+			sessionStorage.removeItem(d);
 		} catch {}
 	}
-	function v() {
-		let e = h();
-		if (!u || !e.snapshot) return;
+	function y() {
+		let e = g();
+		if (!d || !e.snapshot) return;
 		if (!e.dirty) {
-			_();
+			v();
 			return;
 		}
 		let n = {
 			body: e.draft,
 			base: e.base
 		};
-		d = {
-			key: u,
+		f = {
+			key: d,
 			draft: n
 		};
 		try {
-			sessionStorage.setItem(u, JSON.stringify({
+			sessionStorage.setItem(d, JSON.stringify({
 				schema: 1,
 				...n
 			}));
@@ -2447,18 +2475,18 @@ function Gi(e) {
 			}));
 		}
 	}
-	function y() {
-		++n, r && clearTimeout(r), r = void 0, i?.abort(), a?.abort(), i = void 0, a = void 0, o?.abort(), o = void 0, ++l, s?.abort(), s = void 0, c?.abort(), c = void 0;
+	function b() {
+		++n, r && clearTimeout(r), r = void 0, i?.abort(), a?.abort(), i = void 0, a = void 0, o?.abort(), o = void 0, ++u, s?.abort(), s = void 0, c?.abort(), c = void 0, l?.abort(), l = void 0;
 	}
-	function b(e, n = !1) {
-		y(), m ||= n, At(() => t.set(zi(n ? "blocked" : "paused", e)));
+	function x(e, n = !1) {
+		b(), h ||= n, At(() => t.set(Hi(n ? "blocked" : "paused", e)));
 	}
-	function x() {
-		r && clearTimeout(r), !p && !m && h().phase === "ready" && h().notificationSave !== "uncertain" && document.visibilityState === "visible" && (r = setTimeout(() => {
-			r = void 0, T();
+	function S() {
+		r && clearTimeout(r), !m && !h && g().phase === "ready" && g().notificationSave !== "uncertain" && g().layoutSave !== "uncertain" && document.visibilityState === "visible" && (r = setTimeout(() => {
+			r = void 0, E();
 		}, 15e3));
 	}
-	async function S(t, n, r) {
+	async function C(t, n, r) {
 		let i = performance.now(), a = setTimeout(() => n.abort(), 4e3);
 		try {
 			let a = await fetch(t, {
@@ -2468,8 +2496,8 @@ function Gi(e) {
 				redirect: "error",
 				signal: n.signal,
 				headers: {
-					"X-Reborn-Product": Fi,
-					"X-Reborn-Contract": Ii,
+					"X-Reborn-Product": Ii,
+					"X-Reborn-Contract": Li,
 					"X-CSRF-Token": e,
 					...r ? { "Content-Type": "application/json" } : {}
 				},
@@ -2484,44 +2512,47 @@ function Gi(e) {
 			clearTimeout(a);
 		}
 	}
-	function C(e) {
+	function w(e) {
 		return e === 401 || e === 403 ? "Your sign-in changed or ended. Open a fresh workspace after signing in." : e === 426 ? "This workspace needs a fresh document. Open workspace again." : "Your workspace could not be checked. Open workspace again when access is available.";
 	}
-	function w(e) {
-		let t = h().snapshot;
+	function T(e) {
+		let t = g().snapshot;
 		return !t || e.account.id === t.account.id && e.session_generation === t.session_generation && e.account.role === t.account.role;
 	}
-	async function T() {
-		if (p || m || i || a || o || c || document.visibilityState !== "visible") return;
-		let e = new AbortController();
-		i = e;
-		let r = n;
+	async function E(e = !1) {
+		if (m || h || i || a || o || c || l || !e && g().layoutSave === "uncertain" || document.visibilityState !== "visible") return;
+		let r = new AbortController();
+		i = r;
+		let s = n;
 		try {
-			let i = await S("/api/workspace/snapshot", e);
-			if (p || e.signal.aborted || r !== n) return;
+			let i = await C("/api/workspace/snapshot", r);
+			if (m || r.signal.aborted || s !== n) return;
 			if (document.visibilityState !== "visible") {
-				b("Workspace hidden. Checking access on return.");
+				x("Workspace hidden. Checking access on return.");
 				return;
 			}
 			if (i.status !== 200) {
-				b(C(i.status), !0);
+				x(w(i.status), !0);
 				return;
 			}
-			let a = Ui(i.value);
-			if (!w(a)) {
-				b("Your account scope changed. Open a fresh workspace.", !0);
+			let a = Ji(i.value);
+			if (!T(a)) {
+				x("Your account scope changed. Open a fresh workspace.", !0);
 				return;
 			}
-			let o = h();
-			if (u = g(a), o.phase === "ready") {
-				let e = o.dirty && a.note.revision !== o.base;
+			let o = g();
+			if (d = _(a), o.phase === "ready") {
+				let n = o.dirty && a.note.revision !== o.base, r = !!o.layoutDraft && qi(o.layoutDraft.panels, a.layout.panels) && e && ["uncertain", "checking-conflict"].includes(o.layoutSave), i = !!o.layoutDraft && !r && o.layoutDraft.base !== a.layout.revision;
 				t.set({
 					...o,
 					snapshot: a,
+					layoutDraft: r ? void 0 : o.layoutDraft,
+					layoutSave: i ? "conflict" : ["uncertain", "checking-conflict"].includes(o.layoutSave) || r ? "idle" : o.layoutSave,
+					layoutMessage: r ? "Saved layout checked. The current layout matches your changes." : i ? "A newer layout was saved. Your arrangement is unchanged; compare before saving." : o.layoutSave === "uncertain" ? "The saved layout was checked. Review your arrangement before saving deliberately." : o.layoutMessage,
 					draft: o.dirty ? o.draft : a.note.body,
 					base: o.dirty ? o.base : a.note.revision,
-					save: e ? "conflict" : ["uncertain", "checking-conflict"].includes(o.save) ? "idle" : o.save,
-					message: e ? "A newer saved note is available. Your draft is unchanged." : "Workspace checked.",
+					save: n ? "conflict" : ["uncertain", "checking-conflict"].includes(o.save) ? "idle" : o.save,
+					message: n ? "A newer saved note is available. Your draft is unchanged." : "Workspace checked.",
 					notificationSave: "idle",
 					notificationMessage: o.notificationSave === "uncertain" ? "Current read markers checked. Review newer changes before marking read." : "Notifications checked.",
 					directorySave: o.directorySave === "uncertain" ? "idle" : o.directorySave,
@@ -2532,16 +2563,16 @@ function Gi(e) {
 					base: a.note.revision,
 					save: "saved",
 					message: "The current note is saved."
-				})), _());
+				})), v());
 			} else {
-				let e = d?.key === u ? d.draft : void 0, n = !1;
+				let e = f?.key === d ? f.draft : void 0, n = !1;
 				try {
-					e ??= Wi(sessionStorage.getItem(u));
+					e ??= Yi(sessionStorage.getItem(d));
 				} catch {
 					n = !0;
 				}
-				e?.body === a.note.body && (_(), e = void 0), t.set({
-					...zi("ready", "Workspace checked."),
+				e?.body === a.note.body && (v(), e = void 0), t.set({
+					...Hi("ready", "Workspace checked."),
 					snapshot: a,
 					draft: a.note.body,
 					base: a.note.revision,
@@ -2549,29 +2580,29 @@ function Gi(e) {
 					storageLimited: n
 				});
 			}
-			x();
+			S();
 		} catch {
-			i === e && r === n && !p && b("Your workspace could not be checked. Open workspace again to retry deliberately.", !0);
+			i === r && s === n && !m && x("Your workspace could not be checked. Open workspace again to retry deliberately.", !0);
 		} finally {
-			i === e && (i = void 0);
+			i === r && (i = void 0);
 		}
 	}
 	function ee(e) {
-		let n = h();
+		let n = g();
 		if (n.phase === "ready" && n.snapshot) {
 			if (t.set({
 				...n,
 				draft: e,
 				dirty: e !== n.snapshot.note.body,
 				save: n.save === "saved" ? "idle" : n.save
-			}), Bi(e)) v();
-			else if (d = void 0, u) try {
-				sessionStorage.removeItem(u);
+			}), Ui(e)) y();
+			else if (f = void 0, d) try {
+				sessionStorage.removeItem(d);
 			} catch {}
 		}
 	}
 	function te() {
-		let e = h();
+		let e = g();
 		e.recovery && e.snapshot && e.phase === "ready" && (t.set({
 			...e,
 			draft: e.recovery.body,
@@ -2580,10 +2611,10 @@ function Gi(e) {
 			recovery: void 0,
 			save: e.recovery.base === e.snapshot.note.revision ? "idle" : "conflict",
 			message: "Draft recovered. Review it before saving."
-		}), v());
+		}), y());
 	}
 	function ne(e) {
-		let n = h();
+		let n = g();
 		n.snapshot && n.phase === "ready" && (t.set({
 			...n,
 			draft: e ? n.snapshot.note.body : n.draft,
@@ -2592,19 +2623,19 @@ function Gi(e) {
 			recovery: void 0,
 			save: "idle",
 			message: e ? "Loaded the saved note." : "Draft kept against the latest saved revision. Review, then save deliberately."
-		}), v());
+		}), y());
 	}
 	async function re() {
-		let e = h();
-		if (e.phase !== "ready" || !e.dirty || !Bi(e.draft) || [
+		let e = g();
+		if (e.phase !== "ready" || !e.dirty || !Ui(e.draft) || [
 			"conflict",
 			"checking-conflict",
 			"uncertain"
-		].includes(e.save) || a || c) return;
+		].includes(e.save) || a || c || l || e.layoutSave === "checking-conflict") return;
 		i?.abort(), i = void 0, r && clearTimeout(r), r = void 0;
 		let o = new AbortController();
 		a = o;
-		let s = n, l = {
+		let s = n, u = {
 			body: e.draft,
 			base: e.base
 		};
@@ -2614,13 +2645,13 @@ function Gi(e) {
 			message: "Saving your note…"
 		}));
 		try {
-			let e = await S("/api/workspace/note", o, {
-				body: l.body,
-				base_revision: l.base
+			let e = await C("/api/workspace/note", o, {
+				body: u.body,
+				base_revision: u.base
 			});
-			if (p || o.signal.aborted || s !== n) return;
+			if (m || o.signal.aborted || s !== n) return;
 			if (document.visibilityState !== "visible") {
-				b("Workspace hidden. Checking access on return.");
+				x("Workspace hidden. Checking access on return.");
 				return;
 			}
 			if ([
@@ -2628,7 +2659,7 @@ function Gi(e) {
 				403,
 				426
 			].includes(e.status)) {
-				b(C(e.status), !0);
+				x(w(e.status), !0);
 				return;
 			}
 			if (e.status === 409) t.update((e) => ({
@@ -2637,56 +2668,57 @@ function Gi(e) {
 				message: "Another save won. Checking the latest saved note before comparing. Your draft is unchanged."
 			}));
 			else if (e.status === 200) {
-				let n = Ui(e.value);
-				if (!w(n) || n.note.body !== l.body || BigInt(n.note.revision) !== BigInt(l.base) + 1n) throw Error("Unqualified save result");
+				let n = Ji(e.value);
+				if (!T(n) || n.note.body !== u.body || BigInt(n.note.revision) !== BigInt(u.base) + 1n) throw Error("Unqualified save result");
 				t.update((e) => ({
 					...e,
 					snapshot: {
 						...n,
 						crafty: n.crafty ?? e.snapshot?.crafty,
 						directory: e.snapshot?.directory ?? n.directory,
-						notifications: e.snapshot?.notifications ?? n.notifications
+						notifications: e.snapshot?.notifications ?? n.notifications,
+						layout: e.snapshot?.layout ?? n.layout
 					},
 					base: n.note.revision,
 					dirty: e.draft !== n.note.body,
 					save: "saved",
 					message: e.draft === n.note.body ? "Saved to your account." : "Submitted version saved. Your newer edits are still unsaved."
-				})), v();
+				})), y();
 			} else throw Error("Save outcome unavailable");
 		} catch {
-			a === o && s === n && !p && t.update((e) => ({
+			a === o && s === n && !m && t.update((e) => ({
 				...e,
 				save: "uncertain",
 				message: "Save outcome is uncertain. Check the saved note before trying again."
 			}));
 		} finally {
-			a === o && (a = void 0), s === n && !p && (h().save === "checking-conflict" ? await T() : x());
+			a === o && (a = void 0), s === n && !m && (g().save === "checking-conflict" ? await E() : S());
 		}
 	}
 	async function ie(e, r) {
-		let a = h();
-		if (a.phase !== "ready" || !a.snapshot || o || c || a.directorySave === "uncertain") return !1;
+		let a = g();
+		if (a.phase !== "ready" || !a.snapshot || o || c || l || a.layoutSave === "checking-conflict" || a.directorySave === "uncertain") return !1;
 		i?.abort(), i = void 0;
 		let s = new AbortController();
 		o = s;
-		let l = n;
+		let u = n;
 		t.update((e) => ({
 			...e,
 			directorySave: "saving",
 			directoryMessage: "Saving your change…"
 		}));
 		try {
-			let i = await S(e, s, r);
-			if (p || s.signal.aborted || l !== n) return !1;
-			if (document.visibilityState !== "visible") return b("Workspace hidden. Checking access on return."), !1;
+			let i = await C(e, s, r);
+			if (m || s.signal.aborted || u !== n) return !1;
+			if (document.visibilityState !== "visible") return x("Workspace hidden. Checking access on return."), !1;
 			if ([
 				401,
 				403,
 				426
-			].includes(i.status)) return b(C(i.status), !0), !1;
+			].includes(i.status)) return x(w(i.status), !0), !1;
 			if (i.status === 200) {
-				let e = Ui(i.value);
-				return w(e) ? (t.update((t) => ({
+				let e = Ji(i.value);
+				return T(e) ? (t.update((t) => ({
 					...t,
 					snapshot: t.snapshot ? {
 						...t.snapshot,
@@ -2694,7 +2726,7 @@ function Gi(e) {
 					} : void 0,
 					directorySave: "idle",
 					directoryMessage: "Saved to your account."
-				})), !0) : (b("Your account scope changed. Open a fresh workspace.", !0), !1);
+				})), !0) : (x("Your account scope changed. Open a fresh workspace.", !0), !1);
 			}
 			if ([
 				400,
@@ -2709,13 +2741,13 @@ function Gi(e) {
 			})), !1;
 			throw Error("Uncertain directory outcome");
 		} catch {
-			return o === s && l === n && !p && t.update((e) => ({
+			return o === s && u === n && !m && t.update((e) => ({
 				...e,
 				directorySave: "uncertain",
 				directoryMessage: "The save may have completed. Check saved services before making another change."
 			})), !1;
 		} finally {
-			o === s && (o = void 0), l === n && !p && x();
+			o === s && (o = void 0), u === n && !m && S();
 		}
 	}
 	function ae(e, t) {
@@ -2725,7 +2757,7 @@ function Gi(e) {
 		});
 	}
 	function oe(e) {
-		let t = h().snapshot?.directory;
+		let t = g().snapshot?.directory;
 		return t ? ie("/api/workspace/pins", {
 			base_directory_revision: t.revision,
 			base_revision: t.pins_revision,
@@ -2733,25 +2765,25 @@ function Gi(e) {
 		}) : Promise.resolve(!1);
 	}
 	async function se(e, s) {
-		let l = h();
-		if (p || m || l.phase !== "ready" || !l.snapshot || c || a || o || l.notificationSave !== "idle" || !["services", "connections"].includes(e) || !$(s, !0)) return;
+		let u = g();
+		if (m || h || u.phase !== "ready" || !u.snapshot || c || a || o || l || u.layoutSave === "checking-conflict" || u.notificationSave !== "idle" || !["services", "connections"].includes(e) || !$(s, !0)) return;
 		i?.abort(), i = void 0, r && clearTimeout(r), r = void 0;
-		let u = new AbortController();
-		c = u;
-		let d = n;
+		let d = new AbortController();
+		c = d;
+		let f = n;
 		t.update((e) => ({
 			...e,
 			notificationSave: "saving",
 			notificationMessage: "Saving your read marker…"
 		}));
 		try {
-			let r = await S("/api/workspace/notifications/read", u, {
+			let r = await C("/api/workspace/notifications/read", d, {
 				category: e,
 				through: s
 			});
-			if (p || u.signal.aborted || d !== n) return;
+			if (m || d.signal.aborted || f !== n) return;
 			if (document.visibilityState !== "visible") {
-				b("Workspace hidden. Checking access on return.");
+				x("Workspace hidden. Checking access on return.");
 				return;
 			}
 			if ([
@@ -2759,17 +2791,17 @@ function Gi(e) {
 				403,
 				426
 			].includes(r.status)) {
-				b(C(r.status), !0);
+				x(w(r.status), !0);
 				return;
 			}
 			if (r.status === 409) throw Error("Read watermark changed");
 			let i = r.value;
 			if (r.status !== 200 || !Q(i)) throw Error("Read marker unavailable");
-			if (i.product !== Fi || i.contract !== Ii || i.schema !== 1 || !Q(i.account) || i.account.id !== l.snapshot.account.id || i.account.username !== l.snapshot.account.username || i.account.role !== l.snapshot.account.role || i.session_generation !== l.snapshot.session_generation) {
-				b("Your account scope changed. Open a fresh workspace.", !0);
+			if (i.product !== Ii || i.contract !== Li || i.schema !== 1 || !Q(i.account) || i.account.id !== u.snapshot.account.id || i.account.username !== u.snapshot.account.username || i.account.role !== u.snapshot.account.role || i.session_generation !== u.snapshot.session_generation) {
+				x("Your account scope changed. Open a fresh workspace.", !0);
 				return;
 			}
-			let a = Hi(i.notifications), o = a.groups.find((t) => t.category === e);
+			let a = Gi(i.notifications), o = a.groups.find((t) => t.category === e);
 			if (!o || BigInt(o.read_through) < BigInt(s)) throw Error("Unqualified read marker");
 			t.update((e) => ({
 				...e,
@@ -2781,22 +2813,169 @@ function Gi(e) {
 				notificationMessage: "Read marker saved. Newer changes remain unread."
 			}));
 		} catch {
-			c === u && d === n && !p && t.update((e) => ({
+			c === d && f === n && !m && t.update((e) => ({
 				...e,
 				notificationSave: "uncertain",
 				notificationMessage: "The read marker may have saved. Check notifications to see the current state."
 			}));
 		} finally {
-			c === u && (c = void 0), d === n && !p && x();
+			c === d && (c = void 0), f === n && !m && S();
 		}
 	}
-	async function ce(e = h().activity.category, r = h().activity.query, i = !1) {
-		let a = h();
-		if (p || m || a.phase !== "ready" || !a.snapshot || document.visibilityState !== "visible") return;
+	function ce() {
+		let e = g();
+		e.phase !== "ready" || !e.snapshot || e.layoutDraft || a || o || c || l || (i?.abort(), i = void 0, r && clearTimeout(r), r = void 0, t.set({
+			...e,
+			layoutDraft: {
+				base: e.snapshot.layout.revision,
+				panels: e.snapshot.layout.panels.map((e) => ({ ...e }))
+			},
+			layoutSave: "idle",
+			layoutMessage: "Arrange your Home panels, then save to your account."
+		}), S());
+	}
+	function le(e) {
+		let n = g();
+		n.phase === "ready" && n.layoutDraft && ![
+			"saving",
+			"checking-conflict",
+			"uncertain"
+		].includes(n.layoutSave) && t.set({
+			...n,
+			layoutDraft: {
+				...n.layoutDraft,
+				panels: e
+			},
+			layoutMessage: "Your arrangement is unsaved."
+		});
+	}
+	function ue(e, t) {
+		let n = g().layoutDraft?.panels.map((e) => ({ ...e }));
+		if (!n) return;
+		let r = n.findIndex((t) => t.id === e), i = r + t;
+		r < 0 || i < 0 || i >= n.length || ([n[r], n[i]] = [n[i], n[r]], le(n));
+	}
+	function de(e) {
+		let t = g().layoutDraft?.panels.map((e) => ({ ...e }));
+		if (!t) return;
+		let n = t.find((t) => t.id === e);
+		!n || n.visible && t.filter((e) => e.visible).length === 1 || (n.visible = !n.visible, le(t));
+	}
+	function fe() {
+		le(zi());
+	}
+	function pe() {
+		let e = g();
+		e.phase !== "ready" || [
+			"saving",
+			"checking-conflict",
+			"uncertain"
+		].includes(e.layoutSave) || (t.set({
+			...e,
+			layoutDraft: void 0,
+			layoutSave: "idle",
+			layoutMessage: "Your saved Home layout is in use."
+		}), S());
+	}
+	function D(e) {
+		let n = g();
+		n.phase === "ready" && n.snapshot && n.layoutDraft && n.layoutSave === "conflict" && (e ? pe() : t.set({
+			...n,
+			layoutDraft: {
+				...n.layoutDraft,
+				base: n.snapshot.layout.revision
+			},
+			layoutSave: "idle",
+			layoutMessage: "Your arrangement is kept against the checked saved layout. Review, then save deliberately."
+		}));
+	}
+	async function me() {
+		let e = g();
+		if (m || h || e.phase !== "ready" || !e.snapshot || !e.layoutDraft || e.layoutSave !== "idle" || a || o || c || l) return;
+		let s = {
+			base: e.layoutDraft.base,
+			panels: e.layoutDraft.panels.map((e) => ({ ...e }))
+		};
+		if (!s.panels.some((e) => e.visible) || qi(s.panels, e.snapshot.layout.panels)) return;
+		i?.abort(), i = void 0, r && clearTimeout(r), r = void 0;
+		let u = new AbortController();
+		l = u;
+		let d = n;
+		t.update((e) => ({
+			...e,
+			layoutSave: "saving",
+			layoutMessage: "Saving your Home layout…"
+		}));
+		let f = !1;
+		try {
+			let r = await C("/api/workspace/layout", u, {
+				base_revision: s.base,
+				panels: s.panels
+			});
+			if (m || u.signal.aborted || d !== n) return;
+			if (document.visibilityState !== "visible") {
+				x("Workspace hidden. Checking access on return.");
+				return;
+			}
+			if ([
+				401,
+				403,
+				426
+			].includes(r.status)) {
+				x(w(r.status), !0);
+				return;
+			}
+			if (r.status === 409) f = !0, t.update((e) => ({
+				...e,
+				layoutSave: "checking-conflict",
+				layoutMessage: "Another layout was saved first. Checking the saved arrangement before comparing; your changes are unchanged."
+			}));
+			else if ([
+				400,
+				413,
+				429
+			].includes(r.status)) t.update((e) => ({
+				...e,
+				layoutSave: "idle",
+				layoutMessage: "The layout was not accepted. Keep at least one panel visible and review your changes."
+			}));
+			else {
+				let n = r.value;
+				if (r.status !== 200 || !Q(n)) throw Error("Layout unavailable");
+				if (n.product !== Ii || n.contract !== Li || n.schema !== 1 || !Q(n.account) || n.account.id !== e.snapshot.account.id || n.account.username !== e.snapshot.account.username || n.account.role !== e.snapshot.account.role || n.session_generation !== e.snapshot.session_generation) {
+					x("Your account scope changed. Open a fresh workspace.", !0);
+					return;
+				}
+				let i = Ki(n.layout);
+				if (BigInt(i.revision) !== BigInt(s.base) + 1n || !qi(i.panels, s.panels)) throw Error("Unqualified layout result");
+				t.update((e) => ({
+					...e,
+					snapshot: e.snapshot ? {
+						...e.snapshot,
+						layout: i
+					} : void 0,
+					layoutDraft: void 0,
+					layoutSave: "idle",
+					layoutMessage: "Layout saved to your account."
+				}));
+			}
+		} catch {
+			l === u && d === n && !m && t.update((e) => ({
+				...e,
+				layoutSave: "uncertain",
+				layoutMessage: "The layout may have saved. Check the saved layout before saving again; your changes have not been sent again."
+			}));
+		} finally {
+			l === u && (l = void 0), d === n && !m && (f ? await E(!0) : S());
+		}
+	}
+	async function he(e = g().activity.category, r = g().activity.query, i = !1) {
+		let a = g();
+		if (m || h || a.phase !== "ready" || !a.snapshot || document.visibilityState !== "visible") return;
 		s?.abort();
 		let o = new AbortController();
 		s = o;
-		let c = ++l, u = n, d = a.activity, f = new URLSearchParams({
+		let c = ++u, l = n, d = a.activity, f = new URLSearchParams({
 			category: e,
 			q: r
 		});
@@ -2807,7 +2986,7 @@ function Gi(e) {
 		t.update((t) => ({
 			...t,
 			activity: {
-				...Ri(),
+				...Vi(),
 				phase: "loading",
 				category: e,
 				query: r,
@@ -2815,10 +2994,10 @@ function Gi(e) {
 			}
 		}));
 		try {
-			let s = await S(`/api/workspace/activity?${f}`, o);
-			if (p || o.signal.aborted || c !== l || u !== n) return;
+			let s = await C(`/api/workspace/activity?${f}`, o);
+			if (m || o.signal.aborted || c !== u || l !== n) return;
 			if (document.visibilityState !== "visible") {
-				b("Workspace hidden. Checking access on return.");
+				x("Workspace hidden. Checking access on return.");
 				return;
 			}
 			if ([
@@ -2826,13 +3005,13 @@ function Gi(e) {
 				403,
 				426
 			].includes(s.status)) {
-				b(C(s.status), !0);
+				x(w(s.status), !0);
 				return;
 			}
-			let m = s.value;
-			if (s.status !== 200 || !Q(m) || m.product !== Fi || m.contract !== Ii || m.schema !== 1 || !Q(m.account) || m.account.id !== a.snapshot.account.id || m.account.role !== a.snapshot.account.role || m.account.username !== a.snapshot.account.username || m.session_generation !== a.snapshot.session_generation) {
+			let p = s.value;
+			if (s.status !== 200 || !Q(p) || p.product !== Ii || p.contract !== Li || p.schema !== 1 || !Q(p.account) || p.account.id !== a.snapshot.account.id || p.account.role !== a.snapshot.account.role || p.account.username !== a.snapshot.account.username || p.session_generation !== a.snapshot.session_generation) {
 				if (s.status === 200) {
-					b("Your account scope changed. Open a fresh workspace.", !0);
+					x("Your account scope changed. Open a fresh workspace.", !0);
 					return;
 				}
 				throw Error("Activity unavailable");
@@ -2850,24 +3029,24 @@ function Gi(e) {
 				"connection_saved",
 				"connection_removed"
 			];
-			if (m.category !== e || m.q !== r || !$(m.through) || m.next_before !== null && !$(m.next_before, !0) || i && m.through !== d.through || !Array.isArray(m.entries) || m.entries.length > 25 || m.entries.some((e) => !Q(e) || !$(e.id, !0) || !$(e.revision, !0) || !$(e.occurred_at) || BigInt(e.occurred_at) > 253402300799n || !g.includes(String(e.kind)) || !h.includes(String(e.category)) || typeof e.label != "string" || !/^[A-Za-z ]{1,64}$/.test(e.label) || BigInt(e.id) > BigInt(m.through) || i && BigInt(e.id) >= BigInt(d.next)) || m.entries.some((e, t) => t > 0 && BigInt(e.id) >= BigInt(m.entries[t - 1].id)) || m.next_before !== null && (m.entries.length !== 25 || m.next_before !== m.entries.at(-1)?.id)) throw Error("Invalid activity response");
+			if (p.category !== e || p.q !== r || !$(p.through) || p.next_before !== null && !$(p.next_before, !0) || i && p.through !== d.through || !Array.isArray(p.entries) || p.entries.length > 25 || p.entries.some((e) => !Q(e) || !$(e.id, !0) || !$(e.revision, !0) || !$(e.occurred_at) || BigInt(e.occurred_at) > 253402300799n || !g.includes(String(e.kind)) || !h.includes(String(e.category)) || typeof e.label != "string" || !/^[A-Za-z ]{1,64}$/.test(e.label) || BigInt(e.id) > BigInt(p.through) || i && BigInt(e.id) >= BigInt(d.next)) || p.entries.some((e, t) => t > 0 && BigInt(e.id) >= BigInt(p.entries[t - 1].id)) || p.next_before !== null && (p.entries.length !== 25 || p.next_before !== p.entries.at(-1)?.id)) throw Error("Invalid activity response");
 			t.update((t) => ({
 				...t,
 				activity: {
 					phase: "ready",
 					category: e,
 					query: r,
-					entries: m.entries,
-					through: m.through,
-					next: m.next_before,
+					entries: p.entries,
+					through: p.through,
+					next: p.next_before,
 					message: "Retained activity checked."
 				}
 			}));
 		} catch {
-			!p && c === l && u === n && t.update((t) => ({
+			!m && c === u && l === n && t.update((t) => ({
 				...t,
 				activity: {
-					...Ri(),
+					...Vi(),
 					phase: "error",
 					category: e,
 					query: r,
@@ -2878,51 +3057,123 @@ function Gi(e) {
 			s === o && (s = void 0);
 		}
 	}
-	function le() {
-		_(), b("Signing out…", !0);
+	function ge() {
+		v(), x("Signing out…", !0);
 		try {
-			f?.postMessage({ kind: "auth-changed" });
+			p?.postMessage({ kind: "auth-changed" });
 		} catch {}
 	}
-	function ue() {
-		let e = () => b("Workspace hidden. Checking access on return."), n = () => {
-			T();
+	function _e() {
+		let e = () => x("Workspace hidden. Checking access on return."), n = () => {
+			E();
 		}, r = () => {
 			document.visibilityState === "visible" ? n() : e();
 		};
 		try {
-			f = new BroadcastChannel("keida-hub-reborn.account.v1"), f.onmessage = (e) => {
-				Q(e.data) && e.data.kind === "auth-changed" && b("Your sign-in may have changed. Open a fresh workspace.", !0);
+			p = new BroadcastChannel("keida-hub-reborn.account.v1"), p.onmessage = (e) => {
+				Q(e.data) && e.data.kind === "auth-changed" && x("Your sign-in may have changed. Open a fresh workspace.", !0);
 			};
 		} catch {}
-		return window.addEventListener("blur", e), window.addEventListener("pagehide", e), window.addEventListener("focus", n), window.addEventListener("pageshow", n), document.addEventListener("visibilitychange", r), T(), () => {
-			p = !0, y(), f?.close(), t.set(zi("blocked", "Workspace closed.")), window.removeEventListener("blur", e), window.removeEventListener("pagehide", e), window.removeEventListener("focus", n), window.removeEventListener("pageshow", n), document.removeEventListener("visibilitychange", r);
+		return window.addEventListener("blur", e), window.addEventListener("pagehide", e), window.addEventListener("focus", n), window.addEventListener("pageshow", n), document.addEventListener("visibilitychange", r), E(), () => {
+			m = !0, b(), p?.close(), t.set(Hi("blocked", "Workspace closed.")), window.removeEventListener("blur", e), window.removeEventListener("pagehide", e), window.removeEventListener("focus", n), window.removeEventListener("pageshow", n), document.removeEventListener("visibilitychange", r);
 		};
 	}
 	return {
 		model: t,
-		start: ue,
+		start: _e,
 		edit: ee,
 		recover: te,
 		resolve: ne,
 		save: re,
-		signOut: le,
-		check: T,
+		signOut: ge,
+		check: () => E(!0),
 		editService: ae,
 		pins: oe,
-		activity: ce,
-		markNotification: se
+		activity: he,
+		markNotification: se,
+		beginLayout: ce,
+		moveLayout: ue,
+		toggleLayout: de,
+		resetLayout: fe,
+		cancelLayout: pe,
+		resolveLayout: D,
+		saveLayout: me,
+		checkLayout: () => E(!0)
 	};
 }
+// src/LayoutEditor.svelte
+var Zi = /* @__PURE__ */ K("<li tabindex=\"-1\"><label><input type=\"checkbox\"/><span> </span></label> <div class=\"layout-move\"><button class=\"button secondary layout-up\">↑<span class=\"sr-only\">Move up</span></button><button class=\"button secondary layout-down\">↓<span class=\"sr-only\">Move down</span></button></div></li>"), Qi = /* @__PURE__ */ K("<li> </li>"), $i = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Layout conflict\"><h3>There’s a newer saved layout</h3><p>Your arrangement is still shown. Compare it with the saved order below before choosing what to keep.</p><ol></ol><div class=\"button-row\"><button class=\"button secondary\">Keep my layout against saved layout</button><button class=\"text-button layout-use-saved\">Use saved layout</button></div></section>"), ea = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain layout\"><h3>Check before saving again</h3><p>The layout may have saved. Your arrangement has not been sent again.</p><button class=\"button secondary check-layout check-saved-layout\">Check saved layout</button></section>"), ta = /* @__PURE__ */ K("<section class=\"layout-editor card\" aria-label=\"Home layout\"><h2>Make Home yours</h2><p>Choose the panels you see and their order. Keep at least one visible. Your other views and open forms stay available.</p> <ol class=\"layout-list\"></ol> <!> <!> <div class=\"button-row\"><button class=\"button primary save-layout\"> </button><button class=\"text-button cancel-layout\">Cancel layout</button><button class=\"text-button reset-layout\">Reset layout</button></div> <p class=\"field-help\">Reset previews the default order and visibility. Save layout applies it to this account.</p></section>");
+function na(e, t) {
+	Ue(t, !1);
+	let n = /* @__PURE__ */ P(), r = /* @__PURE__ */ P(), i = /* @__PURE__ */ P(), a = Z(t, "draft", 8), o = Z(t, "saved", 8), s = Z(t, "state", 8), c = Z(t, "authorized", 8), l = Z(t, "move", 8), u = Z(t, "toggle", 8), d = Z(t, "save", 8), f = Z(t, "cancel", 8), p = Z(t, "reset", 8), m = Z(t, "resolve", 8), h = Z(t, "check", 8);
+	async function g(e, t) {
+		l()(e, t), await dr(), document.querySelector(`[data-layout-row="${e}"]`)?.focus();
+	}
+	wn(() => (W(c()), W(s())), () => {
+		F(n, !c() || [
+			"saving",
+			"checking-conflict",
+			"uncertain"
+		].includes(s()));
+	}), wn(() => W(a()), () => {
+		F(r, a()?.panels.filter((e) => e.visible).length ?? 0);
+	}), wn(() => (W(a()), W(o())), () => {
+		F(i, !!a() && !!o() && a().panels.some((e, t) => e.id !== o()?.panels[t].id || e.visible !== o()?.panels[t].visible));
+	}), Tn(), Si();
+	var _ = ta(), v = R(I(_), 3);
+	Wr(v, 7, () => (W(a()), U(() => a()?.panels ?? [])), (e) => e.id, (e, t, i) => {
+		var a = Zi(), o = I(a), s = I(o);
+		ui(s);
+		var c = L(R(s), !0);
+		A(o);
+		var l = R(o, 2), d = I(l), f = R(d);
+		A(l), A(a), z((e, o, l, u) => {
+			X(a, "data-layout-row", (H(t), U(() => H(t).id))), X(s, "aria-label", e), fi(s, (H(t), U(() => H(t).visible))), s.disabled = (H(n), H(t), H(r), U(() => H(n) || H(t).visible && H(r) === 1)), J(c, o), X(d, "aria-label", l), d.disabled = H(n) || H(i) === 0, X(f, "aria-label", u), f.disabled = H(n) || H(i) === 2;
+		}, [
+			() => (W(Bi), H(t), U(() => `Show ${Bi(H(t).id)}`)),
+			() => (W(Bi), H(t), U(() => Bi(H(t).id))),
+			() => (W(Bi), H(t), U(() => `Move ${Bi(H(t).id)} up`)),
+			() => (W(Bi), H(t), U(() => `Move ${Bi(H(t).id)} down`))
+		]), G("change", s, () => u()(H(t).id)), G("click", d, () => g(H(t).id, -1)), G("click", f, () => g(H(t).id, 1)), q(e, a);
+	}), A(v);
+	var y = R(v, 2), b = (e) => {
+		var t = $i(), n = R(I(t), 2);
+		Wr(n, 5, () => (W(o()), U(() => o()?.panels ?? [])), (e) => e.id, (e, t) => {
+			var n = Qi(), r = L(n);
+			z((e) => J(r, `${e ?? ""} — ${H(t), U(() => H(t).visible ? "Shown" : "Hidden") ?? ""}`), [() => (W(Bi), H(t), U(() => Bi(H(t).id)))]), q(e, n);
+		}), A(n);
+		var r = R(n), i = I(r), a = R(i);
+		A(r), A(t), G("click", i, () => m()(!1)), G("click", a, () => m()(!0)), q(e, t);
+	};
+	Y(y, (e) => {
+		s() === "conflict" && e(b);
+	});
+	var x = R(y, 2), S = (e) => {
+		var t = ea(), n = R(I(t), 2);
+		A(t), G("click", n, () => h()()), q(e, t);
+	};
+	Y(x, (e) => {
+		s() === "uncertain" && e(S);
+	});
+	var C = R(x, 2), w = I(C), T = L(w, !0), E = R(w), ee = R(E);
+	A(C), Se(2), A(_), z(() => {
+		X(_, "hidden", !c() || !a()), w.disabled = H(n) || s() === "conflict" || !H(i), J(T, s() === "saving" ? "Saving layout…" : "Save layout"), E.disabled = H(n), ee.disabled = H(n);
+	}), G("click", w, () => d()()), G("click", E, function(...e) {
+		f()?.apply(this, e);
+	}), G("click", ee, function(...e) {
+		p()?.apply(this, e);
+	}), q(e, _), We();
+}
+Sr(["change", "click"]);
 // src/Connections.svelte
-var Ki = /* @__PURE__ */ K("<section class=\"card small-card\"><h2>No Crafty connection enrolled</h2><p>An owner can add dedicated access and choose which servers to show.</p></section>"), qi = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\"> </p>"), Ji = /* @__PURE__ */ K("<p class=\"field-help\">This server could not be fully observed.</p>"), Yi = /* @__PURE__ */ K("<article class=\"card small-card server-card\"><h2> </h2> <p><strong> </strong> <span class=\"field-help\">Provider-reported process state</span></p> <dl><dt>Players</dt><dd> </dd> <dt>Freshness</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd> <dt>Join address</dt><dd> </dd></dl> <!></article>"), Xi = /* @__PURE__ */ K("<!> <div class=\"server-grid\"></div> <p class=\"field-help\">A running process does not establish game readiness. Join addresses are owner-reviewed; outside-network joining is accepted separately.</p>", 1), Zi = /* @__PURE__ */ K("<button class=\"button secondary\">Check connection state</button>"), Qi = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove server</button>"), $i = /* @__PURE__ */ K("<fieldset><legend> </legend> <label>Crafty server UUID</label><input name=\"server-id\" required=\"\" maxlength=\"36\"/> <label>Display name</label><input name=\"server-name\" required=\"\" maxlength=\"80\"/> <label>Reviewed public join address, optional</label><input name=\"server-join\" maxlength=\"253\" placeholder=\"play.example:25565\"/> <!></fieldset>"), ea = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove connection</button>"), ta = /* @__PURE__ */ K("<section class=\"card connection-setup\" aria-label=\"Dedicated Crafty enrollment\"><h2>Dedicated Crafty access</h2> <p>Create access specifically for Reborn, limited to viewing the selected servers. Credentials are encrypted on the server and are not shown again.</p> <p class=\"workspace-status\" role=\"status\"> </p> <!> <form autocomplete=\"off\"><label for=\"crafty-endpoint\">Crafty HTTPS address</label><input id=\"crafty-endpoint\" name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\" placeholder=\"https://crafty.example/\"/> <label for=\"crafty-token\">Dedicated API token</label><input id=\"crafty-token\" name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <label for=\"crafty-timezone\">Crafty’s configured time zone</label><input id=\"crafty-timezone\" name=\"timezone\" required=\"\" maxlength=\"64\" placeholder=\"America/Chicago or UTC\"/> <label for=\"crafty-ca\">Private CA certificate, if needed</label><textarea id=\"crafty-ca\" name=\"ca-pem\" maxlength=\"8192\" rows=\"3\"></textarea> <p class=\"field-help\">Leave the certificate blank for publicly trusted HTTPS. The address and certificate must pass normal hostname and trust checks.</p> <!> <div class=\"button-row\"><button class=\"button secondary\" type=\"button\">Add server</button> <button class=\"button primary\" type=\"submit\"> </button></div></form> <!></section>"), na = /* @__PURE__ */ K("<button class=\"text-button\">View connection enrollment history</button> <div class=\"connections-intro\"><p>Server observations from your deliberately enrolled Crafty connection.</p><span class=\"quiet-label\">Read-only overview</span></div> <!> <!>", 1);
-function ra(e, t) {
+var ra = /* @__PURE__ */ K("<section class=\"card small-card\"><h2>No Crafty connection enrolled</h2><p>An owner can add dedicated access and choose which servers to show.</p></section>"), ia = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\"> </p>"), aa = /* @__PURE__ */ K("<p class=\"field-help\">This server could not be fully observed.</p>"), oa = /* @__PURE__ */ K("<article class=\"card small-card server-card\"><h2> </h2> <p><strong> </strong> <span class=\"field-help\">Provider-reported process state</span></p> <dl><dt>Players</dt><dd> </dd> <dt>Freshness</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd> <dt>Join address</dt><dd> </dd></dl> <!></article>"), sa = /* @__PURE__ */ K("<!> <div class=\"server-grid\"></div> <p class=\"field-help\">A running process does not establish game readiness. Join addresses are owner-reviewed; outside-network joining is accepted separately.</p>", 1), ca = /* @__PURE__ */ K("<button class=\"button secondary\">Check connection state</button>"), la = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove server</button>"), ua = /* @__PURE__ */ K("<fieldset><legend> </legend> <label>Crafty server UUID</label><input name=\"server-id\" required=\"\" maxlength=\"36\"/> <label>Display name</label><input name=\"server-name\" required=\"\" maxlength=\"80\"/> <label>Reviewed public join address, optional</label><input name=\"server-join\" maxlength=\"253\" placeholder=\"play.example:25565\"/> <!></fieldset>"), da = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove connection</button>"), fa = /* @__PURE__ */ K("<section class=\"card connection-setup\" aria-label=\"Dedicated Crafty enrollment\"><h2>Dedicated Crafty access</h2> <p>Create access specifically for Reborn, limited to viewing the selected servers. Credentials are encrypted on the server and are not shown again.</p> <p class=\"workspace-status\" role=\"status\"> </p> <!> <form autocomplete=\"off\"><label for=\"crafty-endpoint\">Crafty HTTPS address</label><input id=\"crafty-endpoint\" name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\" placeholder=\"https://crafty.example/\"/> <label for=\"crafty-token\">Dedicated API token</label><input id=\"crafty-token\" name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <label for=\"crafty-timezone\">Crafty’s configured time zone</label><input id=\"crafty-timezone\" name=\"timezone\" required=\"\" maxlength=\"64\" placeholder=\"America/Chicago or UTC\"/> <label for=\"crafty-ca\">Private CA certificate, if needed</label><textarea id=\"crafty-ca\" name=\"ca-pem\" maxlength=\"8192\" rows=\"3\"></textarea> <p class=\"field-help\">Leave the certificate blank for publicly trusted HTTPS. The address and certificate must pass normal hostname and trust checks.</p> <!> <div class=\"button-row\"><button class=\"button secondary\" type=\"button\">Add server</button> <button class=\"button primary\" type=\"submit\"> </button></div></form> <!></section>"), pa = /* @__PURE__ */ K("<button class=\"text-button\">View connection enrollment history</button> <div class=\"connections-intro\"><p>Server observations from your deliberately enrolled Crafty connection.</p><span class=\"quiet-label\">Read-only overview</span></div> <!> <!>", 1);
+function ma(e, t) {
 	Ue(t, !1);
 	let n = Z(t, "binding", 8), r = Z(t, "history", 8), i = Z(t, "overview", 8), a = Z(t, "owner", 8, !1), o = Z(t, "active", 8, !1), s = Z(t, "refresh", 8), c = /* @__PURE__ */ P(), l = /* @__PURE__ */ P([0]), u = /* @__PURE__ */ P(0), d = /* @__PURE__ */ P(), f = /* @__PURE__ */ P(""), p = /* @__PURE__ */ P(!1), m = 0, h = (e) => e === null ? "Not reported" : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleString();
 	function g() {
 		++m, H(d)?.abort(), F(d, void 0), H(c)?.reset(), F(l, [Kt(u)]), F(f, ""), F(p, !1);
 	}
-	Ni(g);
+	Pi(g);
 	async function _(e = !1) {
 		if (!o() || !a() || H(d) || !i() || H(p)) return;
 		let t = i().revision, r = H(c) ? new FormData(H(c)) : void 0, h = (e) => r?.getAll(e).map(String) ?? [], g = h("server-id"), _ = h("server-name"), v = h("server-join"), y = e ? null : {
@@ -2982,12 +3233,12 @@ function ra(e, t) {
 	}
 	wn(() => W(o()), () => {
 		o() || g();
-	}), Tn(), xi();
-	var y = na(), b = sn(y), x = R(b, 4), S = (e) => {
-		q(e, Ki());
+	}), Tn(), Si();
+	var y = pa(), b = sn(y), x = R(b, 4), S = (e) => {
+		q(e, ra());
 	}, C = (e) => {
-		var t = Xi(), n = sn(t), r = (e) => {
-			var t = qi(), n = L(t, !0);
+		var t = sa(), n = sn(t), r = (e) => {
+			var t = ia(), n = L(t, !0);
 			z(() => J(n, (W(i()), U(() => i().error === "checking" ? "Checking the provider. Fresh results will appear on the next observation." : "Provider observations are unavailable or incomplete. Unknown player counts stay unknown.")))), q(e, t);
 		};
 		Y(n, (e) => {
@@ -2995,12 +3246,12 @@ function ra(e, t) {
 		});
 		var a = R(n, 2);
 		Wr(a, 5, () => (W(i()), U(() => i().servers)), Br, (e, t) => {
-			var n = Yi(), r = I(n), i = L(r, !0), a = R(r, 2), o = L(I(a), !0);
+			var n = oa(), r = I(n), i = L(r, !0), a = R(r, 2), o = L(I(a), !0);
 			Se(2), A(a);
 			var s = R(a, 2), c = R(I(s)), l = L(c), u = R(c, 3), d = L(u, !0), f = R(u, 3), p = L(f, !0), m = R(f, 2), g = L(m, !0), _ = L(R(m, 3), !0);
 			A(s);
 			var v = R(s, 2), y = (e) => {
-				q(e, Ji());
+				q(e, aa());
 			};
 			Y(v, (e) => {
 				H(t), U(() => H(t).error) && e(y);
@@ -3013,8 +3264,8 @@ function ra(e, t) {
 		W(i()), U(() => !i() || !i().configured) ? e(S) : e(C, -1);
 	});
 	var w = R(x, 2), T = (e) => {
-		var t = ta(), n = R(I(t), 4), r = L(n, !0), a = R(n, 2), o = (e) => {
-			var t = Zi();
+		var t = fa(), n = R(I(t), 4), r = L(n, !0), a = R(n, 2), o = (e) => {
+			var t = ca();
 			G("click", t, () => void v()), q(e, t);
 		};
 		Y(a, (e) => {
@@ -3022,8 +3273,8 @@ function ra(e, t) {
 		});
 		var s = R(a, 2), m = R(I(s)), h = R(m, 3), g = R(h, 3), y = R(g, 3), b = R(y, 4);
 		Wr(b, 3, () => H(l), (e) => e, (e, t, n) => {
-			var r = $i(), i = I(r), a = L(i), o = R(i, 2), s = R(o), c = R(s, 2), u = R(c), f = R(u, 2), m = R(f), h = R(m, 2), g = (e) => {
-				var n = Qi();
+			var r = ua(), i = I(r), a = L(i), o = R(i, 2), s = R(o), c = R(s, 2), u = R(c), f = R(u, 2), m = R(f), h = R(m, 2), g = (e) => {
+				var n = la();
 				z(() => n.disabled = !!H(d) || H(p)), G("click", n, () => F(l, H(l).filter((e) => e !== H(t)))), q(e, n);
 			};
 			Y(h, (e) => {
@@ -3033,13 +3284,13 @@ function ra(e, t) {
 			}), q(e, r);
 		});
 		var x = R(b, 2), S = I(x), C = R(S, 2), w = L(C, !0);
-		A(x), A(s), bi(s, (e) => F(c, e), () => H(c));
-		var T = R(s, 2), ee = (e) => {
-			var t = ea();
+		A(x), A(s), xi(s, (e) => F(c, e), () => H(c));
+		var T = R(s, 2), E = (e) => {
+			var t = da();
 			z(() => t.disabled = !!H(d) || H(p)), G("click", t, () => void _(!0)), q(e, t);
 		};
 		Y(T, (e) => {
-			W(i()), U(() => i()?.configured) && e(ee);
+			W(i()), U(() => i()?.configured) && e(E);
 		}), A(t), z(() => {
 			J(r, H(f)), m.disabled = !!H(d) || H(p), h.disabled = !!H(d) || H(p), g.disabled = !!H(d) || H(p), y.disabled = !!H(d) || H(p), S.disabled = (H(l), H(d), H(p), U(() => H(l).length >= 8 || !!H(d) || H(p))), C.disabled = !!H(d) || H(p) || !i(), J(w, H(d) ? "Working…" : "Save dedicated connection");
 		}), xr("submit", s, (e) => {
@@ -3054,21 +3305,21 @@ function ra(e, t) {
 }
 Sr(["click"]);
 // src/Directory.svelte
-var ia = /* @__PURE__ */ K("<button class=\"text-button\">Browse services <span aria-hidden=\"true\">→</span></button>"), aa = /* @__PURE__ */ K("<section class=\"notice\"><h3>Review the saved state</h3><p> </p><button class=\"button secondary\">Check saved services</button></section>"), oa = /* @__PURE__ */ K("<option> </option>"), sa = /* @__PURE__ */ K("<div class=\"directory-filters\"><div><label for=\"service-search\">Search services</label><input id=\"service-search\" type=\"search\" maxlength=\"120\" placeholder=\"Name, category or description\"/></div><div><label for=\"service-filter\">Category</label><select id=\"service-filter\"><option>All categories</option><!></select></div></div>"), ca = /* @__PURE__ */ K("<section class=\"card small-card\"><h3> </h3><p> </p></section>"), la = /* @__PURE__ */ K("<p> </p>"), ua = /* @__PURE__ */ K("<button class=\"text-button move-up\">↑</button><button class=\"text-button move-down\">↓</button>", 1), da = /* @__PURE__ */ K("<p>The directory changed. Review the service and choose Remove again.</p>"), fa = /* @__PURE__ */ K("<div class=\"notice\"><p> </p><!><div class=\"button-row\"><button class=\"button secondary confirm-remove\">Remove service</button><button class=\"text-button\">Keep service</button></div></div>"), pa = /* @__PURE__ */ K("<div class=\"button-row\"><button class=\"text-button edit-service\"> </button><button class=\"text-button remove-service\">Remove</button></div> <!>", 1), ma = /* @__PURE__ */ K("<article class=\"card small-card service-card\"><p class=\"eyebrow\"> </p><h3><a class=\"service-link\" target=\"_blank\" rel=\"noopener noreferrer\"> <span class=\"sr-only\">(opens in a new tab)</span> <span aria-hidden=\"true\">↗</span></a></h3> <!> <p class=\"field-help service-address\"> </p> <div class=\"button-row\"><button class=\"button secondary pin-service\"> </button> <!></div> <!></article>"), ha = /* @__PURE__ */ K("<div class=\"directory-grid\"></div>"), ga = /* @__PURE__ */ K("<p class=\"field-help\">Up to 24 personal pins. Links open the selected service in a new tab. Each service handles its own sign-in; directory links do not check availability.</p>"), _a = /* @__PURE__ */ K("<div class=\"notice\"><p>The directory changed after this form was opened. Review the current entries, then choose whether to keep this edit.</p><button class=\"button secondary\" type=\"button\">Keep edit against current directory</button></div>"), va = /* @__PURE__ */ K("<section class=\"card directory-editor\" aria-label=\"Service editor\"><h2> </h2><p>Add a reviewed HTTPS link without passwords, tokens, query parameters or fragments. These links are visible to signed-in accounts.</p> <form><label for=\"service-name\">Service name</label><input id=\"service-name\" name=\"service-name\" required=\"\" maxlength=\"80\"/> <label for=\"service-category\">Category</label><input id=\"service-category\" name=\"service-category\" required=\"\" maxlength=\"40\"/> <label for=\"service-url\">HTTPS link</label><input id=\"service-url\" name=\"service-url\" type=\"url\" required=\"\" maxlength=\"1024\" placeholder=\"https://service.example/\"/> <label for=\"service-description\">Description, optional</label><textarea id=\"service-description\" name=\"service-description\" maxlength=\"240\" rows=\"2\"></textarea> <!> <div class=\"button-row\"><button class=\"button primary\" type=\"submit\"> </button><button class=\"text-button\" type=\"button\"> </button></div></form></section>"), ya = /* @__PURE__ */ K("<div class=\"directory-heading\"><div><p class=\"eyebrow\"> </p><h2> </h2></div><!></div> <p class=\"directory-status\" role=\"status\"> </p> <!> <!> <!> <!> <!>", 1);
-function ba(e, t) {
+var ha = /* @__PURE__ */ K("<button class=\"text-button\">Browse services <span aria-hidden=\"true\">→</span></button>"), ga = /* @__PURE__ */ K("<section class=\"notice\"><h3>Review the saved state</h3><p> </p><button class=\"button secondary\">Check saved services</button></section>"), _a = /* @__PURE__ */ K("<option> </option>"), va = /* @__PURE__ */ K("<div class=\"directory-filters\"><div><label for=\"service-search\">Search services</label><input id=\"service-search\" type=\"search\" maxlength=\"120\" placeholder=\"Name, category or description\"/></div><div><label for=\"service-filter\">Category</label><select id=\"service-filter\"><option>All categories</option><!></select></div></div>"), ya = /* @__PURE__ */ K("<section class=\"card small-card\"><h3> </h3><p> </p></section>"), ba = /* @__PURE__ */ K("<p> </p>"), xa = /* @__PURE__ */ K("<button class=\"text-button move-up\">↑</button><button class=\"text-button move-down\">↓</button>", 1), Sa = /* @__PURE__ */ K("<p>The directory changed. Review the service and choose Remove again.</p>"), Ca = /* @__PURE__ */ K("<div class=\"notice\"><p> </p><!><div class=\"button-row\"><button class=\"button secondary confirm-remove\">Remove service</button><button class=\"text-button\">Keep service</button></div></div>"), wa = /* @__PURE__ */ K("<div class=\"button-row\"><button class=\"text-button edit-service\"> </button><button class=\"text-button remove-service\">Remove</button></div> <!>", 1), Ta = /* @__PURE__ */ K("<article class=\"card small-card service-card\"><p class=\"eyebrow\"> </p><h3><a class=\"service-link\" target=\"_blank\" rel=\"noopener noreferrer\"> <span class=\"sr-only\">(opens in a new tab)</span> <span aria-hidden=\"true\">↗</span></a></h3> <!> <p class=\"field-help service-address\"> </p> <div class=\"button-row\"><button class=\"button secondary pin-service\"> </button> <!></div> <!></article>"), Ea = /* @__PURE__ */ K("<div class=\"directory-grid\"></div>"), Da = /* @__PURE__ */ K("<p class=\"field-help\">Up to 24 personal pins. Links open the selected service in a new tab. Each service handles its own sign-in; directory links do not check availability.</p>"), Oa = /* @__PURE__ */ K("<div class=\"notice\"><p>The directory changed after this form was opened. Review the current entries, then choose whether to keep this edit.</p><button class=\"button secondary\" type=\"button\">Keep edit against current directory</button></div>"), ka = /* @__PURE__ */ K("<section class=\"card directory-editor\" aria-label=\"Service editor\"><h2> </h2><p>Add a reviewed HTTPS link without passwords, tokens, query parameters or fragments. These links are visible to signed-in accounts.</p> <form><label for=\"service-name\">Service name</label><input id=\"service-name\" name=\"service-name\" required=\"\" maxlength=\"80\"/> <label for=\"service-category\">Category</label><input id=\"service-category\" name=\"service-category\" required=\"\" maxlength=\"40\"/> <label for=\"service-url\">HTTPS link</label><input id=\"service-url\" name=\"service-url\" type=\"url\" required=\"\" maxlength=\"1024\" placeholder=\"https://service.example/\"/> <label for=\"service-description\">Description, optional</label><textarea id=\"service-description\" name=\"service-description\" maxlength=\"240\" rows=\"2\"></textarea> <!> <div class=\"button-row\"><button class=\"button primary\" type=\"submit\"> </button><button class=\"text-button\" type=\"button\"> </button></div></form></section>"), Aa = /* @__PURE__ */ K("<div class=\"directory-heading\"><div><p class=\"eyebrow\"> </p><h2> </h2></div><!></div> <p class=\"directory-status\" role=\"status\"> </p> <!> <!> <!> <!> <!>", 1);
+function ja(e, t) {
 	Ue(t, !1);
 	let n = /* @__PURE__ */ P(), r = /* @__PURE__ */ P(), i = /* @__PURE__ */ P(), a = Z(t, "directory", 8), o = Z(t, "authorized", 8, !1), s = Z(t, "owner", 8, !1), c = Z(t, "compact", 8, !1), l = Z(t, "state", 8), u = Z(t, "message", 8), d = Z(t, "browse", 8), f = Z(t, "check", 8), p = Z(t, "edit", 8), m = Z(t, "pin", 8), h = /* @__PURE__ */ P(""), g = /* @__PURE__ */ P(""), _ = /* @__PURE__ */ P(""), v = /* @__PURE__ */ P(""), y = /* @__PURE__ */ P(""), b = /* @__PURE__ */ P(""), x = /* @__PURE__ */ P(""), S = /* @__PURE__ */ P(), C = /* @__PURE__ */ P(), w = 0;
 	function T() {
 		++w, F(h, ""), F(g, ""), F(_, ""), F(v, ""), F(y, ""), F(b, ""), F(x, ""), F(C, void 0), F(S, void 0);
 	}
-	Ni(T);
-	function ee() {
+	Pi(T);
+	function E() {
 		F(_, ""), F(v, ""), F(y, ""), F(b, ""), F(x, ""), F(C, void 0), F(S, a()?.revision);
 	}
-	function te(e) {
+	function ee(e) {
 		F(x, e.id), F(_, e.name), F(v, e.description), F(y, e.url), F(b, e.category), F(S, a()?.revision), F(C, void 0), document.querySelector("#service-name")?.focus();
 	}
-	async function ne() {
+	async function te() {
 		if (H(n) || !s() || H(S) === void 0) return;
 		let e = w, t = {
 			action: H(x) ? "update" : "create",
@@ -3080,23 +3331,23 @@ function ba(e, t) {
 				url: H(y)
 			}
 		};
-		await p()(H(S), t) && o() && e === w && (await dr(), o() && e === w && ee());
+		await p()(H(S), t) && o() && e === w && (await dr(), o() && e === w && E());
 	}
-	function re(e) {
+	function ne(e) {
 		!H(n) && a() && m()(a().pins.includes(e) ? a().pins.filter((t) => t !== e) : [...a().pins, e]);
 	}
-	function ie(e, t) {
+	function re(e, t) {
 		if (H(n) || !a()) return;
 		let r = [...a().pins], i = r.indexOf(e), o = i + t;
 		i < 0 || o < 0 || o >= r.length || ([r[i], r[o]] = [r[o], r[i]], m()(r));
 	}
-	async function ae(e) {
+	async function ie(e) {
 		if (H(n) || !a() || !s() || H(C)?.id !== e) return;
 		let t = w;
 		await p()(H(C).base, {
 			action: "delete",
 			id: e
-		}) && o() && t === w && (await dr(), o() && t === w && (F(C, void 0), H(x) === e && ee()));
+		}) && o() && t === w && (await dr(), o() && t === w && (F(C, void 0), H(x) === e && E()));
 	}
 	wn(() => (W(l()), W(o())), () => {
 		F(n, l() === "saving" || l() === "uncertain" || !o());
@@ -3113,72 +3364,72 @@ function ba(e, t) {
 		o() || T();
 	}), wn(() => (W(o()), W(a()), H(S)), () => {
 		o() && a() && H(S) === void 0 && F(S, a().revision);
-	}), Tn(), xi();
-	var oe = ya(), se = sn(oe), ce = I(se), le = I(ce), ue = L(le, !0), de = L(R(le), !0);
-	A(ce);
-	var fe = R(ce), pe = (e) => {
-		var t = ia();
+	}), Tn(), Si();
+	var ae = Aa(), oe = sn(ae), se = I(oe), ce = I(se), le = L(ce, !0), ue = L(R(ce), !0);
+	A(se);
+	var de = R(se), fe = (e) => {
+		var t = ha();
 		G("click", t, function(...e) {
 			d()?.apply(this, e);
 		}), q(e, t);
 	};
-	Y(fe, (e) => {
-		c() && e(pe);
-	}), A(se);
-	var me = R(se, 2), E = L(me, !0), he = R(me, 2), ge = (e) => {
-		var t = aa(), n = R(I(t)), r = L(n, !0), i = R(n);
+	Y(de, (e) => {
+		c() && e(fe);
+	}), A(oe);
+	var pe = R(oe, 2), D = L(pe, !0), me = R(pe, 2), he = (e) => {
+		var t = ga(), n = R(I(t)), r = L(n, !0), i = R(n);
 		A(t), z(() => J(r, l() === "uncertain" ? "Your change has not been sent again." : "Your edit is still in the form. Compare it with the current directory before saving.")), G("click", i, () => void f()()), q(e, t);
 	};
-	Y(he, (e) => {
-		(l() === "uncertain" || l() === "conflict") && e(ge);
+	Y(me, (e) => {
+		(l() === "uncertain" || l() === "conflict") && e(he);
 	});
-	var _e = R(he, 2), ve = (e) => {
-		var t = sa(), n = I(t), i = R(I(n));
+	var ge = R(me, 2), _e = (e) => {
+		var t = va(), n = I(t), i = R(I(n));
 		ui(i), A(n);
 		var a = R(n), o = R(I(a)), s = I(o);
 		s.value = s.__value = "", Wr(R(s), 1, () => H(r), Br, (e, t) => {
-			var n = oa(), r = L(n, !0), i = {};
+			var n = _a(), r = L(n, !0), i = {};
 			z(() => {
 				J(r, H(t)), i !== (i = H(t)) && (n.value = (n.__value = i) ?? "");
 			}), q(e, n);
-		}), A(o), ni(o), A(a), A(t), hi(i, () => H(h), (e) => F(h, e)), ri(o, () => H(g), (e) => F(g, e)), q(e, t);
+		}), A(o), ni(o), A(a), A(t), gi(i, () => H(h), (e) => F(h, e)), ri(o, () => H(g), (e) => F(g, e)), q(e, t);
 	};
-	Y(_e, (e) => {
-		c() || e(ve);
+	Y(ge, (e) => {
+		c() || e(_e);
 	});
-	var ye = R(_e, 2), D = (e) => {
-		var t = ca(), n = I(t), r = L(n, !0), i = L(R(n), !0);
+	var ve = R(ge, 2), O = (e) => {
+		var t = ya(), n = I(t), r = L(n, !0), i = L(R(n), !0);
 		A(t), z(() => {
 			J(r, (W(c()), W(a()), U(() => c() ? "Keep your favorites close" : a()?.services.length ? "No matching services" : "Your directory starts here"))), J(i, (W(c()), W(a()), W(s()), U(() => c() ? "Pin services from the directory to show them on Home." : a()?.services.length ? "Try another search or category." : s() ? "Add a service below to make it available to signed-in accounts." : "An owner can add reviewed service links.")));
 		}), q(e, t);
-	}, be = (e) => {
-		var t = ha();
+	}, ye = (e) => {
+		var t = Ea();
 		Wr(t, 5, () => H(i), (e) => e.id, (e, t) => {
 			let r = /* @__PURE__ */ pt(() => (W(a()), H(t), U(() => a()?.pins.includes(H(t).id) ?? !1))), i = /* @__PURE__ */ pt(() => (W(a()), H(t), U(() => a()?.pins.indexOf(H(t).id) ?? -1)));
-			var o = ma(), l = I(o), u = L(l, !0), d = R(l), f = I(d), p = I(f, !0);
+			var o = Ta(), l = I(o), u = L(l, !0), d = R(l), f = I(d), p = I(f, !0);
 			Se(3), A(f), A(d);
 			var m = R(d, 2), h = (e) => {
-				var n = la(), r = L(n, !0);
+				var n = ba(), r = L(n, !0);
 				z(() => J(r, (H(t), U(() => H(t).description)))), q(e, n);
 			};
 			Y(m, (e) => {
 				H(t), U(() => H(t).description) && e(h);
 			});
 			var g = R(m, 2), _ = L(g, !0), v = R(g, 2), y = I(v), b = L(y, !0), x = R(y, 2), S = (e) => {
-				var r = ua(), o = sn(r), s = R(o);
+				var r = xa(), o = sn(r), s = R(o);
 				z(() => {
 					X(o, "aria-label", (H(t), U(() => `Move ${H(t).name} up`))), o.disabled = H(n) || H(i) === 0, X(s, "aria-label", (H(t), U(() => `Move ${H(t).name} down`))), s.disabled = (H(n), W(H(i)), W(a()), U(() => H(n) || H(i) === (a()?.pins.length ?? 0) - 1));
-				}), G("click", o, () => ie(H(t).id, -1)), G("click", s, () => ie(H(t).id, 1)), q(e, r);
+				}), G("click", o, () => re(H(t).id, -1)), G("click", s, () => re(H(t).id, 1)), q(e, r);
 			};
 			Y(x, (e) => {
 				H(r) && e(S);
 			}), A(v);
 			var w = R(v, 2), T = (e) => {
-				var r = pa(), i = sn(r), o = I(i), s = L(o), c = R(o);
+				var r = wa(), i = sn(r), o = I(i), s = L(o), c = R(o);
 				A(i);
 				var l = R(i, 2), u = (e) => {
-					var r = fa(), i = I(r), o = L(i), s = R(i), c = (e) => {
-						q(e, da());
+					var r = Ca(), i = I(r), o = L(i), s = R(i), c = (e) => {
+						q(e, Sa());
 					};
 					Y(s, (e) => {
 						H(C), W(a()), U(() => H(C).base !== a()?.revision) && e(c);
@@ -3186,13 +3437,13 @@ function ba(e, t) {
 					var l = R(s), u = I(l), d = R(u);
 					A(l), A(r), z(() => {
 						J(o, `Remove ${H(C), U(() => H(C).name) ?? ""} from the directory and everyone’s pins?`), u.disabled = (H(n), H(C), W(a()), U(() => H(n) || H(C).base !== a()?.revision));
-					}), G("click", u, () => void ae(H(t).id)), G("click", d, () => F(C, void 0)), q(e, r);
+					}), G("click", u, () => void ie(H(t).id)), G("click", d, () => F(C, void 0)), q(e, r);
 				};
 				Y(l, (e) => {
 					H(C), H(t), U(() => H(C)?.id === H(t).id) && e(u);
 				}), z(() => {
 					o.disabled = H(n), J(s, `Edit ${H(t), U(() => H(t).name) ?? ""}`), c.disabled = H(n);
-				}), G("click", o, () => te(H(t))), G("click", c, () => F(C, a() ? {
+				}), G("click", o, () => ee(H(t))), G("click", c, () => F(C, a() ? {
 					id: H(t).id,
 					base: a().revision,
 					name: H(t).name
@@ -3202,20 +3453,20 @@ function ba(e, t) {
 				s() && !c() && e(T);
 			}), A(o), z(() => {
 				X(o, "data-service-id", (H(t), U(() => H(t).id))), J(u, (H(t), U(() => H(t).category))), X(f, "href", (H(t), U(() => H(t).url))), J(p, (H(t), U(() => H(t).name))), J(_, (H(t), U(() => H(t).url))), X(y, "aria-pressed", H(r)), X(y, "aria-label", (W(H(r)), H(t), U(() => `${H(r) ? "Unpin" : "Pin"} ${H(t).name}`))), y.disabled = (H(n), W(H(r)), W(a()), U(() => H(n) || !H(r) && (a()?.pins.length ?? 0) >= 24)), J(b, H(r) ? "Pinned" : "Pin to Home");
-			}), G("click", y, () => re(H(t).id)), q(e, o);
+			}), G("click", y, () => ne(H(t).id)), q(e, o);
 		}), A(t), q(e, t);
 	};
-	Y(ye, (e) => {
-		H(i), U(() => H(i).length === 0) ? e(D) : e(be, -1);
+	Y(ve, (e) => {
+		H(i), U(() => H(i).length === 0) ? e(O) : e(ye, -1);
 	});
-	var O = R(ye, 2), k = (e) => {
-		q(e, ga());
+	var k = R(ve, 2), be = (e) => {
+		q(e, Da());
 	};
-	Y(O, (e) => {
-		c() || e(k);
+	Y(k, (e) => {
+		c() || e(be);
 	});
-	var xe = R(O, 2), Ce = (e) => {
-		var t = va(), r = I(t), i = L(r, !0), o = R(r, 3), s = R(I(o));
+	var xe = R(k, 2), Ce = (e) => {
+		var t = ka(), r = I(t), i = L(r, !0), o = R(r, 3), s = R(I(o));
 		ui(s);
 		var u = R(s, 3);
 		ui(u);
@@ -3224,7 +3475,7 @@ function ba(e, t) {
 		var f = R(d, 3);
 		et(f);
 		var p = R(f, 2), m = (e) => {
-			var t = _a(), r = R(I(t));
+			var t = Oa(), r = R(I(t));
 			A(t), z(() => r.disabled = H(n)), G("click", r, () => F(S, a()?.revision)), q(e, t);
 		};
 		Y(p, (e) => {
@@ -3234,27 +3485,27 @@ function ba(e, t) {
 		A(h), A(o), A(t), z(() => {
 			X(t, "hidden", c()), J(i, H(x) ? "Edit service" : "Add a service"), s.disabled = H(n), u.disabled = H(n), d.disabled = H(n), f.disabled = H(n), g.disabled = (H(n), H(S), W(a()), U(() => H(n) || H(S) !== a()?.revision)), J(C, l() === "saving" ? "Saving…" : H(x) ? "Save service" : "Add service"), w.disabled = H(n), J(T, H(x) ? "Cancel edit" : "Clear form");
 		}), xr("submit", o, (e) => {
-			e.preventDefault(), ne();
-		}), hi(s, () => H(_), (e) => F(_, e)), hi(u, () => H(b), (e) => F(b, e)), hi(d, () => H(y), (e) => F(y, e)), hi(f, () => H(v), (e) => F(v, e)), G("click", w, ee), q(e, t);
+			e.preventDefault(), te();
+		}), gi(s, () => H(_), (e) => F(_, e)), gi(u, () => H(b), (e) => F(b, e)), gi(d, () => H(y), (e) => F(y, e)), gi(f, () => H(v), (e) => F(v, e)), G("click", w, E), q(e, t);
 	};
 	Y(xe, (e) => {
 		s() && o() && e(Ce);
 	}), z(() => {
-		J(ue, c() ? "YOUR SHORTCUTS" : "A PLACE FOR YOUR SERVICES"), J(de, c() ? "Pinned services" : "Service directory"), J(E, u());
-	}), q(e, oe), We();
+		J(le, c() ? "YOUR SHORTCUTS" : "A PLACE FOR YOUR SERVICES"), J(ue, c() ? "Pinned services" : "Service directory"), J(D, u());
+	}), q(e, ae), We();
 }
 Sr(["click"]);
 // src/Activity.svelte
-var xa = /* @__PURE__ */ K("<p class=\"activity-empty\">No matching activity in this window. Try another action name or check the newest entries.</p>"), Sa = /* @__PURE__ */ K("<li><div><strong> </strong><p> </p></div><time> </time></li>"), Ca = /* @__PURE__ */ K("<!> <ol class=\"activity-list\"></ol> <div class=\"button-row\"><button class=\"button secondary\">Check newest activity</button><button class=\"button secondary\">Older activity</button></div> <p class=\"field-help\">Up to 25 entries per page. New changes appear when you check newest; older pages stay within the current history window. Search matches action names, not note or credential contents.</p>", 1), wa = /* @__PURE__ */ K("<button class=\"button secondary\">Retry activity</button>"), Ta = /* @__PURE__ */ K("<button class=\"button secondary\">Check activity</button>"), Ea = /* @__PURE__ */ K("<section class=\"card activity-card\" aria-label=\"Your retained activity\"><h2>Your activity</h2> <p>Successful changes made by your account, retained from the introduction of Activity. Connection entries describe enrollment changes, not game actions or provider uptime.</p> <form class=\"activity-search\"><div><label for=\"activity-query\">Search action names</label><input id=\"activity-query\" maxlength=\"80\" placeholder=\"For example, saved or Crafty\"/></div> <div><label for=\"activity-category\">Activity category</label><select id=\"activity-category\"><option>All activity</option><option>Workspace notes</option><option>Services and pins</option><option>Connection enrollment</option></select></div> <button type=\"submit\" class=\"button primary\">Search activity</button></form> <p class=\"workspace-status\" role=\"status\"> </p> <!></section>");
-function Da(e, t) {
+var Ma = /* @__PURE__ */ K("<p class=\"activity-empty\">No matching activity in this window. Try another action name or check the newest entries.</p>"), Na = /* @__PURE__ */ K("<li><div><strong> </strong><p> </p></div><time> </time></li>"), Pa = /* @__PURE__ */ K("<!> <ol class=\"activity-list\"></ol> <div class=\"button-row\"><button class=\"button secondary\">Check newest activity</button><button class=\"button secondary\">Older activity</button></div> <p class=\"field-help\">Up to 25 entries per page. New changes appear when you check newest; older pages stay within the current history window. Search matches action names, not note or credential contents.</p>", 1), Fa = /* @__PURE__ */ K("<button class=\"button secondary\">Retry activity</button>"), Ia = /* @__PURE__ */ K("<button class=\"button secondary\">Check activity</button>"), La = /* @__PURE__ */ K("<section class=\"card activity-card\" aria-label=\"Your retained activity\"><h2>Your activity</h2> <p>Successful changes made by your account, retained from the introduction of Activity. Connection entries describe enrollment changes, not game actions or provider uptime.</p> <form class=\"activity-search\"><div><label for=\"activity-query\">Search action names</label><input id=\"activity-query\" maxlength=\"80\" placeholder=\"For example, saved or Crafty\"/></div> <div><label for=\"activity-category\">Activity category</label><select id=\"activity-category\"><option>All activity</option><option>Workspace notes</option><option>Services and pins</option><option>Connection enrollment</option></select></div> <button type=\"submit\" class=\"button primary\">Search activity</button></form> <p class=\"workspace-status\" role=\"status\"> </p> <!></section>");
+function Ra(e, t) {
 	Ue(t, !1);
 	let n = Z(t, "state", 8), r = Z(t, "authorized", 8, !1), i = Z(t, "load", 8), a = /* @__PURE__ */ P(""), o = /* @__PURE__ */ P("all"), s = /* @__PURE__ */ P(), c = (e) => (/* @__PURE__ */ new Date(Number(e) * 1e3)).toLocaleString();
 	wn(() => W(r()), () => {
 		r() || (F(a, ""), F(o, "all"), F(s, void 0));
 	}), wn(() => (W(n()), H(s)), () => {
 		n() !== H(s) && n().phase === "loading" && (F(s, n()), F(a, n().query), F(o, n().category));
-	}), Tn(), xi();
-	var l = Ea(), u = R(I(l), 4), d = I(u), f = R(I(d));
+	}), Tn(), Si();
+	var l = La(), u = R(I(l), 4), d = I(u), f = R(I(d));
 	ui(f), A(d);
 	var p = R(d, 2), m = R(I(p)), h = I(m);
 	h.value = h.__value = "all";
@@ -3267,15 +3518,15 @@ function Da(e, t) {
 	var y = R(p, 2);
 	A(u);
 	var b = R(u, 2), x = L(b, !0), S = R(b, 2), C = (e) => {
-		var t = Ca(), r = sn(t), a = (e) => {
-			q(e, xa());
+		var t = Pa(), r = sn(t), a = (e) => {
+			q(e, Ma());
 		};
 		Y(r, (e) => {
 			W(n()), U(() => n().entries.length === 0) && e(a);
 		});
 		var o = R(r, 2);
 		Wr(o, 5, () => (W(n()), U(() => n().entries)), (e) => e.id, (e, t) => {
-			var n = Sa(), r = I(n), i = I(r), a = L(i, !0), o = L(R(i));
+			var n = Na(), r = I(n), i = I(r), a = L(i, !0), o = L(R(i));
 			A(r);
 			var s = R(r), l = L(s, !0);
 			A(n), z((e, r) => {
@@ -3285,10 +3536,10 @@ function Da(e, t) {
 		var s = R(o, 2), l = I(s), u = R(l);
 		A(s), Se(2), z(() => u.disabled = (W(n()), U(() => !n().next))), G("click", l, () => void i()(n().category, n().query)), G("click", u, () => void i()(n().category, n().query, !0)), q(e, t);
 	}, w = (e) => {
-		var t = wa();
+		var t = Fa();
 		G("click", t, () => void i()(n().category, n().query)), q(e, t);
 	}, T = (e) => {
-		var t = Ta();
+		var t = Ia();
 		z(() => t.disabled = !r()), G("click", t, () => void i()(H(o), H(a))), q(e, t);
 	};
 	Y(S, (e) => {
@@ -3297,31 +3548,31 @@ function Da(e, t) {
 		f.disabled = !r(), m.disabled = !r(), y.disabled = !r(), J(x, (W(n()), U(() => n().message)));
 	}), xr("submit", u, (e) => {
 		e.preventDefault(), i()(H(o), H(a));
-	}), hi(f, () => H(a), (e) => F(a, e)), ri(m, () => H(o), (e) => F(o, e)), q(e, l), We();
+	}), gi(f, () => H(a), (e) => F(a, e)), ri(m, () => H(o), (e) => F(o, e)), q(e, l), We();
 }
 Sr(["click"]);
 // src/Notifications.svelte
-var Oa = /* @__PURE__ */ K("<div class=\"notice\"><h3>Check your read markers</h3><p>The change may have completed. Check notifications before marking another group read.</p></div>"), ka = /* @__PURE__ */ K("<p class=\"notification-empty\"> </p>"), Aa = /* @__PURE__ */ K("<li><div><h3> </h3><p class=\"notification-count\"> </p><p> </p><p class=\"field-help\"><time> </time></p></div> <button class=\"button secondary mark-notification-read\"> </button></li>"), ja = /* @__PURE__ */ K("<div class=\"notification-card card\"><div class=\"notification-heading\"><div><p class=\"eyebrow\">AT YOUR PACE</p><h2>Your notifications</h2></div><button class=\"button secondary check-notifications\">Check notifications</button></div> <p>Shared service and connection changes from other accounts, grouped together. Opening this inbox leaves them unread.</p> <label class=\"notification-filter\"><input id=\"notification-show-read\" type=\"checkbox\"/> Show read groups</label> <p class=\"notification-status\" role=\"status\"> </p> <!> <!> <ul class=\"notification-list\"></ul></div>");
-function Ma(e, t) {
+var za = /* @__PURE__ */ K("<div class=\"notice\"><h3>Check your read markers</h3><p>The change may have completed. Check notifications before marking another group read.</p></div>"), Ba = /* @__PURE__ */ K("<p class=\"notification-empty\"> </p>"), Va = /* @__PURE__ */ K("<li><div><h3> </h3><p class=\"notification-count\"> </p><p> </p><p class=\"field-help\"><time> </time></p></div> <button class=\"button secondary mark-notification-read\"> </button></li>"), Ha = /* @__PURE__ */ K("<div class=\"notification-card card\"><div class=\"notification-heading\"><div><p class=\"eyebrow\">AT YOUR PACE</p><h2>Your notifications</h2></div><button class=\"button secondary check-notifications\">Check notifications</button></div> <p>Shared service and connection changes from other accounts, grouped together. Opening this inbox leaves them unread.</p> <label class=\"notification-filter\"><input id=\"notification-show-read\" type=\"checkbox\"/> Show read groups</label> <p class=\"notification-status\" role=\"status\"> </p> <!> <!> <ul class=\"notification-list\"></ul></div>");
+function Ua(e, t) {
 	Ue(t, !1);
 	let n = /* @__PURE__ */ P(), r = Z(t, "value", 8), i = Z(t, "authorized", 8), a = Z(t, "state", 8), o = Z(t, "message", 8), s = Z(t, "check", 8), c = Z(t, "mark", 8), l = /* @__PURE__ */ P(!1), u = (e) => (/* @__PURE__ */ new Date(Number(e) * 1e3)).toLocaleString();
 	wn(() => W(i()), () => {
 		i() || F(l, !1);
 	}), wn(() => (W(i()), W(r()), H(l)), () => {
 		F(n, i() ? (r()?.groups ?? []).filter((e) => H(l) || e.unread !== "0") : []);
-	}), Tn(), xi();
-	var d = ja(), f = I(d), p = R(I(f));
+	}), Tn(), Si();
+	var d = Ha(), f = I(d), p = R(I(f));
 	A(f);
 	var m = R(f, 4), h = I(m);
 	ui(h), Se(), A(m);
 	var g = R(m, 2), _ = L(g, !0), v = R(g, 2), y = (e) => {
-		q(e, Oa());
+		q(e, za());
 	};
 	Y(v, (e) => {
 		a() === "uncertain" && e(y);
 	});
 	var b = R(v, 2), x = (e) => {
-		var t = ka(), n = L(t, !0);
+		var t = Ba(), n = L(t, !0);
 		z(() => J(n, H(l) ? "No shared changes to show yet." : "You’re all caught up.")), q(e, t);
 	};
 	Y(b, (e) => {
@@ -3329,7 +3580,7 @@ function Ma(e, t) {
 	});
 	var S = R(b, 2);
 	Wr(S, 5, () => H(n), (e) => e.category, (e, t) => {
-		var n = Aa(), r = I(n), o = I(r), s = L(o, !0), l = R(o), d = L(l, !0), f = R(l), p = L(f, !0), m = R(f), h = I(m), g = L(h, !0);
+		var n = Va(), r = I(n), o = I(r), s = L(o, !0), l = R(o), d = L(l, !0), f = R(l), p = L(f, !0), m = R(f), h = I(m), g = L(h, !0);
 		A(m), A(r);
 		var _ = R(r, 2), v = L(_);
 		A(n), z((e, r) => {
@@ -3337,35 +3588,37 @@ function Ma(e, t) {
 		}, [() => (H(t), U(() => (/* @__PURE__ */ new Date(Number(H(t).latest.occurred_at) * 1e3)).toISOString())), () => (H(t), U(() => u(H(t).latest.occurred_at)))]), G("click", _, () => c()(H(t).category, H(t).revision)), q(e, n);
 	}), A(S), A(d), z(() => {
 		p.disabled = !i() || a() === "saving", h.disabled = !i(), J(_, o() || "Read markers are saved to your account.");
-	}), G("click", p, () => s()()), gi(h, () => H(l), (e) => F(l, e)), q(e, d), We();
+	}), G("click", p, () => s()()), _i(h, () => H(l), (e) => F(l, e)), q(e, d), We();
 }
 Sr(["click"]);
 // src/App.svelte
-var Na = /* @__PURE__ */ K("<span class=\"notification-badge\"> </span>"), Pa = /* @__PURE__ */ K("<a rel=\"noreferrer\"> </a>"), Fa = /* @__PURE__ */ K("<section class=\"recovery card\"><p class=\"eyebrow\">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class=\"button-row\"><a class=\"button primary\" href=\"/workspace\">Open workspace again</a><a class=\"button secondary\" href=\"/account\">Your account</a></div></section>"), Ia = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Draft recovery\"><h2>A draft is waiting</h2><p>This browser session has an unfinished note for this account. Review it before saving.</p><div class=\"button-row\"><button class=\"button secondary\">Recover draft</button><button class=\"text-button\">Discard draft</button></div></section>"), La = /* @__PURE__ */ K("<p class=\"field-help\">Browser storage is unavailable. Draft recovery is limited to this open page.</p>"), Ra = /* @__PURE__ */ K("<p class=\"notice\">Shorten this note to 4096 bytes before saving or leaving this page.</p>"), za = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Save conflict\"><h2>There’s a newer saved note</h2><p>Your draft is still in the editor. Compare it with the saved version, then choose what to keep.</p><pre> </pre><div class=\"button-row\"><button class=\"button secondary\">Keep my draft</button><button class=\"text-button\">Use saved note</button></div></section>"), Ba = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain save\"><h2>Check before saving again</h2><p>The previous save may have completed. Your draft has not been sent again.</p><button class=\"button secondary\">Check saved note</button></section>"), Va = /* @__PURE__ */ K("<a class=\"skip-link\" href=\"#workspace-content\">Skip to content</a> <div class=\"workspace-shell\"><aside class=\"sidebar\" aria-label=\"Workspace sidebar\"><a class=\"brand\" href=\"/workspace\"><span class=\"brand-mark\" aria-hidden=\"true\">K</span><span>Keida <small>REBORN</small></span></a> <p class=\"nav-label\">YOUR SPACE</p> <nav class=\"main-nav\" aria-label=\"Workspace views\"><button><span aria-hidden=\"true\">⌂</span>Home</button> <button><span aria-hidden=\"true\">▤</span>Workspace note<span aria-hidden=\"true\"></span></button> <button><span aria-hidden=\"true\">◇</span>Connections</button> <button><span aria-hidden=\"true\">▦</span>Services</button> <button><span aria-hidden=\"true\">◷</span>Activity</button> <button><span aria-hidden=\"true\">♧</span>Notifications<!></button></nav> <div class=\"sidebar-bottom\"><a href=\"/account\" class=\"account-link\"><span class=\"avatar\" aria-hidden=\"true\">K</span><span><strong> </strong><small> </small></span></a> <form method=\"post\" action=\"/account/sign-out\"><input type=\"hidden\" name=\"product\" value=\"keida-hub-reborn\"/> <input type=\"hidden\" name=\"contract\" value=\"reborn-account-v1\"/> <input type=\"hidden\" name=\"csrf_token\"/> <button type=\"submit\" class=\"sign-out\">Sign out <span aria-hidden=\"true\">↗</span></button></form> <details class=\"version\"><summary> <span>Build details</span></summary> <dl><dt>Source</dt><dd><!></dd><dt>Tree</dt><dd> </dd><dt>Channel</dt><dd> </dd><dt>Workspace contract</dt><dd>reborn-workspace-v1</dd></dl></details></div></aside> <main id=\"workspace-content\" class=\"workspace-content\"><header class=\"page-header\"><div><p class=\"eyebrow\">YOUR OWN CORNER OF KEIDA</p><h1 tabindex=\"-1\"> </h1></div><span class=\"connection-state\"><span aria-hidden=\"true\">●</span> </span></header> <p class=\"workspace-status\" role=\"status\"> </p> <!> <section class=\"home-view\" aria-label=\"Home\"><div class=\"welcome-card card\"><div><p class=\"eyebrow\">MAKE YOURSELF AT HOME</p><h2>A useful place<br/>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><button class=\"button primary\">Open your note <span aria-hidden=\"true\">↗</span></button></div><div class=\"orb\" aria-hidden=\"true\"><div>K</div></div></div> <div class=\"home-grid\"><section class=\"card small-card\"><span class=\"card-icon\" aria-hidden=\"true\">▤</span><h2>Your workspace note</h2><p> </p><button class=\"text-button\">Keep writing <span aria-hidden=\"true\">→</span></button></section><section class=\"card small-card\"><span class=\"card-icon\" aria-hidden=\"true\">◇</span><h2>Connections</h2><p> </p><button class=\"text-button\">View connections <span aria-hidden=\"true\">→</span></button></section></div></section> <section class=\"note-view\" aria-label=\"Workspace note\"><div class=\"note-heading\"><p>A private note, available each time you sign in.</p><span class=\"quiet-label\"> </span></div> <!> <form class=\"note-card card\"><label for=\"workspace-note\">Workspace note</label> <textarea id=\"workspace-note\" name=\"workspace-note\" maxlength=\"4096\" spellcheck=\"true\" aria-describedby=\"note-help note-size\" placeholder=\"What would you like to come back to?\"></textarea> <p id=\"note-help\" class=\"field-help\">For ordinary notes. Keep passwords, API keys and other secrets out of this space.</p> <div class=\"note-footer\"><span id=\"note-size\"> </span><button class=\"button primary\" type=\"submit\"> </button></div></form> <!> <!> <!> <!></section> <section aria-label=\"Connections\"><!></section> <section aria-label=\"Services\"><!></section> <section aria-label=\"Activity\"><!></section> <section aria-label=\"Notifications\"><!></section> <footer class=\"content-footer\"><span>Keida Reborn</span><a href=\"/account\">Account &amp; recovery</a></footer></main></div>", 1);
-function Ha(e, t) {
+var Wa = /* @__PURE__ */ K("<span class=\"notification-badge\"> </span>"), Ga = /* @__PURE__ */ K("<a rel=\"noreferrer\"> </a>"), Ka = /* @__PURE__ */ K("<section class=\"recovery card\"><p class=\"eyebrow\">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class=\"button-row\"><a class=\"button primary\" href=\"/workspace\">Open workspace again</a><a class=\"button secondary\" href=\"/account\">Your account</a></div></section>"), qa = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">▤</span><h2>Your workspace note</h2><p> </p><button class=\"text-button\">Keep writing <span aria-hidden=\"true\">→</span></button>", 1), Ja = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">◇</span><h2>Connections</h2><p> </p><button class=\"text-button\">View connections <span aria-hidden=\"true\">→</span></button>", 1), Ya = /* @__PURE__ */ K("<section><!></section>"), Xa = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Draft recovery\"><h2>A draft is waiting</h2><p>This browser session has an unfinished note for this account. Review it before saving.</p><div class=\"button-row\"><button class=\"button secondary\">Recover draft</button><button class=\"text-button\">Discard draft</button></div></section>"), Za = /* @__PURE__ */ K("<p class=\"field-help\">Browser storage is unavailable. Draft recovery is limited to this open page.</p>"), Qa = /* @__PURE__ */ K("<p class=\"notice\">Shorten this note to 4096 bytes before saving or leaving this page.</p>"), $a = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Save conflict\"><h2>There’s a newer saved note</h2><p>Your draft is still in the editor. Compare it with the saved version, then choose what to keep.</p><pre> </pre><div class=\"button-row\"><button class=\"button secondary\">Keep my draft</button><button class=\"text-button\">Use saved note</button></div></section>"), eo = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain save\"><h2>Check before saving again</h2><p>The previous save may have completed. Your draft has not been sent again.</p><button class=\"button secondary\">Check saved note</button></section>"), to = /* @__PURE__ */ K("<a class=\"skip-link\" href=\"#workspace-content\">Skip to content</a> <div class=\"workspace-shell\"><aside class=\"sidebar\" aria-label=\"Workspace sidebar\"><a class=\"brand\" href=\"/workspace\"><span class=\"brand-mark\" aria-hidden=\"true\">K</span><span>Keida <small>REBORN</small></span></a> <p class=\"nav-label\">YOUR SPACE</p> <nav class=\"main-nav\" aria-label=\"Workspace views\"><button><span aria-hidden=\"true\">⌂</span>Home</button> <button><span aria-hidden=\"true\">▤</span>Workspace note<span aria-hidden=\"true\"></span></button> <button><span aria-hidden=\"true\">◇</span>Connections</button> <button><span aria-hidden=\"true\">▦</span>Services</button> <button><span aria-hidden=\"true\">◷</span>Activity</button> <button><span aria-hidden=\"true\">♧</span>Notifications<!></button></nav> <div class=\"sidebar-bottom\"><a href=\"/account\" class=\"account-link\"><span class=\"avatar\" aria-hidden=\"true\">K</span><span><strong> </strong><small> </small></span></a> <form method=\"post\" action=\"/account/sign-out\"><input type=\"hidden\" name=\"product\" value=\"keida-hub-reborn\"/> <input type=\"hidden\" name=\"contract\" value=\"reborn-account-v1\"/> <input type=\"hidden\" name=\"csrf_token\"/> <button type=\"submit\" class=\"sign-out\">Sign out <span aria-hidden=\"true\">↗</span></button></form> <details class=\"version\"><summary> <span>Build details</span></summary> <dl><dt>Source</dt><dd><!></dd><dt>Tree</dt><dd> </dd><dt>Channel</dt><dd> </dd><dt>Workspace contract</dt><dd>reborn-workspace-v1</dd></dl></details></div></aside> <main id=\"workspace-content\" class=\"workspace-content\"><header class=\"page-header\"><div><p class=\"eyebrow\">YOUR OWN CORNER OF KEIDA</p><h1 tabindex=\"-1\"> </h1></div><span class=\"connection-state\"><span aria-hidden=\"true\">●</span> </span></header> <p class=\"workspace-status\" role=\"status\"> </p> <!> <section class=\"home-view\"><div class=\"welcome-card card\"><div><p class=\"eyebrow\">MAKE YOURSELF AT HOME</p><h2>A useful place<br/>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><button class=\"button primary\">Open your note <span aria-hidden=\"true\">↗</span></button></div><div class=\"orb\" aria-hidden=\"true\"><div>K</div></div></div> <div class=\"home-layout-heading\"><p class=\"layout-status\" role=\"status\"> </p><button class=\"button secondary customize-home\">Customize Home</button></div> <div><!></div> <div></div></section> <section class=\"note-view\" aria-label=\"Workspace note\"><div class=\"note-heading\"><p>A private note, available each time you sign in.</p><span class=\"quiet-label\"> </span></div> <!> <form class=\"note-card card\"><label for=\"workspace-note\">Workspace note</label> <textarea id=\"workspace-note\" name=\"workspace-note\" maxlength=\"4096\" spellcheck=\"true\" aria-describedby=\"note-help note-size\" placeholder=\"What would you like to come back to?\"></textarea> <p id=\"note-help\" class=\"field-help\">For ordinary notes. Keep passwords, API keys and other secrets out of this space.</p> <div class=\"note-footer\"><span id=\"note-size\"> </span><button class=\"button primary\" type=\"submit\"> </button></div></form> <!> <!> <!> <!></section> <section aria-label=\"Connections\"><!></section> <section aria-label=\"Activity\"><!></section> <section aria-label=\"Notifications\"><!></section> <footer class=\"content-footer\"><span>Keida Reborn</span><a href=\"/account\">Account &amp; recovery</a></footer></main></div>", 1);
+function no(e, t) {
 	Ue(t, !1);
-	let n = () => ki(l, "$model", r), [r, i] = Ai(), a = /* @__PURE__ */ P(), o = /* @__PURE__ */ P(), s = Z(t, "binding", 8), c = Gi(s()), l = c.model, u = /* @__PURE__ */ P("home"), d = /* @__PURE__ */ P(), f = document.querySelector("meta[name=\"reborn-version\"]")?.content ?? "development", p = document.querySelector("meta[name=\"reborn-commit\"]")?.content ?? "unqualified", m = document.querySelector("meta[name=\"reborn-tree\"]")?.content ?? "unqualified", h = document.querySelector("meta[name=\"reborn-channel\"]")?.content ?? "development";
-	function g(e) {
-		F(u, e), H(d)?.focus(), e === "activity" && c.activity(), e === "notifications" && c.check();
+	let n = () => Ai(u, "$model", r), [r, i] = ji(), a = /* @__PURE__ */ P(), o = /* @__PURE__ */ P(), s = /* @__PURE__ */ P(), c = Z(t, "binding", 8), l = Xi(c()), u = l.model, d = /* @__PURE__ */ P("home"), f = /* @__PURE__ */ P(), p = document.querySelector("meta[name=\"reborn-version\"]")?.content ?? "development", m = document.querySelector("meta[name=\"reborn-commit\"]")?.content ?? "unqualified", h = document.querySelector("meta[name=\"reborn-tree\"]")?.content ?? "unqualified", g = document.querySelector("meta[name=\"reborn-channel\"]")?.content ?? "development";
+	function _(e) {
+		F(d, e), H(f)?.focus(), e === "activity" && l.activity(), e === "notifications" && l.check();
 	}
-	Mi(c.start), wn(() => n(), () => {
-		F(a, new TextEncoder().encode(n().draft).length);
-	}), wn(() => (n(), H(a)), () => {
-		F(o, n().phase === "ready" && n().dirty && H(a) <= 4096 && n().notificationSave !== "saving" && ![
+	Ni(l.start), wn(() => (n(), zi), () => {
+		F(a, n().layoutDraft?.panels ?? n().snapshot?.layout.panels ?? zi());
+	}), wn(() => n(), () => {
+		F(o, new TextEncoder().encode(n().draft).length);
+	}), wn(() => (n(), H(o)), () => {
+		F(s, n().phase === "ready" && n().dirty && H(o) <= 4096 && !["saving", "checking-conflict"].includes(n().layoutSave) && n().notificationSave !== "saving" && ![
 			"saving",
 			"checking-conflict",
 			"conflict",
 			"uncertain"
 		].includes(n().save));
-	}), Tn(), xi();
-	var _ = Va(), v = R(sn(_), 2), y = I(v), b = R(I(y), 4), x = I(b);
-	let S;
-	var C = R(x, 2);
-	let w;
-	var T = R(I(C), 2);
+	}), Tn(), Si();
+	var v = to(), y = R(sn(v), 2), b = I(y), x = R(I(b), 4), S = I(x);
+	let C;
+	var w = R(S, 2);
+	let T;
+	var E = R(I(w), 2);
 	let ee;
-	A(C);
-	var te = R(C, 2);
+	A(w);
+	var te = R(w, 2);
 	let ne;
 	var re = R(te, 2);
 	let ie;
@@ -3374,57 +3627,151 @@ function Ha(e, t) {
 	var se = R(ae, 2);
 	let ce;
 	var le = R(I(se), 2), ue = (e) => {
-		var t = Na(), r = L(t, !0);
+		var t = Wa(), r = L(t, !0);
 		z(() => {
 			X(t, "aria-label", (n(), U(() => `${n().snapshot.notifications.unread_groups} unread groups`))), J(r, (n(), U(() => n().snapshot.notifications.unread_groups)));
 		}), q(e, t);
 	};
 	Y(le, (e) => {
 		n(), U(() => n().snapshot?.notifications.unread_groups) && e(ue);
-	}), A(se), A(b);
-	var de = R(b, 2), fe = I(de), pe = R(I(fe)), me = I(pe), E = L(me, !0), he = L(R(me), !0);
+	}), A(se), A(x);
+	var de = R(x, 2), fe = I(de), pe = R(I(fe)), D = I(pe), me = L(D, !0), he = L(R(D), !0);
 	A(pe), A(fe);
 	var ge = R(fe, 2), _e = R(R(I(ge), 2), 2);
 	ui(_e), Se(2), A(ge);
-	var ve = R(ge, 2), ye = I(ve), D = I(ye, !0);
-	Se(), A(ye);
-	var be = R(ye, 2), O = R(I(be)), k = I(O), xe = (e) => {
-		var t = Pa(), n = L(t, !0);
+	var ve = R(ge, 2), O = I(ve), ye = I(O, !0);
+	Se(), A(O);
+	var k = R(O, 2), be = R(I(k)), xe = I(be), Ce = (e) => {
+		var t = Ga(), n = L(t, !0);
 		z(() => {
-			X(t, "href", `https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/commit/${p}`), J(n, p);
+			X(t, "href", `https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/commit/${m}`), J(n, m);
 		}), q(e, t);
-	}, Ce = /* @__PURE__ */ ft(() => U(() => /^[a-f0-9]{40}$/.test(p))), we = (e) => {
+	}, we = /* @__PURE__ */ ft(() => U(() => /^[a-f0-9]{40}$/.test(m))), Te = (e) => {
 		var t = Ar();
-		z(() => J(t, p)), q(e, t);
+		z(() => J(t, m)), q(e, t);
 	};
-	Y(k, (e) => {
-		H(Ce) ? e(xe) : e(we, -1);
-	}), A(O);
-	var Te = R(O, 2), Ee = L(Te, !0), De = L(R(Te, 2), !0);
-	Se(2), A(be), A(ve), A(de), A(y);
-	var Oe = R(y, 2), ke = I(Oe), Ae = I(ke), je = R(I(Ae)), Me = L(je, !0);
-	bi(je, (e) => F(d, e), () => H(d)), A(Ae);
-	var Ne = R(Ae), Pe = R(I(Ne), 1, !0);
-	A(Ne), A(ke);
-	var Fe = R(ke, 2), Ie = L(Fe, !0), Le = R(Fe, 2), Re = (e) => {
-		q(e, Fa());
+	Y(xe, (e) => {
+		H(we) ? e(Ce) : e(Te, -1);
+	}), A(be);
+	var Ee = R(be, 2), De = L(Ee, !0), Oe = L(R(Ee, 2), !0);
+	Se(2), A(k), A(ve), A(de), A(b);
+	var ke = R(b, 2), Ae = I(ke), je = I(Ae), Me = R(I(je)), Ne = L(Me, !0);
+	xi(Me, (e) => F(f, e), () => H(f)), A(je);
+	var Pe = R(je), Fe = R(I(Pe), 1, !0);
+	A(Pe), A(Ae);
+	var Ie = R(Ae, 2), Le = L(Ie, !0), Re = R(Ie, 2), ze = (e) => {
+		q(e, Ka());
 	};
-	Y(Le, (e) => {
-		n(), U(() => n().phase !== "ready") && e(Re);
+	Y(Re, (e) => {
+		n(), U(() => n().phase !== "ready") && e(ze);
 	});
-	var ze = R(Le, 2), Be = I(ze), Ve = I(Be), j = R(I(Ve), 3);
-	A(Ve), Se(), A(Be);
-	var He = R(Be, 2), Ge = I(He), Ke = R(I(Ge), 2), qe = L(Ke, !0), Je = R(Ke);
+	var Be = R(Re, 2), Ve = I(Be), j = I(Ve), He = R(I(j), 3);
+	A(j), Se(), A(Ve);
+	var Ge = R(Ve, 2), Ke = I(Ge), qe = L(Ke, !0), Je = R(Ke);
 	A(Ge);
-	var Ye = R(Ge), Xe = R(I(Ye), 2), Ze = L(Xe, !0), M = R(Xe);
-	A(Ye), A(He), A(ze);
-	var Qe = R(ze, 2), $e = I(Qe), tt = L(R(I($e)), !0);
+	var Ye = R(Ge, 2), Xe = I(Ye);
+	{
+		let e = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.layout))), t = /* @__PURE__ */ pt(() => (n(), U(() => n().phase === "ready")));
+		na(Xe, {
+			get draft() {
+				return n(), U(() => n().layoutDraft);
+			},
+			get saved() {
+				return H(e);
+			},
+			get state() {
+				return n(), U(() => n().layoutSave);
+			},
+			get authorized() {
+				return H(t);
+			},
+			get move() {
+				return U(() => l.moveLayout);
+			},
+			get toggle() {
+				return U(() => l.toggleLayout);
+			},
+			get save() {
+				return U(() => l.saveLayout);
+			},
+			get cancel() {
+				return U(() => l.cancelLayout);
+			},
+			get reset() {
+				return U(() => l.resetLayout);
+			},
+			get resolve() {
+				return U(() => l.resolveLayout);
+			},
+			get check() {
+				return U(() => l.checkLayout);
+			}
+		});
+	}
+	A(Ye);
+	var Ze = R(Ye, 2);
+	let M;
+	Wr(Ze, 5, () => H(a), (e) => e.id, (e, t) => {
+		var r = Ya();
+		let i;
+		var a = I(r), o = (e) => {
+			var t = qa(), r = R(sn(t), 2), i = L(r, !0), a = R(r);
+			z(() => J(i, (n(), U(() => n().dirty ? "You have an unsaved draft open." : n().snapshot?.note.revision === "0" ? "A blank page for whatever comes next." : "Your saved note is ready when you are.")))), G("click", a, () => _("note")), q(e, t);
+		}, s = (e) => {
+			var t = Ja(), r = R(sn(t), 2), i = L(r, !0), a = R(r);
+			z(() => J(i, (n(), U(() => n().snapshot?.crafty?.configured ? "Your enrolled Crafty observations are available in Connections." : "Enroll dedicated Crafty access to see your selected servers.")))), G("click", a, () => _("connections")), q(e, t);
+		}, c = (e) => {
+			{
+				let t = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.directory))), r = /* @__PURE__ */ pt(() => (n(), U(() => n().phase === "ready"))), i = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.account.role === "owner"))), a = /* @__PURE__ */ pt(() => H(d) === "home");
+				ja(e, {
+					get directory() {
+						return H(t);
+					},
+					get authorized() {
+						return H(r);
+					},
+					get owner() {
+						return H(i);
+					},
+					get compact() {
+						return H(a);
+					},
+					get state() {
+						return n(), U(() => n().directorySave);
+					},
+					get message() {
+						return n(), U(() => n().directoryMessage);
+					},
+					browse: () => _("directory"),
+					get check() {
+						return U(() => l.check);
+					},
+					get edit() {
+						return U(() => l.editService);
+					},
+					get pin() {
+						return U(() => l.pins);
+					}
+				});
+			}
+		};
+		Y(a, (e) => {
+			H(t), U(() => H(t).id === "note") ? e(o) : (H(t), U(() => H(t).id === "connections") ? e(s, 1) : e(c, -1));
+		}), A(r), z(() => {
+			X(r, "data-home-panel", (H(t), U(() => H(t).id))), X(r, "hidden", (n(), H(t), H(d), U(() => n().phase !== "ready" || (H(t).id === "pins" ? H(d) === "home" && !H(t).visible : H(d) !== "home" || !H(t).visible)))), X(r, "aria-label", (H(t), U(() => H(t).id === "pins" ? "Services" : H(t).id === "note" ? "Workspace note shortcut" : "Connections shortcut"))), i = Qr(r, 1, "", null, i, {
+				card: H(t).id !== "pins",
+				"small-card": H(t).id !== "pins",
+				"pins-panel": H(t).id === "pins"
+			});
+		}), q(e, r);
+	}), A(Ze), A(Be);
+	var Qe = R(Be, 2), $e = I(Qe), tt = L(R(I($e)), !0);
 	A($e);
 	var nt = R($e, 2), rt = (e) => {
-		var t = Ia(), n = R(I(t), 2), r = I(n), i = R(r);
+		var t = Xa(), n = R(I(t), 2), r = I(n), i = R(r);
 		A(n), A(t), G("click", r, function(...e) {
-			c.recover?.apply(this, e);
-		}), G("click", i, () => c.resolve(!0)), q(e, t);
+			l.recover?.apply(this, e);
+		}), G("click", i, () => l.resolve(!0)), q(e, t);
 	};
 	Y(nt, (e) => {
 		n(), U(() => n().recovery) && e(rt);
@@ -3436,40 +3783,40 @@ function Ha(e, t) {
 	var lt = L(st), ut = R(st), dt = L(ut, !0);
 	A(ot), A(it);
 	var mt = R(it, 2), ht = (e) => {
-		q(e, La());
+		q(e, Za());
 	};
 	Y(mt, (e) => {
 		n(), U(() => n().storageLimited) && e(ht);
 	});
 	var gt = R(mt, 2), _t = (e) => {
-		q(e, Ra());
+		q(e, Qa());
 	};
 	Y(gt, (e) => {
-		H(a) > 4096 && e(_t);
+		H(o) > 4096 && e(_t);
 	});
 	var vt = R(gt, 2), yt = (e) => {
-		var t = za(), r = R(I(t), 2), i = L(r, !0), a = R(r), o = I(a), s = R(o);
-		A(a), A(t), z(() => J(i, (n(), U(() => n().snapshot?.note.body)))), G("click", o, () => c.resolve(!1)), G("click", s, () => c.resolve(!0)), q(e, t);
+		var t = $a(), r = R(I(t), 2), i = L(r, !0), a = R(r), o = I(a), s = R(o);
+		A(a), A(t), z(() => J(i, (n(), U(() => n().snapshot?.note.body)))), G("click", o, () => l.resolve(!1)), G("click", s, () => l.resolve(!0)), q(e, t);
 	};
 	Y(vt, (e) => {
 		n(), U(() => n().save === "conflict") && e(yt);
 	});
 	var N = R(vt, 2), bt = (e) => {
-		var t = Ba(), n = R(I(t), 2);
-		A(t), G("click", n, () => c.check()), q(e, t);
+		var t = eo(), n = R(I(t), 2);
+		A(t), G("click", n, () => l.check()), q(e, t);
 	};
 	Y(N, (e) => {
 		n(), U(() => n().save === "uncertain") && e(bt);
 	}), A(Qe);
 	var xt = R(Qe, 2), St = I(xt);
 	{
-		let e = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.crafty))), t = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.account.role === "owner"))), r = /* @__PURE__ */ pt(() => (H(u), n(), U(() => H(u) === "connections" && n().phase === "ready")));
-		ra(St, {
+		let e = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.crafty))), t = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.account.role === "owner"))), r = /* @__PURE__ */ pt(() => (H(d), n(), U(() => H(d) === "connections" && n().phase === "ready")));
+		ma(St, {
 			history: () => {
-				F(u, "activity"), H(d)?.focus(), c.activity("connections", "");
+				F(d, "activity"), H(f)?.focus(), l.activity("connections", "");
 			},
 			get binding() {
-				return s();
+				return c();
 			},
 			get overview() {
 				return H(e);
@@ -3481,50 +3828,15 @@ function Ha(e, t) {
 				return H(r);
 			},
 			get refresh() {
-				return U(() => c.check);
+				return U(() => l.check);
 			}
 		});
 	}
 	A(xt);
 	var Ct = R(xt, 2), wt = I(Ct);
 	{
-		let e = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.directory))), t = /* @__PURE__ */ pt(() => (n(), U(() => n().phase === "ready"))), r = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.account.role === "owner"))), i = /* @__PURE__ */ pt(() => H(u) === "home");
-		ba(wt, {
-			get directory() {
-				return H(e);
-			},
-			get authorized() {
-				return H(t);
-			},
-			get owner() {
-				return H(r);
-			},
-			get compact() {
-				return H(i);
-			},
-			get state() {
-				return n(), U(() => n().directorySave);
-			},
-			get message() {
-				return n(), U(() => n().directoryMessage);
-			},
-			browse: () => g("directory"),
-			get check() {
-				return U(() => c.check);
-			},
-			get edit() {
-				return U(() => c.editService);
-			},
-			get pin() {
-				return U(() => c.pins);
-			}
-		});
-	}
-	A(Ct);
-	var Tt = R(Ct, 2), Et = I(Tt);
-	{
 		let e = /* @__PURE__ */ pt(() => (n(), U(() => n().phase === "ready")));
-		Da(Et, {
+		Ra(wt, {
 			get state() {
 				return n(), U(() => n().activity);
 			},
@@ -3532,15 +3844,15 @@ function Ha(e, t) {
 				return H(e);
 			},
 			get load() {
-				return U(() => c.activity);
+				return U(() => l.activity);
 			}
 		});
 	}
-	A(Tt);
-	var Dt = R(Tt, 2), Ot = I(Dt);
+	A(Ct);
+	var Tt = R(Ct, 2), Et = I(Tt);
 	{
 		let e = /* @__PURE__ */ pt(() => (n(), U(() => n().snapshot?.notifications))), t = /* @__PURE__ */ pt(() => (n(), U(() => n().phase === "ready")));
-		Ma(Ot, {
+		Ua(Et, {
 			get value() {
 				return H(e);
 			},
@@ -3554,31 +3866,33 @@ function Ha(e, t) {
 				return n(), U(() => n().notificationMessage);
 			},
 			get check() {
-				return U(() => c.check);
+				return U(() => l.check);
 			},
 			get mark() {
-				return U(() => c.markNotification);
+				return U(() => l.markNotification);
 			}
 		});
 	}
-	A(Dt), Se(2), A(Oe), A(v), z(() => {
-		X(x, "aria-current", H(u) === "home" ? "page" : void 0), S = Qr(x, 1, "", null, S, { active: H(u) === "home" }), X(C, "aria-current", H(u) === "note" ? "page" : void 0), w = Qr(C, 1, "", null, w, { active: H(u) === "note" }), ee = Qr(T, 1, "draft-dot", null, ee, { visible: n().dirty }), X(te, "aria-current", H(u) === "connections" ? "page" : void 0), ne = Qr(te, 1, "", null, ne, { active: H(u) === "connections" }), X(re, "aria-current", H(u) === "directory" ? "page" : void 0), ie = Qr(re, 1, "", null, ie, { active: H(u) === "directory" }), X(ae, "aria-current", H(u) === "activity" ? "page" : void 0), oe = Qr(ae, 1, "", null, oe, { active: H(u) === "activity" }), X(se, "aria-current", H(u) === "notifications" ? "page" : void 0), ce = Qr(se, 1, "", null, ce, { active: H(u) === "notifications" }), J(E, (n(), U(() => n().snapshot?.account.username ?? "Your account"))), J(he, (n(), U(() => n().snapshot?.account.role === "owner" ? "Owner" : n().snapshot?.account.role === "member" ? "Member" : "Check account access"))), di(_e, s()), J(D, f), J(Ee, m), J(De, h), J(Me, H(u) === "home" ? "Welcome home." : H(u) === "note" ? "A little space to think." : H(u) === "connections" ? "Your servers, at a glance." : H(u) === "directory" ? "Everything within reach." : H(u) === "activity" ? "Pick up the thread." : "Catch up at your pace."), J(Pe, (n(), U(() => n().phase === "ready" ? "Session checked" : n().phase === "checking" ? "Checking access" : "Access paused"))), J(Ie, (n(), U(() => n().message))), X(ze, "hidden", (H(u), n(), U(() => H(u) !== "home" || n().phase !== "ready"))), J(qe, (n(), U(() => n().dirty ? "You have an unsaved draft open." : n().snapshot?.note.revision === "0" ? "A blank page for whatever comes next." : "Your saved note is ready when you are."))), J(Ze, (n(), U(() => n().snapshot?.crafty?.configured ? "Your enrolled Crafty observations are available in Connections." : "Enroll dedicated Crafty access to see your selected servers."))), X(Qe, "hidden", (H(u), n(), U(() => H(u) !== "note" || n().phase !== "ready"))), J(tt, (n(), U(() => n().dirty ? "Unsaved changes" : "Up to date"))), di(at, (n(), U(() => n().draft))), at.disabled = (n(), U(() => n().phase !== "ready")), ct = Qr(st, 1, "", null, ct, { "over-limit": H(a) > 4096 }), J(lt, `${H(a) ?? ""} / 4096 bytes`), ut.disabled = !H(o), J(dt, (n(), U(() => n().save === "saving" ? "Saving…" : "Save note"))), X(xt, "hidden", (H(u), n(), U(() => H(u) !== "connections" || n().phase !== "ready"))), X(Ct, "hidden", (H(u), n(), U(() => H(u) !== "home" && H(u) !== "directory" || n().phase !== "ready"))), X(Tt, "hidden", (H(u), n(), U(() => H(u) !== "activity" || n().phase !== "ready"))), X(Dt, "hidden", (H(u), n(), U(() => H(u) !== "notifications" || n().phase !== "ready")));
-	}), G("click", x, () => g("home")), G("click", C, () => g("note")), G("click", te, () => g("connections")), G("click", re, () => g("directory")), G("click", ae, () => g("activity")), G("click", se, () => g("notifications")), xr("submit", ge, () => c.signOut()), G("click", j, () => g("note")), G("click", Je, () => g("note")), G("click", M, () => g("connections")), xr("submit", it, (e) => {
-		e.preventDefault(), c.save();
-	}), G("input", at, (e) => c.edit(e.currentTarget.value)), q(e, _), We(), i();
+	A(Tt), Se(2), A(ke), A(y), z(() => {
+		X(S, "aria-current", H(d) === "home" ? "page" : void 0), C = Qr(S, 1, "", null, C, { active: H(d) === "home" }), X(w, "aria-current", H(d) === "note" ? "page" : void 0), T = Qr(w, 1, "", null, T, { active: H(d) === "note" }), ee = Qr(E, 1, "draft-dot", null, ee, { visible: n().dirty }), X(te, "aria-current", H(d) === "connections" ? "page" : void 0), ne = Qr(te, 1, "", null, ne, { active: H(d) === "connections" }), X(re, "aria-current", H(d) === "directory" ? "page" : void 0), ie = Qr(re, 1, "", null, ie, { active: H(d) === "directory" }), X(ae, "aria-current", H(d) === "activity" ? "page" : void 0), oe = Qr(ae, 1, "", null, oe, { active: H(d) === "activity" }), X(se, "aria-current", H(d) === "notifications" ? "page" : void 0), ce = Qr(se, 1, "", null, ce, { active: H(d) === "notifications" }), J(me, (n(), U(() => n().snapshot?.account.username ?? "Your account"))), J(he, (n(), U(() => n().snapshot?.account.role === "owner" ? "Owner" : n().snapshot?.account.role === "member" ? "Member" : "Check account access"))), di(_e, c()), J(ye, p), J(De, h), J(Oe, g), J(Ne, H(d) === "home" ? "Welcome home." : H(d) === "note" ? "A little space to think." : H(d) === "connections" ? "Your servers, at a glance." : H(d) === "directory" ? "Everything within reach." : H(d) === "activity" ? "Pick up the thread." : "Catch up at your pace."), J(Fe, (n(), U(() => n().phase === "ready" ? "Session checked" : n().phase === "checking" ? "Checking access" : "Access paused"))), J(Le, (n(), U(() => n().message))), X(Be, "hidden", (H(d), n(), U(() => H(d) !== "home" && H(d) !== "directory" || n().phase !== "ready"))), X(Be, "aria-label", H(d) === "directory" ? "Service directory view" : "Home"), X(Ve, "hidden", H(d) !== "home"), X(Ge, "hidden", H(d) !== "home"), J(qe, (n(), U(() => n().layoutMessage || "Your panels, in your own order."))), Je.disabled = (n(), U(() => !!n().layoutDraft || n().phase !== "ready" || n().layoutSave === "saving")), X(Ye, "hidden", H(d) !== "home"), M = Qr(Ze, 1, "home-grid", null, M, { "services-view": H(d) === "directory" }), X(Qe, "hidden", (H(d), n(), U(() => H(d) !== "note" || n().phase !== "ready"))), J(tt, (n(), U(() => n().dirty ? "Unsaved changes" : "Up to date"))), di(at, (n(), U(() => n().draft))), at.disabled = (n(), U(() => n().phase !== "ready")), ct = Qr(st, 1, "", null, ct, { "over-limit": H(o) > 4096 }), J(lt, `${H(o) ?? ""} / 4096 bytes`), ut.disabled = !H(s), J(dt, (n(), U(() => n().save === "saving" ? "Saving…" : "Save note"))), X(xt, "hidden", (H(d), n(), U(() => H(d) !== "connections" || n().phase !== "ready"))), X(Ct, "hidden", (H(d), n(), U(() => H(d) !== "activity" || n().phase !== "ready"))), X(Tt, "hidden", (H(d), n(), U(() => H(d) !== "notifications" || n().phase !== "ready")));
+	}), G("click", S, () => _("home")), G("click", w, () => _("note")), G("click", te, () => _("connections")), G("click", re, () => _("directory")), G("click", ae, () => _("activity")), G("click", se, () => _("notifications")), xr("submit", ge, () => l.signOut()), G("click", He, () => _("note")), G("click", Je, function(...e) {
+		l.beginLayout?.apply(this, e);
+	}), xr("submit", it, (e) => {
+		e.preventDefault(), l.save();
+	}), G("input", at, (e) => l.edit(e.currentTarget.value)), q(e, v), We(), i();
 }
 Sr(["click", "input"]);
 // src/main.ts
-var Ua = document.getElementById("workspace-root"), Wa = document.querySelector("meta[name=\"reborn-session-binding\"]")?.content, Ga = document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content;
-if (Ua && Wa && /^[a-f0-9]{64}$/.test(Wa) && Ga === "reborn-workspace-v1") {
-	let e = Array.from(Ua.childNodes);
-	Ua.replaceChildren();
+var ro = document.getElementById("workspace-root"), io = document.querySelector("meta[name=\"reborn-session-binding\"]")?.content, ao = document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content;
+if (ro && io && /^[a-f0-9]{64}$/.test(io) && ao === "reborn-workspace-v1") {
+	let e = Array.from(ro.childNodes);
+	ro.replaceChildren();
 	try {
-		Fr(Ha, {
-			target: Ua,
-			props: { binding: Wa }
+		Fr(no, {
+			target: ro,
+			props: { binding: io }
 		});
 	} catch {
-		Ua.replaceChildren(...e);
+		ro.replaceChildren(...e);
 	}
 }

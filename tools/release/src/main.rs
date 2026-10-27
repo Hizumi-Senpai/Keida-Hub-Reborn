@@ -47,7 +47,7 @@ impl Manifest {
             || self.ordinal == 0
             || self.channel != "accepted"
             || self.contract != "reborn-workspace-v1"
-            || !(4..=7).contains(&self.database_schema)
+            || !(4..=8).contains(&self.database_schema)
             || !digest(&self.commit, 40)
             || !digest(&self.tree, 40)
             || !digest(&self.binary_sha256, 64)
@@ -423,7 +423,7 @@ mod tests {
             tree: "b".repeat(40),
             channel: "accepted".into(),
             contract: "reborn-workspace-v1".into(),
-            database_schema: 7,
+            database_schema: 8,
             binary_sha256: "c".repeat(64),
             image_id: format!("sha256:{}", "d".repeat(64)),
             archive_sha256: hash(&archive).unwrap(),
@@ -503,7 +503,7 @@ mod concurrent_publication {
             tree: "b".repeat(40),
             channel: "accepted".into(),
             contract: "reborn-workspace-v1".into(),
-            database_schema: 7,
+            database_schema: 8,
             binary_sha256: "c".repeat(64),
             image_id: format!("sha256:{}", "d".repeat(64)),
             archive_sha256: hash(&archive).unwrap(),

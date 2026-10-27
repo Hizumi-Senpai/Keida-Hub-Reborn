@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { workspace } from './controller';
+  import { workspace, defaultPanels } from './controller';
+  import LayoutEditor from './LayoutEditor.svelte';
   import Connections from './Connections.svelte';
   import Directory from './Directory.svelte';
   import Activity from './Activity.svelte';
@@ -14,9 +15,10 @@
   const commit = document.querySelector<HTMLMetaElement>('meta[name="reborn-commit"]')?.content ?? 'unqualified';
   const tree = document.querySelector<HTMLMetaElement>('meta[name="reborn-tree"]')?.content ?? 'unqualified';
   const channel = document.querySelector<HTMLMetaElement>('meta[name="reborn-channel"]')?.content ?? 'development';
+  $: panels = $model.layoutDraft?.panels ?? $model.snapshot?.layout.panels ?? defaultPanels();
   $: bytes = new TextEncoder().encode($model.draft).length;
   $: canSave = $model.phase === 'ready' && $model.dirty && bytes <= 4096
-    && $model.notificationSave !== 'saving' && !['saving', 'checking-conflict', 'conflict', 'uncertain'].includes($model.save);
+    && !['saving', 'checking-conflict'].includes($model.layoutSave) && $model.notificationSave !== 'saving' && !['saving', 'checking-conflict', 'conflict', 'uncertain'].includes($model.save);
   function navigate(next: 'home' | 'note' | 'connections' | 'directory' | 'activity' | 'notifications'): void { view = next; heading?.focus(); if (next === 'activity') void controller.activity(); if (next === 'notifications') void controller.check(); }
   onMount(controller.start);
 </script>
@@ -53,9 +55,19 @@
     {#if $model.phase !== 'ready'}
       <section class="recovery card"><p class="eyebrow">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class="button-row"><a class="button primary" href="/workspace">Open workspace again</a><a class="button secondary" href="/account">Your account</a></div></section>
     {/if}
-    <section class="home-view" hidden={view !== 'home' || $model.phase !== 'ready'} aria-label="Home">
-      <div class="welcome-card card"><div><p class="eyebrow">MAKE YOURSELF AT HOME</p><h2>A useful place<br>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><button class="button primary" onclick={() => navigate('note')}>Open your note <span aria-hidden="true">↗</span></button></div><div class="orb" aria-hidden="true"><div>K</div></div></div>
-      <div class="home-grid"><section class="card small-card"><span class="card-icon" aria-hidden="true">▤</span><h2>Your workspace note</h2><p>{$model.dirty ? 'You have an unsaved draft open.' : $model.snapshot?.note.revision !== '0' ? 'Your saved note is ready when you are.' : 'A blank page for whatever comes next.'}</p><button class="text-button" onclick={() => navigate('note')}>Keep writing <span aria-hidden="true">→</span></button></section><section class="card small-card"><span class="card-icon" aria-hidden="true">◇</span><h2>Connections</h2><p>{$model.snapshot?.crafty?.configured ? 'Your enrolled Crafty observations are available in Connections.' : 'Enroll dedicated Crafty access to see your selected servers.'}</p><button class="text-button" onclick={() => navigate('connections')}>View connections <span aria-hidden="true">→</span></button></section></div>
+    <section class="home-view" hidden={(view !== 'home' && view !== 'directory') || $model.phase !== 'ready'} aria-label={view === 'directory' ? 'Service directory view' : 'Home'}>
+      <div class="welcome-card card" hidden={view !== 'home'}><div><p class="eyebrow">MAKE YOURSELF AT HOME</p><h2>A useful place<br>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><button class="button primary" onclick={() => navigate('note')}>Open your note <span aria-hidden="true">↗</span></button></div><div class="orb" aria-hidden="true"><div>K</div></div></div>
+      <div class="home-layout-heading" hidden={view !== 'home'}><p class="layout-status" role="status">{$model.layoutMessage || 'Your panels, in your own order.'}</p><button class="button secondary customize-home" disabled={!!$model.layoutDraft || $model.phase !== 'ready' || $model.layoutSave === 'saving'} onclick={controller.beginLayout}>Customize Home</button></div>
+      <div hidden={view !== 'home'}><LayoutEditor draft={$model.layoutDraft} saved={$model.snapshot?.layout} state={$model.layoutSave} authorized={$model.phase === 'ready'} move={controller.moveLayout} toggle={controller.toggleLayout} save={controller.saveLayout} cancel={controller.cancelLayout} reset={controller.resetLayout} resolve={controller.resolveLayout} check={controller.checkLayout} /></div>
+      <div class="home-grid" class:services-view={view === 'directory'}>
+        {#each panels as panel (panel.id)}
+          <section data-home-panel={panel.id} class:card={panel.id !== 'pins'} class:small-card={panel.id !== 'pins'} class:pins-panel={panel.id === 'pins'} hidden={$model.phase !== 'ready' || (panel.id === 'pins' ? view === 'home' && !panel.visible : view !== 'home' || !panel.visible)} aria-label={panel.id === 'pins' ? 'Services' : panel.id === 'note' ? 'Workspace note shortcut' : 'Connections shortcut'}>
+            {#if panel.id === 'note'}<span class="card-icon" aria-hidden="true">▤</span><h2>Your workspace note</h2><p>{$model.dirty ? 'You have an unsaved draft open.' : $model.snapshot?.note.revision !== '0' ? 'Your saved note is ready when you are.' : 'A blank page for whatever comes next.'}</p><button class="text-button" onclick={() => navigate('note')}>Keep writing <span aria-hidden="true">→</span></button>
+            {:else if panel.id === 'connections'}<span class="card-icon" aria-hidden="true">◇</span><h2>Connections</h2><p>{$model.snapshot?.crafty?.configured ? 'Your enrolled Crafty observations are available in Connections.' : 'Enroll dedicated Crafty access to see your selected servers.'}</p><button class="text-button" onclick={() => navigate('connections')}>View connections <span aria-hidden="true">→</span></button>
+            {:else}<Directory directory={$model.snapshot?.directory} authorized={$model.phase === 'ready'} owner={$model.snapshot?.account.role === 'owner'} compact={view === 'home'} state={$model.directorySave} message={$model.directoryMessage} browse={() => navigate('directory')} check={controller.check} edit={controller.editService} pin={controller.pins} />{/if}
+          </section>
+        {/each}
+      </div>
     </section>
     <section class="note-view" hidden={view !== 'note' || $model.phase !== 'ready'} aria-label="Workspace note">
       <div class="note-heading"><p>A private note, available each time you sign in.</p><span class="quiet-label">{$model.dirty ? 'Unsaved changes' : 'Up to date'}</span></div>
@@ -77,7 +89,6 @@
       {#if $model.save === 'uncertain'}<section class="notice" aria-label="Uncertain save"><h2>Check before saving again</h2><p>The previous save may have completed. Your draft has not been sent again.</p><button class="button secondary" onclick={() => controller.check()}>Check saved note</button></section>{/if}
     </section>
     <section hidden={view !== 'connections' || $model.phase !== 'ready'} aria-label="Connections"><Connections history={() => { view = 'activity'; heading?.focus(); void controller.activity('connections', ''); }} {binding} overview={$model.snapshot?.crafty} owner={$model.snapshot?.account.role === 'owner'} active={view === 'connections' && $model.phase === 'ready'} refresh={controller.check} /></section>
-    <section hidden={(view !== 'home' && view !== 'directory') || $model.phase !== 'ready'} aria-label="Services"><Directory directory={$model.snapshot?.directory} authorized={$model.phase === 'ready'} owner={$model.snapshot?.account.role === 'owner'} compact={view === 'home'} state={$model.directorySave} message={$model.directoryMessage} browse={() => navigate('directory')} check={controller.check} edit={controller.editService} pin={controller.pins} /></section>
     <section hidden={view !== 'activity' || $model.phase !== 'ready'} aria-label="Activity"><Activity state={$model.activity} authorized={$model.phase === 'ready'} load={controller.activity} /></section>
     <section hidden={view !== 'notifications' || $model.phase !== 'ready'} aria-label="Notifications"><Notifications value={$model.snapshot?.notifications} authorized={$model.phase === 'ready'} state={$model.notificationSave} message={$model.notificationMessage} check={controller.check} mark={controller.markNotification} /></section>
     <footer class="content-footer"><span>Keida Reborn</span><a href="/account">Account &amp; recovery</a></footer>

@@ -394,8 +394,9 @@ pub async fn run() -> Check<()> {
     directory_and_personal_pins().await?;
     retained_activity_history().await?;
     grouped_notifications().await?;
+    personal_home_layout().await?;
     println!(
-        "Rust workspace browser acceptance: 9 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+        "Rust workspace browser acceptance: 10 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
     );
     Ok(())
 }
@@ -850,6 +851,265 @@ async fn grouped_notifications() -> Check<()> {
     f.close().await?;
     println!(
         "PASS Rust browser: grouped notifications, racing watermark, lost read response without replay, reload, privacy and narrow accessibility"
+    );
+    Ok(())
+}
+
+async fn home_panels(b: &Browser, order: [&str; 3], visible: [&str; 3]) -> Check<()> {
+    check(b.evaluate("const panels=[...document.querySelectorAll('[data-home-panel]')], shown=panels.filter(p=>p.getClientRects().length>0 && !p.closest('[hidden]')); return panels.length===3 && panels.every((p,i)=>p.dataset.homePanel===arguments[0][i]) && shown.map(p=>p.dataset.homePanel).join(',')===arguments[1].filter(Boolean).join(',') && shown.every((p,i)=>{if(!i)return true;const before=shown[i-1].getBoundingClientRect(),next=p.getBoundingClientRect();return next.top>before.top-1 && (Math.abs(next.top-before.top)>1 || next.left>=before.right-1);});", json!([order, visible])).await? == true, "Home panels retain authoritative DOM reading order and requested visibility")
+}
+
+async fn arrange_pins_first(b: &Browser) -> Check<()> {
+    b.click(".customize-home").await?;
+    // Focus is a browser primitive; the actual command is native keyboard Enter.
+    check(b.evaluate("const button=document.querySelector('button[aria-label=\"Move Pinned services up\"]'); button.focus();return document.activeElement===button;", json!([])).await? == true, "layout reorder control receives keyboard focus")?;
+    b.keys("\u{e007}").await?;
+    b.wait(
+        "return document.activeElement===document.querySelector('[data-layout-row=\"pins\"]');",
+        json!([]),
+    )
+    .await?;
+    b.click("button[aria-label='Move Pinned services up']")
+        .await?;
+    b.click("input[aria-label='Show Connections']").await?;
+    home_panels(b, ["pins", "note", "connections"], ["pins", "note", ""]).await
+}
+
+async fn layout_saved(b: &Browser) -> Check<()> {
+    b.wait("return document.querySelector('.layout-status')?.textContent.includes('Layout saved') && !document.querySelector('.layout-editor:not([hidden])');", json!([])).await
+}
+
+async fn personal_home_layout() -> Check<()> {
+    step("personal Home arrangement, native keyboard controls and persistent panels");
+    let f = Fixture::new().await?;
+    let mut a = f.browser(true).await?;
+    claim(&f, &a).await?;
+    let (member, password) = f.enroll_member(&a).await?;
+    workspace(&f, &a).await?;
+    home_panels(
+        &a,
+        ["note", "connections", "pins"],
+        ["note", "connections", "pins"],
+    )
+    .await?;
+    note(&a).await?;
+    a.fill("#workspace-note", "An unfinished note while arranging Home")
+        .await?;
+    a.click(".main-nav button:nth-child(4)").await?;
+    a.fill(
+        "#service-name",
+        "An unfinished service while arranging Home",
+    )
+    .await?;
+    a.evaluate("window.__layoutNote=document.querySelector('#workspace-note');window.__layoutService=document.querySelector('#service-name');window.__layoutPanels=[...document.querySelectorAll('[data-home-panel]')];return true;", json!([])).await?;
+    a.click(".main-nav button:first-child").await?;
+    let writes = f.writes();
+    arrange_pins_first(&a).await?;
+    a.click(".reset-layout").await?;
+    home_panels(
+        &a,
+        ["note", "connections", "pins"],
+        ["note", "connections", "pins"],
+    )
+    .await?;
+    a.click("input[aria-label='Show Connections']").await?;
+    a.click("input[aria-label='Show Pinned services']").await?;
+    check(
+        a.evaluate(
+            "return document.querySelector('input[aria-label=\"Show Workspace note\"]').disabled;",
+            json!([]),
+        )
+        .await?
+            == true,
+        "the last visible Home panel cannot be hidden",
+    )?;
+    a.click(".reset-layout").await?;
+    a.click(".cancel-layout").await?;
+    check(
+        f.writes() == writes,
+        "layout preview, reset and cancel create no server writes",
+    )?;
+    arrange_pins_first(&a).await?;
+    a.click(".save-layout").await?;
+    layout_saved(&a).await?;
+    home_panels(&a, ["pins", "note", "connections"], ["pins", "note", ""]).await?;
+    check(a.evaluate("return window.__layoutNote===document.querySelector('#workspace-note') && window.__layoutService===document.querySelector('#service-name') && window.__layoutPanels.every(p=>p===[...document.querySelectorAll('[data-home-panel]')].find(n=>n.dataset.homePanel===p.dataset.homePanel)) && window.__layoutNote.value==='An unfinished note while arranging Home' && window.__layoutService.value==='An unfinished service while arranging Home';", json!([])).await? == true, "Home reorder and hide preserve actual panel, note editor and service form instances and drafts")?;
+    a.click(".main-nav button:nth-child(3)").await?;
+    check(
+        a.evaluate(
+            "return !!document.querySelector('section[aria-label=Connections]:not([hidden])');",
+            json!([]),
+        )
+        .await?
+            == true,
+        "hidden Home connection summary remains available in Connections",
+    )?;
+    a.click(".main-nav button:nth-child(4)").await?;
+    check(a.evaluate("return document.querySelector('#service-name').value==='An unfinished service while arranging Home';", json!([])).await? == true, "service draft remains usable after Home layout save")?;
+    a.click(".main-nav button:first-child").await?;
+
+    step("layout reload, stale concurrent browser edit and retained conflict comparison");
+    let mut b = f.browser(true).await?;
+    sign_in(&f, &b, &f.username, &f.password).await?;
+    workspace(&f, &b).await?;
+    home_panels(&b, ["pins", "note", "connections"], ["pins", "note", ""]).await?;
+    b.click(".customize-home").await?;
+    b.click("input[aria-label='Show Connections']").await?;
+    home_panels(
+        &b,
+        ["pins", "note", "connections"],
+        ["pins", "note", "connections"],
+    )
+    .await?;
+    // Hold an actual old observation while the other browser commits. This
+    // freezes a known stale base without relying on the 15-second poll timing.
+    let obsolete = f.hold("/api/workspace/snapshot");
+    b.evaluate(
+        "window.dispatchEvent(new Event('focus'));return true;",
+        json!([]),
+    )
+    .await?;
+    tokio::time::timeout(Duration::from_secs(3), obsolete.entered.notified())
+        .await
+        .map_err(|_| "old concurrent layout snapshot hold")?;
+    a.click(".customize-home").await?;
+    a.click(".reset-layout").await?;
+    a.click(".save-layout").await?;
+    layout_saved(&a).await?;
+    let canonical = f.hold("/api/workspace/snapshot");
+    b.click(".save-layout").await?;
+    tokio::time::timeout(Duration::from_secs(3), canonical.entered.notified())
+        .await
+        .map_err(|_| "layout conflict canonical snapshot hold")?;
+    obsolete.release.notify_one();
+    check(b.evaluate("return document.querySelector('.save-layout').disabled && !document.querySelector('section[aria-label=\"Layout conflict\"]');", json!([])).await? == true, "layout cannot resolve conflict before fresh canonical data arrives")?;
+    home_panels(
+        &b,
+        ["pins", "note", "connections"],
+        ["pins", "note", "connections"],
+    )
+    .await?;
+    canonical.release.notify_one();
+    b.wait(
+        "return !!document.querySelector('section[aria-label=\"Layout conflict\"]');",
+        json!([]),
+    )
+    .await?;
+    home_panels(
+        &b,
+        ["pins", "note", "connections"],
+        ["pins", "note", "connections"],
+    )
+    .await?;
+    b.click("section[aria-label='Layout conflict'] button:last-of-type")
+        .await?;
+    home_panels(
+        &b,
+        ["note", "connections", "pins"],
+        ["note", "connections", "pins"],
+    )
+    .await?;
+
+    step("committed layout response loss reconciles once without mutation replay");
+    arrange_pins_first(&b).await?;
+    let writes = f.writes();
+    let lost = f.hold("/api/workspace/layout");
+    b.click(".save-layout").await?;
+    tokio::time::timeout(Duration::from_secs(3), lost.entered.notified())
+        .await
+        .map_err(|_| "actual committed layout response hold")?;
+    b.wait("return !!document.querySelector('section[aria-label=\"Uncertain layout\"]') && document.querySelector('.layout-status').textContent.includes('may have saved');", json!([])).await?;
+    check(
+        b.evaluate(
+            "return document.querySelector('.save-layout').disabled;",
+            json!([]),
+        )
+        .await?
+            == true,
+        "uncertain layout cannot be resubmitted before reconciliation",
+    )?;
+    lost.release.notify_one();
+    b.click(".check-layout").await?;
+    b.wait("return !document.querySelector('.layout-editor:not([hidden])') && document.querySelector('.layout-status').textContent.includes('matches your changes');", json!([])).await?;
+    check(
+        f.writes() == writes + 1,
+        "committed lost layout response uses authorized GET without replaying PUT",
+    )?;
+    home_panels(&b, ["pins", "note", "connections"], ["pins", "note", ""]).await?;
+    workspace(&f, &b).await?;
+    home_panels(&b, ["pins", "note", "connections"], ["pins", "note", ""]).await?;
+
+    step("independent member layout and native desktop/mobile arrangement controls");
+    let mut other = f.browser(true).await?;
+    sign_in(&f, &other, &member, &password).await?;
+    workspace(&f, &other).await?;
+    home_panels(
+        &other,
+        ["note", "connections", "pins"],
+        ["note", "connections", "pins"],
+    )
+    .await?;
+    other.click(".customize-home").await?;
+    other
+        .click("input[aria-label='Show Pinned services']")
+        .await?;
+    other.click(".save-layout").await?;
+    layout_saved(&other).await?;
+    workspace(&f, &other).await?;
+    home_panels(
+        &other,
+        ["note", "connections", "pins"],
+        ["note", "connections", ""],
+    )
+    .await?;
+    workspace(&f, &b).await?;
+    home_panels(&b, ["pins", "note", "connections"], ["pins", "note", ""]).await?;
+    b.click(".customize-home").await?;
+    accessibility(&b).await?;
+    b.mobile().await?;
+    accessibility(&b).await?;
+    check(
+        b.evaluate(
+            "return innerWidth===390 && document.documentElement.scrollWidth<=innerWidth+1;",
+            json!([]),
+        )
+        .await?
+            == true,
+        "Home arrangement controls and panels reflow at 390px",
+    )?;
+    b.click(".reset-layout").await?;
+    home_panels(
+        &b,
+        ["note", "connections", "pins"],
+        ["note", "connections", "pins"],
+    )
+    .await?;
+    b.click(".cancel-layout").await?;
+    home_panels(&b, ["pins", "note", "connections"], ["pins", "note", ""]).await?;
+
+    step("layout draft privacy and rejection of obsolete private snapshot");
+    let private = f.hold("/api/workspace/snapshot");
+    b.evaluate(
+        "window.dispatchEvent(new Event('focus'));return true;",
+        json!([]),
+    )
+    .await?;
+    tokio::time::timeout(Duration::from_secs(3), private.entered.notified())
+        .await
+        .map_err(|_| "layout privacy snapshot hold")?;
+    b.click(".customize-home").await?;
+    b.click(".reset-layout").await?;
+    check(b.evaluate("window.dispatchEvent(new Event('blur'));return !document.querySelector('.layout-editor:not([hidden])') && document.querySelector('#workspace-note').value==='' && ![...document.querySelectorAll('[data-home-panel]')].some(p=>p.getClientRects().length>0 && !p.closest('[hidden]'));", json!([])).await? == true, "privacy loss clears layout draft, all private Home panels and note synchronously")?;
+    f.revoke_all(&b).await?;
+    private.release.notify_one();
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    check(b.evaluate("return !document.querySelector('.layout-editor:not([hidden])') && ![...document.querySelectorAll('[data-home-panel]')].some(p=>p.getClientRects().length>0 && !p.closest('[hidden]'));", json!([])).await? == true, "late snapshot cannot restore layout or panels after account privacy loss")?;
+    other.close().await?;
+    b.close().await?;
+    a.close().await?;
+    f.close().await?;
+    println!(
+        "PASS Rust browser: personal Home order/visibility, stable components and drafts, concurrent conflict, lost response without replay, account isolation, privacy and narrow accessibility"
     );
     Ok(())
 }

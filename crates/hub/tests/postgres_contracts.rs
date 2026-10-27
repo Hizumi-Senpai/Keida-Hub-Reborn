@@ -272,21 +272,21 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
     assert_eq!(metadata.len(), 1);
     assert!(metadata[0].get::<bool, _>("singleton"));
     assert_eq!(metadata[0].get::<String, _>("product"), "keida-hub-reborn");
-    assert_eq!(metadata[0].get::<i32, _>("schema_version"), 7);
+    assert_eq!(metadata[0].get::<i32, _>("schema_version"), 8);
     for statement in [
         "UPDATE reborn_schema SET singleton = FALSE",
         "UPDATE reborn_schema SET product = 'keida-hub-rewrite'",
-        "UPDATE reborn_schema SET schema_version = 8",
+        "UPDATE reborn_schema SET schema_version = 9",
     ] {
         assert_constraint(&mut connection, statement, "23514").await;
     }
-    assert_constraint(&mut connection, "INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',7)", "23505").await;
+    assert_constraint(&mut connection, "INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',8)", "23505").await;
 
     let ledger_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM _sqlx_migrations")
         .fetch_one(&mut connection)
         .await
         .expect("migration ledger count");
-    assert_eq!(ledger_count, 7);
+    assert_eq!(ledger_count, 8);
     assert_migrated(completed(database.migrate()).await);
     assert_eq!(
         sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM _sqlx_migrations")
@@ -297,7 +297,7 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
     );
 
     // Restore fixture bytes after each fault; acceptance requires rejecting the fault, not trusting a copied result.
-    for version in [1_i64, 2, 3, 4, 5, 6, 7] {
+    for version in [1_i64, 2, 3, 4, 5, 6, 7, 8] {
         let checksum: Vec<u8> =
             sqlx::query_scalar("SELECT checksum FROM _sqlx_migrations WHERE version = $1")
                 .bind(version)
@@ -347,7 +347,7 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
         .await
         .expect("remove singleton fixture row");
     server.readiness(false).await;
-    connection.execute("INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',7)").await.expect("restore singleton fixture row");
+    connection.execute("INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',8)").await.expect("restore singleton fixture row");
     server.readiness(true).await;
 }
 
@@ -360,10 +360,10 @@ async fn concurrent_migration_commands_leave_all_complete_migrations_and_valid_m
     assert_migrated(first);
     assert_migrated(second);
     let mut connection = database.connect().await;
-    let row = sqlx::query("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE success AND version IN (1, 2, 3, 4, 5, 6, 7)) AS completed FROM _sqlx_migrations")
+    let row = sqlx::query("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE success AND version IN (1, 2, 3, 4, 5, 6, 7, 8)) AS completed FROM _sqlx_migrations")
         .fetch_one(&mut connection).await.expect("inspect concurrent ledger");
-    assert_eq!(row.get::<i64, _>("total"), 7);
-    assert_eq!(row.get::<i64, _>("completed"), 7);
+    assert_eq!(row.get::<i64, _>("total"), 8);
+    assert_eq!(row.get::<i64, _>("completed"), 8);
     let server = Server::start(&database).await;
     server.readiness(true).await;
 }
@@ -434,13 +434,13 @@ async fn actual_schema_one_upgrades_through_auth_to_workspace_without_losing_exi
             .await
             .expect("inspect upgraded metadata");
     assert_eq!(after.get::<String, _>("product"), "keida-hub-reborn");
-    assert_eq!(after.get::<i32, _>("schema_version"), 7);
+    assert_eq!(after.get::<i32, _>("schema_version"), 8);
     let ledger =
         sqlx::query("SELECT version, checksum, success FROM _sqlx_migrations ORDER BY version")
             .fetch_all(&mut connection)
             .await
             .expect("inspect upgraded ledger");
-    assert_eq!(ledger.len(), 7);
+    assert_eq!(ledger.len(), 8);
     assert_eq!(ledger[0].get::<i64, _>("version"), 1);
     assert_eq!(ledger[1].get::<i64, _>("version"), 2);
     assert_eq!(ledger[2].get::<i64, _>("version"), 3);
@@ -532,7 +532,7 @@ async fn schema_two_upgrade_preserves_real_account_session_and_accepted_migratio
             .fetch_one(&mut connection)
             .await
             .expect("current schema"),
-        7
+        8
     );
 }
 
@@ -754,4 +754,79 @@ async fn schema_six_upgrade_preserves_activity_sequences_and_prior_data_without_
     )
     .await;
     assert_constraint(&mut db,"INSERT INTO notification_groups SELECT id,'services',1,0,'connection_saved',1,100 FROM users","23514").await;
+}
+
+#[tokio::test]
+async fn schema_seven_upgrade_retains_notification_reads_and_all_existing_state_without_layout_backfill()
+ {
+    let database = Database::create().await;
+    let mut db = database.connect().await;
+    let source = sqlx::migrate!("../../migrations");
+    let prior: Vec<_> = source.iter().filter(|m| m.version <= 7).cloned().collect();
+    assert_eq!(prior.len(), 7);
+    sqlx::migrate::Migrator::with_migrations(prior.clone())
+        .run(&mut db)
+        .await
+        .unwrap();
+    db.execute("INSERT INTO users (username,password_phc,role,generation) VALUES ('retained_owner','$argon2id$v=19$m=19456,t=2,p=1$nonlogin-fixture','owner',9)").await.unwrap();
+    db.execute("UPDATE auth_state SET owner_id=1,key_id=decode(repeat('ab',32),'hex')")
+        .await
+        .unwrap();
+    db.execute("INSERT INTO workspace_notes SELECT id,'Installed note 海',23 FROM users")
+        .await
+        .unwrap();
+    db.execute("INSERT INTO sessions (verifier,account_id,generation,created_at,expires_at) SELECT decode(repeat('cd',32),'hex'),id,9,100,200 FROM users").await.unwrap();
+    db.execute("UPDATE crafty_connection SET revision=7,sealed=decode(repeat('ef',100),'hex')")
+        .await
+        .unwrap();
+    db.execute("INSERT INTO directory_services (name,category,description,url) VALUES ('Retained service','Home','Saved','https://example.test/')").await.unwrap();
+    db.execute("UPDATE directory_state SET revision=3")
+        .await
+        .unwrap();
+    db.execute("INSERT INTO directory_pins SELECT id,4,ARRAY[1]::bigint[] FROM users")
+        .await
+        .unwrap();
+    db.execute("INSERT INTO activity_events (account_id,kind,revision,occurred_at) SELECT id,'note_saved',23,100 FROM users").await.unwrap();
+    db.execute("INSERT INTO notification_groups SELECT id,'services',5,3,'service_updated',8,101 FROM users").await.unwrap();
+    let fingerprint = "SELECT jsonb_build_object('users',(SELECT jsonb_agg(u) FROM users u),'sessions',(SELECT jsonb_agg(s) FROM sessions s),'auth',(SELECT jsonb_agg(a) FROM auth_state a),'throttles',(SELECT jsonb_agg(t ORDER BY scope) FROM auth_throttles t),'notes',(SELECT jsonb_agg(n) FROM workspace_notes n),'connection',(SELECT jsonb_agg(c) FROM crafty_connection c),'directory_state',(SELECT jsonb_agg(d) FROM directory_state d),'services',(SELECT jsonb_agg(d) FROM directory_services d),'pins',(SELECT jsonb_agg(p) FROM directory_pins p),'activity',(SELECT jsonb_agg(a) FROM activity_events a),'notifications',(SELECT jsonb_agg(g) FROM notification_groups g),'user_seq',(SELECT last_value FROM users_id_seq),'service_seq',(SELECT last_value FROM directory_services_id_seq),'activity_seq',(SELECT last_value FROM activity_events_id_seq))";
+    let before: Value = sqlx::query_scalar(fingerprint)
+        .fetch_one(&mut db)
+        .await
+        .unwrap();
+    assert_migrated(completed(database.migrate()).await);
+    let after: Value = sqlx::query_scalar(fingerprint)
+        .fetch_one(&mut db)
+        .await
+        .unwrap();
+    assert_eq!(before, after);
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM dashboard_layouts")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        0
+    );
+    for migration in prior {
+        let checksum: Vec<u8> =
+            sqlx::query_scalar("SELECT checksum FROM _sqlx_migrations WHERE version=$1")
+                .bind(migration.version)
+                .fetch_one(&mut db)
+                .await
+                .unwrap();
+        assert_eq!(checksum, migration.checksum.as_ref());
+    }
+    for statement in [
+        "INSERT INTO dashboard_layouts SELECT id,1,ARRAY[]::text[],TRUE,TRUE,TRUE FROM users",
+        "INSERT INTO dashboard_layouts SELECT id,1,ARRAY['note','note','pins'],TRUE,TRUE,TRUE FROM users",
+        "INSERT INTO dashboard_layouts SELECT id,1,ARRAY['note','connections','unknown'],TRUE,TRUE,TRUE FROM users",
+        "INSERT INTO dashboard_layouts SELECT id,1,ARRAY['note',NULL,'pins'],TRUE,TRUE,TRUE FROM users",
+        "INSERT INTO dashboard_layouts SELECT id,1,ARRAY[['note','connections','pins']],TRUE,TRUE,TRUE FROM users",
+        "INSERT INTO dashboard_layouts SELECT id,1,'[0:2]={note,connections,pins}'::text[],TRUE,TRUE,TRUE FROM users",
+    ] {
+        assert_constraint(&mut db, statement, "23514").await;
+    }
+    assert_constraint(&mut db,"INSERT INTO dashboard_layouts SELECT id,0,ARRAY['note','connections','pins'],TRUE,TRUE,TRUE FROM users","23514").await;
+    assert_constraint(&mut db,"INSERT INTO dashboard_layouts SELECT id,1,ARRAY['note','connections','pins'],FALSE,FALSE,FALSE FROM users","23514").await;
+    db.execute("INSERT INTO dashboard_layouts SELECT id,1,ARRAY['pins','note','connections'],TRUE,FALSE,TRUE FROM users").await.unwrap();
+    assert_constraint(&mut db,"INSERT INTO dashboard_layouts SELECT id,2,ARRAY['note','connections','pins'],TRUE,TRUE,TRUE FROM users","23505").await;
 }

@@ -13,6 +13,7 @@ pub struct Snapshot {
     pub connection_configured: bool,
     pub directory: crate::directory::View,
     pub notifications: super::notifications::View,
+    pub layout: super::layout::View,
 }
 
 pub async fn snapshot(pool: &PgPool, key: &[u8], verifier: &[u8]) -> Result<Snapshot, Error> {
@@ -43,10 +44,12 @@ pub async fn snapshot(pool: &PgPool, key: &[u8], verifier: &[u8]) -> Result<Snap
             .map_err(|_| Error::Unavailable)?;
     let directory = super::directory::view(&mut tx, session.account.id).await?;
     let notifications = super::notifications::view(&mut tx, session.account.id).await?;
+    let layout = super::layout::view(&mut tx, session.account.id).await?;
     tx.commit().await.map_err(|_| Error::Unavailable)?;
     Ok(Snapshot {
         directory,
         notifications,
+        layout,
         session,
         note,
         connection_revision: connection.revision,
@@ -98,10 +101,12 @@ pub async fn save(
             .map_err(|_| Error::Unavailable)?;
     let directory = super::directory::view(&mut tx, session.account.id).await?;
     let notifications = super::notifications::view(&mut tx, session.account.id).await?;
+    let layout = super::layout::view(&mut tx, session.account.id).await?;
     tx.commit().await.map_err(|_| Error::Unavailable)?;
     Ok(Snapshot {
         directory,
         notifications,
+        layout,
         connection_revision: connection.revision,
         connection_configured: connection.sealed.is_some(),
         session,
