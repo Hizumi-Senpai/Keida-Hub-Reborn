@@ -276,7 +276,7 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
     for statement in [
         "UPDATE reborn_schema SET singleton = FALSE",
         "UPDATE reborn_schema SET product = 'keida-hub-rewrite'",
-        "UPDATE reborn_schema SET schema_version = 6",
+        "UPDATE reborn_schema SET schema_version = 7",
     ] {
         assert_constraint(&mut connection, statement, "23514").await;
     }
@@ -532,7 +532,7 @@ async fn schema_two_upgrade_preserves_real_account_session_and_accepted_migratio
             .fetch_one(&mut connection)
             .await
             .expect("current schema"),
-        5
+        6
     );
 }
 
