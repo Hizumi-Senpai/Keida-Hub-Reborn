@@ -11,7 +11,6 @@
   const label = (provider: MediaProvider) => provider === 'jellyfin' ? 'Jellyfin' : 'Seerr';
   let forms: Partial<Record<MediaProvider, HTMLFormElement>> = {};
   const when = (seconds: number | null) => seconds === null ? 'Not collected' : new Date(seconds * 1000).toLocaleString();
-  const busy = (provider: MediaProvider) => !active || state[provider].save === 'saving';
   const canChange = (provider: MediaProvider) => active && owner && state[provider].phase === 'ready' && state[provider].save === 'idle' && !!state[provider].status;
   function clearForms(): void { for (const provider of providers) forms[provider]?.reset(); }
   $: if (!active || !owner) clearForms();
@@ -39,10 +38,12 @@
       {#each providers as provider (provider)}
         {@const current = state[provider]}
         {@const observation = current.observation}
+        {@const workingNow = !active || current.save === 'saving'}
+        {@const canChangeNow = active && owner && current.phase === 'ready' && current.save === 'idle' && !!current.status}
         <section class="card media-provider" data-media-provider={provider} data-media-revision={current.status?.revision ?? ''} data-media-configured={String(current.status?.configured ?? false)} data-media-error={observation?.error ?? ''} data-media-complete={String(observation?.complete ?? false)} data-media-offset={observation?.offset ?? 0} data-media-save={current.save} aria-label={`${label(provider)} media connection`}>
           <div class="guide-card-heading"><h2>{label(provider)}</h2><span class="quiet-label">Owner-only observations</span></div>
           <p class="workspace-status" role="status" data-media-status>{current.message || 'Check the connection state to begin.'}</p>
-          <div class="button-row media-actions"><button class="button secondary media-check-state" disabled={busy(provider)} onclick={() => void check(provider)}>Check {label(provider)} connection state</button><button class="button secondary media-check-observations" disabled={busy(provider) || !current.status?.configured} onclick={() => void load(provider, observation?.offset ?? 0)}>Check {label(provider)} observations</button></div>
+          <div class="button-row media-actions"><button class="button secondary media-check-state" disabled={workingNow} onclick={() => void check(provider)}>Check {label(provider)} connection state</button><button class="button secondary media-check-observations" disabled={workingNow || !current.status?.configured} onclick={() => void load(provider, observation?.offset ?? 0)}>Check {label(provider)} observations</button></div>
           {#if observation?.configured}
             <dl class="media-sample"><dt>Collected</dt><dd>{when(observation.checked_at)}</dd><dt>Freshness</dt><dd>{observation.freshness === 'fresh' ? 'Recent collection' : observation.freshness === 'stale' ? 'Stale collection' : 'Collection age unknown'}</dd><dt>Sample</dt><dd>{observation.complete ? 'Complete for these bounded queries' : 'Incomplete or still checking'}</dd></dl>
             {#if provider === 'jellyfin'}<div class="media-playback" data-media-playback><h3>Recent server playback</h3><p>{observation.playback && observation.playback.playing !== null && observation.playback.paused !== null ? `${observation.playback.playing} playing · ${observation.playback.paused} paused` : 'Playback counts unavailable'}</p><p class="field-help">Across the Jellyfin server, not limited to the selected library: sessions active within 120 seconds with a reported playing item. Counts do not show users, devices or watch titles.</p></div>{/if}
@@ -52,20 +53,20 @@
             {:else if observation.error !== 'checking'}<p class="field-help">No usable rows were reported for this sample. This does not establish an empty library or request list.</p>{/if}
             <p class="field-help">{observation.total === null ? 'Provider total unavailable.' : `${observation.total} rows reported by the provider.`} Up to 12 rows per page and the first 60 rows only. Pages can change as the provider changes.</p>
             {#if observation.truncated}<p class="notice">More rows exist beyond this bounded view.</p>{/if}
-            <div class="button-row media-pagination"><button class="text-button media-previous" disabled={busy(provider) || observation.offset === 0} onclick={() => void load(provider, observation.offset - 12)}>Previous {label(provider)} page</button><span class="quiet-label">Page {observation.offset / 12 + 1}</span><button class="text-button media-next" disabled={busy(provider) || observation.next_offset === null} onclick={() => observation.next_offset !== null && void load(provider, observation.next_offset)}>Next {label(provider)} page</button></div>
+            <div class="button-row media-pagination"><button class="text-button media-previous" disabled={workingNow || observation.offset === 0} onclick={() => void load(provider, observation.offset - 12)}>Previous {label(provider)} page</button><span class="quiet-label">Page {observation.offset / 12 + 1}</span><button class="text-button media-next" disabled={workingNow || observation.next_offset === null} onclick={() => observation.next_offset !== null && void load(provider, observation.next_offset)}>Next {label(provider)} page</button></div>
           {:else if current.status && !current.status.configured}<p class="media-empty">No {label(provider)} connection enrolled.</p>{/if}
           <details class="media-enrollment"><summary>Enroll dedicated {label(provider)} access</summary><p>Use a key created deliberately for Reborn. It is encrypted on the server and will not be shown again.</p><p class="notice">A {label(provider)} API key can grant administrator access. Reborn sends observation requests only; this does not restrict what the key itself can do.</p>
             {#if provider === 'jellyfin'}<p class="field-help">Choose one Jellyfin library by its ID. This limits the rows requested here; the underlying API key may still access all libraries and sessions.</p>{/if}
             <form bind:this={forms[provider]} autocomplete="off" onsubmit={(event) => { event.preventDefault(); void submit(provider); }}>
-              <label for={`${provider}-endpoint`}>{label(provider)} HTTPS address</label><input id={`${provider}-endpoint`} name="endpoint" type="url" required maxlength="512" placeholder={`https://${provider}.example/`} disabled={!canChange(provider)}>
-              <label for={`${provider}-token`}>Dedicated API key</label><input id={`${provider}-token`} name="token" type="password" required maxlength="8192" autocomplete="off" disabled={!canChange(provider)}>
-              {#if provider === 'jellyfin'}<label for="jellyfin-library">Jellyfin library ID</label><input id="jellyfin-library" name="library-id" required maxlength="36" pattern="[a-f0-9]{32}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}" disabled={!canChange(provider)}><p class="field-help">Use the library’s lowercase 32-digit ID or UUID, without an address or API key.</p>{/if}
-              <label for={`${provider}-ca`}>Private CA certificate, if needed</label><textarea id={`${provider}-ca`} name="ca-pem" rows="3" maxlength="8192" disabled={!canChange(provider)}></textarea><p class="field-help">Leave blank for publicly trusted HTTPS. Normal hostname and trust checks always apply.</p>
-              <label class="media-ack" for={`${provider}-ack`}><input id={`${provider}-ack`} name="acknowledge" type="checkbox" required disabled={!canChange(provider)}>I understand this key may grant broad access, and I choose owner-only media observations.</label>
-              <button class="button primary media-save" type="submit" disabled={!canChange(provider)}>Save {label(provider)} connection</button>
+              <label for={`${provider}-endpoint`}>{label(provider)} HTTPS address</label><input id={`${provider}-endpoint`} name="endpoint" type="url" required maxlength="512" placeholder={`https://${provider}.example/`} disabled={!canChangeNow}>
+              <label for={`${provider}-token`}>Dedicated API key</label><input id={`${provider}-token`} name="token" type="password" required maxlength="8192" autocomplete="off" disabled={!canChangeNow}>
+              {#if provider === 'jellyfin'}<label for="jellyfin-library">Jellyfin library ID</label><input id="jellyfin-library" name="library-id" required maxlength="36" pattern="[a-f0-9]{32}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}" disabled={!canChangeNow}><p class="field-help">Use the library’s lowercase 32-digit ID or UUID, without an address or API key.</p>{/if}
+              <label for={`${provider}-ca`}>Private CA certificate, if needed</label><textarea id={`${provider}-ca`} name="ca-pem" rows="3" maxlength="8192" disabled={!canChangeNow}></textarea><p class="field-help">Leave blank for publicly trusted HTTPS. Normal hostname and trust checks always apply.</p>
+              <label class="media-ack" for={`${provider}-ack`}><input id={`${provider}-ack`} name="acknowledge" type="checkbox" required disabled={!canChangeNow}>I understand this key may grant broad access, and I choose owner-only media observations.</label>
+              <button class="button primary media-save" type="submit" disabled={!canChangeNow}>Save {label(provider)} connection</button>
             </form>
           </details>
-          {#if current.status?.configured}<button class="text-button media-remove" disabled={!canChange(provider)} onclick={() => void submit(provider, true)}>Remove {label(provider)} connection</button>{/if}
+          {#if current.status?.configured}<button class="text-button media-remove" disabled={!canChangeNow} onclick={() => void submit(provider, true)}>Remove {label(provider)} connection</button>{/if}
         </section>
       {/each}
     </div>

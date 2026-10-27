@@ -75,11 +75,13 @@ async fn media_enroll(
         matches!(name, "jellyfin" | "seerr"),
         "closed media fixture provider",
     )?;
+    println!("RUST_BROWSER_STEP media enrollment {name} wait-current-state");
     b.wait(
         "const s=document.querySelector('[data-media-provider='+arguments[0]+']');return !!s && /^(0|[1-9][0-9]*)$/.test(s.dataset.mediaRevision) && !s.querySelector('.media-save').disabled;",
         json!([name]),
     )
     .await?;
+    println!("RUST_BROWSER_STEP media enrollment {name} open-native-form");
     if b
         .evaluate(
             "return document.querySelector('[data-media-provider='+arguments[0]+'] details.media-enrollment').open;",
@@ -102,13 +104,18 @@ async fn media_enroll(
         .as_str()
         .and_then(|value| value.parse::<u64>().ok())
         .ok_or("observed canonical media enrollment revision")?;
+    println!("RUST_BROWSER_STEP media enrollment {name} fill-address");
     b.fill(&format!("#{name}-endpoint"), &provider.origin)
         .await?;
+    println!("RUST_BROWSER_STEP media enrollment {name} fill-key");
     b.fill(&format!("#{name}-token"), m::TOKEN).await?;
+    println!("RUST_BROWSER_STEP media enrollment {name} fill-certificate");
     b.fill(&format!("#{name}-ca"), &provider.ca).await?;
     if name == "jellyfin" {
+        step("media enrollment jellyfin fill-library");
         b.fill("#jellyfin-library", m::LIBRARY_ID).await?;
     }
+    println!("RUST_BROWSER_STEP media enrollment {name} acknowledge-access");
     if b.evaluate(
         "return document.querySelector('#'+arguments[0]+'-ack').checked;",
         json!([name]),
@@ -118,8 +125,11 @@ async fn media_enroll(
     {
         b.click(&format!("#{name}-ack")).await?;
     }
+    check(b.evaluate("const f=document.querySelector('[data-media-provider='+arguments[0]+'] form');return !!f && f.checkValidity();", json!([name])).await? == true, "native media enrollment constraints accept the actually entered HTTPS fixture")?;
+    println!("RUST_BROWSER_STEP media enrollment {name} native-submit");
     b.click(&format!("[data-media-provider={name}] .media-save"))
         .await?;
+    println!("RUST_BROWSER_STEP media enrollment {name} wait-committed-and-cleared");
     b.wait(
         "const s=document.querySelector('[data-media-provider='+arguments[0]+']');return s?.dataset.mediaRevision===arguments[1] && s.dataset.mediaConfigured==='true' && document.querySelector('#'+arguments[0]+'-token').value==='' && document.querySelector('#'+arguments[0]+'-endpoint').value==='' && document.querySelector('#'+arguments[0]+'-ca').value==='';",
         json!([name, (revision + 1).to_string()]),
@@ -535,26 +545,36 @@ async fn owner_media_observations() -> Check<()> {
     use reborn_crafty_fixture::media as m;
     step("media phase01 owner-only native enrollment and persistent private editor");
     let f = Fixture::new().await?;
+    step("media phase01a allocate-provider-and-browser");
     let provider = m::Media::start().await?;
     let mut owner = f.browser(true).await?;
+    step("media phase01b native-owner-claim");
     claim(&f, &owner).await?;
+    step("media phase01c enroll-fixture-member");
     let (member, password) = f.enroll_member(&owner).await?;
+    step("media phase01d open-private-workspace");
     workspace(&f, &owner).await?;
+    step("media phase01e retain-note-draft");
     note(&owner).await?;
     let draft = "An unfinished private note while browsing my media";
     owner.fill("#workspace-note", draft).await?;
     check(owner.evaluate("window.__mediaEditor=document.querySelector('#workspace-note');window.__mediaEditor.setSelectionRange(4,13);return window.__mediaEditor.value===arguments[0];", json!([draft])).await? == true, "capture the actual private editor before opening Media")?;
+    step("media phase01f navigate-Media-and-wait-native-fields");
     owner.click(".main-nav button:nth-child(9)").await?;
     owner.wait("return !!document.querySelector('#jellyfin-token') && !!document.querySelector('#seerr-token');", json!([])).await?;
     check(owner.evaluate("const nav=[...document.querySelectorAll('.main-nav button')],labels=['Home','Workspace note','Connections','Services','Activity','Notifications','Integrations','Roadmap','Media'];return nav.length===labels.length && labels.every((label,index)=>nav[index].textContent.includes(label)) && document.querySelectorAll('[data-home-panel]').length===3;", json!([])).await? == true, "Media is appended after eight existing navigation positions without adding Home panels")?;
+    step("media phase01g enroll-Jellyfin");
     media_enroll(&owner, &provider, "jellyfin").await?;
+    step("media phase01h enroll-Seerr");
     media_enroll(&owner, &provider, "seerr").await?;
+    step("media phase01i observe-Jellyfin");
     media_observed(&owner, "jellyfin", "Fixture movie").await?;
+    step("media phase01j observe-Seerr");
     media_observed(&owner, "seerr", "Requested movie").await?;
     check(owner.evaluate("const j=document.querySelector('[data-media-provider=jellyfin]'),s=document.querySelector('[data-media-provider=seerr]');return j.dataset.mediaComplete==='true' && s.dataset.mediaComplete==='true' && j.querySelectorAll('[data-media-item]').length===12 && s.querySelectorAll('[data-media-item]').length===12 && j.textContent.includes('Fixture series') && j.querySelector('[data-media-playback]').textContent.includes('1 playing') && j.querySelector('[data-media-playback]').textContent.includes('1 paused') && s.textContent.includes('Requested series') && s.textContent.toLowerCase().includes('pending') && s.textContent.toLowerCase().includes('completed');", json!([])).await? == true, "real media HTTPS observations render library titles, count-only playback and independent request status rows")?;
     check(owner.evaluate("const canaries=arguments[0],values=[document.body.textContent,...[...document.querySelectorAll('input,textarea')].map(e=>e.value),...Object.values(sessionStorage),...Object.values(localStorage)];return canaries.every(c=>values.every(v=>!v.includes(c))) && document.querySelector('#jellyfin-library').value==='';", json!([[m::TOKEN, &provider.origin, "PRIVATE_MEDIA", "PRIVATE_WATCH", "PRIVATE_PAUSED", "PRIVATE_IDLE", "PRIVATE_REQUESTER", "PRIVATE_MODIFIER", "PRIVATE_PROFILE", "private-media-email@example.invalid", "198.51.100.77", "/private/media-fixture-path"]])).await? == true, "native enrollment clears secrets and no provider identity, watch title, path, key or endpoint reaches DOM or storage")?;
 
-    step("media phase01b existing scheduler ages visible samples without provider IO");
+    step("media phase01k existing scheduler ages visible samples without provider IO");
     check(owner.evaluate("return ['jellyfin','seerr'].every(name=>document.querySelector('[data-media-provider='+name+']').textContent.includes('Recent collection'));", json!([])).await? == true, "both real provider samples initially display recent collection")?;
     let age_requests = provider.requests().len();
     let age_reads = f.reads();
