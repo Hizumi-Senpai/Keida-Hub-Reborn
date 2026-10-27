@@ -650,36 +650,47 @@ async fn owner_media_observations() -> Check<()> {
     step("media phase02 bounded pages, independent cached reads and preserved note state");
     let writes = f.writes();
     let requests = provider.requests().len();
+    step("media phase02a repeated completed sample reads");
     for _ in 0..3 {
+        owner.wait("const b=document.querySelector('[data-media-provider=jellyfin] .media-check-observations');return !!b && !b.disabled;", json!([])).await?;
         owner
             .click("[data-media-provider=jellyfin] .media-check-observations")
             .await?;
+        owner.wait("const b=document.querySelector('[data-media-provider=seerr] .media-check-observations');return !!b && !b.disabled;", json!([])).await?;
         owner
             .click("[data-media-provider=seerr] .media-check-observations")
             .await?;
     }
+    owner.wait("return ['jellyfin','seerr'].every(name=>{const s=document.querySelector('[data-media-provider='+name+']'),b=s?.querySelector('.media-check-observations');return !!b && !b.disabled && s.querySelectorAll('[data-media-item]').length===12});", json!([])).await?;
     check(
         provider.requests().len() == requests,
         "repeated owner reads use the same bounded cached samples without new provider work",
     )?;
+    step("media phase02b next library offset12");
     owner
         .click("[data-media-provider=jellyfin] .media-next")
         .await?;
     media_observed(&owner, "jellyfin", "Fixture item 13").await?;
+    step("media phase02c validate twelve offset12 rows");
     check(owner.evaluate("const s=document.querySelector('[data-media-provider=jellyfin]');return s.dataset.mediaOffset==='12' && s.querySelectorAll('[data-media-item]').length===12 && !s.textContent.includes('Fixture movie') && !s.querySelector('.media-previous').disabled;", json!([])).await? == true, "next library page uses bounded offset12 rather than mixing earlier rows")?;
+    step("media phase02d next library offset24");
     owner
         .click("[data-media-provider=jellyfin] .media-next")
         .await?;
     media_observed(&owner, "jellyfin", "Fixture item 25").await?;
+    step("media phase02e validate two final rows");
     check(owner.evaluate("const s=document.querySelector('[data-media-provider=jellyfin]');return s.dataset.mediaOffset==='24' && s.querySelectorAll('[data-media-item]').length===2 && s.querySelector('.media-next').disabled;", json!([])).await? == true, "final partial library page has two genuine rows and no invented continuation")?;
+    step("media phase02f previous library offset12");
     owner
         .click("[data-media-provider=jellyfin] .media-previous")
         .await?;
     media_observed(&owner, "jellyfin", "Fixture item 13").await?;
+    step("media phase02g previous library offset0");
     owner
         .click("[data-media-provider=jellyfin] .media-previous")
         .await?;
     media_observed(&owner, "jellyfin", "Fixture movie").await?;
+    step("media phase02h preserve note and clear unsubmitted media key");
     check(
         f.writes() == writes,
         "library and request page reads cannot mutate notes, layout or enrollment",
@@ -695,6 +706,7 @@ async fn owner_media_observations() -> Check<()> {
     check(owner.evaluate("return window.__mediaEditor===document.querySelector('#workspace-note') && window.__mediaEditor.selectionStart===4 && window.__mediaEditor.selectionEnd===13;", json!([])).await? == true, "Media paging preserves actual note component, draft and selection")?;
     owner.click(".main-nav button:nth-child(9)").await?;
     check(owner.evaluate("return document.querySelector('#seerr-token').value==='' && document.querySelector('#seerr-endpoint').value==='';", json!([])).await? == true, "leaving Media removes unsubmitted provider secrets from persistent form state")?;
+    step("media phase02i desktop and390px media accessibility");
     accessibility(&owner).await?;
     owner.mobile().await?;
     check(
