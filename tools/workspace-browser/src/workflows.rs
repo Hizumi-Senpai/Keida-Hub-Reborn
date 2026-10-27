@@ -508,7 +508,15 @@ async fn directory_and_personal_pins() -> Check<()> {
     )
     .await?;
     b.click(".main-nav button:nth-child(4)").await?;
-    for (name, category) in [("My Library", "Media"), ("My Games", "Games")] {
+    for (index, (name, category)) in [("My Library", "Media"), ("My Games", "Games")]
+        .into_iter()
+        .enumerate()
+    {
+        step(if index == 0 {
+            "directory first service enrollment"
+        } else {
+            "directory second service enrollment"
+        });
         b.fill("#service-name", name).await?;
         b.fill("#service-category", category).await?;
         b.fill("#service-url", "https://services.example/library")
@@ -518,12 +526,14 @@ async fn directory_and_personal_pins() -> Check<()> {
         b.click(".directory-editor button[type=submit]").await?;
         b.wait("return document.querySelector('.directory-status').textContent.includes('Saved') && document.querySelector('#service-name').value==='' && [...document.querySelectorAll('.service-card h3')].some(e=>e.textContent.includes(arguments[0]))", json!([name])).await?;
     }
+    step("directory text and category filters");
     b.fill("#service-search", "games").await?;
     b.wait("return document.querySelectorAll('.service-card').length===1 && document.querySelector('.service-card h3').textContent.includes('My Games')", json!([])).await?;
     b.fill("#service-search", "").await?;
     b.evaluate("const s=document.querySelector('#service-filter');s.value='Media';s.dispatchEvent(new Event('change',{bubbles:true}));return true",json!([])).await?;
     b.wait("return document.querySelectorAll('.service-card').length===1 && document.querySelector('.service-card h3').textContent.includes('My Library')",json!([])).await?;
     b.evaluate("const s=document.querySelector('#service-filter');s.value='';s.dispatchEvent(new Event('change',{bubbles:true}));return true",json!([])).await?;
+    step("directory personal pin order");
     b.click("button[aria-label='Pin My Library']").await?;
     b.wait("return !!document.querySelector('button[aria-label=\"Unpin My Library\"]') && !document.querySelector('.pin-service').disabled",json!([])).await?;
     b.click("button[aria-label='Pin My Games']").await?;
@@ -545,6 +555,7 @@ async fn directory_and_personal_pins() -> Check<()> {
             == true,
         "directory draft survives navigation",
     )?;
+    step("directory committed pin response loss");
     let writes = f.writes();
     let held = f.hold("/api/workspace/pins");
     b.click("button[aria-label='Unpin My Games']").await?;
@@ -560,6 +571,7 @@ async fn directory_and_personal_pins() -> Check<()> {
         f.writes() == writes + 1,
         "lost pin response is reconciled without mutation replay",
     )?;
+    step("directory privacy and refresh persistence");
     check(b.evaluate("window.dispatchEvent(new Event('pagehide'));return !document.querySelector('#service-name') && document.querySelector('#service-search').value==='' && !document.querySelector('.service-card')",json!([])).await?==true,"privacy clearing removes service drafts, search, links and pin state synchronously")?;
     workspace(&f, &b).await?;
     b.click(".main-nav button:nth-child(4)").await?;
