@@ -52,3 +52,5 @@ Primary protocol references: [W3C WebDriver](https://www.w3.org/TR/webdriver2/),
 [ChromeDriver capabilities](https://developer.chrome.com/docs/chromedriver/capabilities),
 [Chrome-for-Testing version manifest](https://googlechromelabs.github.io/chrome-for-testing/156.0.8078.4.json),
 [Chromium NSS trust](https://chromium.googlesource.com/chromium/src/+/main/docs/linux/cert_management.md).
+
+The ninth workflow verifies grouped notifications, read watermarks, racing/lost responses without replay, persisted reads, privacy and desktop/390px accessibility.

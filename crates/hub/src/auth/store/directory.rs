@@ -121,6 +121,7 @@ pub async fn edit(
     .await
     .map_err(|_| Error::Unavailable)?;
     super::activity::record(&mut tx, session.account.id, kind, next, state.now).await?;
+    super::notifications::emit(&mut tx, session.account.id, kind, next, state.now).await?;
     tx.commit().await.map_err(|_| Error::Unavailable)
 }
 pub async fn pins(
