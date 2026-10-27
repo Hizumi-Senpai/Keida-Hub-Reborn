@@ -142,6 +142,12 @@ function stored(value: string | null): Draft | undefined {
 const mediaError = (v: unknown): v is string | null => v === null || (typeof v === 'string' && ['checking', 'unavailable', 'invalid_configuration', 'timeout', 'transport', 'denied', 'provider_error', 'oversized', 'malformed'].includes(v));
 const boundedNumber = (v: unknown, max: number, min = 0): v is number => typeof v === 'number' && Number.isSafeInteger(v) && v >= min && v <= max;
 const mediaOffset = (v: unknown): v is number => boundedNumber(v, 48) && v % 12 === 0;
+function agedMediaObservation(value: MediaObservation, at = Math.floor(Date.now() / 1000)): MediaObservation {
+  const collected = value.checked_at;
+  const freshness = !Number.isFinite(at) || at < 0 || collected === null || collected > at + 5 ? 'unknown'
+    : value.freshness === 'fresh' && at - collected > 90 ? 'stale' : value.freshness;
+  return freshness === value.freshness ? value : { ...value, freshness };
+}
 function mediaObservation(v: unknown, provider: MediaProvider, offset: number): MediaObservation {
   if (!record(v) || !decimal(v.revision) || typeof v.configured !== 'boolean' || !(v.checked_at === null || boundedNumber(v.checked_at, 253402300799))
       || !['fresh', 'stale', 'unknown'].includes(String(v.freshness)) || !mediaError(v.error) || typeof v.complete !== 'boolean'
@@ -158,13 +164,13 @@ function mediaObservation(v: unknown, provider: MediaProvider, offset: number): 
   const value = v as unknown as MediaObservation;
   // Keep only the current presentation contract. Extra provider or future
   // response fields cannot become private browser state through a broad cast.
-  return {
+  return agedMediaObservation({
     revision: value.revision, configured: value.configured, checked_at: value.checked_at,
     freshness: value.freshness, error: value.error, complete: value.complete,
     offset: value.offset, next_offset: value.next_offset, total: value.total, truncated: value.truncated,
     items: value.items.map(({ id, title, kind, year, request_status, detail_error }) => ({ id, title, kind, year, request_status, detail_error })),
     playback: value.playback === null ? null : { playing: value.playback.playing, paused: value.playback.paused, error: value.playback.error },
-  };
+  });
 }
 export function workspace(binding: string) {
   const model = writable<Model>(empty('checking', 'Checking your workspace…'));
@@ -231,7 +237,7 @@ export function workspace(binding: string) {
   function schedule(): void {
     if (timer) clearTimeout(timer);
     if (!disposed && !terminal && state().phase === 'ready' && state().notificationSave !== 'uncertain' && state().layoutSave !== 'uncertain' && document.visibilityState === 'visible') {
-      timer = setTimeout(() => { timer = undefined; void read(); }, 15000);
+      timer = setTimeout(() => { timer = undefined; ageMedia(); void read(); }, 15000);
     }
   }
   async function request(path: string, controller: AbortController, body?: unknown): Promise<{ status: number; value?: unknown }> {
@@ -615,6 +621,22 @@ export function workspace(binding: string) {
     } catch {
       if (!disposed && serial === observationsSerial && current === epoch && currentScope(captured)) model.update(m => ({ ...m, observations: { ...emptyObservations(), phase: 'error', message: 'Provider history could not be checked. Retry deliberately; current connections remain available.' } }));
     } finally { if (observationsReading === controller) observationsReading = undefined; }
+  }
+  function ageMedia(): void {
+    const current = state();
+    if (disposed || terminal || current.phase !== 'ready') return;
+    const at = Math.floor(Date.now() / 1000);
+    let changed = false;
+    const media = { ...current.media };
+    for (const provider of mediaProviders) {
+      const observation = media[provider].observation;
+      if (!observation) continue;
+      const aged = agedMediaObservation(observation, at);
+      if (aged !== observation) { changed = true; media[provider] = { ...media[provider], observation: aged }; }
+    }
+    // Age only the already-held presentation on the existing scheduler tick.
+    // No provider request, new timer or promotion from stale back to fresh.
+    if (changed) model.set({ ...current, media });
   }
   function setMedia(provider: MediaProvider, value: MediaState, flush = false): void {
     const update = () => model.update(m => ({ ...m, media: { ...m.media, [provider]: value } }));

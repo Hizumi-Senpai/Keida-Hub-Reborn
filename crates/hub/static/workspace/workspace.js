@@ -2542,7 +2542,14 @@ var pa = (e) => e === null || typeof e == "string" && [
 	"oversized",
 	"malformed"
 ].includes(e), ma = (e, t, n = 0) => typeof e == "number" && Number.isSafeInteger(e) && e >= n && e <= t, ha = (e) => ma(e, 48) && e % 12 == 0;
-function ga(e, t, n) {
+function ga(e, t = Math.floor(Date.now() / 1e3)) {
+	let n = e.checked_at, r = !Number.isFinite(t) || t < 0 || n === null || n > t + 5 ? "unknown" : e.freshness === "fresh" && t - n > 90 ? "stale" : e.freshness;
+	return r === e.freshness ? e : {
+		...e,
+		freshness: r
+	};
+}
+function _a(e, t, n) {
 	if (!Q(e) || !$(e.revision) || typeof e.configured != "boolean" || !(e.checked_at === null || ma(e.checked_at, 253402300799)) || ![
 		"fresh",
 		"stale",
@@ -2556,7 +2563,7 @@ function ga(e, t, n) {
 		"unknown"
 	].includes(String(e.request_status)))) || (t === "seerr" ? e.playback !== null : !(e.playback === null || Q(e.playback) && (e.playback.playing === null || ma(e.playback.playing, 256)) && (e.playback.paused === null || ma(e.playback.paused, 256)) && pa(e.playback.error))) || !e.configured && (e.items.length !== 0 || e.complete || e.checked_at !== null || e.next_offset !== null)) throw Error("Invalid media response");
 	let r = e;
-	return {
+	return ga({
 		revision: r.revision,
 		configured: r.configured,
 		checked_at: r.checked_at,
@@ -2580,9 +2587,9 @@ function ga(e, t, n) {
 			paused: r.playback.paused,
 			error: r.playback.error
 		}
-	};
+	});
 }
-function _a(e) {
+function va(e) {
 	let t = ki(Zi("checking", "Checking your workspace…")), n = 0, r, i, a, o, s, c, l, u, d, f = 0, p = 0, m = 0, h = !1, g = {}, _ = {}, v = {}, y = {
 		jellyfin: 0,
 		seerr: 0
@@ -2632,7 +2639,7 @@ function _a(e) {
 	}
 	function ie() {
 		r && clearTimeout(r), !w && !T && E().phase === "ready" && E().notificationSave !== "uncertain" && E().layoutSave !== "uncertain" && document.visibilityState === "visible" && (r = setTimeout(() => {
-			r = void 0, ue();
+			r = void 0, De(), ue();
 		}, 15e3));
 	}
 	async function ae(t, n, r) {
@@ -2758,7 +2765,7 @@ function _a(e) {
 			}
 			if (h && E().snapshot?.account.role === "owner") for (let e of Yi) {
 				let t = E().media[e].observation;
-				t?.error === "checking" && !g[e] && !v[e] && Ne(e, t.offset);
+				t?.error === "checking" && !g[e] && !v[e] && Pe(e, t.offset);
 			}
 			ie();
 		} catch {
@@ -3371,7 +3378,25 @@ function _a(e) {
 			l === o && (l = void 0);
 		}
 	}
-	function De(e, n, r = !1) {
+	function De() {
+		let e = E();
+		if (w || T || e.phase !== "ready") return;
+		let n = Math.floor(Date.now() / 1e3), r = !1, i = { ...e.media };
+		for (let e of Yi) {
+			let t = i[e].observation;
+			if (!t) continue;
+			let a = ga(t, n);
+			a !== t && (r = !0, i[e] = {
+				...i[e],
+				observation: a
+			});
+		}
+		r && t.set({
+			...e,
+			media: i
+		});
+	}
+	function Oe(e, n, r = !1) {
 		let i = () => t.update((t) => ({
 			...t,
 			media: {
@@ -3381,33 +3406,33 @@ function _a(e) {
 		}));
 		r ? jt(i) : i();
 	}
-	function Oe() {
+	function ke() {
 		let e = E();
 		return !w && !T && e.phase === "ready" && e.snapshot?.account.role === "owner" && document.visibilityState === "visible" ? e.snapshot : void 0;
 	}
-	function ke(e) {
+	function Ae(e) {
 		++y[e], g[e]?.abort(), delete g[e];
 	}
-	function Ae() {
+	function je() {
 		h = !1;
 		for (let e of Yi) {
-			ke(e), ++b[e], _[e]?.abort(), delete _[e];
+			Ae(e), ++b[e], _[e]?.abort(), delete _[e];
 			let t = E().media[e], n = !!v[e];
-			v[e]?.abort(), delete v[e], De(e, {
+			v[e]?.abort(), delete v[e], Oe(e, {
 				phase: "idle",
 				save: n ? "uncertain" : t.save,
 				message: n ? "The save may have completed. Check the connection state before another change." : t.save === "uncertain" || t.save === "conflict" ? t.message : ""
 			}, !0);
 		}
 	}
-	async function je(e, t = !0) {
-		let r = Oe();
+	async function Me(e, t = !0) {
+		let r = ke();
 		if (!r || v[e]) return;
-		h = !0, ke(e), _[e]?.abort();
+		h = !0, Ae(e), _[e]?.abort();
 		let i = new AbortController();
 		_[e] = i;
 		let a = ++b[e], o = n, s = E().media[e];
-		De(e, {
+		Oe(e, {
 			...s,
 			phase: "loading",
 			observation: void 0,
@@ -3428,7 +3453,7 @@ function _a(e) {
 			if (s.status !== 200 || !Q(c) || !$(c.revision) || typeof c.configured != "boolean") throw Error("Media enrollment unavailable");
 			let l = E().media[e].status;
 			if (l && BigInt(c.revision) < BigInt(l.revision)) throw Error("Older enrollment reply");
-			De(e, {
+			Oe(e, {
 				phase: "ready",
 				status: {
 					revision: c.revision,
@@ -3436,11 +3461,11 @@ function _a(e) {
 				},
 				save: "idle",
 				message: c.configured ? "Enrollment checked. Only observation requests are sent." : "No connection is enrolled."
-			}, !0), t && c.configured && await Ne(e);
+			}, !0), t && c.configured && await Pe(e);
 		} catch {
 			if (!w && a === b[e] && o === n && ce(r)) {
 				let t = E().media[e];
-				De(e, {
+				Oe(e, {
 					...t,
 					phase: "error",
 					observation: void 0,
@@ -3451,17 +3476,17 @@ function _a(e) {
 			_[e] === i && delete _[e];
 		}
 	}
-	async function Me() {
-		Oe() && (h = !0, await Promise.all(Yi.map((e) => je(e))));
+	async function Ne() {
+		ke() && (h = !0, await Promise.all(Yi.map((e) => Me(e))));
 	}
-	async function Ne(e, t = 0) {
-		let r = Oe();
+	async function Pe(e, t = 0) {
+		let r = ke();
 		if (!r || !ha(t) || v[e]) return;
-		h = !0, ke(e);
+		h = !0, Ae(e);
 		let i = new AbortController();
 		g[e] = i;
 		let a = y[e], o = n, s = E().media[e];
-		De(e, {
+		Oe(e, {
 			...s,
 			phase: "loading",
 			observation: void 0,
@@ -3479,7 +3504,7 @@ function _a(e) {
 				return;
 			}
 			if (c.status === 409) {
-				ke(e), De(e, {
+				Ae(e), Oe(e, {
 					phase: "error",
 					save: s.save,
 					message: "Enrollment changed. Check the connection state before reading its new scope."
@@ -3492,11 +3517,11 @@ function _a(e) {
 				return;
 			}
 			if (c.value.provider !== e) throw Error("Wrong media provider");
-			let l = ga(c.value.observation, e, t), u = E().media[e].status;
+			let l = _a(c.value.observation, e, t), u = E().media[e].status;
 			if (u && BigInt(l.revision) < BigInt(u.revision)) throw Error("Older media scope");
 			u?.revision !== l.revision && (++b[e], _[e]?.abort(), delete _[e]);
 			let d = l.configured ? l.error === "checking" ? "A sample is being collected. Check observations again, or wait for the existing workspace access check." : l.error ? "This provider sample is unavailable or incomplete. Unknown values stay unknown." : l.complete ? "Media observations checked." : "A partial media sample is available; some details are unknown." : "No connection is enrolled.";
-			De(e, {
+			Oe(e, {
 				phase: "ready",
 				status: {
 					revision: l.revision,
@@ -3507,7 +3532,7 @@ function _a(e) {
 				message: d
 			}, !0);
 		} catch {
-			!w && a === y[e] && o === n && ce(r) && De(e, {
+			!w && a === y[e] && o === n && ce(r) && Oe(e, {
 				...E().media[e],
 				phase: "error",
 				observation: void 0,
@@ -3517,14 +3542,14 @@ function _a(e) {
 			g[e] === i && delete g[e];
 		}
 	}
-	async function Pe(e, t, r) {
-		let i = Oe(), a = E().media[e];
+	async function Fe(e, t, r) {
+		let i = ke(), a = E().media[e];
 		if (!i || v[e] || a.phase !== "ready" || a.save !== "idle" || a.status?.revision !== t || !$(t)) return;
-		h = !0, ke(e), ++b[e], _[e]?.abort(), delete _[e];
+		h = !0, Ae(e), ++b[e], _[e]?.abort(), delete _[e];
 		let o = new AbortController();
 		v[e] = o;
 		let s = n;
-		De(e, {
+		Oe(e, {
 			...a,
 			observation: void 0,
 			save: "saving",
@@ -3545,7 +3570,7 @@ function _a(e) {
 				return;
 			}
 			if (c.status === 409) {
-				De(e, {
+				Oe(e, {
 					phase: "error",
 					save: "conflict",
 					message: "The connection changed elsewhere. Check its current state before enrolling again."
@@ -3557,7 +3582,7 @@ function _a(e) {
 				413,
 				429
 			].includes(c.status)) {
-				De(e, {
+				Oe(e, {
 					...a,
 					observation: void 0,
 					save: "idle",
@@ -3567,7 +3592,7 @@ function _a(e) {
 			}
 			let l = c.value;
 			if (c.status !== 200 || !Q(l) || !$(l.revision, !0) || BigInt(l.revision) !== BigInt(t) + 1n || l.configured !== (r !== null)) throw Error("Uncertain media save");
-			De(e, {
+			Oe(e, {
 				phase: "ready",
 				status: {
 					revision: l.revision,
@@ -3577,7 +3602,7 @@ function _a(e) {
 				message: r ? "Connection saved. Check its observations." : "Connection removed."
 			}, !0);
 		} catch {
-			!w && s === n && ce(i) && v[e] === o && De(e, {
+			!w && s === n && ce(i) && v[e] === o && Oe(e, {
 				phase: "error",
 				save: "uncertain",
 				message: "The save may have completed. Check the connection state before entering credentials again."
@@ -3586,13 +3611,13 @@ function _a(e) {
 			v[e] === o && delete v[e];
 		}
 	}
-	function Fe() {
+	function Ie() {
 		te(), D("Signing out…", !0);
 		try {
 			C?.postMessage({ kind: "auth-changed" });
 		} catch {}
 	}
-	function Ie() {
+	function Le() {
 		let e = () => D("Workspace hidden. Checking access on return."), n = () => {
 			ue();
 		}, r = () => {
@@ -3609,12 +3634,12 @@ function _a(e) {
 	}
 	return {
 		model: t,
-		start: Ie,
+		start: Le,
 		edit: de,
 		recover: fe,
 		resolve: pe,
 		save: me,
-		signOut: Fe,
+		signOut: Ie,
 		check: () => ue(!0),
 		editService: ge,
 		pins: _e,
@@ -3630,16 +3655,16 @@ function _a(e) {
 		checkLayout: () => ue(!0),
 		loadGuide: Te,
 		observations: Ee,
-		openMedia: Me,
-		closeMedia: Ae,
-		checkMedia: je,
-		loadMedia: Ne,
-		saveMedia: Pe
+		openMedia: Ne,
+		closeMedia: je,
+		checkMedia: Me,
+		loadMedia: Pe,
+		saveMedia: Fe
 	};
 }
 // src/LayoutEditor.svelte
-var va = /* @__PURE__ */ K("<li tabindex=\"-1\"><label><input type=\"checkbox\"/><span> </span></label> <div class=\"layout-move\"><button class=\"button secondary layout-up\">↑<span class=\"sr-only\">Move up</span></button><button class=\"button secondary layout-down\">↓<span class=\"sr-only\">Move down</span></button></div></li>"), ya = /* @__PURE__ */ K("<li> </li>"), ba = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Layout conflict\"><h3>There’s a newer saved layout</h3><p>Your arrangement is still shown. Compare it with the saved order below before choosing what to keep.</p><ol></ol><div class=\"button-row\"><button class=\"button secondary\">Keep my layout against saved layout</button><button class=\"text-button layout-use-saved\">Use saved layout</button></div></section>"), xa = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain layout\"><h3>Check before saving again</h3><p>The layout may have saved. Your arrangement has not been sent again.</p><button class=\"button secondary check-layout check-saved-layout\">Check saved layout</button></section>"), Sa = /* @__PURE__ */ K("<section class=\"layout-editor card\" aria-label=\"Home layout\"><h2>Make Home yours</h2><p>Choose the panels you see and their order. Keep at least one visible. Your other views and open forms stay available.</p> <ol class=\"layout-list\"></ol> <!> <!> <div class=\"button-row\"><button class=\"button primary save-layout\"> </button><button class=\"text-button cancel-layout\">Cancel layout</button><button class=\"text-button reset-layout\">Reset layout</button></div> <p class=\"field-help\">Reset previews the default order and visibility. Save layout applies it to this account.</p></section>");
-function Ca(e, t) {
+var ya = /* @__PURE__ */ K("<li tabindex=\"-1\"><label><input type=\"checkbox\"/><span> </span></label> <div class=\"layout-move\"><button class=\"button secondary layout-up\">↑<span class=\"sr-only\">Move up</span></button><button class=\"button secondary layout-down\">↓<span class=\"sr-only\">Move down</span></button></div></li>"), ba = /* @__PURE__ */ K("<li> </li>"), xa = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Layout conflict\"><h3>There’s a newer saved layout</h3><p>Your arrangement is still shown. Compare it with the saved order below before choosing what to keep.</p><ol></ol><div class=\"button-row\"><button class=\"button secondary\">Keep my layout against saved layout</button><button class=\"text-button layout-use-saved\">Use saved layout</button></div></section>"), Sa = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain layout\"><h3>Check before saving again</h3><p>The layout may have saved. Your arrangement has not been sent again.</p><button class=\"button secondary check-layout check-saved-layout\">Check saved layout</button></section>"), Ca = /* @__PURE__ */ K("<section class=\"layout-editor card\" aria-label=\"Home layout\"><h2>Make Home yours</h2><p>Choose the panels you see and their order. Keep at least one visible. Your other views and open forms stay available.</p> <ol class=\"layout-list\"></ol> <!> <!> <div class=\"button-row\"><button class=\"button primary save-layout\"> </button><button class=\"text-button cancel-layout\">Cancel layout</button><button class=\"text-button reset-layout\">Reset layout</button></div> <p class=\"field-help\">Reset previews the default order and visibility. Save layout applies it to this account.</p></section>");
+function wa(e, t) {
 	Ue(t, !1);
 	let n = /* @__PURE__ */ P(), r = /* @__PURE__ */ P(), i = /* @__PURE__ */ P(), a = Z(t, "draft", 8), o = Z(t, "saved", 8), s = Z(t, "state", 8), c = Z(t, "authorized", 8), l = Z(t, "move", 8), u = Z(t, "toggle", 8), d = Z(t, "save", 8), f = Z(t, "cancel", 8), p = Z(t, "reset", 8), m = Z(t, "resolve", 8), h = Z(t, "check", 8);
 	async function g(e, t) {
@@ -3656,9 +3681,9 @@ function Ca(e, t) {
 	}), En(() => (W(a()), W(o())), () => {
 		F(i, !!a() && !!o() && a().panels.some((e, t) => e.id !== o()?.panels[t].id || e.visible !== o()?.panels[t].visible));
 	}), Dn(), Ti();
-	var _ = Sa(), v = R(I(_), 3);
+	var _ = Ca(), v = R(I(_), 3);
 	qr(v, 7, () => (W(a()), U(() => a()?.panels ?? [])), (e) => e.id, (e, t, i) => {
-		var a = va(), o = I(a), s = I(o);
+		var a = ya(), o = I(a), s = I(o);
 		pi(s);
 		var c = L(R(s), !0);
 		j(o);
@@ -3673,9 +3698,9 @@ function Ca(e, t) {
 		]), G("change", s, () => u()(H(t).id)), G("click", d, () => g(H(t).id, -1)), G("click", f, () => g(H(t).id, 1)), q(e, a);
 	}), j(v);
 	var y = R(v, 2), b = (e) => {
-		var t = ba(), n = R(I(t), 2);
+		var t = xa(), n = R(I(t), 2);
 		qr(n, 5, () => (W(o()), U(() => o()?.panels ?? [])), (e) => e.id, (e, t) => {
-			var n = ya(), r = L(n);
+			var n = ba(), r = L(n);
 			z((e) => J(r, `${e ?? ""} — ${H(t), U(() => H(t).visible ? "Shown" : "Hidden") ?? ""}`), [() => (W(Gi), H(t), U(() => Gi(H(t).id)))]), q(e, n);
 		}), j(n);
 		var r = R(n), i = I(r), a = R(i);
@@ -3685,7 +3710,7 @@ function Ca(e, t) {
 		s() === "conflict" && e(b);
 	});
 	var x = R(y, 2), S = (e) => {
-		var t = xa(), n = R(I(t), 2);
+		var t = Sa(), n = R(I(t), 2);
 		j(t), G("click", n, () => h()()), q(e, t);
 	};
 	Y(x, (e) => {
@@ -3702,24 +3727,24 @@ function Ca(e, t) {
 }
 wr(["change", "click"]);
 // src/ObservationHistory.svelte
-var wa = /* @__PURE__ */ K("<p class=\"observation-empty\">No retained observations in this window. A connection must be enrolled and observed before samples appear.</p>"), Ta = /* @__PURE__ */ K("<p class=\"notice\"> </p>"), Ea = /* @__PURE__ */ K("<p class=\"field-help\"> </p>"), Da = /* @__PURE__ */ K("<section><h4> </h4> <dl><dt>Reported process</dt><dd> </dd> <dt>Players</dt><dd> </dd> <dt>Freshness at collection</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd></dl> <!></section>"), Oa = /* @__PURE__ */ K("<li><div class=\"guide-card-heading\"><h3> </h3><time> </time></div> <p class=\"observation-completeness\"> </p> <!> <div class=\"observation-servers\"></div></li>"), ka = /* @__PURE__ */ K("<p class=\"quiet-label\"> </p> <!> <ol class=\"observation-list\"></ol>", 1), Aa = /* @__PURE__ */ K("<section class=\"card observation-history\" aria-label=\"Provider observation history\"><p class=\"eyebrow\">RETAINED PROVIDER SAMPLES</p><h2 tabindex=\"-1\">Crafty observation history</h2> <p>Samples are collected while an authorized workspace checks the enrolled connection. At most the first sample per enrollment revision each minute is retained, up to the newest 10,000 batches.</p> <p class=\"field-help\">This is sampled, on-demand history. Gaps do not establish downtime, and a process or player report does not establish game readiness. Freshness below describes the sample at collection time.</p> <p> </p> <p class=\"workspace-status observation-status\" role=\"status\"> </p> <!> <div class=\"button-row\"><button class=\"button secondary observation-newest\">Check newest observations</button><button class=\"button secondary observation-older\">Older observations</button><button class=\"text-button\">Check current connection</button></div> <p class=\"field-help\">Up to 25 batches per page. New samples appear when you check newest. Older pages use the same history window; retention can shorten that window as new samples arrive. Reading history does not contact Crafty.</p></section>");
-function ja(e, t) {
+var Ta = /* @__PURE__ */ K("<p class=\"observation-empty\">No retained observations in this window. A connection must be enrolled and observed before samples appear.</p>"), Ea = /* @__PURE__ */ K("<p class=\"notice\"> </p>"), Da = /* @__PURE__ */ K("<p class=\"field-help\"> </p>"), Oa = /* @__PURE__ */ K("<section><h4> </h4> <dl><dt>Reported process</dt><dd> </dd> <dt>Players</dt><dd> </dd> <dt>Freshness at collection</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd></dl> <!></section>"), ka = /* @__PURE__ */ K("<li><div class=\"guide-card-heading\"><h3> </h3><time> </time></div> <p class=\"observation-completeness\"> </p> <!> <div class=\"observation-servers\"></div></li>"), Aa = /* @__PURE__ */ K("<p class=\"quiet-label\"> </p> <!> <ol class=\"observation-list\"></ol>", 1), ja = /* @__PURE__ */ K("<section class=\"card observation-history\" aria-label=\"Provider observation history\"><p class=\"eyebrow\">RETAINED PROVIDER SAMPLES</p><h2 tabindex=\"-1\">Crafty observation history</h2> <p>Samples are collected while an authorized workspace checks the enrolled connection. At most the first sample per enrollment revision each minute is retained, up to the newest 10,000 batches.</p> <p class=\"field-help\">This is sampled, on-demand history. Gaps do not establish downtime, and a process or player report does not establish game readiness. Freshness below describes the sample at collection time.</p> <p> </p> <p class=\"workspace-status observation-status\" role=\"status\"> </p> <!> <div class=\"button-row\"><button class=\"button secondary observation-newest\">Check newest observations</button><button class=\"button secondary observation-older\">Older observations</button><button class=\"text-button\">Check current connection</button></div> <p class=\"field-help\">Up to 25 batches per page. New samples appear when you check newest. Older pages use the same history window; retention can shorten that window as new samples arrive. Reading history does not contact Crafty.</p></section>");
+function Ma(e, t) {
 	Ue(t, !1);
 	let n = Z(t, "state", 8), r = Z(t, "authorized", 8, !1), i = Z(t, "owner", 8, !1), a = Z(t, "load", 8), o = Z(t, "checkConnection", 8), s = (e) => e === null ? "Not reported" : (/* @__PURE__ */ new Date(Number(e) * 1e3)).toLocaleString(), c = (e) => e === "denied" ? "Provider access denied" : e === "timeout" ? "Provider timed out" : e === "transport" ? "Provider could not be reached" : e === "not_discovered" ? "Selected server was not discovered" : e === "malformed" ? "Provider response was incomplete or malformed" : e === "oversized" ? "Provider response exceeded the observation limit" : e === "invalid_configuration" ? "Connection could not be checked" : e ? "Provider observation unavailable" : "";
 	Ti();
-	var l = Aa(), u = R(I(l), 7), d = L(u, !0), f = R(u, 2), p = L(f, !0), m = R(f, 2), h = (e) => {
-		var t = ka(), r = ln(t), i = L(r), a = R(r, 2), o = (e) => {
-			q(e, wa());
+	var l = ja(), u = R(I(l), 7), d = L(u, !0), f = R(u, 2), p = L(f, !0), m = R(f, 2), h = (e) => {
+		var t = Aa(), r = ln(t), i = L(r), a = R(r, 2), o = (e) => {
+			q(e, Ta());
 		};
 		Y(a, (e) => {
 			W(n()), U(() => n().entries.length === 0) && e(o);
 		});
 		var l = R(a, 2);
 		qr(l, 5, () => (W(n()), U(() => n().entries)), (e) => e.id, (e, t) => {
-			var n = Oa(), r = I(n), i = I(r), a = L(i), o = R(i), l = L(o, !0);
+			var n = ka(), r = I(n), i = I(r), a = L(i), o = R(i), l = L(o, !0);
 			j(r);
 			var u = R(r, 2), d = L(u, !0), f = R(u, 2), p = (e) => {
-				var n = Ta(), r = L(n, !0);
+				var n = Ea(), r = L(n, !0);
 				z((e) => J(r, e), [() => (H(t), U(() => c(H(t).error)))]), q(e, n);
 			};
 			Y(f, (e) => {
@@ -3727,10 +3752,10 @@ function ja(e, t) {
 			});
 			var m = R(f, 2);
 			qr(m, 5, () => (H(t), U(() => H(t).servers)), Ur, (e, t) => {
-				var n = Da(), r = I(n), i = L(r, !0), a = R(r, 2), o = R(I(a)), l = L(o, !0), u = R(o, 3), d = L(u), f = R(u, 3), p = L(f, !0), m = R(f, 3), h = L(m, !0), g = L(R(m, 2), !0);
+				var n = Oa(), r = I(n), i = L(r, !0), a = R(r, 2), o = R(I(a)), l = L(o, !0), u = R(o, 3), d = L(u), f = R(u, 3), p = L(f, !0), m = R(f, 3), h = L(m, !0), g = L(R(m, 2), !0);
 				j(a);
 				var _ = R(a, 2), v = (e) => {
-					var n = Ea(), r = L(n, !0);
+					var n = Da(), r = L(n, !0);
 					z((e) => J(r, e), [() => (H(t), U(() => c(H(t).error)))]), q(e, n);
 				};
 				Y(_, (e) => {
@@ -3755,8 +3780,8 @@ function ja(e, t) {
 }
 wr(["click"]);
 // src/Connections.svelte
-var Ma = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\">This observation could not be added to history. Your workspace is still available; retained history may be incomplete.</p>"), Na = /* @__PURE__ */ K("<section class=\"card small-card\"><h2>No Crafty connection enrolled</h2><p>An owner can add dedicated access and choose which servers to show.</p></section>"), Pa = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\"> </p>"), Fa = /* @__PURE__ */ K("<p class=\"field-help\">This server could not be fully observed.</p>"), Ia = /* @__PURE__ */ K("<article class=\"card small-card server-card\"><h2> </h2> <p><strong> </strong> <span class=\"field-help\">Provider-reported process state</span></p> <dl><dt>Players</dt><dd> </dd> <dt>Freshness</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd> <dt>Join address</dt><dd> </dd></dl> <!></article>"), La = /* @__PURE__ */ K("<!> <div class=\"server-grid\"></div> <p class=\"field-help\">A running process does not establish game readiness. Join addresses are owner-reviewed; outside-network joining is accepted separately.</p>", 1), Ra = /* @__PURE__ */ K("<button class=\"button secondary\">Check connection state</button>"), za = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove server</button>"), Ba = /* @__PURE__ */ K("<fieldset><legend> </legend> <label>Crafty server UUID</label><input name=\"server-id\" required=\"\" maxlength=\"36\"/> <label>Display name</label><input name=\"server-name\" required=\"\" maxlength=\"80\"/> <label>Reviewed public join address, optional</label><input name=\"server-join\" maxlength=\"253\" placeholder=\"play.example:25565\"/> <!></fieldset>"), Va = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove connection</button>"), Ha = /* @__PURE__ */ K("<section class=\"card connection-setup\" aria-label=\"Dedicated Crafty enrollment\"><h2>Dedicated Crafty access</h2> <p>Create access specifically for Reborn, limited to viewing the selected servers. Credentials are encrypted on the server and are not shown again.</p> <p class=\"workspace-status\" role=\"status\"> </p> <!> <form autocomplete=\"off\"><label for=\"crafty-endpoint\">Crafty HTTPS address</label><input id=\"crafty-endpoint\" name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\" placeholder=\"https://crafty.example/\"/> <label for=\"crafty-token\">Dedicated API token</label><input id=\"crafty-token\" name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <label for=\"crafty-timezone\">Crafty’s configured time zone</label><input id=\"crafty-timezone\" name=\"timezone\" required=\"\" maxlength=\"64\" placeholder=\"America/Chicago or UTC\"/> <label for=\"crafty-ca\">Private CA certificate, if needed</label><textarea id=\"crafty-ca\" name=\"ca-pem\" maxlength=\"8192\" rows=\"3\"></textarea> <p class=\"field-help\">Leave the certificate blank for publicly trusted HTTPS. The address and certificate must pass normal hostname and trust checks.</p> <!> <div class=\"button-row\"><button class=\"button secondary\" type=\"button\">Add server</button> <button class=\"button primary\" type=\"submit\"> </button></div></form> <!></section>"), Ua = /* @__PURE__ */ K("<div><div class=\"button-row\"><button class=\"text-button\">View connection enrollment history</button><button class=\"text-button view-observation-history\">View provider observation history</button></div> <!> <div class=\"connections-intro\"><p>Server observations from your deliberately enrolled Crafty connection.</p><span class=\"quiet-label\">Read-only overview</span></div> <!> <!></div> <div><button class=\"text-button observation-back\">Back to connections</button> <!></div>", 1);
-function Wa(e, t) {
+var Na = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\">This observation could not be added to history. Your workspace is still available; retained history may be incomplete.</p>"), Pa = /* @__PURE__ */ K("<section class=\"card small-card\"><h2>No Crafty connection enrolled</h2><p>An owner can add dedicated access and choose which servers to show.</p></section>"), Fa = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\"> </p>"), Ia = /* @__PURE__ */ K("<p class=\"field-help\">This server could not be fully observed.</p>"), La = /* @__PURE__ */ K("<article class=\"card small-card server-card\"><h2> </h2> <p><strong> </strong> <span class=\"field-help\">Provider-reported process state</span></p> <dl><dt>Players</dt><dd> </dd> <dt>Freshness</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd> <dt>Join address</dt><dd> </dd></dl> <!></article>"), Ra = /* @__PURE__ */ K("<!> <div class=\"server-grid\"></div> <p class=\"field-help\">A running process does not establish game readiness. Join addresses are owner-reviewed; outside-network joining is accepted separately.</p>", 1), za = /* @__PURE__ */ K("<button class=\"button secondary\">Check connection state</button>"), Ba = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove server</button>"), Va = /* @__PURE__ */ K("<fieldset><legend> </legend> <label>Crafty server UUID</label><input name=\"server-id\" required=\"\" maxlength=\"36\"/> <label>Display name</label><input name=\"server-name\" required=\"\" maxlength=\"80\"/> <label>Reviewed public join address, optional</label><input name=\"server-join\" maxlength=\"253\" placeholder=\"play.example:25565\"/> <!></fieldset>"), Ha = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove connection</button>"), Ua = /* @__PURE__ */ K("<section class=\"card connection-setup\" aria-label=\"Dedicated Crafty enrollment\"><h2>Dedicated Crafty access</h2> <p>Create access specifically for Reborn, limited to viewing the selected servers. Credentials are encrypted on the server and are not shown again.</p> <p class=\"workspace-status\" role=\"status\"> </p> <!> <form autocomplete=\"off\"><label for=\"crafty-endpoint\">Crafty HTTPS address</label><input id=\"crafty-endpoint\" name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\" placeholder=\"https://crafty.example/\"/> <label for=\"crafty-token\">Dedicated API token</label><input id=\"crafty-token\" name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <label for=\"crafty-timezone\">Crafty’s configured time zone</label><input id=\"crafty-timezone\" name=\"timezone\" required=\"\" maxlength=\"64\" placeholder=\"America/Chicago or UTC\"/> <label for=\"crafty-ca\">Private CA certificate, if needed</label><textarea id=\"crafty-ca\" name=\"ca-pem\" maxlength=\"8192\" rows=\"3\"></textarea> <p class=\"field-help\">Leave the certificate blank for publicly trusted HTTPS. The address and certificate must pass normal hostname and trust checks.</p> <!> <div class=\"button-row\"><button class=\"button secondary\" type=\"button\">Add server</button> <button class=\"button primary\" type=\"submit\"> </button></div></form> <!></section>"), Wa = /* @__PURE__ */ K("<div><div class=\"button-row\"><button class=\"text-button\">View connection enrollment history</button><button class=\"text-button view-observation-history\">View provider observation history</button></div> <!> <div class=\"connections-intro\"><p>Server observations from your deliberately enrolled Crafty connection.</p><span class=\"quiet-label\">Read-only overview</span></div> <!> <!></div> <div><button class=\"text-button observation-back\">Back to connections</button> <!></div>", 1);
+function Ga(e, t) {
 	Ue(t, !1);
 	let n = Z(t, "binding", 8), r = Z(t, "history", 8), i = Z(t, "overview", 8), a = Z(t, "owner", 8, !1), o = Z(t, "active", 8, !1), s = Z(t, "refresh", 8), c = Z(t, "observationState", 8), l = Z(t, "loadObservations", 8), u = /* @__PURE__ */ P(), d = /* @__PURE__ */ P([0]), f = /* @__PURE__ */ P(0), p = /* @__PURE__ */ P(), m = /* @__PURE__ */ P(""), h = /* @__PURE__ */ P(!1), g = 0, _ = /* @__PURE__ */ P(!1), v = /* @__PURE__ */ P(), y = /* @__PURE__ */ P(), b = (e) => e === null ? "Not reported" : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleString();
 	function x() {
@@ -3829,19 +3854,19 @@ function Wa(e, t) {
 	En(() => W(o()), () => {
 		o() || (x(), F(_, !1));
 	}), Dn(), Ti();
-	var E = Ua(), ee = ln(E), te = I(ee), ne = I(te), re = R(ne);
+	var E = Wa(), ee = ln(E), te = I(ee), ne = I(te), re = R(ne);
 	wi(re, (e) => F(v, e), () => H(v)), j(te);
 	var D = R(te, 2), ie = (e) => {
-		q(e, Ma());
+		q(e, Na());
 	};
 	Y(D, (e) => {
 		W(i()), U(() => i()?.history_error === "unavailable") && e(ie);
 	});
 	var ae = R(D, 4), O = (e) => {
-		q(e, Na());
+		q(e, Pa());
 	}, oe = (e) => {
-		var t = La(), n = ln(t), r = (e) => {
-			var t = Pa(), n = L(t, !0);
+		var t = Ra(), n = ln(t), r = (e) => {
+			var t = Fa(), n = L(t, !0);
 			z(() => J(n, (W(i()), U(() => i().error === "checking" ? "Checking the provider. Fresh results will appear on the next observation." : "Provider observations are unavailable or incomplete. Unknown player counts stay unknown.")))), q(e, t);
 		};
 		Y(n, (e) => {
@@ -3849,12 +3874,12 @@ function Wa(e, t) {
 		});
 		var a = R(n, 2);
 		qr(a, 5, () => (W(i()), U(() => i().servers)), Ur, (e, t) => {
-			var n = Ia(), r = I(n), i = L(r, !0), a = R(r, 2), o = L(I(a), !0);
+			var n = La(), r = I(n), i = L(r, !0), a = R(r, 2), o = L(I(a), !0);
 			xe(2), j(a);
 			var s = R(a, 2), c = R(I(s)), l = L(c), u = R(c, 3), d = L(u, !0), f = R(u, 3), p = L(f, !0), m = R(f, 2), h = L(m, !0), g = L(R(m, 3), !0);
 			j(s);
 			var _ = R(s, 2), v = (e) => {
-				q(e, Fa());
+				q(e, Ia());
 			};
 			Y(_, (e) => {
 				H(t), U(() => H(t).error) && e(v);
@@ -3867,8 +3892,8 @@ function Wa(e, t) {
 		W(i()), U(() => !i() || !i().configured) ? e(O) : e(oe, -1);
 	});
 	var se = R(ae, 2), ce = (e) => {
-		var t = Ha(), n = R(I(t), 4), r = L(n, !0), a = R(n, 2), o = (e) => {
-			var t = Ra();
+		var t = Ua(), n = R(I(t), 4), r = L(n, !0), a = R(n, 2), o = (e) => {
+			var t = za();
 			G("click", t, () => void T()), q(e, t);
 		};
 		Y(a, (e) => {
@@ -3876,8 +3901,8 @@ function Wa(e, t) {
 		});
 		var s = R(a, 2), c = R(I(s)), l = R(c, 3), g = R(l, 3), _ = R(g, 3), v = R(_, 4);
 		qr(v, 3, () => H(d), (e) => e, (e, t, n) => {
-			var r = Ba(), i = I(r), a = L(i), o = R(i, 2), s = R(o), c = R(s, 2), l = R(c), u = R(l, 2), f = R(u), m = R(f, 2), g = (e) => {
-				var n = za();
+			var r = Va(), i = I(r), a = L(i), o = R(i, 2), s = R(o), c = R(s, 2), l = R(c), u = R(l, 2), f = R(u), m = R(f, 2), g = (e) => {
+				var n = Ba();
 				z(() => n.disabled = !!H(p) || H(h)), G("click", n, () => F(d, H(d).filter((e) => e !== H(t)))), q(e, n);
 			};
 			Y(m, (e) => {
@@ -3889,7 +3914,7 @@ function Wa(e, t) {
 		var y = R(v, 2), b = I(y), x = R(b, 2), S = L(x, !0);
 		j(y), j(s), wi(s, (e) => F(u, e), () => H(u));
 		var C = R(s, 2), E = (e) => {
-			var t = Va();
+			var t = Ha();
 			z(() => t.disabled = !!H(p) || H(h)), G("click", t, () => void w(!0)), q(e, t);
 		};
 		Y(C, (e) => {
@@ -3904,7 +3929,7 @@ function Wa(e, t) {
 		a() && o() && e(ce);
 	}), j(ee);
 	var le = R(ee, 2), ue = I(le);
-	ja(R(ue, 2), {
+	Ma(R(ue, 2), {
 		get state() {
 			return c();
 		},
@@ -3928,8 +3953,8 @@ function Wa(e, t) {
 }
 wr(["click"]);
 // src/Directory.svelte
-var Ga = /* @__PURE__ */ K("<button class=\"text-button\">Browse services <span aria-hidden=\"true\">→</span></button>"), Ka = /* @__PURE__ */ K("<section class=\"notice\"><h3>Review the saved state</h3><p> </p><button class=\"button secondary\">Check saved services</button></section>"), qa = /* @__PURE__ */ K("<option> </option>"), Ja = /* @__PURE__ */ K("<div class=\"directory-filters\"><div><label for=\"service-search\">Search services</label><input id=\"service-search\" type=\"search\" maxlength=\"120\" placeholder=\"Name, category or description\"/></div><div><label for=\"service-filter\">Category</label><select id=\"service-filter\"><option>All categories</option><!></select></div></div>"), Ya = /* @__PURE__ */ K("<section class=\"card small-card\"><h3> </h3><p> </p></section>"), Xa = /* @__PURE__ */ K("<p> </p>"), Za = /* @__PURE__ */ K("<button class=\"text-button move-up\">↑</button><button class=\"text-button move-down\">↓</button>", 1), Qa = /* @__PURE__ */ K("<p>The directory changed. Review the service and choose Remove again.</p>"), $a = /* @__PURE__ */ K("<div class=\"notice\"><p> </p><!><div class=\"button-row\"><button class=\"button secondary confirm-remove\">Remove service</button><button class=\"text-button\">Keep service</button></div></div>"), eo = /* @__PURE__ */ K("<div class=\"button-row\"><button class=\"text-button edit-service\"> </button><button class=\"text-button remove-service\">Remove</button></div> <!>", 1), to = /* @__PURE__ */ K("<article class=\"card small-card service-card\"><p class=\"eyebrow\"> </p><h3><a class=\"service-link\" target=\"_blank\" rel=\"noopener noreferrer\"> <span class=\"sr-only\">(opens in a new tab)</span> <span aria-hidden=\"true\">↗</span></a></h3> <!> <p class=\"field-help service-address\"> </p> <div class=\"button-row\"><button class=\"button secondary pin-service\"> </button> <!></div> <!></article>"), no = /* @__PURE__ */ K("<div class=\"directory-grid\"></div>"), ro = /* @__PURE__ */ K("<p class=\"field-help\">Up to 24 personal pins. Links open the selected service in a new tab. Each service handles its own sign-in; directory links do not check availability.</p>"), io = /* @__PURE__ */ K("<div class=\"notice\"><p>The directory changed after this form was opened. Review the current entries, then choose whether to keep this edit.</p><button class=\"button secondary\" type=\"button\">Keep edit against current directory</button></div>"), ao = /* @__PURE__ */ K("<section class=\"card directory-editor\" aria-label=\"Service editor\"><h2> </h2><p>Add a reviewed HTTPS link without passwords, tokens, query parameters or fragments. These links are visible to signed-in accounts.</p> <form><label for=\"service-name\">Service name</label><input id=\"service-name\" name=\"service-name\" required=\"\" maxlength=\"80\"/> <label for=\"service-category\">Category</label><input id=\"service-category\" name=\"service-category\" required=\"\" maxlength=\"40\"/> <label for=\"service-url\">HTTPS link</label><input id=\"service-url\" name=\"service-url\" type=\"url\" required=\"\" maxlength=\"1024\" placeholder=\"https://service.example/\"/> <label for=\"service-description\">Description, optional</label><textarea id=\"service-description\" name=\"service-description\" maxlength=\"240\" rows=\"2\"></textarea> <!> <div class=\"button-row\"><button class=\"button primary\" type=\"submit\"> </button><button class=\"text-button\" type=\"button\"> </button></div></form></section>"), oo = /* @__PURE__ */ K("<div class=\"directory-heading\"><div><p class=\"eyebrow\"> </p><h2> </h2></div><!></div> <p class=\"directory-status\" role=\"status\"> </p> <!> <!> <!> <!> <!>", 1);
-function so(e, t) {
+var Ka = /* @__PURE__ */ K("<button class=\"text-button\">Browse services <span aria-hidden=\"true\">→</span></button>"), qa = /* @__PURE__ */ K("<section class=\"notice\"><h3>Review the saved state</h3><p> </p><button class=\"button secondary\">Check saved services</button></section>"), Ja = /* @__PURE__ */ K("<option> </option>"), Ya = /* @__PURE__ */ K("<div class=\"directory-filters\"><div><label for=\"service-search\">Search services</label><input id=\"service-search\" type=\"search\" maxlength=\"120\" placeholder=\"Name, category or description\"/></div><div><label for=\"service-filter\">Category</label><select id=\"service-filter\"><option>All categories</option><!></select></div></div>"), Xa = /* @__PURE__ */ K("<section class=\"card small-card\"><h3> </h3><p> </p></section>"), Za = /* @__PURE__ */ K("<p> </p>"), Qa = /* @__PURE__ */ K("<button class=\"text-button move-up\">↑</button><button class=\"text-button move-down\">↓</button>", 1), $a = /* @__PURE__ */ K("<p>The directory changed. Review the service and choose Remove again.</p>"), eo = /* @__PURE__ */ K("<div class=\"notice\"><p> </p><!><div class=\"button-row\"><button class=\"button secondary confirm-remove\">Remove service</button><button class=\"text-button\">Keep service</button></div></div>"), to = /* @__PURE__ */ K("<div class=\"button-row\"><button class=\"text-button edit-service\"> </button><button class=\"text-button remove-service\">Remove</button></div> <!>", 1), no = /* @__PURE__ */ K("<article class=\"card small-card service-card\"><p class=\"eyebrow\"> </p><h3><a class=\"service-link\" target=\"_blank\" rel=\"noopener noreferrer\"> <span class=\"sr-only\">(opens in a new tab)</span> <span aria-hidden=\"true\">↗</span></a></h3> <!> <p class=\"field-help service-address\"> </p> <div class=\"button-row\"><button class=\"button secondary pin-service\"> </button> <!></div> <!></article>"), ro = /* @__PURE__ */ K("<div class=\"directory-grid\"></div>"), io = /* @__PURE__ */ K("<p class=\"field-help\">Up to 24 personal pins. Links open the selected service in a new tab. Each service handles its own sign-in; directory links do not check availability.</p>"), ao = /* @__PURE__ */ K("<div class=\"notice\"><p>The directory changed after this form was opened. Review the current entries, then choose whether to keep this edit.</p><button class=\"button secondary\" type=\"button\">Keep edit against current directory</button></div>"), oo = /* @__PURE__ */ K("<section class=\"card directory-editor\" aria-label=\"Service editor\"><h2> </h2><p>Add a reviewed HTTPS link without passwords, tokens, query parameters or fragments. These links are visible to signed-in accounts.</p> <form><label for=\"service-name\">Service name</label><input id=\"service-name\" name=\"service-name\" required=\"\" maxlength=\"80\"/> <label for=\"service-category\">Category</label><input id=\"service-category\" name=\"service-category\" required=\"\" maxlength=\"40\"/> <label for=\"service-url\">HTTPS link</label><input id=\"service-url\" name=\"service-url\" type=\"url\" required=\"\" maxlength=\"1024\" placeholder=\"https://service.example/\"/> <label for=\"service-description\">Description, optional</label><textarea id=\"service-description\" name=\"service-description\" maxlength=\"240\" rows=\"2\"></textarea> <!> <div class=\"button-row\"><button class=\"button primary\" type=\"submit\"> </button><button class=\"text-button\" type=\"button\"> </button></div></form></section>"), so = /* @__PURE__ */ K("<div class=\"directory-heading\"><div><p class=\"eyebrow\"> </p><h2> </h2></div><!></div> <p class=\"directory-status\" role=\"status\"> </p> <!> <!> <!> <!> <!>", 1);
+function co(e, t) {
 	Ue(t, !1);
 	let n = /* @__PURE__ */ P(), r = /* @__PURE__ */ P(), i = /* @__PURE__ */ P(), a = Z(t, "directory", 8), o = Z(t, "authorized", 8, !1), s = Z(t, "owner", 8, !1), c = Z(t, "compact", 8, !1), l = Z(t, "state", 8), u = Z(t, "message", 8), d = Z(t, "browse", 8), f = Z(t, "check", 8), p = Z(t, "edit", 8), m = Z(t, "pin", 8), h = /* @__PURE__ */ P(""), g = /* @__PURE__ */ P(""), _ = /* @__PURE__ */ P(""), v = /* @__PURE__ */ P(""), y = /* @__PURE__ */ P(""), b = /* @__PURE__ */ P(""), x = /* @__PURE__ */ P(""), S = /* @__PURE__ */ P(), C = /* @__PURE__ */ P(), w = 0;
 	function T() {
@@ -3988,10 +4013,10 @@ function so(e, t) {
 	}), En(() => (W(o()), W(a()), H(S)), () => {
 		o() && a() && H(S) === void 0 && F(S, a().revision);
 	}), Dn(), Ti();
-	var ie = oo(), ae = ln(ie), O = I(ae), oe = I(O), se = L(oe, !0), ce = L(R(oe), !0);
+	var ie = so(), ae = ln(ie), O = I(ae), oe = I(O), se = L(oe, !0), ce = L(R(oe), !0);
 	j(O);
 	var le = R(O), ue = (e) => {
-		var t = Ga();
+		var t = Ka();
 		G("click", t, function(...e) {
 			d()?.apply(this, e);
 		}), q(e, t);
@@ -4000,18 +4025,18 @@ function so(e, t) {
 		c() && e(ue);
 	}), j(ae);
 	var de = R(ae, 2), fe = L(de, !0), pe = R(de, 2), me = (e) => {
-		var t = Ka(), n = R(I(t)), r = L(n, !0), i = R(n);
+		var t = qa(), n = R(I(t)), r = L(n, !0), i = R(n);
 		j(t), z(() => J(r, l() === "uncertain" ? "Your change has not been sent again." : "Your edit is still in the form. Compare it with the current directory before saving.")), G("click", i, () => void f()()), q(e, t);
 	};
 	Y(pe, (e) => {
 		(l() === "uncertain" || l() === "conflict") && e(me);
 	});
 	var he = R(pe, 2), ge = (e) => {
-		var t = Ja(), n = I(t), i = R(I(n));
+		var t = Ya(), n = I(t), i = R(I(n));
 		pi(i), j(n);
 		var a = R(n), o = R(I(a)), s = I(o);
 		s.value = s.__value = "", qr(R(s), 1, () => H(r), Ur, (e, t) => {
-			var n = qa(), r = L(n, !0), i = {};
+			var n = Ja(), r = L(n, !0), i = {};
 			z(() => {
 				J(r, H(t)), i !== (i = H(t)) && (n.value = (n.__value = i) ?? "");
 			}), q(e, n);
@@ -4021,25 +4046,25 @@ function so(e, t) {
 		c() || e(ge);
 	});
 	var _e = R(he, 2), k = (e) => {
-		var t = Ya(), n = I(t), r = L(n, !0), i = L(R(n), !0);
+		var t = Xa(), n = I(t), r = L(n, !0), i = L(R(n), !0);
 		j(t), z(() => {
 			J(r, (W(c()), W(a()), U(() => c() ? "Keep your favorites close" : a()?.services.length ? "No matching services" : "Your directory starts here"))), J(i, (W(c()), W(a()), W(s()), U(() => c() ? "Pin services from the directory to show them on Home." : a()?.services.length ? "Try another search or category." : s() ? "Add a service below to make it available to signed-in accounts." : "An owner can add reviewed service links.")));
 		}), q(e, t);
 	}, ve = (e) => {
-		var t = no();
+		var t = ro();
 		qr(t, 5, () => H(i), (e) => e.id, (e, t) => {
 			let r = /* @__PURE__ */ mt(() => (W(a()), H(t), U(() => a()?.pins.includes(H(t).id) ?? !1))), i = /* @__PURE__ */ mt(() => (W(a()), H(t), U(() => a()?.pins.indexOf(H(t).id) ?? -1)));
-			var o = to(), l = I(o), u = L(l, !0), d = R(l), f = I(d), p = I(f, !0);
+			var o = no(), l = I(o), u = L(l, !0), d = R(l), f = I(d), p = I(f, !0);
 			xe(3), j(f), j(d);
 			var m = R(d, 2), h = (e) => {
-				var n = Xa(), r = L(n, !0);
+				var n = Za(), r = L(n, !0);
 				z(() => J(r, (H(t), U(() => H(t).description)))), q(e, n);
 			};
 			Y(m, (e) => {
 				H(t), U(() => H(t).description) && e(h);
 			});
 			var g = R(m, 2), _ = L(g, !0), v = R(g, 2), y = I(v), b = L(y, !0), x = R(y, 2), S = (e) => {
-				var r = Za(), o = ln(r), s = R(o);
+				var r = Qa(), o = ln(r), s = R(o);
 				z(() => {
 					X(o, "aria-label", (H(t), U(() => `Move ${H(t).name} up`))), o.disabled = H(n) || H(i) === 0, X(s, "aria-label", (H(t), U(() => `Move ${H(t).name} down`))), s.disabled = (H(n), W(H(i)), W(a()), U(() => H(n) || H(i) === (a()?.pins.length ?? 0) - 1));
 				}), G("click", o, () => re(H(t).id, -1)), G("click", s, () => re(H(t).id, 1)), q(e, r);
@@ -4048,11 +4073,11 @@ function so(e, t) {
 				H(r) && e(S);
 			}), j(v);
 			var w = R(v, 2), T = (e) => {
-				var r = eo(), i = ln(r), o = I(i), s = L(o), c = R(o);
+				var r = to(), i = ln(r), o = I(i), s = L(o), c = R(o);
 				j(i);
 				var l = R(i, 2), u = (e) => {
-					var r = $a(), i = I(r), o = L(i), s = R(i), c = (e) => {
-						q(e, Qa());
+					var r = eo(), i = I(r), o = L(i), s = R(i), c = (e) => {
+						q(e, $a());
 					};
 					Y(s, (e) => {
 						H(C), W(a()), U(() => H(C).base !== a()?.revision) && e(c);
@@ -4083,13 +4108,13 @@ function so(e, t) {
 		H(i), U(() => H(i).length === 0) ? e(k) : e(ve, -1);
 	});
 	var A = R(_e, 2), ye = (e) => {
-		q(e, ro());
+		q(e, io());
 	};
 	Y(A, (e) => {
 		c() || e(ye);
 	});
 	var be = R(A, 2), Se = (e) => {
-		var t = ao(), r = I(t), i = L(r, !0), o = R(r, 3), s = R(I(o));
+		var t = oo(), r = I(t), i = L(r, !0), o = R(r, 3), s = R(I(o));
 		pi(s);
 		var u = R(s, 3);
 		pi(u);
@@ -4098,7 +4123,7 @@ function so(e, t) {
 		var f = R(d, 3);
 		tt(f);
 		var p = R(f, 2), m = (e) => {
-			var t = io(), r = R(I(t));
+			var t = ao(), r = R(I(t));
 			j(t), z(() => r.disabled = H(n)), G("click", r, () => F(S, a()?.revision)), q(e, t);
 		};
 		Y(p, (e) => {
@@ -4119,8 +4144,8 @@ function so(e, t) {
 }
 wr(["click"]);
 // src/Activity.svelte
-var co = /* @__PURE__ */ K("<p class=\"activity-empty\">No matching activity in this window. Try another action name or check the newest entries.</p>"), lo = /* @__PURE__ */ K("<li><div><strong> </strong><p> </p></div><time> </time></li>"), uo = /* @__PURE__ */ K("<!> <ol class=\"activity-list\"></ol> <div class=\"button-row\"><button class=\"button secondary\">Check newest activity</button><button class=\"button secondary\">Older activity</button></div> <p class=\"field-help\">Up to 25 entries per page. New changes appear when you check newest; older pages stay within the current history window. Search matches action names, not note or credential contents.</p>", 1), fo = /* @__PURE__ */ K("<button class=\"button secondary\">Retry activity</button>"), po = /* @__PURE__ */ K("<button class=\"button secondary\">Check activity</button>"), mo = /* @__PURE__ */ K("<section class=\"card activity-card\" aria-label=\"Your retained activity\"><h2>Your activity</h2> <p>Successful changes made by your account, retained from the introduction of Activity. Connection entries describe enrollment changes, not game actions or provider uptime.</p> <form class=\"activity-search\"><div><label for=\"activity-query\">Search action names</label><input id=\"activity-query\" maxlength=\"80\" placeholder=\"For example, saved or Crafty\"/></div> <div><label for=\"activity-category\">Activity category</label><select id=\"activity-category\"><option>All activity</option><option>Workspace notes</option><option>Services and pins</option><option>Connection enrollment</option></select></div> <button type=\"submit\" class=\"button primary\">Search activity</button></form> <p class=\"workspace-status\" role=\"status\"> </p> <!></section>");
-function ho(e, t) {
+var lo = /* @__PURE__ */ K("<p class=\"activity-empty\">No matching activity in this window. Try another action name or check the newest entries.</p>"), uo = /* @__PURE__ */ K("<li><div><strong> </strong><p> </p></div><time> </time></li>"), fo = /* @__PURE__ */ K("<!> <ol class=\"activity-list\"></ol> <div class=\"button-row\"><button class=\"button secondary\">Check newest activity</button><button class=\"button secondary\">Older activity</button></div> <p class=\"field-help\">Up to 25 entries per page. New changes appear when you check newest; older pages stay within the current history window. Search matches action names, not note or credential contents.</p>", 1), po = /* @__PURE__ */ K("<button class=\"button secondary\">Retry activity</button>"), mo = /* @__PURE__ */ K("<button class=\"button secondary\">Check activity</button>"), ho = /* @__PURE__ */ K("<section class=\"card activity-card\" aria-label=\"Your retained activity\"><h2>Your activity</h2> <p>Successful changes made by your account, retained from the introduction of Activity. Connection entries describe enrollment changes, not game actions or provider uptime.</p> <form class=\"activity-search\"><div><label for=\"activity-query\">Search action names</label><input id=\"activity-query\" maxlength=\"80\" placeholder=\"For example, saved or Crafty\"/></div> <div><label for=\"activity-category\">Activity category</label><select id=\"activity-category\"><option>All activity</option><option>Workspace notes</option><option>Services and pins</option><option>Connection enrollment</option></select></div> <button type=\"submit\" class=\"button primary\">Search activity</button></form> <p class=\"workspace-status\" role=\"status\"> </p> <!></section>");
+function go(e, t) {
 	Ue(t, !1);
 	let n = Z(t, "state", 8), r = Z(t, "authorized", 8, !1), i = Z(t, "load", 8), a = /* @__PURE__ */ P(""), o = /* @__PURE__ */ P("all"), s = /* @__PURE__ */ P(), c = (e) => (/* @__PURE__ */ new Date(Number(e) * 1e3)).toLocaleString();
 	En(() => W(r()), () => {
@@ -4128,7 +4153,7 @@ function ho(e, t) {
 	}), En(() => (W(n()), H(s)), () => {
 		n() !== H(s) && n().phase === "loading" && (F(s, n()), F(a, n().query), F(o, n().category));
 	}), Dn(), Ti();
-	var l = mo(), u = R(I(l), 4), d = I(u), f = R(I(d));
+	var l = ho(), u = R(I(l), 4), d = I(u), f = R(I(d));
 	pi(f), j(d);
 	var p = R(d, 2), m = R(I(p)), h = I(m);
 	h.value = h.__value = "all";
@@ -4141,15 +4166,15 @@ function ho(e, t) {
 	var y = R(p, 2);
 	j(u);
 	var b = R(u, 2), x = L(b, !0), S = R(b, 2), C = (e) => {
-		var t = uo(), r = ln(t), a = (e) => {
-			q(e, co());
+		var t = fo(), r = ln(t), a = (e) => {
+			q(e, lo());
 		};
 		Y(r, (e) => {
 			W(n()), U(() => n().entries.length === 0) && e(a);
 		});
 		var o = R(r, 2);
 		qr(o, 5, () => (W(n()), U(() => n().entries)), (e) => e.id, (e, t) => {
-			var n = lo(), r = I(n), i = I(r), a = L(i, !0), o = L(R(i));
+			var n = uo(), r = I(n), i = I(r), a = L(i, !0), o = L(R(i));
 			j(r);
 			var s = R(r), l = L(s, !0);
 			j(n), z((e, r) => {
@@ -4159,10 +4184,10 @@ function ho(e, t) {
 		var s = R(o, 2), l = I(s), u = R(l);
 		j(s), xe(2), z(() => u.disabled = (W(n()), U(() => !n().next))), G("click", l, () => void i()(n().category, n().query)), G("click", u, () => void i()(n().category, n().query, !0)), q(e, t);
 	}, w = (e) => {
-		var t = fo();
+		var t = po();
 		G("click", t, () => void i()(n().category, n().query)), q(e, t);
 	}, T = (e) => {
-		var t = po();
+		var t = mo();
 		z(() => t.disabled = !r()), G("click", t, () => void i()(H(o), H(a))), q(e, t);
 	};
 	Y(S, (e) => {
@@ -4175,8 +4200,8 @@ function ho(e, t) {
 }
 wr(["click"]);
 // src/Notifications.svelte
-var go = /* @__PURE__ */ K("<div class=\"notice\"><h3>Check your read markers</h3><p>The change may have completed. Check notifications before marking another group read.</p></div>"), _o = /* @__PURE__ */ K("<p class=\"notification-empty\"> </p>"), vo = /* @__PURE__ */ K("<li><div><h3> </h3><p class=\"notification-count\"> </p><p> </p><p class=\"field-help\"><time> </time></p></div> <button class=\"button secondary mark-notification-read\"> </button></li>"), yo = /* @__PURE__ */ K("<div class=\"notification-card card\"><div class=\"notification-heading\"><div><p class=\"eyebrow\">AT YOUR PACE</p><h2>Your notifications</h2></div><button class=\"button secondary check-notifications\">Check notifications</button></div> <p>Shared service and connection changes from other accounts, grouped together. Opening this inbox leaves them unread.</p> <label class=\"notification-filter\"><input id=\"notification-show-read\" type=\"checkbox\"/> Show read groups</label> <p class=\"notification-status\" role=\"status\"> </p> <!> <!> <ul class=\"notification-list\"></ul></div>");
-function bo(e, t) {
+var _o = /* @__PURE__ */ K("<div class=\"notice\"><h3>Check your read markers</h3><p>The change may have completed. Check notifications before marking another group read.</p></div>"), vo = /* @__PURE__ */ K("<p class=\"notification-empty\"> </p>"), yo = /* @__PURE__ */ K("<li><div><h3> </h3><p class=\"notification-count\"> </p><p> </p><p class=\"field-help\"><time> </time></p></div> <button class=\"button secondary mark-notification-read\"> </button></li>"), bo = /* @__PURE__ */ K("<div class=\"notification-card card\"><div class=\"notification-heading\"><div><p class=\"eyebrow\">AT YOUR PACE</p><h2>Your notifications</h2></div><button class=\"button secondary check-notifications\">Check notifications</button></div> <p>Shared service and connection changes from other accounts, grouped together. Opening this inbox leaves them unread.</p> <label class=\"notification-filter\"><input id=\"notification-show-read\" type=\"checkbox\"/> Show read groups</label> <p class=\"notification-status\" role=\"status\"> </p> <!> <!> <ul class=\"notification-list\"></ul></div>");
+function xo(e, t) {
 	Ue(t, !1);
 	let n = /* @__PURE__ */ P(), r = Z(t, "value", 8), i = Z(t, "authorized", 8), a = Z(t, "state", 8), o = Z(t, "message", 8), s = Z(t, "check", 8), c = Z(t, "mark", 8), l = /* @__PURE__ */ P(!1), u = (e) => (/* @__PURE__ */ new Date(Number(e) * 1e3)).toLocaleString();
 	En(() => W(i()), () => {
@@ -4184,18 +4209,18 @@ function bo(e, t) {
 	}), En(() => (W(i()), W(r()), H(l)), () => {
 		F(n, i() ? (r()?.groups ?? []).filter((e) => H(l) || e.unread !== "0") : []);
 	}), Dn(), Ti();
-	var d = yo(), f = I(d), p = R(I(f));
+	var d = bo(), f = I(d), p = R(I(f));
 	j(f);
 	var m = R(f, 4), h = I(m);
 	pi(h), xe(), j(m);
 	var g = R(m, 2), _ = L(g, !0), v = R(g, 2), y = (e) => {
-		q(e, go());
+		q(e, _o());
 	};
 	Y(v, (e) => {
 		a() === "uncertain" && e(y);
 	});
 	var b = R(v, 2), x = (e) => {
-		var t = _o(), n = L(t, !0);
+		var t = vo(), n = L(t, !0);
 		z(() => J(n, H(l) ? "No shared changes to show yet." : "You’re all caught up.")), q(e, t);
 	};
 	Y(b, (e) => {
@@ -4203,7 +4228,7 @@ function bo(e, t) {
 	});
 	var S = R(b, 2);
 	qr(S, 5, () => H(n), (e) => e.category, (e, t) => {
-		var n = vo(), r = I(n), o = I(r), s = L(o, !0), l = R(o), d = L(l, !0), f = R(l), p = L(f, !0), m = R(f), h = I(m), g = L(h, !0);
+		var n = yo(), r = I(n), o = I(r), s = L(o, !0), l = R(o), d = L(l, !0), f = R(l), p = L(f, !0), m = R(f), h = I(m), g = L(h, !0);
 		j(m), j(r);
 		var _ = R(r, 2), v = L(_);
 		j(n), z((e, r) => {
@@ -4215,46 +4240,46 @@ function bo(e, t) {
 }
 wr(["click"]);
 // src/Guide.svelte
-var xo = /* @__PURE__ */ K("<li> </li>"), So = /* @__PURE__ */ K("<button class=\"button secondary\">Open Connections</button>"), Co = /* @__PURE__ */ K("<button class=\"button secondary\">Open Media</button>"), wo = /* @__PURE__ */ K("<p class=\"field-help\">Media enrollment and observations require owner access.</p>"), To = /* @__PURE__ */ K("<p class=\"field-help\">Setup will be available when this integration is implemented and qualified.</p>"), Eo = /* @__PURE__ */ K("<article class=\"card integration-card\"><div class=\"guide-card-heading\"><h2> </h2><span class=\"integration-status\"> </span></div> <p> </p> <h3>What it offers</h3><ul></ul> <h3>Setup requirements</h3><ul></ul> <!></article>"), Do = /* @__PURE__ */ K("<section class=\"card guide-intro\"><p class=\"eyebrow\">OPTIONAL CONNECTIONS</p><h2>Integration catalog</h2><p>Come back here to see what is available and what is planned. Each connection needs deliberate setup and its own access permissions.</p><p class=\"field-help\">Available means the Reborn feature exists. Connections shows Crafty enrollment. Media provides owner-only Jellyfin and Seerr observations; credentials and real provider acceptance are separate.</p></section> <div class=\"catalog-list\"></div>", 1), Oo = /* @__PURE__ */ K("<h4>Recorded progress</h4><ul></ul>", 1), ko = /* @__PURE__ */ K("<section><div class=\"guide-card-heading\"><h3> </h3><span class=\"quiet-label\"> </span></div> <!> <h4>Work still ahead</h4><ul></ul></section>"), Ao = /* @__PURE__ */ K("<article class=\"card roadmap-note\" aria-label=\"Project roadmap note\"><p class=\"eyebrow\">A NOTE FOR THE ROAD AHEAD</p><h2>Keida Reborn roadmap</h2> <p> </p> <p class=\"field-help\">Work-list snapshot dated <time> </time>. This note ships with the site; it does not update itself from GitHub. Your private workspace note is separate.</p> <h3>Next priorities</h3><ol class=\"roadmap-priorities\"></ol> <div class=\"roadmap-milestones\"></div> <p><a rel=\"noreferrer\">Open the current roadmap and acceptance tracker <span aria-hidden=\"true\">↗</span></a></p></article>"), jo = /* @__PURE__ */ K("<section class=\"card guide-intro\"><h2> </h2><p>The guide is available after your account access is checked.</p><button class=\"button secondary\"> </button></section>"), Mo = /* @__PURE__ */ K("<div class=\"guide-card\"><p class=\"workspace-status\" role=\"status\"> </p> <!></div>");
-function No(e, t) {
+var So = /* @__PURE__ */ K("<li> </li>"), Co = /* @__PURE__ */ K("<button class=\"button secondary\">Open Connections</button>"), wo = /* @__PURE__ */ K("<button class=\"button secondary\">Open Media</button>"), To = /* @__PURE__ */ K("<p class=\"field-help\">Media enrollment and observations require owner access.</p>"), Eo = /* @__PURE__ */ K("<p class=\"field-help\">Setup will be available when this integration is implemented and qualified.</p>"), Do = /* @__PURE__ */ K("<article class=\"card integration-card\"><div class=\"guide-card-heading\"><h2> </h2><span class=\"integration-status\"> </span></div> <p> </p> <h3>What it offers</h3><ul></ul> <h3>Setup requirements</h3><ul></ul> <!></article>"), Oo = /* @__PURE__ */ K("<section class=\"card guide-intro\"><p class=\"eyebrow\">OPTIONAL CONNECTIONS</p><h2>Integration catalog</h2><p>Come back here to see what is available and what is planned. Each connection needs deliberate setup and its own access permissions.</p><p class=\"field-help\">Available means the Reborn feature exists. Connections shows Crafty enrollment. Media provides owner-only Jellyfin and Seerr observations; credentials and real provider acceptance are separate.</p></section> <div class=\"catalog-list\"></div>", 1), ko = /* @__PURE__ */ K("<h4>Recorded progress</h4><ul></ul>", 1), Ao = /* @__PURE__ */ K("<section><div class=\"guide-card-heading\"><h3> </h3><span class=\"quiet-label\"> </span></div> <!> <h4>Work still ahead</h4><ul></ul></section>"), jo = /* @__PURE__ */ K("<article class=\"card roadmap-note\" aria-label=\"Project roadmap note\"><p class=\"eyebrow\">A NOTE FOR THE ROAD AHEAD</p><h2>Keida Reborn roadmap</h2> <p> </p> <p class=\"field-help\">Work-list snapshot dated <time> </time>. This note ships with the site; it does not update itself from GitHub. Your private workspace note is separate.</p> <h3>Next priorities</h3><ol class=\"roadmap-priorities\"></ol> <div class=\"roadmap-milestones\"></div> <p><a rel=\"noreferrer\">Open the current roadmap and acceptance tracker <span aria-hidden=\"true\">↗</span></a></p></article>"), Mo = /* @__PURE__ */ K("<section class=\"card guide-intro\"><h2> </h2><p>The guide is available after your account access is checked.</p><button class=\"button secondary\"> </button></section>"), No = /* @__PURE__ */ K("<div class=\"guide-card\"><p class=\"workspace-status\" role=\"status\"> </p> <!></div>");
+function Po(e, t) {
 	Ue(t, !1);
 	let n = Z(t, "mode", 8, "catalog"), r = Z(t, "state", 8), i = Z(t, "authorized", 8, !1), a = Z(t, "retry", 8), o = Z(t, "connections", 8), s = Z(t, "media", 8), c = Z(t, "owner", 8, !1);
 	Ti();
-	var l = Mo(), u = I(l), d = L(u, !0), f = R(u, 2), p = (e) => {
+	var l = No(), u = I(l), d = L(u, !0), f = R(u, 2), p = (e) => {
 		var t = Nr(), i = ln(t), a = (e) => {
-			var t = Do(), n = R(ln(t), 2);
+			var t = Oo(), n = R(ln(t), 2);
 			qr(n, 5, () => (W(r()), U(() => r().value.catalog)), (e) => e.id, (e, t) => {
-				var n = Eo(), r = I(n), i = I(r), a = L(i, !0), l = R(i), u = L(l, !0);
+				var n = Do(), r = I(n), i = I(r), a = L(i, !0), l = R(i), u = L(l, !0);
 				j(r);
 				var d = R(r, 2), f = L(d, !0), p = R(d, 3);
 				qr(p, 5, () => (H(t), U(() => H(t).capabilities)), Ur, (e, t) => {
-					var n = xo(), r = L(n, !0);
+					var n = So(), r = L(n, !0);
 					z(() => J(r, H(t))), q(e, n);
 				}), j(p);
 				var m = R(p, 3);
 				qr(m, 5, () => (H(t), U(() => H(t).requirements)), Ur, (e, t) => {
-					var n = xo(), r = L(n, !0);
+					var n = So(), r = L(n, !0);
 					z(() => J(r, H(t))), q(e, n);
 				}), j(m);
 				var h = R(m, 2), g = (e) => {
 					var n = Nr(), r = ln(n), i = (e) => {
-						var t = So();
+						var t = Co();
 						G("click", t, function(...e) {
 							o()?.apply(this, e);
 						}), q(e, t);
 					}, a = (e) => {
-						var t = Co();
+						var t = wo();
 						G("click", t, function(...e) {
 							s()?.apply(this, e);
 						}), q(e, t);
 					}, l = (e) => {
-						q(e, wo());
+						q(e, To());
 					};
 					Y(r, (e) => {
 						H(t), U(() => H(t).id === "crafty") ? e(i) : c() ? e(a, 1) : e(l, -1);
 					}), q(e, n);
 				}, _ = (e) => {
-					q(e, To());
+					q(e, Eo());
 				};
 				Y(h, (e) => {
 					H(t), U(() => H(t).status === "available") ? e(g) : e(_, -1);
@@ -4263,21 +4288,21 @@ function No(e, t) {
 				}), q(e, n);
 			}), j(n), q(e, t);
 		}, l = (e) => {
-			var t = Ao(), n = R(I(t), 3), i = L(n, !0), a = R(n, 2), o = R(I(a)), s = L(o, !0);
+			var t = jo(), n = R(I(t), 3), i = L(n, !0), a = R(n, 2), o = R(I(a)), s = L(o, !0);
 			xe(), j(a);
 			var c = R(a, 3);
 			qr(c, 5, () => (W(r()), U(() => r().value.roadmap.priorities)), Ur, (e, t) => {
-				var n = xo(), r = L(n, !0);
+				var n = So(), r = L(n, !0);
 				z(() => J(r, H(t))), q(e, n);
 			}), j(c);
 			var l = R(c, 2);
 			qr(l, 5, () => (W(r()), U(() => r().value.roadmap.milestones)), (e) => e.id, (e, t) => {
-				var n = ko(), r = I(n), i = I(r), a = L(i), o = L(R(i), !0);
+				var n = Ao(), r = I(n), i = I(r), a = L(i), o = L(R(i), !0);
 				j(r);
 				var s = R(r, 2), c = (e) => {
-					var n = Oo(), r = R(ln(n));
+					var n = ko(), r = R(ln(n));
 					qr(r, 5, () => (H(t), U(() => H(t).delivered)), Ur, (e, t) => {
-						var n = xo(), r = L(n, !0);
+						var n = So(), r = L(n, !0);
 						z(() => J(r, H(t))), q(e, n);
 					}), j(r), q(e, n);
 				};
@@ -4286,7 +4311,7 @@ function No(e, t) {
 				});
 				var l = R(s, 3);
 				qr(l, 5, () => (H(t), U(() => H(t).remaining)), Ur, (e, t) => {
-					var n = xo(), r = L(n, !0);
+					var n = So(), r = L(n, !0);
 					z(() => J(r, H(t))), q(e, n);
 				}), j(l), j(n), z(() => {
 					X(n, "data-milestone-id", (H(t), U(() => H(t).id))), X(n, "aria-label", (H(t), U(() => `${H(t).id}: ${H(t).title}`))), J(a, `${H(t), U(() => H(t).id) ?? ""} · ${H(t), U(() => H(t).title) ?? ""}`), J(o, (H(t), U(() => H(t).status)));
@@ -4301,7 +4326,7 @@ function No(e, t) {
 			n() === "catalog" ? e(a) : e(l, -1);
 		}), q(e, t);
 	}, m = (e) => {
-		var t = jo(), i = I(t), o = L(i, !0), s = R(i, 2), c = L(s, !0);
+		var t = Mo(), i = I(t), o = L(i, !0), s = R(i, 2), c = L(s, !0);
 		j(t), z(() => {
 			J(o, n() === "roadmap" ? "Roadmap note" : "Integration catalog"), J(c, (W(r()), U(() => r().phase === "error" ? "Retry workspace guide" : "Check workspace guide")));
 		}), G("click", s, () => void a()()), q(e, t);
@@ -4312,8 +4337,8 @@ function No(e, t) {
 }
 wr(["click"]);
 // src/Media.svelte
-var Po = /* @__PURE__ */ K("<section class=\"card small-card media-owner-only\"><h2>Owner access required</h2><p>An owner can enroll and view media connections. Provider-account sharing has not been configured for members.</p></section>"), Fo = /* @__PURE__ */ K("<div class=\"media-playback\" data-media-playback=\"\"><h3>Recent server playback</h3><p> </p><p class=\"field-help\">Across the Jellyfin server, not limited to the selected library: sessions active within 120 seconds with a reported playing item. Counts do not show users, devices or watch titles.</p></div>"), Io = /* @__PURE__ */ K("<small>Some details unavailable</small>"), Lo = /* @__PURE__ */ K("<tr data-media-item=\"\"><td> <!></td><td> </td><td> </td></tr>"), Ro = /* @__PURE__ */ K("<div class=\"media-table-scroll\"><table class=\"media-table\"><caption> </caption><thead><tr><th scope=\"col\">Title</th><th scope=\"col\">Type</th><th scope=\"col\"> </th></tr></thead><tbody></tbody></table></div>"), zo = /* @__PURE__ */ K("<p class=\"media-empty\"> </p>"), Bo = /* @__PURE__ */ K("<p class=\"field-help\">No usable rows were reported for this sample. This does not establish an empty library or request list.</p>"), Vo = /* @__PURE__ */ K("<p class=\"notice\">More rows exist beyond this bounded view.</p>"), Ho = /* @__PURE__ */ K("<dl class=\"media-sample\"><dt>Collected</dt><dd> </dd><dt>Freshness</dt><dd> </dd><dt>Sample</dt><dd> </dd></dl> <!> <!> <p class=\"field-help\"> </p> <!> <div class=\"button-row media-pagination\"><button class=\"text-button media-previous\"> </button><span class=\"quiet-label\"> </span><button class=\"text-button media-next\"> </button></div>", 1), Uo = /* @__PURE__ */ K("<p class=\"field-help\">Choose one Jellyfin library by its ID. This limits the rows requested here; the underlying API key may still access all libraries and sessions.</p>"), Wo = /* @__PURE__ */ K("<label for=\"jellyfin-library\">Jellyfin library ID</label><input id=\"jellyfin-library\" name=\"library-id\" required=\"\" maxlength=\"36\"/><p class=\"field-help\">Use the library’s lowercase 32-digit ID or UUID, without an address or API key.</p>", 1), Go = /* @__PURE__ */ K("<button class=\"text-button media-remove\"> </button>"), Ko = /* @__PURE__ */ K("<section class=\"card media-provider\"><div class=\"guide-card-heading\"><h2> </h2><span class=\"quiet-label\">Owner-only observations</span></div> <p class=\"workspace-status\" role=\"status\" data-media-status=\"\"> </p> <div class=\"button-row media-actions\"><button class=\"button secondary media-check-state\"> </button><button class=\"button secondary media-check-observations\"> </button></div> <!> <details class=\"media-enrollment\"><summary> </summary><p>Use a key created deliberately for Reborn. It is encrypted on the server and will not be shown again.</p><p class=\"notice\"> </p> <!> <form autocomplete=\"off\"><label> </label><input name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\"/> <label>Dedicated API key</label><input name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <!> <label>Private CA certificate, if needed</label><textarea name=\"ca-pem\" rows=\"3\" maxlength=\"8192\"></textarea><p class=\"field-help\">Leave blank for publicly trusted HTTPS. Normal hostname and trust checks always apply.</p> <label class=\"media-ack\"><input name=\"acknowledge\" type=\"checkbox\" required=\"\"/>I understand this key may grant broad access, and I choose owner-only media observations.</label> <button class=\"button primary media-save\" type=\"submit\"> </button></form></details> <!></section>"), qo = /* @__PURE__ */ K("<div class=\"media-providers\"></div>"), Jo = /* @__PURE__ */ K("<div class=\"media-view\"><section class=\"card media-intro\"><p class=\"eyebrow\">MEDIA, WITH DELIBERATE ACCESS</p><h2>Media observations</h2><p>Check a selected Jellyfin library, counts of recent playback and Seerr request status. These connections send observation requests only.</p><p class=\"field-help\">Media is owner-only. Hub member accounts are not linked to provider accounts, and this view does not share their playback or request identities.</p></section> <!></div>");
-function Yo(e, t) {
+var Fo = /* @__PURE__ */ K("<section class=\"card small-card media-owner-only\"><h2>Owner access required</h2><p>An owner can enroll and view media connections. Provider-account sharing has not been configured for members.</p></section>"), Io = /* @__PURE__ */ K("<div class=\"media-playback\" data-media-playback=\"\"><h3>Recent server playback</h3><p> </p><p class=\"field-help\">Across the Jellyfin server, not limited to the selected library: sessions active within 120 seconds with a reported playing item. Counts do not show users, devices or watch titles.</p></div>"), Lo = /* @__PURE__ */ K("<small>Some details unavailable</small>"), Ro = /* @__PURE__ */ K("<tr data-media-item=\"\"><td> <!></td><td> </td><td> </td></tr>"), zo = /* @__PURE__ */ K("<div class=\"media-table-scroll\"><table class=\"media-table\"><caption> </caption><thead><tr><th scope=\"col\">Title</th><th scope=\"col\">Type</th><th scope=\"col\"> </th></tr></thead><tbody></tbody></table></div>"), Bo = /* @__PURE__ */ K("<p class=\"media-empty\"> </p>"), Vo = /* @__PURE__ */ K("<p class=\"field-help\">No usable rows were reported for this sample. This does not establish an empty library or request list.</p>"), Ho = /* @__PURE__ */ K("<p class=\"notice\">More rows exist beyond this bounded view.</p>"), Uo = /* @__PURE__ */ K("<dl class=\"media-sample\"><dt>Collected</dt><dd> </dd><dt>Freshness</dt><dd> </dd><dt>Sample</dt><dd> </dd></dl> <!> <!> <p class=\"field-help\"> </p> <!> <div class=\"button-row media-pagination\"><button class=\"text-button media-previous\"> </button><span class=\"quiet-label\"> </span><button class=\"text-button media-next\"> </button></div>", 1), Wo = /* @__PURE__ */ K("<p class=\"field-help\">Choose one Jellyfin library by its ID. This limits the rows requested here; the underlying API key may still access all libraries and sessions.</p>"), Go = /* @__PURE__ */ K("<label for=\"jellyfin-library\">Jellyfin library ID</label><input id=\"jellyfin-library\" name=\"library-id\" required=\"\" maxlength=\"36\"/><p class=\"field-help\">Use the library’s lowercase 32-digit ID or UUID, without an address or API key.</p>", 1), Ko = /* @__PURE__ */ K("<button class=\"text-button media-remove\"> </button>"), qo = /* @__PURE__ */ K("<section class=\"card media-provider\"><div class=\"guide-card-heading\"><h2> </h2><span class=\"quiet-label\">Owner-only observations</span></div> <p class=\"workspace-status\" role=\"status\" data-media-status=\"\"> </p> <div class=\"button-row media-actions\"><button class=\"button secondary media-check-state\"> </button><button class=\"button secondary media-check-observations\"> </button></div> <!> <details class=\"media-enrollment\"><summary> </summary><p>Use a key created deliberately for Reborn. It is encrypted on the server and will not be shown again.</p><p class=\"notice\"> </p> <!> <form autocomplete=\"off\"><label> </label><input name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\"/> <label>Dedicated API key</label><input name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <!> <label>Private CA certificate, if needed</label><textarea name=\"ca-pem\" rows=\"3\" maxlength=\"8192\"></textarea><p class=\"field-help\">Leave blank for publicly trusted HTTPS. Normal hostname and trust checks always apply.</p> <label class=\"media-ack\"><input name=\"acknowledge\" type=\"checkbox\" required=\"\"/>I understand this key may grant broad access, and I choose owner-only media observations.</label> <button class=\"button primary media-save\" type=\"submit\"> </button></form></details> <!></section>"), Jo = /* @__PURE__ */ K("<div class=\"media-providers\"></div>"), Yo = /* @__PURE__ */ K("<div class=\"media-view\"><section class=\"card media-intro\"><p class=\"eyebrow\">MEDIA, WITH DELIBERATE ACCESS</p><h2>Media observations</h2><p>Check a selected Jellyfin library, counts of recent playback and Seerr request status. These connections send observation requests only.</p><p class=\"field-help\">Media is owner-only. Hub member accounts are not linked to provider accounts, and this view does not share their playback or request identities.</p></section> <!></div>");
+function Xo(e, t) {
 	Ue(t, !1);
 	let n = Z(t, "owner", 8, !1), r = Z(t, "active", 8, !1), i = Z(t, "state", 8), a = Z(t, "check", 8), o = Z(t, "load", 8), s = Z(t, "save", 8), c = ["jellyfin", "seerr"], l = (e) => e === "jellyfin" ? "Jellyfin" : "Seerr", u = /* @__PURE__ */ P({}), d = (e) => e === null ? "Not collected" : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleString(), f = (e) => !r() || i()[e].save === "saving", p = (e) => r() && n() && i()[e].phase === "ready" && i()[e].save === "idle" && !!i()[e].status;
 	function m() {
@@ -4335,33 +4360,33 @@ function Yo(e, t) {
 	En(() => (W(r()), W(n())), () => {
 		r() && n() || m();
 	}), Dn(), Ti();
-	var g = Jo(), _ = R(I(g), 2), v = (e) => {
-		q(e, Po());
+	var g = Yo(), _ = R(I(g), 2), v = (e) => {
+		q(e, Fo());
 	}, y = (e) => {
-		var t = qo();
+		var t = Jo();
 		qr(t, 5, () => c, (e) => e, (e, t) => {
 			let n = /* @__PURE__ */ mt(() => (W(i()), H(t), U(() => i()[H(t)]))), r = /* @__PURE__ */ mt(() => (W(H(n)), U(() => H(n).observation)));
-			var s = Ko(), c = I(s), m = L(I(c), !0);
+			var s = qo(), c = I(s), m = L(I(c), !0);
 			xe(), j(c);
 			var g = R(c, 2), _ = L(g, !0), v = R(g, 2), y = I(v), b = L(y), x = R(y), S = L(x);
 			j(v);
 			var C = R(v, 2), w = (e) => {
-				var n = Ho(), i = ln(n), a = R(I(i)), s = L(a, !0), c = R(a, 2), u = L(c, !0), p = L(R(c, 2), !0);
+				var n = Uo(), i = ln(n), a = R(I(i)), s = L(a, !0), c = R(a, 2), u = L(c, !0), p = L(R(c, 2), !0);
 				j(i);
 				var m = R(i, 2), h = (e) => {
-					var t = Fo(), n = L(R(I(t)), !0);
+					var t = Io(), n = L(R(I(t)), !0);
 					xe(), j(t), z(() => J(n, (W(H(r)), U(() => H(r).playback && H(r).playback.playing !== null && H(r).playback.paused !== null ? `${H(r).playback.playing} playing · ${H(r).playback.paused} paused` : "Playback counts unavailable")))), q(e, t);
 				};
 				Y(m, (e) => {
 					H(t) === "jellyfin" && e(h);
 				});
 				var g = R(m, 2), _ = (e) => {
-					var n = Ro(), i = I(n), a = I(i), o = L(a, !0), s = R(a), c = I(s), l = L(R(I(c), 2), !0);
+					var n = zo(), i = I(n), a = I(i), o = L(a, !0), s = R(a), c = I(s), l = L(R(I(c), 2), !0);
 					j(c), j(s);
 					var u = R(s);
 					qr(u, 5, () => (W(H(r)), U(() => H(r).items)), (e) => e.id, (e, n) => {
-						var r = Lo(), i = I(r), a = I(i, !0), o = R(a), s = (e) => {
-							q(e, Io());
+						var r = Ro(), i = I(r), a = I(i, !0), o = R(a), s = (e) => {
+							q(e, Lo());
 						};
 						Y(o, (e) => {
 							H(n), U(() => H(n).detail_error) && e(s);
@@ -4374,16 +4399,16 @@ function Yo(e, t) {
 						J(o, H(t) === "jellyfin" ? "Selected library rows" : "Recent request rows"), J(l, H(t) === "jellyfin" ? "Year" : "Request status"), X(u, "data-media-rows", H(t));
 					}), q(e, n);
 				}, v = (e) => {
-					var n = zo(), r = L(n, !0);
+					var n = Bo(), r = L(n, !0);
 					z(() => J(r, H(t) === "jellyfin" ? "No movie or series rows were reported in this library." : "No requests were reported.")), q(e, n);
 				}, y = (e) => {
-					q(e, Bo());
+					q(e, Vo());
 				};
 				Y(g, (e) => {
 					W(H(r)), U(() => H(r).items.length) ? e(_) : (W(H(r)), U(() => H(r).complete && H(r).error === null && H(r).total === 0) ? e(v, 1) : (W(H(r)), U(() => H(r).error !== "checking") && e(y, 2)));
 				});
 				var b = R(g, 2), x = L(b), S = R(b, 2), C = (e) => {
-					q(e, Vo());
+					q(e, Ho());
 				};
 				Y(S, (e) => {
 					W(H(r)), U(() => H(r).truncated) && e(C);
@@ -4399,20 +4424,20 @@ function Yo(e, t) {
 					() => (H(t), U(() => l(H(t))))
 				]), G("click", T, () => void o()(H(t), H(r).offset - 12)), G("click", ne, () => H(r).next_offset !== null && void o()(H(t), H(r).next_offset)), q(e, n);
 			}, T = (e) => {
-				var n = zo(), r = L(n);
+				var n = Bo(), r = L(n);
 				z((e) => J(r, `No ${e ?? ""} connection enrolled.`), [() => (H(t), U(() => l(H(t))))]), q(e, n);
 			};
 			Y(C, (e) => {
 				W(H(r)), U(() => H(r)?.configured) ? e(w) : (W(H(n)), U(() => H(n).status && !H(n).status.configured) && e(T, 1));
 			});
 			var E = R(C, 2), ee = I(E), te = L(ee), ne = R(ee, 2), re = L(ne), D = R(ne, 2), ie = (e) => {
-				q(e, Uo());
+				q(e, Wo());
 			};
 			Y(D, (e) => {
 				H(t) === "jellyfin" && e(ie);
 			});
 			var ae = R(D, 2), O = I(ae), oe = L(O), se = R(O), ce = R(se, 2), le = R(ce), ue = R(le, 2), de = (e) => {
-				var n = Wo(), r = R(ln(n));
+				var n = Go(), r = R(ln(n));
 				X(r, "pattern", "[a-f0-9]32|[a-f0-9]8-[a-f0-9]4-[a-f0-9]4-[a-f0-9]4-[a-f0-9]12"), xe(), z((e) => r.disabled = e, [() => (H(t), U(() => !p(H(t))))]), q(e, n);
 			};
 			Y(ue, (e) => {
@@ -4423,7 +4448,7 @@ function Yo(e, t) {
 			var ge = R(me, 2), _e = L(ge);
 			j(ae), wi(ae, (e, t) => Ut(u, H(u)[t] = e), (e) => H(u)?.[e], () => [H(t)]), j(E);
 			var k = R(E, 2), ve = (e) => {
-				var n = Go(), r = L(n);
+				var n = Ko(), r = L(n);
 				z((e, t) => {
 					n.disabled = e, J(r, `Remove ${t ?? ""} connection`);
 				}, [() => (H(t), U(() => !p(H(t)))), () => (H(t), U(() => l(H(t))))]), G("click", n, () => void h(H(t), !0)), q(e, n);
@@ -4461,10 +4486,10 @@ function Yo(e, t) {
 }
 wr(["click"]);
 // src/App.svelte
-var Xo = /* @__PURE__ */ K("<span class=\"notification-badge\"> </span>"), Zo = /* @__PURE__ */ K("<a rel=\"noreferrer\"> </a>"), Qo = /* @__PURE__ */ K("<section class=\"recovery card\"><p class=\"eyebrow\">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class=\"button-row\"><a class=\"button primary\" href=\"/workspace\">Open workspace again</a><a class=\"button secondary\" href=\"/account\">Your account</a></div></section>"), $o = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">▤</span><h2>Your workspace note</h2><p> </p><button class=\"text-button\">Keep writing <span aria-hidden=\"true\">→</span></button>", 1), es = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">◇</span><h2>Connections</h2><p> </p><button class=\"text-button\">View connections <span aria-hidden=\"true\">→</span></button>", 1), ts = /* @__PURE__ */ K("<section><!></section>"), ns = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Draft recovery\"><h2>A draft is waiting</h2><p>This browser session has an unfinished note for this account. Review it before saving.</p><div class=\"button-row\"><button class=\"button secondary\">Recover draft</button><button class=\"text-button\">Discard draft</button></div></section>"), rs = /* @__PURE__ */ K("<p class=\"field-help\">Browser storage is unavailable. Draft recovery is limited to this open page.</p>"), is = /* @__PURE__ */ K("<p class=\"notice\">Shorten this note to 4096 bytes before saving or leaving this page.</p>"), as = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Save conflict\"><h2>There’s a newer saved note</h2><p>Your draft is still in the editor. Compare it with the saved version, then choose what to keep.</p><pre> </pre><div class=\"button-row\"><button class=\"button secondary\">Keep my draft</button><button class=\"text-button\">Use saved note</button></div></section>"), os = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain save\"><h2>Check before saving again</h2><p>The previous save may have completed. Your draft has not been sent again.</p><button class=\"button secondary\">Check saved note</button></section>"), ss = /* @__PURE__ */ K("<a class=\"skip-link\" href=\"#workspace-content\">Skip to content</a> <div class=\"workspace-shell\"><aside class=\"sidebar\" aria-label=\"Workspace sidebar\"><a class=\"brand\" href=\"/workspace\"><span class=\"brand-mark\" aria-hidden=\"true\">K</span><span>Keida <small>REBORN</small></span></a> <p class=\"nav-label\">YOUR SPACE</p> <nav class=\"main-nav\" aria-label=\"Workspace views\"><button><span aria-hidden=\"true\">⌂</span>Home</button> <button><span aria-hidden=\"true\">▤</span>Workspace note<span aria-hidden=\"true\"></span></button> <button><span aria-hidden=\"true\">◇</span>Connections</button> <button><span aria-hidden=\"true\">▦</span>Services</button> <button><span aria-hidden=\"true\">◷</span>Activity</button> <button><span aria-hidden=\"true\">♧</span>Notifications<!></button> <button><span aria-hidden=\"true\">⊞</span>Integrations</button> <button><span aria-hidden=\"true\">≡</span>Roadmap</button> <button><span aria-hidden=\"true\">▻</span>Media</button></nav> <div class=\"sidebar-bottom\"><a href=\"/account\" class=\"account-link\"><span class=\"avatar\" aria-hidden=\"true\">K</span><span><strong> </strong><small> </small></span></a> <form method=\"post\" action=\"/account/sign-out\"><input type=\"hidden\" name=\"product\" value=\"keida-hub-reborn\"/> <input type=\"hidden\" name=\"contract\" value=\"reborn-account-v1\"/> <input type=\"hidden\" name=\"csrf_token\"/> <button type=\"submit\" class=\"sign-out\">Sign out <span aria-hidden=\"true\">↗</span></button></form> <details class=\"version\"><summary> <span>Build details</span></summary> <dl><dt>Source</dt><dd><!></dd><dt>Tree</dt><dd> </dd><dt>Channel</dt><dd> </dd><dt>Workspace contract</dt><dd>reborn-workspace-v1</dd></dl></details></div></aside> <main id=\"workspace-content\" class=\"workspace-content\"><header class=\"page-header\"><div><p class=\"eyebrow\">YOUR OWN CORNER OF KEIDA</p><h1 tabindex=\"-1\"> </h1></div><span class=\"connection-state\"><span aria-hidden=\"true\">●</span> </span></header> <p class=\"workspace-status\" role=\"status\"> </p> <!> <section class=\"home-view\"><div class=\"welcome-card card\"><div><p class=\"eyebrow\">MAKE YOURSELF AT HOME</p><h2>A useful place<br/>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><div class=\"button-row\"><button class=\"button primary\">Open your note <span aria-hidden=\"true\">↗</span></button><button class=\"text-button\">Read the Roadmap note</button></div></div><div class=\"orb\" aria-hidden=\"true\"><div>K</div></div></div> <div class=\"home-layout-heading\"><p class=\"layout-status\" role=\"status\"> </p><button class=\"button secondary customize-home\">Customize Home</button></div> <div><!></div> <div></div></section> <section class=\"note-view\" aria-label=\"Workspace note\"><div class=\"note-heading\"><p>A private note, available each time you sign in.</p><span class=\"quiet-label\"> </span></div> <!> <form class=\"note-card card\"><label for=\"workspace-note\">Workspace note</label> <textarea id=\"workspace-note\" name=\"workspace-note\" maxlength=\"4096\" spellcheck=\"true\" aria-describedby=\"note-help note-size\" placeholder=\"What would you like to come back to?\"></textarea> <p id=\"note-help\" class=\"field-help\">For ordinary notes. Keep passwords, API keys and other secrets out of this space.</p> <div class=\"note-footer\"><span id=\"note-size\"> </span><button class=\"button primary\" type=\"submit\"> </button></div></form> <!> <!> <!> <!></section> <section aria-label=\"Connections\"><!></section> <section aria-label=\"Activity\"><!></section> <section aria-label=\"Notifications\"><!></section> <section><!></section> <section aria-label=\"Media\"><!></section> <footer class=\"content-footer\"><span>Keida Reborn</span><a href=\"/account\">Account &amp; recovery</a></footer></main></div>", 1);
-function cs(e, t) {
+var Zo = /* @__PURE__ */ K("<span class=\"notification-badge\"> </span>"), Qo = /* @__PURE__ */ K("<a rel=\"noreferrer\"> </a>"), $o = /* @__PURE__ */ K("<section class=\"recovery card\"><p class=\"eyebrow\">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class=\"button-row\"><a class=\"button primary\" href=\"/workspace\">Open workspace again</a><a class=\"button secondary\" href=\"/account\">Your account</a></div></section>"), es = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">▤</span><h2>Your workspace note</h2><p> </p><button class=\"text-button\">Keep writing <span aria-hidden=\"true\">→</span></button>", 1), ts = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">◇</span><h2>Connections</h2><p> </p><button class=\"text-button\">View connections <span aria-hidden=\"true\">→</span></button>", 1), ns = /* @__PURE__ */ K("<section><!></section>"), rs = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Draft recovery\"><h2>A draft is waiting</h2><p>This browser session has an unfinished note for this account. Review it before saving.</p><div class=\"button-row\"><button class=\"button secondary\">Recover draft</button><button class=\"text-button\">Discard draft</button></div></section>"), is = /* @__PURE__ */ K("<p class=\"field-help\">Browser storage is unavailable. Draft recovery is limited to this open page.</p>"), as = /* @__PURE__ */ K("<p class=\"notice\">Shorten this note to 4096 bytes before saving or leaving this page.</p>"), os = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Save conflict\"><h2>There’s a newer saved note</h2><p>Your draft is still in the editor. Compare it with the saved version, then choose what to keep.</p><pre> </pre><div class=\"button-row\"><button class=\"button secondary\">Keep my draft</button><button class=\"text-button\">Use saved note</button></div></section>"), ss = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain save\"><h2>Check before saving again</h2><p>The previous save may have completed. Your draft has not been sent again.</p><button class=\"button secondary\">Check saved note</button></section>"), cs = /* @__PURE__ */ K("<a class=\"skip-link\" href=\"#workspace-content\">Skip to content</a> <div class=\"workspace-shell\"><aside class=\"sidebar\" aria-label=\"Workspace sidebar\"><a class=\"brand\" href=\"/workspace\"><span class=\"brand-mark\" aria-hidden=\"true\">K</span><span>Keida <small>REBORN</small></span></a> <p class=\"nav-label\">YOUR SPACE</p> <nav class=\"main-nav\" aria-label=\"Workspace views\"><button><span aria-hidden=\"true\">⌂</span>Home</button> <button><span aria-hidden=\"true\">▤</span>Workspace note<span aria-hidden=\"true\"></span></button> <button><span aria-hidden=\"true\">◇</span>Connections</button> <button><span aria-hidden=\"true\">▦</span>Services</button> <button><span aria-hidden=\"true\">◷</span>Activity</button> <button><span aria-hidden=\"true\">♧</span>Notifications<!></button> <button><span aria-hidden=\"true\">⊞</span>Integrations</button> <button><span aria-hidden=\"true\">≡</span>Roadmap</button> <button><span aria-hidden=\"true\">▻</span>Media</button></nav> <div class=\"sidebar-bottom\"><a href=\"/account\" class=\"account-link\"><span class=\"avatar\" aria-hidden=\"true\">K</span><span><strong> </strong><small> </small></span></a> <form method=\"post\" action=\"/account/sign-out\"><input type=\"hidden\" name=\"product\" value=\"keida-hub-reborn\"/> <input type=\"hidden\" name=\"contract\" value=\"reborn-account-v1\"/> <input type=\"hidden\" name=\"csrf_token\"/> <button type=\"submit\" class=\"sign-out\">Sign out <span aria-hidden=\"true\">↗</span></button></form> <details class=\"version\"><summary> <span>Build details</span></summary> <dl><dt>Source</dt><dd><!></dd><dt>Tree</dt><dd> </dd><dt>Channel</dt><dd> </dd><dt>Workspace contract</dt><dd>reborn-workspace-v1</dd></dl></details></div></aside> <main id=\"workspace-content\" class=\"workspace-content\"><header class=\"page-header\"><div><p class=\"eyebrow\">YOUR OWN CORNER OF KEIDA</p><h1 tabindex=\"-1\"> </h1></div><span class=\"connection-state\"><span aria-hidden=\"true\">●</span> </span></header> <p class=\"workspace-status\" role=\"status\"> </p> <!> <section class=\"home-view\"><div class=\"welcome-card card\"><div><p class=\"eyebrow\">MAKE YOURSELF AT HOME</p><h2>A useful place<br/>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><div class=\"button-row\"><button class=\"button primary\">Open your note <span aria-hidden=\"true\">↗</span></button><button class=\"text-button\">Read the Roadmap note</button></div></div><div class=\"orb\" aria-hidden=\"true\"><div>K</div></div></div> <div class=\"home-layout-heading\"><p class=\"layout-status\" role=\"status\"> </p><button class=\"button secondary customize-home\">Customize Home</button></div> <div><!></div> <div></div></section> <section class=\"note-view\" aria-label=\"Workspace note\"><div class=\"note-heading\"><p>A private note, available each time you sign in.</p><span class=\"quiet-label\"> </span></div> <!> <form class=\"note-card card\"><label for=\"workspace-note\">Workspace note</label> <textarea id=\"workspace-note\" name=\"workspace-note\" maxlength=\"4096\" spellcheck=\"true\" aria-describedby=\"note-help note-size\" placeholder=\"What would you like to come back to?\"></textarea> <p id=\"note-help\" class=\"field-help\">For ordinary notes. Keep passwords, API keys and other secrets out of this space.</p> <div class=\"note-footer\"><span id=\"note-size\"> </span><button class=\"button primary\" type=\"submit\"> </button></div></form> <!> <!> <!> <!></section> <section aria-label=\"Connections\"><!></section> <section aria-label=\"Activity\"><!></section> <section aria-label=\"Notifications\"><!></section> <section><!></section> <section aria-label=\"Media\"><!></section> <footer class=\"content-footer\"><span>Keida Reborn</span><a href=\"/account\">Account &amp; recovery</a></footer></main></div>", 1);
+function ls(e, t) {
 	Ue(t, !1);
-	let n = () => Ni(u, "$model", r), [r, i] = Pi(), a = /* @__PURE__ */ P(), o = /* @__PURE__ */ P(), s = /* @__PURE__ */ P(), c = Z(t, "binding", 8), l = _a(c()), u = l.model, d = /* @__PURE__ */ P("home"), f = /* @__PURE__ */ P(), p = /* @__PURE__ */ P(), m = /* @__PURE__ */ P(Wi()), h, g = document.querySelector("meta[name=\"reborn-version\"]")?.content ?? "development", _ = document.querySelector("meta[name=\"reborn-commit\"]")?.content ?? "unqualified", v = document.querySelector("meta[name=\"reborn-tree\"]")?.content ?? "unqualified", y = document.querySelector("meta[name=\"reborn-channel\"]")?.content ?? "development";
+	let n = () => Ni(u, "$model", r), [r, i] = Pi(), a = /* @__PURE__ */ P(), o = /* @__PURE__ */ P(), s = /* @__PURE__ */ P(), c = Z(t, "binding", 8), l = va(c()), u = l.model, d = /* @__PURE__ */ P("home"), f = /* @__PURE__ */ P(), p = /* @__PURE__ */ P(), m = /* @__PURE__ */ P(Wi()), h, g = document.querySelector("meta[name=\"reborn-version\"]")?.content ?? "development", _ = document.querySelector("meta[name=\"reborn-commit\"]")?.content ?? "unqualified", v = document.querySelector("meta[name=\"reborn-tree\"]")?.content ?? "unqualified", y = document.querySelector("meta[name=\"reborn-channel\"]")?.content ?? "development";
 	function b(e) {
 		H(d) === "media" && e !== "media" ? (l.closeMedia(), jt(() => {
 			F(d, e);
@@ -4494,7 +4519,7 @@ function cs(e, t) {
 			"uncertain"
 		].includes(n().save));
 	}), Dn(), Ti();
-	var S = ss(), C = R(ln(S), 2), w = I(C), T = R(I(w), 4), E = I(T);
+	var S = cs(), C = R(ln(S), 2), w = I(C), T = R(I(w), 4), E = I(T);
 	let ee;
 	var te = R(E, 2);
 	let ne;
@@ -4510,7 +4535,7 @@ function cs(e, t) {
 	var le = R(se, 2);
 	let ue;
 	var de = R(I(le), 2), fe = (e) => {
-		var t = Xo(), r = L(t, !0);
+		var t = Zo(), r = L(t, !0);
 		z(() => {
 			X(t, "aria-label", (n(), U(() => `${n().snapshot.notifications.unread_groups} unread groups`))), J(r, (n(), U(() => n().snapshot.notifications.unread_groups)));
 		}), q(e, t);
@@ -4532,7 +4557,7 @@ function cs(e, t) {
 	var Ee = R(we, 2), De = I(Ee), Oe = I(De, !0);
 	xe(), j(De);
 	var ke = R(De, 2), Ae = R(I(ke)), je = I(Ae), Me = (e) => {
-		var t = Zo(), n = L(t, !0);
+		var t = Qo(), n = L(t, !0);
 		z(() => {
 			X(t, "href", `https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/commit/${_}`), J(n, _);
 		}), q(e, t);
@@ -4550,7 +4575,7 @@ function cs(e, t) {
 	var He = R(Be), Ge = R(I(He), 1, !0);
 	j(He), j(ze);
 	var Ke = R(ze, 2), qe = L(Ke, !0), Je = R(Ke, 2), Ye = (e) => {
-		q(e, Qo());
+		q(e, $o());
 	};
 	Y(Je, (e) => {
 		n(), U(() => n().phase !== "ready") && e(Ye);
@@ -4562,7 +4587,7 @@ function cs(e, t) {
 	var st = R(rt, 2), ct = I(st);
 	{
 		let e = /* @__PURE__ */ mt(() => (n(), U(() => n().snapshot?.layout))), t = /* @__PURE__ */ mt(() => (n(), U(() => n().phase === "ready")));
-		Ca(ct, {
+		wa(ct, {
 			get draft() {
 				return n(), U(() => n().layoutDraft);
 			},
@@ -4602,18 +4627,18 @@ function cs(e, t) {
 	var lt = R(st, 2);
 	let ut;
 	qr(lt, 5, () => H(m), (e) => e.id, (e, t) => {
-		var r = ts();
+		var r = ns();
 		let i;
 		var a = I(r), o = (e) => {
-			var t = $o(), r = R(ln(t), 2), i = L(r, !0), a = R(r);
+			var t = es(), r = R(ln(t), 2), i = L(r, !0), a = R(r);
 			z(() => J(i, (n(), U(() => n().dirty ? "You have an unsaved draft open." : n().snapshot?.note.revision === "0" ? "A blank page for whatever comes next." : "Your saved note is ready when you are.")))), G("click", a, () => b("note")), q(e, t);
 		}, s = (e) => {
-			var t = es(), r = R(ln(t), 2), i = L(r, !0), a = R(r);
+			var t = ts(), r = R(ln(t), 2), i = L(r, !0), a = R(r);
 			z(() => J(i, (n(), U(() => n().snapshot?.crafty?.configured ? "Your enrolled Crafty observations are available in Connections." : "Enroll dedicated Crafty access to see your selected servers.")))), G("click", a, () => b("connections")), q(e, t);
 		}, c = (e) => {
 			{
 				let t = /* @__PURE__ */ mt(() => (n(), U(() => n().snapshot?.directory))), r = /* @__PURE__ */ mt(() => (n(), U(() => n().phase === "ready"))), i = /* @__PURE__ */ mt(() => (n(), U(() => n().snapshot?.account.role === "owner"))), a = /* @__PURE__ */ mt(() => H(d) === "home");
-				so(e, {
+				co(e, {
 					get directory() {
 						return H(t);
 					},
@@ -4658,7 +4683,7 @@ function cs(e, t) {
 	var dt = R(Xe, 2), ft = I(dt), ht = L(R(I(ft)), !0);
 	j(ft);
 	var gt = R(ft, 2), _t = (e) => {
-		var t = ns(), n = R(I(t), 2), r = I(n), i = R(r);
+		var t = rs(), n = R(I(t), 2), r = I(n), i = R(r);
 		j(n), j(t), G("click", r, function(...e) {
 			l.recover?.apply(this, e);
 		}), G("click", i, () => l.resolve(!0)), q(e, t);
@@ -4673,26 +4698,26 @@ function cs(e, t) {
 	var St = L(N), Ct = R(N), wt = L(Ct, !0);
 	j(bt), j(vt);
 	var Tt = R(vt, 2), Et = (e) => {
-		q(e, rs());
+		q(e, is());
 	};
 	Y(Tt, (e) => {
 		n(), U(() => n().storageLimited) && e(Et);
 	});
 	var Dt = R(Tt, 2), Ot = (e) => {
-		q(e, is());
+		q(e, as());
 	};
 	Y(Dt, (e) => {
 		H(o) > 4096 && e(Ot);
 	});
 	var kt = R(Dt, 2), At = (e) => {
-		var t = as(), r = R(I(t), 2), i = L(r, !0), a = R(r), o = I(a), s = R(o);
+		var t = os(), r = R(I(t), 2), i = L(r, !0), a = R(r), o = I(a), s = R(o);
 		j(a), j(t), z(() => J(i, (n(), U(() => n().snapshot?.note.body)))), G("click", o, () => l.resolve(!1)), G("click", s, () => l.resolve(!0)), q(e, t);
 	};
 	Y(kt, (e) => {
 		n(), U(() => n().save === "conflict") && e(At);
 	});
 	var Mt = R(kt, 2), Nt = (e) => {
-		var t = os(), n = R(I(t), 2);
+		var t = ss(), n = R(I(t), 2);
 		j(t), G("click", n, () => l.check()), q(e, t);
 	};
 	Y(Mt, (e) => {
@@ -4701,7 +4726,7 @@ function cs(e, t) {
 	var Pt = R(dt, 2), Ft = I(Pt);
 	{
 		let e = /* @__PURE__ */ mt(() => (n(), U(() => n().snapshot?.crafty))), t = /* @__PURE__ */ mt(() => (n(), U(() => n().snapshot?.account.role === "owner"))), r = /* @__PURE__ */ mt(() => (H(d), n(), U(() => H(d) === "connections" && n().phase === "ready")));
-		Wa(Ft, {
+		Ga(Ft, {
 			history: () => {
 				F(d, "activity"), H(f)?.focus(), l.activity("connections", "");
 			},
@@ -4732,7 +4757,7 @@ function cs(e, t) {
 	var It = R(Pt, 2), Lt = I(It);
 	{
 		let e = /* @__PURE__ */ mt(() => (n(), U(() => n().phase === "ready")));
-		ho(Lt, {
+		go(Lt, {
 			get state() {
 				return n(), U(() => n().activity);
 			},
@@ -4748,7 +4773,7 @@ function cs(e, t) {
 	var Rt = R(It, 2), zt = I(Rt);
 	{
 		let e = /* @__PURE__ */ mt(() => (n(), U(() => n().snapshot?.notifications))), t = /* @__PURE__ */ mt(() => (n(), U(() => n().phase === "ready")));
-		bo(zt, {
+		xo(zt, {
 			get value() {
 				return H(e);
 			},
@@ -4773,7 +4798,7 @@ function cs(e, t) {
 	var Bt = R(Rt, 2), Vt = I(Bt);
 	{
 		let e = /* @__PURE__ */ mt(() => H(d) === "roadmap" ? "roadmap" : "catalog"), t = /* @__PURE__ */ mt(() => (n(), U(() => n().phase === "ready"))), r = /* @__PURE__ */ mt(() => (n(), U(() => n().snapshot?.account.role === "owner")));
-		No(Vt, {
+		Po(Vt, {
 			get mode() {
 				return H(e);
 			},
@@ -4795,7 +4820,7 @@ function cs(e, t) {
 	var Ht = R(Bt, 2), Ut = I(Ht);
 	{
 		let e = /* @__PURE__ */ mt(() => (n(), U(() => n().snapshot?.account.role === "owner"))), t = /* @__PURE__ */ mt(() => (H(d), n(), U(() => H(d) === "media" && n().phase === "ready")));
-		Yo(Ut, {
+		Xo(Ut, {
 			get state() {
 				return n(), U(() => n().media);
 			},
@@ -4826,16 +4851,16 @@ function cs(e, t) {
 }
 wr(["click", "input"]);
 // src/main.ts
-var ls = document.getElementById("workspace-root"), us = document.querySelector("meta[name=\"reborn-session-binding\"]")?.content, ds = document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content;
-if (ls && us && /^[a-f0-9]{64}$/.test(us) && ds === "reborn-workspace-v1") {
-	let e = Array.from(ls.childNodes);
-	ls.replaceChildren();
+var us = document.getElementById("workspace-root"), ds = document.querySelector("meta[name=\"reborn-session-binding\"]")?.content, fs = document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content;
+if (us && ds && /^[a-f0-9]{64}$/.test(ds) && fs === "reborn-workspace-v1") {
+	let e = Array.from(us.childNodes);
+	us.replaceChildren();
 	try {
-		Rr(cs, {
-			target: ls,
-			props: { binding: us }
+		Rr(ls, {
+			target: us,
+			props: { binding: ds }
 		});
 	} catch {
-		ls.replaceChildren(...e);
+		us.replaceChildren(...e);
 	}
 }

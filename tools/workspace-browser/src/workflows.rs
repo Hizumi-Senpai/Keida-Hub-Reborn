@@ -554,6 +554,34 @@ async fn owner_media_observations() -> Check<()> {
     check(owner.evaluate("const j=document.querySelector('[data-media-provider=jellyfin]'),s=document.querySelector('[data-media-provider=seerr]');return j.dataset.mediaComplete==='true' && s.dataset.mediaComplete==='true' && j.querySelectorAll('[data-media-item]').length===12 && s.querySelectorAll('[data-media-item]').length===12 && j.textContent.includes('Fixture series') && j.querySelector('[data-media-playback]').textContent.includes('1 playing') && j.querySelector('[data-media-playback]').textContent.includes('1 paused') && s.textContent.includes('Requested series') && s.textContent.toLowerCase().includes('pending') && s.textContent.toLowerCase().includes('completed');", json!([])).await? == true, "real media HTTPS observations render library titles, count-only playback and independent request status rows")?;
     check(owner.evaluate("const canaries=arguments[0],values=[document.body.textContent,...[...document.querySelectorAll('input,textarea')].map(e=>e.value),...Object.values(sessionStorage),...Object.values(localStorage)];return canaries.every(c=>values.every(v=>!v.includes(c))) && document.querySelector('#jellyfin-library').value==='';", json!([[m::TOKEN, &provider.origin, "PRIVATE_MEDIA", "PRIVATE_WATCH", "PRIVATE_PAUSED", "PRIVATE_IDLE", "PRIVATE_REQUESTER", "PRIVATE_MODIFIER", "PRIVATE_PROFILE", "private-media-email@example.invalid", "198.51.100.77", "/private/media-fixture-path"]])).await? == true, "native enrollment clears secrets and no provider identity, watch title, path, key or endpoint reaches DOM or storage")?;
 
+    step("media phase01b existing scheduler ages visible samples without provider IO");
+    check(owner.evaluate("return ['jellyfin','seerr'].every(name=>document.querySelector('[data-media-provider='+name+']').textContent.includes('Recent collection'));", json!([])).await? == true, "both real provider samples initially display recent collection")?;
+    let age_requests = provider.requests().len();
+    let age_reads = f.reads();
+    // Explicit browser-clock fault seam: the provider/server clock and real
+    // timers are unchanged. Do not invoke an application update or refresh;
+    // the existing fifteen-second scheduler must age the already-visible data.
+    check(owner.evaluate("if(window.__mediaRealNow)return false;window.__mediaRealNow=Date.now;Date.now=()=>window.__mediaRealNow()+100000;return true;", json!([])).await? == true, "install the declared100-second browser-only clock fault")?;
+    let aged = async {
+        let deadline = tokio::time::Instant::now() + Duration::from_secs(20);
+        loop {
+            let stale = owner.evaluate("return ['jellyfin','seerr'].every(name=>{const s=document.querySelector('[data-media-provider='+name+']');return s.textContent.includes('Stale collection') && !s.textContent.includes('Recent collection') && s.querySelectorAll('[data-media-item]').length===12});", json!([])).await? == true;
+            if stale && f.reads() > age_reads {
+                break;
+            }
+            check(tokio::time::Instant::now() < deadline, "existing scheduler must age visible media without a deliberate provider refresh")?;
+            tokio::time::sleep(Duration::from_millis(100)).await;
+        }
+        check(provider.requests().len() == age_requests, "aging visible media does not create any new provider GET")?;
+        check(f.reads() <= age_reads + 2, "media aging reuses the existing workspace scheduler rather than adding another observation owner")
+    }.await;
+    let restored = owner.evaluate("if(!window.__mediaRealNow)return false;Date.now=window.__mediaRealNow;delete window.__mediaRealNow;return true;", json!([])).await;
+    aged?;
+    check(
+        restored? == true,
+        "restore the browser clock after the declared fault seam",
+    )?;
+
     step("media phase02 bounded pages, independent cached reads and preserved note state");
     let writes = f.writes();
     let requests = provider.requests().len();
