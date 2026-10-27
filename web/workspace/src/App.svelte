@@ -14,7 +14,7 @@
   const channel = document.querySelector<HTMLMetaElement>('meta[name="reborn-channel"]')?.content ?? 'development';
   $: bytes = new TextEncoder().encode($model.draft).length;
   $: canSave = $model.phase === 'ready' && $model.dirty && bytes <= 4096
-    && !['saving', 'conflict', 'uncertain'].includes($model.save);
+    && !['saving', 'checking-conflict', 'conflict', 'uncertain'].includes($model.save);
   function navigate(next: 'home' | 'note' | 'connections' | 'directory'): void { view = next; heading?.focus(); }
   onMount(controller.start);
 </script>

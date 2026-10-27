@@ -12,7 +12,7 @@ type Draft = { body: string; base: string };
 export type Model = {
   phase: 'checking' | 'ready' | 'paused' | 'blocked'; message: string;
   snapshot?: Snapshot; draft: string; base: string; dirty: boolean;
-  save: 'idle' | 'saving' | 'saved' | 'conflict' | 'uncertain'; recovery?: Draft;
+  save: 'idle' | 'saving' | 'saved' | 'checking-conflict' | 'conflict' | 'uncertain'; recovery?: Draft;
   storageLimited: boolean;
   directorySave: 'idle' | 'saving' | 'conflict' | 'uncertain'; directoryMessage: string;
 };
@@ -139,7 +139,7 @@ export function workspace(binding: string) {
         model.set({ ...before, snapshot: next,
           draft: before.dirty ? before.draft : next.note.body,
           base: before.dirty ? before.base : next.note.revision,
-          save: conflict ? 'conflict' : before.save === 'uncertain' ? 'idle' : before.save,
+          save: conflict ? 'conflict' : ['uncertain', 'checking-conflict'].includes(before.save) ? 'idle' : before.save,
           message: conflict ? 'A newer saved note is available. Your draft is unchanged.' : 'Workspace checked.',
           directorySave: before.directorySave === 'uncertain' ? 'idle' : before.directorySave,
           directoryMessage: before.directorySave === 'uncertain' ? 'Current saved directory and pins checked. Review them before making another change.' : before.directoryMessage });
@@ -178,7 +178,7 @@ export function workspace(binding: string) {
   }
   async function save(): Promise<void> {
     const s = state();
-    if (s.phase !== 'ready' || !s.dirty || !text(s.draft) || s.save === 'conflict' || s.save === 'uncertain' || saving) return;
+    if (s.phase !== 'ready' || !s.dirty || !text(s.draft) || ['conflict', 'checking-conflict', 'uncertain'].includes(s.save) || saving) return;
     reading?.abort(); reading = undefined;
     if (timer) clearTimeout(timer); timer = undefined;
     const controller = new AbortController(); saving = controller; const current = epoch;
@@ -190,7 +190,7 @@ export function workspace(binding: string) {
       if (document.visibilityState !== 'visible') { invalidate('Workspace hidden. Checking access on return.'); return; }
       if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
       if (response.status === 409) {
-        model.update((m) => ({ ...m, save: 'conflict', message: 'Another save won. Your draft is unchanged.' }));
+        model.update((m) => ({ ...m, save: 'checking-conflict', message: 'Another save won. Checking the latest saved note before comparing. Your draft is unchanged.' }));
       } else if (response.status === 200) {
         const next = snapshot(response.value);
         if (!authorized(next) || next.note.body !== submitted.body || BigInt(next.note.revision) !== BigInt(submitted.base) + 1n) throw new Error('Unqualified save result');
@@ -202,7 +202,7 @@ export function workspace(binding: string) {
     } finally {
       if (saving === controller) saving = undefined;
       if (current === epoch && !disposed) {
-        if (state().save === 'conflict') await read();
+        if (state().save === 'checking-conflict') await read();
         else schedule();
       }
     }

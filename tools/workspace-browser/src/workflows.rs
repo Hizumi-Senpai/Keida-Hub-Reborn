@@ -158,7 +158,14 @@ async fn conflicts_and_pending_saves() -> Check<()> {
         .await?;
     b.click(".note-card button[type=submit]").await?;
     saved(&b).await?;
+    let canonical = f.hold("/api/workspace/snapshot");
     a.click(".note-card button[type=submit]").await?;
+    tokio::time::timeout(Duration::from_secs(3), canonical.entered.notified())
+        .await
+        .map_err(|_| "actual conflict canonical response hold")?;
+    check(a.evaluate("return !document.querySelector('section[aria-label=\"Save conflict\"]') && document.querySelector('.note-card button[type=submit]').disabled && document.querySelector('.workspace-status').textContent.includes('Checking the latest')",json!([])).await?==true,"conflict comparison and save stay unavailable until a fresh canonical note arrives")?;
+    body(&a, "First browser local draft").await?;
+    canonical.release.notify_one();
     a.wait(
         "return !!document.querySelector('section[aria-label=\"Save conflict\"]')",
         json!([]),

@@ -2494,7 +2494,7 @@ function Hi(e) {
 					snapshot: a,
 					draft: o.dirty ? o.draft : a.note.body,
 					base: o.dirty ? o.base : a.note.revision,
-					save: e ? "conflict" : o.save === "uncertain" ? "idle" : o.save,
+					save: e ? "conflict" : ["uncertain", "checking-conflict"].includes(o.save) ? "idle" : o.save,
 					message: e ? "A newer saved note is available. Your draft is unchanged." : "Workspace checked.",
 					directorySave: o.directorySave === "uncertain" ? "idle" : o.directorySave,
 					directoryMessage: o.directorySave === "uncertain" ? "Current saved directory and pins checked. Review them before making another change." : o.directoryMessage
@@ -2568,7 +2568,11 @@ function Hi(e) {
 	}
 	async function te() {
 		let e = f();
-		if (e.phase !== "ready" || !e.dirty || !Ri(e.draft) || e.save === "conflict" || e.save === "uncertain" || a) return;
+		if (e.phase !== "ready" || !e.dirty || !Ri(e.draft) || [
+			"conflict",
+			"checking-conflict",
+			"uncertain"
+		].includes(e.save) || a) return;
 		i?.abort(), i = void 0, r && clearTimeout(r), r = void 0;
 		let o = new AbortController();
 		a = o;
@@ -2601,8 +2605,8 @@ function Hi(e) {
 			}
 			if (e.status === 409) t.update((e) => ({
 				...e,
-				save: "conflict",
-				message: "Another save won. Your draft is unchanged."
+				save: "checking-conflict",
+				message: "Another save won. Checking the latest saved note before comparing. Your draft is unchanged."
 			}));
 			else if (e.status === 200) {
 				let n = Bi(e.value);
@@ -2627,7 +2631,7 @@ function Hi(e) {
 				message: "Save outcome is uncertain. Check the saved note before trying again."
 			}));
 		} finally {
-			a === o && (a = void 0), s === n && !u && (f().save === "conflict" ? await S() : v());
+			a === o && (a = void 0), s === n && !u && (f().save === "checking-conflict" ? await S() : v());
 		}
 	}
 	async function ne(e, r) {
@@ -3074,6 +3078,7 @@ function Ea(e, t) {
 	}), wn(() => (n(), W(a)), () => {
 		F(o, n().phase === "ready" && n().dirty && W(a) <= 4096 && ![
 			"saving",
+			"checking-conflict",
 			"conflict",
 			"uncertain"
 		].includes(n().save));
