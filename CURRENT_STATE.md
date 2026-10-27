@@ -7,36 +7,41 @@ precedence over historical bootstrap examples.
 
 ## Verified baseline at slice start
 
-The verified baseline is Reborn0.1.11 at https://rewrite.keida.me: main
-`29c88fcc7d77952862d96b748b24430fea48b57f`, tree
-`e5e27187c40fe111419aa41fff1c2be031978549`, schema8.
-[Exact source/CI/artifact/current-data recovery/install receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6448326282).
-Exact head/main passed80 Rust tests,10 native +10 exact-image HTTPS browser
-workflows,11 retained account outcomes and packaged two-account layout/newer-write
-recovery. Actual-data7→8 and final fenced matched restore preserved prior state.
+The verified baseline is Reborn0.1.12 at https://rewrite.keida.me: main
+`ae171b0ef1aef1f2a5ccd486ef9c31b4bda05035`, tree
+`8c6a0a218b3a0fd294297a4639743a1514d1903f`, schema9.
+[Exact source/CI/artifact/current-data recovery/install receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6451929340).
+Exact head/main passed89 Rust tests,58 checked SQLx records,11 native +11
+exact-image HTTPS browser workflows,11 retained account outcomes and packaged
+observation/newer-write recovery. Actual-data8→9 and final fenced matched restore
+preserved12 prior relations and3 sequence states.
 
 Private notes, encrypted GET-only Crafty enrollment/observations, service
 directory/search/categories, personal pins, Activity, grouped notifications/read
-markers and per-account Home panel order/visibility are installed. Actual refreshed
+markers, per-account Home panel order/visibility, Integrations catalog, retained
+Crafty observations and a separate Roadmap note are installed. Actual refreshed
 owner desktop/mobile workflows and real dedicated Crafty/TLS/join/freshness
 acceptance remain open. Crafty is not enrolled. M0/M1/full M2 stay open.
 
 ## Current source slice
 
-[Integration catalog, sampled provider history and Roadmap note](docs/M2_CATALOG.md),
-[issue18](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/18). Rust owns the
-fixed guide and normalized retained observations. Provider IO stays outside the
-transaction; history admission rechecks current session and enrollment. One
-persistent Svelte workspace preserves existing private notes/forms/layouts.
+[Owner-only Jellyfin/Seerr observations](docs/M3_MEDIA.md),
+[issue20](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/20). Deliberate
+encrypted enrollment and normalized bounded GET-only observations stay separate
+from shared workspace/note responses. API keys may grant administrator access;
+observation-only behavior does not scope a key. No mapped provider identity or
+member sharing is inferred. One persistent workspace preserves notes/forms/layouts.
 
-Schema9 requires exact-head/main CI, exact-image browser/recovery and fresh actual
-current-data8→9/key/session qualification before replacement. Installed remains
-0.1.11 until an exact receipt records otherwise. Schema8 binaries refuse9; preserve
+Schema10 requires exact-head/main CI, exact-image browser/recovery and fresh actual
+current-data9→10/key/session qualification before replacement, covering all14 prior
+relations/four sequence states/migrations1–9. Installed remains0.1.12 until an exact
+receipt records otherwise. Schema9 binaries refuse10; preserve
 newer writes through reviewed forward/manual recovery, never automatic old dumps.
-Exact0.1.11/10/9/8/7/6 client assets remain available.
+Exact0.1.12/11/10/9/8/7/6 client assets remain available.
 
-Next real provider work is deliberate dedicated Crafty enrollment and acceptance;
-Jellyfin and Seerr observation workflows follow independently. Broader old-client,
+Real Crafty and Jellyfin/Seerr enrollment/TLS/privacy/freshness acceptance remain
+deliberate gates. Later media work adds queue views and separately reviewed
+mutations. Broader old-client,
 room/asset/edit callers and complete M0/M2 acceptance remain open.
 
 ## Ownership and limits
@@ -52,7 +57,7 @@ with their owners. Fresh2026-10-27 inventory observes Crafty-4 running since
 17:20:19Z, an external change since the prior stopped receipt; preserve its current
 state. Rewrite0.1.4 remains preserved with its own data/key/image/recovery. Reborn
 uses private PostgreSQL/key/network and restricted runtime/migrator roles. Useful
-prior0.1.10 and matched schema7 recovery remain retained. Host-updater activation
+prior0.1.11 and matched schema8 recovery remain retained. Host-updater activation
 and game-control transfer require separate concrete review and authorization.
 
 Never request secrets in chat, read owner passwords or replay credential

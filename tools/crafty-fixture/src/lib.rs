@@ -1,4 +1,5 @@
 //! Shared HTTPS plumbing/data only. Each caller owns independent expectations.
+pub mod media;
 use axum::{
     Json, Router,
     extract::{Request, State},

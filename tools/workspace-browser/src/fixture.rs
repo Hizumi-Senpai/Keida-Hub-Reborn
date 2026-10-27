@@ -81,7 +81,9 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
             | "/api/workspace/pins"
             | "/api/workspace/notifications/read"
             | "/api/workspace/layout"
-    ) {
+    ) || (request.method() == axum::http::Method::PUT
+        && matches!(path, "/api/owner/media/jellyfin" | "/api/owner/media/seerr"))
+    {
         proxy.writes.fetch_add(1, Ordering::SeqCst);
     }
     let hold = {

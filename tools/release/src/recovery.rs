@@ -229,6 +229,240 @@ async fn observation_page(
     Ok(page)
 }
 
+async fn enroll_media(
+    client: &Client,
+    origin: &str,
+    session: &str,
+    binding: &str,
+    provider: &str,
+    base_revision: &str,
+    fixture: &reborn_crafty_fixture::media::Media,
+) -> Result<Value> {
+    let library = match provider {
+        "jellyfin" => json!(reborn_crafty_fixture::media::LIBRARY_ID),
+        "seerr" => Value::Null,
+        _ => return Err("recovery media provider rejected"),
+    };
+    value(
+        admitted(
+            client,
+            origin,
+            &format!("/api/owner/media/{provider}"),
+            reqwest::Method::PUT,
+            session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .json(&json!({"base_revision":base_revision,"connection":{
+            "endpoint":fixture.origin,"token":reborn_crafty_fixture::media::TOKEN,
+            "ca_pem":fixture.ca,"library_id":library,"acknowledge_broad_access":true
+        }}))
+        .send()
+        .await
+        .map_err(|_| "packaged encrypted media enrollment failed")?,
+        200,
+    )
+    .await
+}
+
+async fn media_status(
+    client: &Client,
+    origin: &str,
+    session: &str,
+    binding: &str,
+    provider: &str,
+) -> Result<Value> {
+    value(
+        admitted(
+            client,
+            origin,
+            &format!("/api/owner/media/{provider}"),
+            reqwest::Method::GET,
+            session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .send()
+        .await
+        .map_err(|_| "packaged media enrollment status failed")?,
+        200,
+    )
+    .await
+}
+
+async fn media_page(
+    client: &Client,
+    origin: &str,
+    session: &str,
+    binding: &str,
+    provider: &str,
+) -> Result<Value> {
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(8);
+    loop {
+        let response = admitted(
+            client,
+            origin,
+            &format!("/api/workspace/media/{provider}?offset=0"),
+            reqwest::Method::GET,
+            session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .send()
+        .await
+        .map_err(|_| "packaged media observation read failed")?;
+        if !response
+            .headers()
+            .get("cache-control")
+            .and_then(|v| v.to_str().ok())
+            .is_some_and(|v| v.contains("no-store"))
+        {
+            return Err("media observation admitted browser caching");
+        }
+        let page = value(response, 200).await?;
+        if page["product"] != "keida-hub-reborn"
+            || page["contract"] != "reborn-workspace-v1"
+            || page["schema"] != 1
+            || page["provider"] != provider
+            || page["account"]["role"] != "owner"
+            || page["account"]["username"] != "recovery_owner"
+        {
+            return Err("packaged media authority envelope differs");
+        }
+        if page["observation"]["error"] != "checking" {
+            return Ok(page);
+        }
+        if tokio::time::Instant::now() >= deadline {
+            return Err("packaged demand media observation deadline");
+        }
+        tokio::time::sleep(Duration::from_millis(25)).await;
+    }
+}
+
+fn assert_media(
+    page: &Value,
+    provider: &str,
+    revision: &str,
+    empty: bool,
+    fixture: &reborn_crafty_fixture::media::Media,
+) -> Result<()> {
+    let observation = &page["observation"];
+    let items = observation["items"]
+        .as_array()
+        .ok_or("packaged media item rows absent")?;
+    if observation["revision"] != revision
+        || observation["configured"] != true
+        || observation["complete"] != true
+        || !observation["error"].is_null()
+        || observation["freshness"] != "fresh"
+        || observation["checked_at"]
+            .as_u64()
+            .filter(|at| *at > 0)
+            .is_none()
+        || observation["offset"] != 0
+        || observation["total"] != if empty { 0 } else { 26 }
+        || items.len() != if empty { 0 } else { 12 }
+    {
+        return Err("packaged media observation differs from actual TLS fixture");
+    }
+    if empty {
+        if !observation["next_offset"].is_null() || observation["truncated"] != false {
+            return Err("packaged valid empty media page differs");
+        }
+    } else if observation["next_offset"] != 12
+        || items
+            .iter()
+            .any(|row| !row["id"].as_str().is_some_and(|id| crate::digest(id, 64)))
+    {
+        return Err("packaged bounded media page or private row identity differs");
+    }
+    match provider {
+        "jellyfin" => {
+            if observation["playback"]["playing"] != if empty { 0 } else { 1 }
+                || observation["playback"]["paused"] != if empty { 0 } else { 1 }
+                || !observation["playback"]["error"].is_null()
+                || (!empty
+                    && (items[0]["title"] != "Fixture movie"
+                        || items[0]["kind"] != "movie"
+                        || items[0]["year"] != 2024
+                        || items[1]["title"] != "Fixture series"
+                        || items[1]["kind"] != "series"
+                        || items[1]["year"] != 2025))
+            {
+                return Err("packaged Jellyfin library or counts-only playback differs");
+            }
+        }
+        "seerr" => {
+            if !observation["playback"].is_null()
+                || (!empty
+                    && (items[0]["title"] != "Requested movie"
+                        || items[0]["request_status"] != "pending"
+                        || items[1]["title"] != "Requested series"
+                        || items[1]["request_status"] != "completed"))
+            {
+                return Err("packaged Seerr request status/title observation differs");
+            }
+        }
+        _ => return Err("recovery media provider rejected"),
+    }
+    let encoded = serde_json::to_string(page).map_err(|_| "media proof encoding failed")?;
+    if [
+        reborn_crafty_fixture::media::TOKEN,
+        reborn_crafty_fixture::media::LIBRARY_ID,
+        fixture.origin.as_str(),
+        fixture.ca.as_str(),
+        "BEGIN CERTIFICATE",
+        "ca_pem",
+        "library_id",
+        "RemoteEndPoint",
+        "DeviceId",
+        "DeviceName",
+        "UserId",
+        "UserName",
+        "requestedBy",
+        "PRIVATE_",
+        "/private/media-fixture-path",
+        "private-media-email@example.invalid",
+    ]
+    .iter()
+    .any(|value| encoded.contains(value))
+    {
+        return Err("packaged media response disclosed non-allowlisted provider fields");
+    }
+    Ok(())
+}
+
+async fn member_media_denied(
+    client: &Client,
+    origin: &str,
+    session: &str,
+    binding: &str,
+) -> Result<()> {
+    for provider in ["jellyfin", "seerr"] {
+        for path in [
+            format!("/api/workspace/media/{provider}?offset=0"),
+            format!("/api/owner/media/{provider}"),
+        ] {
+            let response = admitted(
+                client,
+                origin,
+                &path,
+                reqwest::Method::GET,
+                session,
+                binding,
+                "reborn-workspace-v1",
+            )
+            .send()
+            .await
+            .map_err(|_| "packaged member media boundary read failed")?;
+            if response.status().as_u16() != 403 {
+                return Err("packaged private owner media admitted a member");
+            }
+        }
+    }
+    Ok(())
+}
+
 fn runtime_denied(pg: &str, database: &str, sql: &str) -> Result<()> {
     let output = Command::new("docker")
         .args([
@@ -587,6 +821,34 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         200,
     )
     .await?;
+    let media_provider = reborn_crafty_fixture::media::Media::start().await?;
+    let mut initial_media = Vec::new();
+    for provider in ["jellyfin", "seerr"] {
+        let enrolled = enroll_media(
+            &client,
+            &origin,
+            &session,
+            binding,
+            provider,
+            "0",
+            &media_provider,
+        )
+        .await?;
+        if enrolled != json!({"revision":"1","configured":true}) {
+            return Err("initial packaged media enrollment receipt differs");
+        }
+        let page = media_page(&client, &origin, &session, binding, provider).await?;
+        assert_media(&page, provider, "1", false, &media_provider)?;
+        if page["account"] != claimed["account"] {
+            return Err("initial packaged media account differs");
+        }
+        initial_media.push((provider, page));
+    }
+    let media_requests = media_provider.requests().len();
+    member_media_denied(&client, &origin, &member_session, member_binding).await?;
+    if media_provider.requests().len() != media_requests {
+        return Err("member media rejection performed provider IO");
+    }
     value(
         admitted(
             &client,
@@ -643,7 +905,13 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         200,
     )
     .await?;
-    if initial["crafty"]["servers"][0]["players"] != 0 || initial["layout"] != owner_layout {
+    if initial["crafty"]["servers"][0]["players"] != 0
+        || initial["layout"] != owner_layout
+        || initial.get("media").is_some()
+        || initial_media
+            .iter()
+            .any(|(_, page)| page["session_generation"] != initial["session_generation"])
+    {
         return Err("packaged dedicated decryption/GET failed");
     }
     let initial_activity = value(
@@ -857,6 +1125,10 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         "UPDATE provider_observations SET checked_at=checked_at WHERE id=1",
         "UPDATE provider_server_observations SET players=players WHERE batch_id=1",
         "DELETE FROM provider_server_observations WHERE batch_id=1",
+        "ALTER TABLE media_connections ADD COLUMN runtime_must_not_ddl integer",
+        "DELETE FROM media_connections WHERE provider='jellyfin'",
+        "INSERT INTO media_connections (provider,revision,sealed) VALUES ('jellyfin',0,NULL)",
+        "UPDATE media_connections SET provider=provider WHERE provider='jellyfin'",
         "UPDATE activity_events SET revision=revision WHERE id=1",
         "DELETE FROM activity_events WHERE id=1",
         "UPDATE _sqlx_migrations SET success=success WHERE version=1",
@@ -909,8 +1181,36 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         || retained["directory"] != initial["directory"]
         || retained["layout"] != owner_layout
         || hash(&restored_root.join("instance.key"))? != key_before
+        || retained.get("media").is_some()
     {
         return Err("matched auth/note/secret restore rejected");
+    }
+    // The new process has no media cache. Real HTTPS observations therefore
+    // exercise both restored envelopes with the matched key and provider domain.
+    let requests_before_media_restore = media_provider.requests().len();
+    for (provider, initial_page) in &initial_media {
+        if media_status(&client, &origin, &session, binding, provider).await?
+            != json!({"revision":"1","configured":true})
+        {
+            return Err("restored encrypted media enrollment status differs");
+        }
+        let page = media_page(&client, &origin, &session, binding, provider).await?;
+        assert_media(&page, provider, "1", false, &media_provider)?;
+        if page["account"] != claimed["account"]
+            || page["session_generation"] != retained["session_generation"]
+            || page["observation"]["items"] != initial_page["observation"]["items"]
+            || page["observation"]["playback"] != initial_page["observation"]["playback"]
+        {
+            return Err("restored useful owner media observations differ");
+        }
+    }
+    if media_provider.requests().len() <= requests_before_media_restore {
+        return Err("restored media observations did not exercise actual HTTPS");
+    }
+    let restored_media_requests = media_provider.requests().len();
+    member_media_denied(&client, &origin, &member_session, member_binding).await?;
+    if media_provider.requests().len() != restored_media_requests {
+        return Err("restored member media rejection performed provider IO");
     }
     let restored_activity = value(
         admitted(
@@ -1114,6 +1414,27 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         200,
     )
     .await?;
+    // Replace both media envelopes after the backup. A new revision invalidates
+    // their previous sample pages, and actual empty responses remain observed
+    // zero rather than an unavailable provider masquerading as no results.
+    media_provider.mode(reborn_crafty_fixture::media::EMPTY);
+    for provider in ["jellyfin", "seerr"] {
+        let enrolled = enroll_media(
+            &client,
+            &origin,
+            &session,
+            binding,
+            provider,
+            "1",
+            &media_provider,
+        )
+        .await?;
+        if enrolled != json!({"revision":"2","configured":true}) {
+            return Err("newer packaged media enrollment receipt differs");
+        }
+        let page = media_page(&client, &origin, &session, binding, provider).await?;
+        assert_media(&page, provider, "2", true, &media_provider)?;
+    }
     let failed = format!("reborn-recovery-failed-{nonce}");
     scope.containers.push(failed.clone());
     let mut args = app_args(
@@ -1257,7 +1578,39 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     {
         return Err("recovery observer attempted mutation");
     }
-    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":9,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"restored_notifications_and_read_state":true,"restored_personal_layout_and_newer_edits":true,"restored_provider_observations_and_newer_samples":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
+    // A cache surviving in the current writer is not durable recovery evidence.
+    // Restart only this owned disposable writer and decrypt its newer envelopes
+    // again, without replacing current data by the older recovery dump.
+    docker(&["restart", "--time", "5", &restored])?;
+    wait(&client, &origin).await?;
+    let requests_before_newer_media = media_provider.requests().len();
+    for provider in ["jellyfin", "seerr"] {
+        if media_status(&client, &origin, &session, binding, provider).await?
+            != json!({"revision":"2","configured":true})
+        {
+            return Err("failed candidate lost newer encrypted media enrollment");
+        }
+        let page = media_page(&client, &origin, &session, binding, provider).await?;
+        assert_media(&page, provider, "2", true, &media_provider)?;
+        if page["account"] != claimed["account"]
+            || page["session_generation"] != retained["session_generation"]
+        {
+            return Err("restarted newer media authority envelope differs");
+        }
+    }
+    if media_provider.requests().len() <= requests_before_newer_media
+        || media_provider.requests().iter().any(|(method, path)| {
+            method != "GET" || path.contains(reborn_crafty_fixture::media::TOKEN)
+        })
+    {
+        return Err("newer media recovery skipped HTTPS or attempted credentialed query/effect");
+    }
+    let final_media_requests = media_provider.requests().len();
+    member_media_denied(&client, &origin, &member_session, member_binding).await?;
+    if media_provider.requests().len() != final_media_requests || hash(&dump)? != dump_sha {
+        return Err("newer media recovery changed old backup or admitted member IO");
+    }
+    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":10,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"restored_notifications_and_read_state":true,"restored_personal_layout_and_newer_edits":true,"restored_provider_observations_and_newer_samples":true,"restored_media_connections_and_observations":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
     crate::write(
         &out.join("recovery-proof.json"),
         &serde_json::to_vec(&report).map_err(|_| "recovery proof encoding failed")?,

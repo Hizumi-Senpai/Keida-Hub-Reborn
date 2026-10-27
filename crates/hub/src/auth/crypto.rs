@@ -41,6 +41,74 @@ pub struct Secrets {
 }
 
 impl Secrets {
+    /// Media envelopes have their own format/key/AAD domain, and authenticate
+    /// both the fixed provider identity and its monotonic enrollment revision.
+    pub fn seal_media(
+        &self,
+        provider: crate::providers::media::Provider,
+        revision: i64,
+        plaintext: &[u8],
+    ) -> Result<Vec<u8>, CryptoError> {
+        use ring::aead::{Aad, CHACHA20_POLY1305, LessSafeKey, Nonce, UnboundKey};
+        if revision <= 0 || plaintext.is_empty() || plaintext.len() > 30000 {
+            return Err(CryptoError::Invalid);
+        }
+        let mut salt = [0u8; 32];
+        let mut nonce = [0u8; 12];
+        getrandom::fill(&mut salt).map_err(|_| CryptoError::Unavailable)?;
+        getrandom::fill(&mut nonce).map_err(|_| CryptoError::Unavailable)?;
+        let key = Zeroizing::new(self.mac(&media_key_domain(provider), &salt));
+        let cipher = LessSafeKey::new(
+            UnboundKey::new(&CHACHA20_POLY1305, key.as_ref())
+                .map_err(|_| CryptoError::Unavailable)?,
+        );
+        let mut body = Zeroizing::new(plaintext.to_vec());
+        cipher
+            .seal_in_place_append_tag(
+                Nonce::assume_unique_for_key(nonce),
+                Aad::from(media_aad(provider, revision)),
+                &mut *body,
+            )
+            .map_err(|_| CryptoError::Unavailable)?;
+        let mut out = Vec::with_capacity(45 + body.len());
+        out.push(2);
+        out.extend_from_slice(&salt);
+        out.extend_from_slice(&nonce);
+        out.extend_from_slice(&body);
+        Ok(out)
+    }
+
+    pub fn open_media(
+        &self,
+        provider: crate::providers::media::Provider,
+        revision: i64,
+        sealed: &[u8],
+    ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
+        use ring::aead::{Aad, CHACHA20_POLY1305, LessSafeKey, Nonce, UnboundKey};
+        if revision <= 0 || !(62..=30100).contains(&sealed.len()) || sealed[0] != 2 {
+            return Err(CryptoError::Invalid);
+        }
+        let key = Zeroizing::new(self.mac(&media_key_domain(provider), &sealed[1..33]));
+        let cipher = LessSafeKey::new(
+            UnboundKey::new(&CHACHA20_POLY1305, key.as_ref())
+                .map_err(|_| CryptoError::Unavailable)?,
+        );
+        let nonce: [u8; 12] = sealed[33..45]
+            .try_into()
+            .map_err(|_| CryptoError::Invalid)?;
+        let mut body = Zeroizing::new(sealed[45..].to_vec());
+        let size = cipher
+            .open_in_place(
+                Nonce::assume_unique_for_key(nonce),
+                Aad::from(media_aad(provider, revision)),
+                &mut body,
+            )
+            .map_err(|_| CryptoError::Invalid)?
+            .len();
+        body.truncate(size);
+        Ok(body)
+    }
+
     /// A fresh256-bit subkey salt per envelope makes each derived AEAD key a
     /// single-encryption key. A random96-bit nonce provides a second boundary.
     pub fn seal_connection(&self, revision: i64, plaintext: &[u8]) -> Result<Vec<u8>, CryptoError> {
@@ -260,6 +328,21 @@ impl Secrets {
 
 fn connection_aad(revision: i64) -> Vec<u8> {
     let mut aad = b"keida-hub-reborn/crafty/connection/v1\0".to_vec();
+    aad.extend_from_slice(&revision.to_be_bytes());
+    aad
+}
+
+fn media_key_domain(provider: crate::providers::media::Provider) -> Vec<u8> {
+    let mut domain = b"reborn/media/encryption-key/v1\0".to_vec();
+    domain.extend_from_slice(provider.as_str().as_bytes());
+    domain.push(0);
+    domain
+}
+
+fn media_aad(provider: crate::providers::media::Provider, revision: i64) -> Vec<u8> {
+    let mut aad = b"keida-hub-reborn/media/connection/v1\0".to_vec();
+    aad.extend_from_slice(provider.as_str().as_bytes());
+    aad.push(0);
     aad.extend_from_slice(&revision.to_be_bytes());
     aad
 }
@@ -558,6 +641,51 @@ mod tests {
             assert!(first.open_connection(7, &a[..length]).is_err());
         }
         assert!(first.seal_connection(0, private).is_err());
+    }
+
+    #[test]
+    fn media_envelopes_bind_provider_revision_key_and_never_accept_crafty_ciphertext() {
+        use crate::providers::media::Provider::{Jellyfin, Seerr};
+        let first = form_secrets();
+        let second = Secrets {
+            key: Zeroizing::new([2; 32]),
+            dummy_phc: Zeroizing::new(String::new()),
+        };
+        let private = b"{\"token\":\"only-a-fictional-media-key\"}";
+        let jellyfin = first.seal_media(Jellyfin, 7, private).unwrap();
+        let repeated = first.seal_media(Jellyfin, 7, private).unwrap();
+        let seerr = first.seal_media(Seerr, 7, private).unwrap();
+        assert_eq!(jellyfin[0], 2);
+        assert_ne!(jellyfin, repeated);
+        assert_ne!(&jellyfin[1..33], &repeated[1..33]);
+        assert!(!jellyfin.windows(private.len()).any(|w| w == private));
+        assert_eq!(
+            first.open_media(Jellyfin, 7, &jellyfin).unwrap().as_slice(),
+            private
+        );
+        assert_eq!(
+            first.open_media(Seerr, 7, &seerr).unwrap().as_slice(),
+            private
+        );
+        assert!(first.open_media(Seerr, 7, &jellyfin).is_err());
+        assert!(first.open_media(Jellyfin, 7, &seerr).is_err());
+        assert!(first.open_media(Jellyfin, 8, &jellyfin).is_err());
+        assert!(second.open_media(Jellyfin, 7, &jellyfin).is_err());
+        assert!(first.open_connection(7, &jellyfin).is_err());
+        let crafty = first.seal_connection(7, private).unwrap();
+        assert!(first.open_media(Jellyfin, 7, &crafty).is_err());
+        for position in 0..jellyfin.len() {
+            let mut bad = jellyfin.clone();
+            bad[position] ^= 1;
+            assert!(first.open_media(Jellyfin, 7, &bad).is_err());
+        }
+        for length in 0..jellyfin.len() {
+            assert!(first.open_media(Jellyfin, 7, &jellyfin[..length]).is_err());
+        }
+        assert!(first.seal_media(Jellyfin, 0, private).is_err());
+        assert!(first.seal_media(Seerr, -1, private).is_err());
+        assert!(first.seal_media(Jellyfin, 1, b"").is_err());
+        assert!(first.seal_media(Jellyfin, 1, &[0; 30001]).is_err());
     }
 
     #[test]

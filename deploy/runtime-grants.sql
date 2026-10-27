@@ -19,3 +19,8 @@ GRANT SELECT, INSERT, UPDATE ON dashboard_layouts TO reborn_app;
 -- batches; dependent rows are removed by that table's own foreign-key cascade.
 GRANT SELECT, INSERT, DELETE ON provider_observations TO reborn_app;
 GRANT SELECT, INSERT ON provider_server_observations TO reborn_app;
+
+-- Only the migration owner creates the two fixed provider rows. Media keys and
+-- revisions may be replaced, but runtime cannot erase/insert or rename providers.
+GRANT SELECT ON media_connections TO reborn_app;
+GRANT UPDATE (revision, sealed) ON media_connections TO reborn_app;
