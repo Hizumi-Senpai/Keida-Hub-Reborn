@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE sessions SET revoked = TRUE WHERE public_ref = $1::text::uuid AND account_id = $2 AND revoked = FALSE",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f38d52bc9912bce6d11baae34f0e7d6422e775c5d56939cbb5323d3047dced97"
+}
