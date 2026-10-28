@@ -59,7 +59,7 @@ impl Manifest {
             || !digest(&self.qualification_execution_sha256, 64)
             || self.ci_run == 0
             || self.assets.is_empty()
-            || self.assets.len() > 22
+            || self.assets.len() > 24
             || self.assets.iter().any(|v| !digest(v, 64))
         {
             return Err("invalid release manifest");
@@ -436,10 +436,10 @@ mod tests {
     #[test]
     fn schema13_manifest_retains_historical_release_admission_and_bounds_assets() {
         let (_root, _archive, mut manifest) = fixture();
-        manifest.ordinal = 17;
-        manifest.version = "0.1.17".into();
+        manifest.ordinal = 18;
+        manifest.version = "0.1.18".into();
         manifest.database_schema = 13;
-        manifest.assets = (0..22).map(|value| format!("{value:064x}")).collect();
+        manifest.assets = (0..24).map(|value| format!("{value:064x}")).collect();
         assert!(manifest.validate().is_ok());
         manifest.assets.push("1".repeat(64));
         assert!(manifest.validate().is_err());

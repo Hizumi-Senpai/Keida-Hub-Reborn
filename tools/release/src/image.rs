@@ -113,7 +113,7 @@ pub(super) fn inspect(
     let assets = public["assets"]
         .as_array()
         .ok_or("packaged assets absent")?;
-    if assets.len() != 22
+    if assets.len() != 24
         || assets.iter().any(|a| {
             !a.as_str().is_some_and(|a| {
                 a.strip_prefix("/assets/workspace/")

@@ -114,12 +114,32 @@ pub struct Hold {
     pub entered: Notify,
     pub release: Notify,
 }
+#[derive(Clone, Copy)]
+#[repr(u64)]
+pub enum RefreshMode {
+    Current,
+    Upgrade,
+    Rollback,
+    SameDisplayOtherSource,
+    OtherProduct,
+    Unsupported,
+    Malformed,
+    Html,
+    Oversized,
+    Unavailable,
+    AccessDenied,
+    AccountChanged,
+    IdentityRace,
+    Legacy17,
+}
 struct Proxy {
     upstream: String,
     client: Client,
     hold: Mutex<Option<(&'static str, Arc<Hold>)>>,
     pub reads: AtomicU64,
     pub writes: AtomicU64,
+    refresh_mode: AtomicU64,
+    refresh_reads: AtomicU64,
     session_reads: AtomicU64,
     session_writes: AtomicU64,
     callback_requests: AtomicU64,
@@ -151,6 +171,21 @@ impl axum::serve::Listener for TlsListener {
 }
 async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response {
     let path = request.uri().path();
+    let refresh_path = matches!(path, "/api/health" | "/api/workspace/access");
+    let refresh_mode = proxy.refresh_mode.load(Ordering::SeqCst);
+    if refresh_path {
+        proxy.refresh_reads.fetch_add(1, Ordering::SeqCst);
+        if refresh_mode == RefreshMode::Unavailable as u64 {
+            return StatusCode::SERVICE_UNAVAILABLE.into_response();
+        }
+        if path == "/api/workspace/access" && refresh_mode == RefreshMode::AccessDenied as u64 {
+            return StatusCode::UNAUTHORIZED.into_response();
+        }
+        if path == "/api/workspace/access" && refresh_mode == RefreshMode::Legacy17 as u64 {
+            return StatusCode::NOT_FOUND.into_response();
+        }
+    }
+    let access_path = path == "/api/workspace/access";
     if path == "/account/discord/callback" {
         proxy.callback_requests.fetch_add(1, Ordering::SeqCst);
         if request
@@ -226,9 +261,55 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
         for name in ["connection", "content-length", "transfer-encoding"] {
             headers.remove(name);
         }
-        let body = response.bytes().await.map_err(|_| ())?;
+        let mut body = response.bytes().await.map_err(|_| ())?.to_vec();
         if body.len() > 1024 * 1024 {
             return Err(());
+        }
+        if refresh_path && status == StatusCode::OK && refresh_mode != RefreshMode::Current as u64 {
+            use serde_json::{Value, json};
+            if refresh_mode == RefreshMode::Malformed as u64 {
+                body = b"{broken".to_vec();
+            } else if refresh_mode == RefreshMode::Html as u64 {
+                headers.insert("content-type", "text/html".parse().unwrap());
+                body = b"<!doctype html><title>Sign in</title>".to_vec();
+            } else if refresh_mode == RefreshMode::Oversized as u64 {
+                body = vec![b' '; 8193];
+            } else {
+                let mut value: Value = serde_json::from_slice(&body).map_err(|_| ())?;
+                let identity = &mut value["identity"];
+                if refresh_mode == RefreshMode::Upgrade as u64
+                    || refresh_mode == RefreshMode::Rollback as u64
+                    || refresh_mode == RefreshMode::Legacy17 as u64
+                {
+                    let n = if refresh_mode == RefreshMode::Upgrade as u64 {
+                        999
+                    } else if refresh_mode == RefreshMode::Legacy17 as u64 {
+                        17
+                    } else {
+                        16
+                    };
+                    identity["version"] = json!(format!("0.1.{n}"));
+                    identity["ordinal"] = json!(n);
+                    identity["channel"] = json!("accepted");
+                    identity["commit"] = json!(if n == 999 {
+                        "a".repeat(40)
+                    } else {
+                        "c".repeat(40)
+                    });
+                    identity["tree"] = json!("d".repeat(40));
+                } else if refresh_mode == RefreshMode::SameDisplayOtherSource as u64 {
+                    identity["tree"] = json!("e".repeat(40));
+                } else if refresh_mode == RefreshMode::OtherProduct as u64 {
+                    identity["product"] = json!("keida-hub-rewrite");
+                } else if refresh_mode == RefreshMode::Unsupported as u64 {
+                    identity["contract"] = json!("reborn-auth-v2");
+                } else if refresh_mode == RefreshMode::IdentityRace as u64 && access_path {
+                    identity["tree"] = json!("f".repeat(40));
+                } else if refresh_mode == RefreshMode::AccountChanged as u64 && access_path {
+                    value["account"]["id"] = json!("999999");
+                }
+                body = serde_json::to_vec(&value).map_err(|_| ())?;
+            }
         }
         if status == StatusCode::OK
             && let Some(held) = hold
@@ -714,6 +795,8 @@ impl Fixture {
             hold: Mutex::new(None),
             reads: AtomicU64::new(0),
             writes: AtomicU64::new(0),
+            refresh_mode: AtomicU64::new(RefreshMode::Current as u64),
+            refresh_reads: AtomicU64::new(0),
             callback_requests: AtomicU64::new(0),
             callback_auth_cookie: AtomicBool::new(false),
             session_reads: AtomicU64::new(0),
@@ -830,6 +913,12 @@ impl Fixture {
     }
     pub fn writes(&self) -> u64 {
         self.proxy.writes.load(Ordering::SeqCst)
+    }
+    pub fn refresh_mode(&self, mode: RefreshMode) {
+        self.proxy.refresh_mode.store(mode as u64, Ordering::SeqCst);
+    }
+    pub fn refresh_reads(&self) -> u64 {
+        self.proxy.refresh_reads.load(Ordering::SeqCst)
     }
     pub fn session_reads(&self) -> u64 {
         self.proxy.session_reads.load(Ordering::SeqCst)

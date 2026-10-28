@@ -3,6 +3,7 @@
   import type { Crafty, ObservationState } from './controller';
   import ObservationHistory from './ObservationHistory.svelte';
   export let binding: string;
+  export let mutationState: (pending: boolean, uncertain: boolean) => void;
   export let history: () => void;
   export let overview: Crafty | null | undefined;
   export let owner = false;
@@ -16,6 +17,7 @@
   let pending: AbortController | undefined;
   let message = '';
   let uncertain = false;
+  $: mutationState(!!pending, uncertain);
   let epoch = 0;
   let showHistory = false;
   let historyButton: HTMLButtonElement | undefined;

@@ -1,6 +1,8 @@
 //! Independent end-to-end expectations over real Rust, PostgreSQL and Chromium.
 #[path = "discord.rs"]
 mod discord;
+#[path = "refresh.rs"]
+mod refresh;
 #[path = "sessions.rs"]
 mod sessions;
 use crate::{Check, check, driver::Browser, fixture::Fixture};
@@ -1106,7 +1108,14 @@ pub async fn run() -> Check<()> {
     discord::run().await?;
     sessions::run().await?;
     println!(
-        "Rust workspace browser acceptance: 15 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+        "Rust workspace browser acceptance: 15 retained workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+    );
+    Ok(())
+}
+pub async fn run_refresh() -> Check<()> {
+    refresh::run().await?;
+    println!(
+        "Rust workspace refresh browser acceptance: 1 workflow passed; actual60-second hidden deadline; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
     );
     Ok(())
 }

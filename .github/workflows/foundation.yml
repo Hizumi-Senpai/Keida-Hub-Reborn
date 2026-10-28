@@ -118,6 +118,7 @@ jobs:
           export REBORN_CHROMEDRIVER="$RUNNER_TEMP/reborn-chromedriver/chromedriver-linux64/chromedriver"
           "$REBORN_CHROMEDRIVER" --version
           cargo +1.99.1 run -p reborn-workspace-browser --release --locked
+          cargo +1.99.1 run -p reborn-workspace-browser --release --locked -- --refresh
       - name: Repeat Rust HTTPS browser contracts through the exact packaged image
         env:
           REBORN_BROWSER_BINARY: ${{ github.workspace }}/target/release/keida-hub-reborn
@@ -127,6 +128,7 @@ jobs:
           export REBORN_BROWSER_IMAGE="$(cat "$RUNNER_TEMP/reborn-image-id")"
           export REBORN_CHROMEDRIVER="$RUNNER_TEMP/reborn-chromedriver/chromedriver-linux64/chromedriver"
           cargo +1.99.1 run -p reborn-workspace-browser --release --locked
+          cargo +1.99.1 run -p reborn-workspace-browser --release --locked -- --refresh
       - name: Rehearse packaged private install and matched PostgreSQL recovery
         run: |
           target/release/reborn-release rehearse-image "$(cat "$RUNNER_TEMP/reborn-image-id")" "$RUNNER_TEMP/reborn-package"

@@ -24,8 +24,9 @@ records the self-hosted Commander policy. [Discord identity linking/status/local
 unlink](docs/M4_IDENTITY.md) is installed as0.1.16/schema12
 ([issue25](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/25)); dedicated
 real Discord setup/privacy/owner acceptance remains pending. The current
-independent slice is [personal session review/targeted sign-out](docs/M4_SESSIONS.md),
-[issue27](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/27). Source, packaged
+independent slice is [server-change discovery and draft-safe refresh](docs/M5_BROWSER_REFRESH.md),
+[issue29](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/29). Personal
+session review/targeted sign-out is installed as0.1.17/schema13 (issue27). Source, packaged
 verification, installation and real owner/provider acceptance remain separate.
 
 ## Start here
@@ -68,12 +69,12 @@ Mobile retains a full useful 2D dashboard without downloading the 3D experience.
 
 ## What happens next
 
-Continue **M4 personal session review and targeted sign-out** under the frozen
-issue27 contract. Existing accounts inspect their complete bounded active list
-and can deliberately retire one other session; current/all native sign-out stays
-available. No bearer/verifier, guessed device/IP/last-used information, account
-promotion or provider action is added. Require exact head/main CI, image/browser
-proof and matched current12→13 recovery before installation.
+Continue **M5 browser server-change discovery and deliberate draft-safe refresh**
+under frozen issue29. Compare the loaded page with the responding server, review
+unfinished forms and pending changes, and check current access before a deliberate
+GET refresh. Upgrades and rollbacks are both changes. No automatic reload or
+server updater is activated. Require exact head/main CI, image/browser checks and
+matched schema13 current-data recovery before ordinary manual installation.
 
 Dedicated Discord application enrollment/callback-query privacy and real owner
 linking acceptance remain open, alongside earlier daily-use/Crafty/Media/Queues
