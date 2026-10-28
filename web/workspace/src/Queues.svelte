@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { afterUpdate, onDestroy, onMount } from 'svelte';
   import { queueProfiles, type QueueEnrollment, type QueueProvider, type QueueState } from './controller';
   export let owner = false;
   export let active = false;
@@ -15,6 +15,50 @@
   const progress = (value: number | null) => value === null ? 'Not reported' : `${(value / 100).toFixed(2)}%`;
   let forms: Partial<Record<QueueProvider, HTMLFormElement>> = {};
   let enrollmentScopes: Partial<Record<QueueProvider, string>> = {};
+  let observationFocus: { element: HTMLButtonElement; provider: QueueProvider; revision: string; profile: string; offset: number; disabledBlur: boolean } | undefined;
+  function cancelObservationFocus(): void { observationFocus = undefined; }
+  function observe(provider: QueueProvider, offset: number, event: MouseEvent): void {
+    const element = event.currentTarget, status = state[provider].status;
+    observationFocus = active && owner && status?.configured && element instanceof HTMLButtonElement && document.activeElement === element
+      ? { element, provider, revision: status.revision, profile: status.profile, offset, disabledBlur: false } : undefined;
+    void load(provider, offset);
+  }
+  afterUpdate(() => {
+    const prior = observationFocus;
+    if (!prior) return;
+    const current = state[prior.provider], status = current.status, element = document.activeElement;
+    if (!active || !owner || !status?.configured || status.revision !== prior.revision || status.profile !== prior.profile
+        || current.offset !== prior.offset || current.save !== 'idle' || !prior.element.isConnected
+        || document.visibilityState !== 'visible' || !document.hasFocus()) { cancelObservationFocus(); return; }
+    const neutral = element === document.body || element === document.documentElement;
+    if (!neutral && element !== prior.element) { cancelObservationFocus(); return; }
+    // Chromium can blur a native button as loading disables it. Keep that one
+    // focus request through a completed checking reply until the control is usable.
+    if (prior.element.disabled) { if (neutral) prior.disabledBlur = true; return; }
+    cancelObservationFocus();
+    if (prior.disabledBlur && neutral && prior.element.getClientRects().length > 0) prior.element.focus({ preventScroll: true });
+  });
+  onMount(() => {
+    const moved = (event: FocusEvent) => {
+      if (observationFocus && event.target !== observationFocus.element && event.target !== document.body && event.target !== document.documentElement) cancelObservationFocus();
+    };
+    const visibility = () => { if (document.visibilityState !== 'visible') cancelObservationFocus(); };
+    // Any later user action wins, even when clicking a nonfocusable surface or
+    // pressing Tab temporarily leaves focus on body before the next element.
+    document.addEventListener('pointerdown', cancelObservationFocus, true);
+    document.addEventListener('keydown', cancelObservationFocus, true);
+    document.addEventListener('focusin', moved, true);
+    document.addEventListener('visibilitychange', visibility);
+    window.addEventListener('blur', cancelObservationFocus);
+    return () => {
+      cancelObservationFocus();
+      document.removeEventListener('pointerdown', cancelObservationFocus, true);
+      document.removeEventListener('keydown', cancelObservationFocus, true);
+      document.removeEventListener('focusin', moved, true);
+      document.removeEventListener('visibilitychange', visibility);
+      window.removeEventListener('blur', cancelObservationFocus);
+    };
+  });
   function clearForms(): void { for (const provider of providers) forms[provider]?.reset(); }
   function syncForms(current: Record<QueueProvider, QueueState>, shown: boolean, authorized: boolean): void {
     for (const provider of providers) {
@@ -58,7 +102,7 @@
         <section class="card queue-provider" data-queue-provider={provider} data-queue-phase={current.phase} data-queue-revision={current.status?.revision ?? ''} data-queue-configured={String(current.status?.configured ?? false)} data-queue-error={observation?.error ?? ''} data-queue-complete={String(observation?.complete ?? false)} data-queue-offset={current.offset} data-queue-save={current.save} data-queue-freshness={observation?.freshness ?? 'unknown'} data-queue-total={observation?.total ?? ''} data-queue-truncated={String(observation?.truncated ?? false)} aria-label={`${label(provider)} queue connection`}>
           <div class="guide-card-heading"><h2>{label(provider)}{provider === 'qbittorrent' ? ' Transfers' : ' queue'}</h2><span class="quiet-label">Owner-only observations</span></div>
           <p class="workspace-status" role="status" data-queue-status>{current.message || 'Check the connection state to begin.'}</p>
-          <div class="button-row queue-actions"><button class="button secondary queue-check-state" disabled={workingNow} onclick={() => void checkState(provider)}>Check {label(provider)} connection state</button><button class="button secondary queue-check-observations" disabled={workingNow || pendingNow || !current.status?.configured} onclick={() => void load(provider, current.offset)}>Check {label(provider)} observations</button></div>
+          <div class="button-row queue-actions"><button class="button secondary queue-check-state" disabled={workingNow} onclick={() => void checkState(provider)}>Check {label(provider)} connection state</button><button class="button secondary queue-check-observations" disabled={workingNow || pendingNow || !current.status?.configured} onclick={(event) => observe(provider, current.offset, event)}>Check {label(provider)} observations</button></div>
           {#if observation?.configured}
             <dl class="queue-sample"><dt>Collected</dt><dd>{when(observation.checked_at)}</dd><dt>Freshness</dt><dd>{observation.freshness === 'fresh' ? 'Recent collection' : observation.freshness === 'stale' ? 'Stale collection' : 'Collection age unknown'}</dd><dt>Sample</dt><dd>{observation.complete ? 'Complete for this bounded query' : 'Incomplete or still checking'}</dd></dl>
             {#if provider === 'qbittorrent'}<p class="field-help">Transfers include downloading, uploading, stopped, checking and other reported states. Progress estimates current wanted/selected bytes; it does not measure checking, import or playback completion.</p>{:else}<p class="field-help">The provider queue includes pending and delayed releases. Its count does not establish the number of active downloads or downloader health. Progress estimates downloaded bytes and does not establish import or playback completion.</p>{/if}

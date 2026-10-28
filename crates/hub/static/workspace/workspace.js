@@ -4880,21 +4880,55 @@ function ks(e, t) {
 		"sonarr",
 		"radarr",
 		"qbittorrent"
-	], l = (e) => e === "sonarr" ? "Sonarr" : e === "radarr" ? "Radarr" : "qBittorrent", u = (e) => e === "sonarr" ? "Sonarr 4 · API v3" : e === "radarr" ? "Radarr 6 · API v3" : "qBittorrent 5.2–5.3 · Bearer API key", d = (e) => e === null ? "Not collected" : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleString(), f = (e, t) => e === null ? "Not reported" : `${new Intl.NumberFormat().format(e)} ${t}`, p = (e) => e === null ? "Not reported" : `${(e / 100).toFixed(2)}%`, m = /* @__PURE__ */ P({}), h = {};
-	function g() {
+	], l = (e) => e === "sonarr" ? "Sonarr" : e === "radarr" ? "Radarr" : "qBittorrent", u = (e) => e === "sonarr" ? "Sonarr 4 · API v3" : e === "radarr" ? "Radarr 6 · API v3" : "qBittorrent 5.2–5.3 · Bearer API key", d = (e) => e === null ? "Not collected" : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleString(), f = (e, t) => e === null ? "Not reported" : `${new Intl.NumberFormat().format(e)} ${t}`, p = (e) => e === null ? "Not reported" : `${(e / 100).toFixed(2)}%`, m = /* @__PURE__ */ P({}), h = {}, g;
+	function _() {
+		g = void 0;
+	}
+	function v(e, t, a) {
+		let s = a.currentTarget, c = i()[e].status;
+		g = r() && n() && c?.configured && s instanceof HTMLButtonElement && document.activeElement === s ? {
+			element: s,
+			provider: e,
+			revision: c.revision,
+			profile: c.profile,
+			offset: t,
+			disabledBlur: !1
+		} : void 0, o()(e, t);
+	}
+	zi(() => {
+		let e = g;
+		if (!e) return;
+		let t = i()[e.provider], a = t.status, o = document.activeElement;
+		if (!r() || !n() || !a?.configured || a.revision !== e.revision || a.profile !== e.profile || t.offset !== e.offset || t.save !== "idle" || !e.element.isConnected || document.visibilityState !== "visible" || !document.hasFocus()) {
+			_();
+			return;
+		}
+		let s = o === document.body || o === document.documentElement;
+		!s && o !== e.element ? _() : e.element.disabled ? s && (e.disabledBlur = !0) : (_(), e.disabledBlur && s && e.element.getClientRects().length > 0 && e.element.focus({ preventScroll: !0 }));
+	}), Ii(() => {
+		let e = (e) => {
+			g && e.target !== g.element && e.target !== document.body && e.target !== document.documentElement && _();
+		}, t = () => {
+			document.visibilityState !== "visible" && _();
+		};
+		return document.addEventListener("pointerdown", _, !0), document.addEventListener("keydown", _, !0), document.addEventListener("focusin", e, !0), document.addEventListener("visibilitychange", t), window.addEventListener("blur", _), () => {
+			_(), document.removeEventListener("pointerdown", _, !0), document.removeEventListener("keydown", _, !0), document.removeEventListener("focusin", e, !0), document.removeEventListener("visibilitychange", t), window.removeEventListener("blur", _);
+		};
+	});
+	function y() {
 		for (let e of c) H(m)[e]?.reset();
 	}
-	function _(e, t, n) {
+	function b(e, t, n) {
 		for (let r of c) {
 			let i = e[r].status, a = t && n && i ? `${i.revision}:${i.configured}` : "";
 			a === h[r] && t && n || H(m)[r]?.reset(), h[r] = a;
 		}
 	}
-	Li(g);
-	async function v(e) {
+	Li(y);
+	async function x(e) {
 		H(m)[e]?.reset(), await a()(e);
 	}
-	async function y(e, t = !1) {
+	async function S(e, t = !1) {
 		let a = i()[e], o = a.status;
 		if (!r() || !n() || a.phase !== "ready" || a.save !== "idle" || !o) return;
 		let c = H(m)[e] ? new FormData(H(m)[e]) : void 0, l = t ? null : {
@@ -4907,19 +4941,19 @@ function ks(e, t) {
 		H(m)[e]?.reset(), await s()(e, o.revision, l);
 	}
 	En(() => (W(i()), W(r()), W(n())), () => {
-		_(i(), r(), n());
+		b(i(), r(), n());
 	}), Dn(), Ti();
-	var b = Os(), x = R(I(b), 2), S = (e) => {
+	var C = Os(), w = R(I(C), 2), ee = (e) => {
 		q(e, ds());
-	}, C = (e) => {
+	}, te = (e) => {
 		var t = Ds();
 		qr(t, 5, () => c, (e) => e, (e, t) => {
 			let a = /* @__PURE__ */ M(() => (W(i()), H(t), U(() => i()[H(t)]))), s = /* @__PURE__ */ M(() => (W(H(a)), U(() => H(a).observation))), c = /* @__PURE__ */ M(() => (W(r()), W(H(a)), U(() => !r() || H(a).save === "saving"))), h = /* @__PURE__ */ M(() => (W(H(a)), W(H(s)), U(() => H(a).phase === "loading" || H(s)?.error === "checking"))), g = /* @__PURE__ */ M(() => (W(r()), W(n()), W(H(a)), U(() => r() && n() && H(a).phase === "ready" && H(a).save === "idle" && !!H(a).status)));
-			var _ = Es(), b = I(_), x = L(I(b));
-			Se(), A(b);
-			var S = R(b, 2), C = L(S, !0), w = R(S, 2), ee = I(w), te = L(ee), ne = R(ee), re = L(ne);
-			A(w);
-			var ie = R(w, 2), T = (e) => {
+			var _ = Es(), y = I(_), b = L(I(y));
+			Se(), A(y);
+			var C = R(y, 2), w = L(C, !0), ee = R(C, 2), te = I(ee), ne = L(te), re = R(te), ie = L(re);
+			A(ee);
+			var T = R(ee, 2), ae = (e) => {
 				var n = ws(), r = ln(n), i = R(I(r)), u = L(i, !0), m = R(i, 2), g = L(m, !0), _ = L(R(m, 2), !0);
 				A(r);
 				var v = R(r, 2), y = (e) => {
@@ -5001,27 +5035,27 @@ function ks(e, t) {
 					() => (H(t), U(() => l(H(t)))),
 					() => (H(t), U(() => l(H(t))))
 				]), G("click", E, () => void o()(H(t), H(a).offset - 12)), G("click", le, () => H(s).next_offset !== null && void o()(H(t), H(s).next_offset)), q(e, n);
-			}, ae = (e) => {
+			}, E = (e) => {
 				var n = bs(), r = L(n);
 				z((e) => J(r, `No ${e ?? ""} connection enrolled.`), [() => (H(t), U(() => l(H(t))))]), q(e, n);
 			};
-			Y(ie, (e) => {
-				W(H(s)), U(() => H(s)?.configured) ? e(T) : (W(H(a)), U(() => H(a).status && !H(a).status.configured) && e(ae, 1));
+			Y(T, (e) => {
+				W(H(s)), U(() => H(s)?.configured) ? e(ae) : (W(H(a)), U(() => H(a).status && !H(a).status.configured) && e(E, 1));
 			});
-			var E = R(ie, 2), oe = I(E), se = L(oe), ce = R(oe, 2), le = L(ce), D = R(ce), ue = L(D), de = R(D, 2), fe = I(de), pe = L(fe), me = R(fe), he = R(me, 2), ge = R(he), _e = R(ge, 2), ve = R(_e), O = R(ve, 3), ye = I(O);
-			Se(), A(O);
-			var k = R(O, 2), be = L(k);
-			A(de), wi(de, (e, t) => Ut(m, H(m)[t] = e), (e) => H(m)?.[e], () => [H(t)]), A(E);
-			var xe = R(E, 2), Ce = (e) => {
+			var oe = R(T, 2), se = I(oe), ce = L(se), le = R(se, 2), D = L(le), ue = R(le), de = L(ue), fe = R(ue, 2), pe = I(fe), me = L(pe), he = R(pe), ge = R(he, 2), _e = R(ge), ve = R(_e, 2), O = R(ve), ye = R(O, 3), k = I(ye);
+			Se(), A(ye);
+			var be = R(ye, 2), xe = L(be);
+			A(fe), wi(fe, (e, t) => Ut(m, H(m)[t] = e), (e) => H(m)?.[e], () => [H(t)]), A(oe);
+			var Ce = R(oe, 2), we = (e) => {
 				var n = Ts(), r = L(n);
 				z((e) => {
 					n.disabled = !H(g), J(r, `Remove ${e ?? ""} connection`);
-				}, [() => (H(t), U(() => l(H(t))))]), G("click", n, () => void y(H(t), !0)), q(e, n);
+				}, [() => (H(t), U(() => l(H(t))))]), G("click", n, () => void S(H(t), !0)), q(e, n);
 			};
-			Y(xe, (e) => {
-				W(H(a)), U(() => H(a).status?.configured) && e(Ce);
+			Y(Ce, (e) => {
+				W(H(a)), U(() => H(a).status?.configured) && e(we);
 			}), A(_), z((e, n, r, i, o, l, u, d, f, p, m, v) => {
-				X(_, "data-queue-provider", H(t)), X(_, "data-queue-phase", (W(H(a)), U(() => H(a).phase))), X(_, "data-queue-revision", (W(H(a)), U(() => H(a).status?.revision ?? ""))), X(_, "data-queue-configured", e), X(_, "data-queue-error", (W(H(s)), U(() => H(s)?.error ?? ""))), X(_, "data-queue-complete", n), X(_, "data-queue-offset", (W(H(a)), U(() => H(a).offset))), X(_, "data-queue-save", (W(H(a)), U(() => H(a).save))), X(_, "data-queue-freshness", (W(H(s)), U(() => H(s)?.freshness ?? "unknown"))), X(_, "data-queue-total", (W(H(s)), U(() => H(s)?.total ?? ""))), X(_, "data-queue-truncated", r), X(_, "aria-label", i), J(x, `${o ?? ""}${H(t) === "qbittorrent" ? " Transfers" : " queue"}`), J(C, (W(H(a)), U(() => H(a).message || "Check the connection state to begin."))), ee.disabled = H(c), J(te, `Check ${l ?? ""} connection state`), ne.disabled = (W(H(c)), W(H(h)), W(H(a)), U(() => H(c) || H(h) || !H(a).status?.configured)), J(re, `Check ${u ?? ""} observations`), J(se, `Enroll ${d ?? ""} access`), J(le, `A global ${f ?? ""} API key may grant broad management authority. Reborn sends observation requests only; this does not restrict what the key itself can do.`), J(ue, `Supported profile: ${p ?? ""}. Use a root-mounted HTTPS address. Subpath installations and username/password login are not supported here.`), X(fe, "for", `queue-${H(t)}-endpoint`), J(pe, `${m ?? ""} HTTPS address`), X(me, "id", `queue-${H(t)}-endpoint`), X(me, "placeholder", `https://${H(t)}.example/`), me.disabled = !H(g), X(he, "for", `queue-${H(t)}-token`), X(ge, "id", `queue-${H(t)}-token`), ge.disabled = !H(g), X(_e, "for", `queue-${H(t)}-ca`), X(ve, "id", `queue-${H(t)}-ca`), ve.disabled = !H(g), X(O, "for", `queue-${H(t)}-ack`), X(ye, "id", `queue-${H(t)}-ack`), ye.disabled = !H(g), k.disabled = !H(g), J(be, `Save ${v ?? ""} connection`);
+				X(_, "data-queue-provider", H(t)), X(_, "data-queue-phase", (W(H(a)), U(() => H(a).phase))), X(_, "data-queue-revision", (W(H(a)), U(() => H(a).status?.revision ?? ""))), X(_, "data-queue-configured", e), X(_, "data-queue-error", (W(H(s)), U(() => H(s)?.error ?? ""))), X(_, "data-queue-complete", n), X(_, "data-queue-offset", (W(H(a)), U(() => H(a).offset))), X(_, "data-queue-save", (W(H(a)), U(() => H(a).save))), X(_, "data-queue-freshness", (W(H(s)), U(() => H(s)?.freshness ?? "unknown"))), X(_, "data-queue-total", (W(H(s)), U(() => H(s)?.total ?? ""))), X(_, "data-queue-truncated", r), X(_, "aria-label", i), J(b, `${o ?? ""}${H(t) === "qbittorrent" ? " Transfers" : " queue"}`), J(w, (W(H(a)), U(() => H(a).message || "Check the connection state to begin."))), te.disabled = H(c), J(ne, `Check ${l ?? ""} connection state`), re.disabled = (W(H(c)), W(H(h)), W(H(a)), U(() => H(c) || H(h) || !H(a).status?.configured)), J(ie, `Check ${u ?? ""} observations`), J(ce, `Enroll ${d ?? ""} access`), J(D, `A global ${f ?? ""} API key may grant broad management authority. Reborn sends observation requests only; this does not restrict what the key itself can do.`), J(de, `Supported profile: ${p ?? ""}. Use a root-mounted HTTPS address. Subpath installations and username/password login are not supported here.`), X(pe, "for", `queue-${H(t)}-endpoint`), J(me, `${m ?? ""} HTTPS address`), X(he, "id", `queue-${H(t)}-endpoint`), X(he, "placeholder", `https://${H(t)}.example/`), he.disabled = !H(g), X(ge, "for", `queue-${H(t)}-token`), X(_e, "id", `queue-${H(t)}-token`), _e.disabled = !H(g), X(ve, "for", `queue-${H(t)}-ca`), X(O, "id", `queue-${H(t)}-ca`), O.disabled = !H(g), X(ye, "for", `queue-${H(t)}-ack`), X(k, "id", `queue-${H(t)}-ack`), k.disabled = !H(g), be.disabled = !H(g), J(xe, `Save ${v ?? ""} connection`);
 			}, [
 				() => (W(H(a)), U(() => String(H(a).status?.configured ?? !1))),
 				() => (W(H(s)), U(() => String(H(s)?.complete ?? !1))),
@@ -5035,14 +5069,14 @@ function ks(e, t) {
 				() => (H(t), U(() => u(H(t)))),
 				() => (H(t), U(() => l(H(t)))),
 				() => (H(t), U(() => l(H(t))))
-			]), G("click", ee, () => void v(H(t))), G("click", ne, () => void o()(H(t), H(a).offset)), Cr("submit", de, (e) => {
-				e.preventDefault(), y(H(t));
+			]), G("click", te, () => void x(H(t))), G("click", re, (e) => v(H(t), H(a).offset, e)), Cr("submit", fe, (e) => {
+				e.preventDefault(), S(H(t));
 			}), q(e, _);
 		}), A(t), q(e, t);
 	};
-	Y(x, (e) => {
-		n() ? e(C, -1) : e(S);
-	}), A(b), q(e, b), Ge();
+	Y(w, (e) => {
+		n() ? e(te, -1) : e(ee);
+	}), A(C), q(e, C), Ge();
 }
 wr(["click"]);
 // src/App.svelte
