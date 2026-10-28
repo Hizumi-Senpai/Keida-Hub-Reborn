@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE queue_connections SET revision = $1, sealed = $2 WHERE provider = $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Bytea",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e16c4d3b2fc9253e7020b3224e380d0f77ec3376869b05fddec1fef8ea1c3ea9"
+}

@@ -15,9 +15,11 @@ is preserved for route reversal.
 The accepted foundation is Rust/PostgreSQL authentication, separate Askama account
 pages, one persistent Svelte workspace with private revisioned notes, and dedicated
 encrypted GET-only Crafty enrollment/observations. The service directory/search/categories and personal pins are installed. Retained private Activity and connection-enrollment history are installed. Grouped notifications/read state and personal Home arrangement are installed. The current
-daily-use catalog, sampled Crafty history and Roadmap note are installed. The next
-slice is [owner-only Jellyfin/Seerr observations](docs/M3_MEDIA.md), tracked in
-[issue20](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/20). Source, packaged
+daily-use catalog, sampled Crafty history and Roadmap note are installed.
+[Owner-only Jellyfin/Seerr observations](docs/M3_MEDIA.md) are installed as0.1.13
+([issue20](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/20)). The next
+slice is [owner-only queue/transfer observations](docs/M3_QUEUES.md), tracked in
+[issue22](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/22). Source, packaged
 verification, installation and live acceptance are recorded separately.
 
 ## Start here
@@ -60,13 +62,14 @@ Mobile retains a full useful 2D dashboard without downloading the 3D experience.
 
 ## What happens next
 
-Continue **M3 media observations** with deliberate owner-only Jellyfin/Seerr
-enrollment, bounded library/request rows and counts-only playback. Broad API keys
-are not called read-only merely because the adapter sends GET. M0/M1/full M2/M3
-remain open pending their complete acceptance. Real Crafty enrollment,
-valid TLS, dedicated access and real freshness/join acceptance are deliberate next
-provider gates. Real media enrollment/privacy/TLS acceptance is separate; game-control and
-host-updater responsibility keep their separate review gates.
+Continue **M3 queue and transfer observations** for explicitly admitted stable
+Sonarr4/APIv3, Radarr6/APIv3 and qBittorrent5.2/5.3 Bearer-key profiles. Version
+admission precedes bounded queue reads; private titles and transfer details remain
+owner-only. Broad management keys are not read-only merely because this adapter
+sends GET. No management actions or password/cookie fallback are included.
+M0/M1/full M2/M3 remain open pending complete acceptance. Deliberate real Crafty,
+Jellyfin/Seerr and queue access/TLS/privacy/freshness acceptance remain separate.
+Game-control and host-updater responsibility keep their separate review gates.
 
 Performance goals are proposed budgets until measured on named hardware/browsers.
 The architecture is selected; it is not a benchmark victory or feature-parity claim.

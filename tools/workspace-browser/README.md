@@ -27,7 +27,7 @@ Ubuntu Noble bytes pinned by SHA256
 Node does not run this native browser driver. Svelte's compiled application is
 the code under test.
 
-Twelve independent workflows cover real native enrollment/TLS, persistent editor
+Thirteen independent workflows cover real native enrollment/TLS, persistent editor
 identity and selection, one poll owner, draft/keyboard/reflow/accessibility,
 concurrent-device409, editing during a held successful save, committed lost
 response/no replay, cross-tab account switch/late response, explicit same-account
@@ -66,3 +66,13 @@ observations, bounded pages and playback counts, empty/unknown/error outcomes,
 secret clearing, preserved note/editor identity, lost-reply reconciliation without
 replay, obsolete and revoked responses, member isolation and desktop/390px/Axe.
 Guide capability negotiation preserves the supported0.1.12 catalog response.
+
+The thirteenth workflow verifies actual native Sonarr/Radarr/qBittorrent broad-key
+acknowledgement and enrollment, fixed navigation,12/12/2 pages, first60 truncation,
+explicit page-moved recovery, unknown/partial/empty/error distinctions and wanted-byte
+progress independent of raw checking progress. It ages held samples with the existing
+scheduler and no new provider IO, preserves the private editor, checks desktop/390px
+Axe, reconciles a committed lost reply by GET without replay, rejects late enrollment
+and revoked-authority payloads, and verifies member isolation. Its fixed expectations
+come from the frozen queue contract and fictional TLS fixture inputs; it never
+reads production provider credentials or emits authenticated DOM/screenshots.

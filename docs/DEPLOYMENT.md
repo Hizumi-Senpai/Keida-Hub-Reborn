@@ -1,9 +1,9 @@
 # Keida Hub Reborn deployment contract
 
-Status: deployment contract. Rust/browser source and isolated fixture execution
-are tracked in CURRENT_STATE.md and issues1/3. Reborn has no published image,
-production database, installed service or accepted public deployment. The rules
-below describe the packaged/operational acceptance still required.
+Status: deployment contract. Reborn0.1.13 is installed and qualified under the
+[exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6455928640).
+The bootstrap examples below preserve their planning context; they are not current
+resource ownership or installation state. Refresh issue1 and actual host identity.
 
 At this planning checkpoint, `https://rewrite.keida.me` serves **Keida Hub
 Rewrite v0.1.4**, not Reborn. Its eventual reuse for Reborn is reserved; creating
@@ -181,8 +181,8 @@ health/HTTP evidence, public/browser result and terminal success/failure/recover
 state. Record limitations and pending owner acceptance explicitly. Preserve prior
 checkpoint history rather than replacing it with an unqualified success claim.
 
-Current installed baseline: **Reborn0.1.11**, as recorded in the
-[exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6448326282).
+Current installed baseline: **Reborn0.1.13**, as recorded in the
+[exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6455928640).
 Source/fixture CI, publication, installation, loaded owner browser, real provider
 acceptance and separately authorized host-updater activation remain distinct.
 Refresh issue1 before any host action; bootstrap examples above are historical.

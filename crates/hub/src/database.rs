@@ -42,7 +42,7 @@ async fn check_schema(pool: &PgPool) -> Result<(), sqlx::migrate::MigrateError> 
         sqlx::query!("SELECT product, schema_version FROM reborn_schema WHERE singleton = TRUE")
             .fetch_one(&mut *conn)
             .await?;
-    if meta.product != "keida-hub-reborn" || meta.schema_version != 10 {
+    if meta.product != "keida-hub-reborn" || meta.schema_version != 11 {
         return Err(sqlx::migrate::MigrateError::VersionMissing(1));
     }
     Ok(())

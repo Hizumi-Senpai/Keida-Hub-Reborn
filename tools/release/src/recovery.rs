@@ -463,6 +463,344 @@ async fn member_media_denied(
     Ok(())
 }
 
+fn queue_profile(provider: &str) -> Result<&'static str> {
+    match provider {
+        "sonarr" => Ok("sonarr-v3"),
+        "radarr" => Ok("radarr-v3"),
+        "qbittorrent" => Ok("qbittorrent-v2-key"),
+        _ => Err("recovery queue provider rejected"),
+    }
+}
+
+async fn enroll_queue(
+    client: &Client,
+    origin: &str,
+    session: &str,
+    binding: &str,
+    provider: &str,
+    base_revision: &str,
+    fixture: &reborn_crafty_fixture::queues::Queues,
+) -> Result<Value> {
+    value(
+        admitted(
+            client,
+            origin,
+            &format!("/api/owner/queues/{provider}"),
+            reqwest::Method::PUT,
+            session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .json(&json!({"base_revision":base_revision,"connection":{
+            "endpoint":fixture.origin,"token":reborn_crafty_fixture::queues::TOKEN,
+            "ca_pem":fixture.ca,"profile":queue_profile(provider)?,
+            "acknowledge_broad_access":true
+        }}))
+        .send()
+        .await
+        .map_err(|_| "packaged encrypted queue enrollment failed")?,
+        200,
+    )
+    .await
+}
+
+async fn queue_status(
+    client: &Client,
+    origin: &str,
+    session: &str,
+    binding: &str,
+    provider: &str,
+) -> Result<Value> {
+    value(
+        admitted(
+            client,
+            origin,
+            &format!("/api/owner/queues/{provider}"),
+            reqwest::Method::GET,
+            session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .send()
+        .await
+        .map_err(|_| "packaged queue enrollment status failed")?,
+        200,
+    )
+    .await
+}
+
+async fn queue_page(
+    client: &Client,
+    origin: &str,
+    session: &str,
+    binding: &str,
+    provider: &str,
+) -> Result<Value> {
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(8);
+    loop {
+        let response = admitted(
+            client,
+            origin,
+            &format!("/api/workspace/queues/{provider}?offset=0"),
+            reqwest::Method::GET,
+            session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .send()
+        .await
+        .map_err(|_| "packaged queue observation read failed")?;
+        if !response
+            .headers()
+            .get("cache-control")
+            .and_then(|v| v.to_str().ok())
+            .is_some_and(|v| v.contains("no-store"))
+        {
+            return Err("queue observation admitted browser caching");
+        }
+        let page = value(response, 200).await?;
+        if page["product"] != "keida-hub-reborn"
+            || page["contract"] != "reborn-workspace-v1"
+            || page["schema"] != 1
+            || page["provider"] != provider
+            || page["account"]["role"] != "owner"
+            || page["account"]["username"] != "recovery_owner"
+        {
+            return Err("packaged queue authority envelope differs");
+        }
+        if page["observation"]["error"] != "checking" {
+            return Ok(page);
+        }
+        if tokio::time::Instant::now() >= deadline {
+            return Err("packaged demand queue observation deadline");
+        }
+        tokio::time::sleep(Duration::from_millis(25)).await;
+    }
+}
+
+fn assert_queue(
+    page: &Value,
+    provider: &str,
+    revision: &str,
+    empty: bool,
+    fixture: &reborn_crafty_fixture::queues::Queues,
+) -> Result<()> {
+    let observation = &page["observation"];
+    let observation_fields = [
+        "revision",
+        "configured",
+        "profile",
+        "checked_at",
+        "freshness",
+        "error",
+        "complete",
+        "offset",
+        "next_offset",
+        "total",
+        "truncated",
+        "items",
+    ];
+    let item_fields = [
+        "id",
+        "title",
+        "status",
+        "import_state",
+        "warning",
+        "progress_basis_points",
+        "size_bytes",
+        "download_bytes_per_second",
+        "upload_bytes_per_second",
+    ];
+    let items = observation["items"]
+        .as_array()
+        .ok_or("packaged queue item rows absent")?;
+    if observation.as_object().is_none_or(|o| {
+        o.len() != observation_fields.len()
+            || observation_fields
+                .iter()
+                .any(|field| !o.contains_key(*field))
+    }) || observation["revision"] != revision
+        || observation["configured"] != true
+        || observation["profile"] != queue_profile(provider)?
+        || observation["complete"] != true
+        || !observation["error"].is_null()
+        || observation["freshness"] != "fresh"
+        || observation["checked_at"]
+            .as_u64()
+            .filter(|at| *at > 0)
+            .is_none()
+        || observation["offset"] != 0
+        || observation["truncated"] != false
+        || items.len() != if empty { 0 } else { 12 }
+        || (provider == "qbittorrent" && !observation["total"].is_null())
+        || (provider != "qbittorrent" && observation["total"] != if empty { 0 } else { 26 })
+    {
+        return Err("packaged queue observation differs from actual TLS fixture");
+    }
+    if empty {
+        if !observation["next_offset"].is_null() {
+            return Err("packaged valid empty queue page differs");
+        }
+    } else {
+        if observation["next_offset"] != 12
+            || items[0]["progress_basis_points"] != 2500
+            || items[0]["size_bytes"] != 1000
+            || items.iter().any(|row| {
+                row.as_object().is_none_or(|o| {
+                    o.len() != item_fields.len()
+                        || item_fields.iter().any(|field| !o.contains_key(*field))
+                }) || row["progress_basis_points"] != 2500
+                    || row["size_bytes"] != 1000
+                    || !row["id"].as_str().is_some_and(|id| crate::digest(id, 64))
+                    || row["title"].as_str().is_none_or(|t| {
+                        t.is_empty() || t.len() > 240 || t.chars().any(char::is_control)
+                    })
+            })
+        {
+            return Err("packaged bounded queue rows/progress/private identities differ");
+        }
+        let ids = items
+            .iter()
+            .filter_map(|row| row["id"].as_str())
+            .collect::<std::collections::BTreeSet<_>>();
+        if ids.len() != items.len() {
+            return Err("packaged queue identities are ambiguous");
+        }
+        match provider {
+            "sonarr" | "radarr" => {
+                let title = if provider == "sonarr" {
+                    "Queued series"
+                } else {
+                    "Queued movie"
+                };
+                if items[0]["title"] != title
+                    || items[0]["status"] != "downloading"
+                    || items[0]["import_state"] != "downloading"
+                    || items[0]["warning"] != false
+                    || !items[0]["download_bytes_per_second"].is_null()
+                    || !items[0]["upload_bytes_per_second"].is_null()
+                {
+                    return Err("packaged Arr queue projection differs");
+                }
+            }
+            "qbittorrent" => {
+                // The fixture's raw progress is 0.9 while selected bytes are 250/1000.
+                // This checking row must retain wanted-byte progress, never 90%.
+                if items[0]["title"] != "Fixture transfer"
+                    || items[0]["status"] != "checkingDL"
+                    || !items[0]["import_state"].is_null()
+                    || items[0]["warning"] != false
+                    || items[0]["download_bytes_per_second"] != 128
+                    || items[0]["upload_bytes_per_second"] != 0
+                {
+                    return Err("packaged qBittorrent wanted-byte projection differs");
+                }
+            }
+            _ => return Err("recovery queue provider rejected"),
+        }
+    }
+    let encoded = serde_json::to_string(page).map_err(|_| "queue proof encoding failed")?;
+    if [
+        reborn_crafty_fixture::queues::TOKEN,
+        fixture.origin.as_str(),
+        fixture.ca.as_str(),
+        "BEGIN CERTIFICATE",
+        "ca_pem",
+        "endpoint",
+        "PRIVATE_",
+        "save_path",
+        "content_path",
+        "magnet_uri",
+        "downloadId",
+        "statusMessages",
+        "errorMessage",
+        "0000000000000000000000000000000000000001",
+    ]
+    .iter()
+    .any(|value| encoded.contains(value))
+    {
+        return Err("packaged queue response disclosed non-allowlisted provider fields");
+    }
+    Ok(())
+}
+
+async fn member_queues_denied(
+    client: &Client,
+    origin: &str,
+    session: &str,
+    binding: &str,
+) -> Result<()> {
+    for provider in ["sonarr", "radarr", "qbittorrent"] {
+        for path in [
+            format!("/api/workspace/queues/{provider}?offset=0"),
+            format!("/api/owner/queues/{provider}"),
+        ] {
+            let response = admitted(
+                client,
+                origin,
+                &path,
+                reqwest::Method::GET,
+                session,
+                binding,
+                "reborn-workspace-v1",
+            )
+            .send()
+            .await
+            .map_err(|_| "packaged member queue boundary read failed")?;
+            if response.status().as_u16() != 403 {
+                return Err("packaged private owner queues admitted a member");
+            }
+        }
+        let response = admitted(
+            client,
+            origin,
+            &format!("/api/owner/queues/{provider}"),
+            reqwest::Method::PUT,
+            session,
+            binding,
+            "reborn-workspace-v1",
+        )
+        .json(&json!({"base_revision":"1","connection":null}))
+        .send()
+        .await
+        .map_err(|_| "packaged member queue mutation boundary failed")?;
+        if response.status().as_u16() != 403 {
+            return Err("packaged private queue enrollment admitted a member");
+        }
+    }
+    Ok(())
+}
+
+fn assert_queue_gets(
+    provider: &str,
+    fixture: &reborn_crafty_fixture::queues::Queues,
+) -> Result<()> {
+    let (version, queue) = match provider {
+        "sonarr" => (
+            "/api/v3/system/status",
+            "/api/v3/queue?page=1&pageSize=12&sortKey=added&sortDirection=descending&includeUnknownSeriesItems=false&includeSeries=false&includeEpisode=false",
+        ),
+        "radarr" => (
+            "/api/v3/system/status",
+            "/api/v3/queue?page=1&pageSize=12&sortKey=added&sortDirection=descending&includeUnknownMovieItems=false&includeMovie=false",
+        ),
+        "qbittorrent" => (
+            "/api/v2/app/version",
+            "/api/v2/torrents/info?filter=all&sort=added_on&reverse=true&limit=13&offset=0",
+        ),
+        _ => return Err("recovery queue provider rejected"),
+    };
+    let requests = fixture.requests();
+    let (pairs, remainder) = requests.as_chunks::<2>();
+    if pairs.iter().any(|pair| {
+        pair[0].0 != "GET" || pair[0].1 != version || pair[1].0 != "GET" || pair[1].1 != queue
+    }) || !remainder.is_empty()
+    {
+        return Err("queue recovery did not use only ordered version/observation GET pairs");
+    }
+    Ok(())
+}
+
 fn runtime_denied(pg: &str, database: &str, sql: &str) -> Result<()> {
     let output = Command::new("docker")
         .args([
@@ -849,6 +1187,54 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     if media_provider.requests().len() != media_requests {
         return Err("member media rejection performed provider IO");
     }
+    let queue_providers = [
+        (
+            "sonarr",
+            reborn_crafty_fixture::queues::Queues::start("sonarr")
+                .await
+                .map_err(|_| "recovery Sonarr TLS fixture failed")?,
+        ),
+        (
+            "radarr",
+            reborn_crafty_fixture::queues::Queues::start("radarr")
+                .await
+                .map_err(|_| "recovery Radarr TLS fixture failed")?,
+        ),
+        (
+            "qbittorrent",
+            reborn_crafty_fixture::queues::Queues::start("qbittorrent")
+                .await
+                .map_err(|_| "recovery qBittorrent TLS fixture failed")?,
+        ),
+    ];
+    let mut initial_queues = Vec::new();
+    for (provider, fixture) in &queue_providers {
+        fixture.mode(reborn_crafty_fixture::queues::MANY);
+        let enrolled =
+            enroll_queue(&client, &origin, &session, binding, provider, "0", fixture).await?;
+        if enrolled != json!({"revision":"1","configured":true,"profile":queue_profile(provider)?})
+            || !fixture.requests().is_empty()
+        {
+            return Err("initial queue enrollment receipt differs or enrollment performed IO");
+        }
+        let page = queue_page(&client, &origin, &session, binding, provider).await?;
+        assert_queue(&page, provider, "1", false, fixture)?;
+        if page["account"] != claimed["account"] || fixture.requests().len() != 2 {
+            return Err("initial queue authority/version-plus-observation requests differ");
+        }
+        assert_queue_gets(provider, fixture)?;
+        initial_queues.push(page);
+    }
+    let initial_queue_requests = queue_providers
+        .iter()
+        .map(|(_, fixture)| fixture.requests().len())
+        .collect::<Vec<_>>();
+    member_queues_denied(&client, &origin, &member_session, member_binding).await?;
+    for (index, (_, fixture)) in queue_providers.iter().enumerate() {
+        if fixture.requests().len() != initial_queue_requests[index] {
+            return Err("member queue rejection performed provider IO");
+        }
+    }
     value(
         admitted(
             &client,
@@ -908,9 +1294,17 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     if initial["crafty"]["servers"][0]["players"] != 0
         || initial["layout"] != owner_layout
         || initial.get("media").is_some()
+        || initial.get("queues").is_some()
         || initial_media
             .iter()
             .any(|(_, page)| page["session_generation"] != initial["session_generation"])
+        || initial_queues
+            .iter()
+            .any(|page| page["session_generation"] != initial["session_generation"])
+        || queue_providers
+            .iter()
+            .enumerate()
+            .any(|(index, (_, fixture))| fixture.requests().len() != initial_queue_requests[index])
     {
         return Err("packaged dedicated decryption/GET failed");
     }
@@ -1129,12 +1523,32 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         "DELETE FROM media_connections WHERE provider='jellyfin'",
         "INSERT INTO media_connections (provider,revision,sealed) VALUES ('jellyfin',0,NULL)",
         "UPDATE media_connections SET provider=provider WHERE provider='jellyfin'",
+        "ALTER TABLE queue_connections ADD COLUMN runtime_must_not_ddl integer",
+        "DELETE FROM queue_connections WHERE provider='sonarr'",
+        "INSERT INTO queue_connections (provider,revision,sealed) VALUES ('sonarr',0,NULL)",
+        "UPDATE queue_connections SET provider=provider WHERE provider='sonarr'",
         "UPDATE activity_events SET revision=revision WHERE id=1",
         "DELETE FROM activity_events WHERE id=1",
         "UPDATE _sqlx_migrations SET success=success WHERE version=1",
     ] {
         runtime_denied(&restore_pg, "restored", sql)?;
     }
+    // The ordinary role can update only the two admitted queue columns. This
+    // same-value update does not change the restored encrypted configuration.
+    docker(&[
+        "exec",
+        &restore_pg,
+        "psql",
+        "-X",
+        "-U",
+        "reborn_app",
+        "-d",
+        "restored",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-c",
+        "UPDATE queue_connections SET revision=revision,sealed=sealed",
+    ])?;
     let restored = format!("reborn-recovery-restored-{nonce}");
     scope.containers.push(restored.clone());
     let restored_port = port()?;
@@ -1182,6 +1596,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         || retained["layout"] != owner_layout
         || hash(&restored_root.join("instance.key"))? != key_before
         || retained.get("media").is_some()
+        || retained.get("queues").is_some()
     {
         return Err("matched auth/note/secret restore rejected");
     }
@@ -1211,6 +1626,38 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     member_media_denied(&client, &origin, &member_session, member_binding).await?;
     if media_provider.requests().len() != restored_media_requests {
         return Err("restored member media rejection performed provider IO");
+    }
+    // Three separate restored provider envelopes must decrypt in the fresh
+    // process, pass their version gates and reproduce the useful bounded rows.
+    let mut restored_queue_requests = Vec::new();
+    for (index, (provider, fixture)) in queue_providers.iter().enumerate() {
+        let before = fixture.requests().len();
+        if queue_status(&client, &origin, &session, binding, provider).await?
+            != json!({"revision":"1","configured":true,"profile":queue_profile(provider)?})
+            || fixture.requests().len() != before
+        {
+            return Err("restored encrypted queue status differs or performed provider IO");
+        }
+        let page = queue_page(&client, &origin, &session, binding, provider).await?;
+        assert_queue(&page, provider, "1", false, fixture)?;
+        let initial_queue = initial_queues
+            .get(index)
+            .ok_or("initial queue recovery evidence absent")?;
+        if page["account"] != claimed["account"]
+            || page["session_generation"] != retained["session_generation"]
+            || page["observation"]["items"] != initial_queue["observation"]["items"]
+            || fixture.requests().len() != before + 2
+        {
+            return Err("restored useful queue observations or actual HTTPS requests differ");
+        }
+        assert_queue_gets(provider, fixture)?;
+        restored_queue_requests.push(fixture.requests().len());
+    }
+    member_queues_denied(&client, &origin, &member_session, member_binding).await?;
+    for (index, (_, fixture)) in queue_providers.iter().enumerate() {
+        if fixture.requests().len() != restored_queue_requests[index] {
+            return Err("restored member queue rejection performed provider IO");
+        }
     }
     let restored_activity = value(
         admitted(
@@ -1435,6 +1882,19 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         let page = media_page(&client, &origin, &session, binding, provider).await?;
         assert_media(&page, provider, "2", true, &media_provider)?;
     }
+    // Newer queue enrollments and successful empty samples are accepted after
+    // the old backup, then exercised again from a fresh process below.
+    for (provider, fixture) in &queue_providers {
+        fixture.mode(reborn_crafty_fixture::queues::EMPTY);
+        let enrolled =
+            enroll_queue(&client, &origin, &session, binding, provider, "1", fixture).await?;
+        if enrolled != json!({"revision":"2","configured":true,"profile":queue_profile(provider)?})
+        {
+            return Err("newer packaged queue enrollment receipt differs");
+        }
+        let page = queue_page(&client, &origin, &session, binding, provider).await?;
+        assert_queue(&page, provider, "2", true, fixture)?;
+    }
     let failed = format!("reborn-recovery-failed-{nonce}");
     scope.containers.push(failed.clone());
     let mut args = app_args(
@@ -1610,7 +2070,36 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     if media_provider.requests().len() != final_media_requests || hash(&dump)? != dump_sha {
         return Err("newer media recovery changed old backup or admitted member IO");
     }
-    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":10,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"restored_notifications_and_read_state":true,"restored_personal_layout_and_newer_edits":true,"restored_provider_observations_and_newer_samples":true,"restored_media_connections_and_observations":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
+    let mut final_queue_requests = Vec::new();
+    for (provider, fixture) in &queue_providers {
+        let before = fixture.requests().len();
+        if queue_status(&client, &origin, &session, binding, provider).await?
+            != json!({"revision":"2","configured":true,"profile":queue_profile(provider)?})
+            || fixture.requests().len() != before
+        {
+            return Err("failed candidate lost newer encrypted queue enrollment");
+        }
+        let page = queue_page(&client, &origin, &session, binding, provider).await?;
+        assert_queue(&page, provider, "2", true, fixture)?;
+        if page["account"] != claimed["account"]
+            || page["session_generation"] != retained["session_generation"]
+            || fixture.requests().len() != before + 2
+        {
+            return Err("newer queue recovery skipped real HTTPS or current authority");
+        }
+        assert_queue_gets(provider, fixture)?;
+        final_queue_requests.push(fixture.requests().len());
+    }
+    member_queues_denied(&client, &origin, &member_session, member_binding).await?;
+    for (index, (_, fixture)) in queue_providers.iter().enumerate() {
+        if fixture.requests().len() != final_queue_requests[index] {
+            return Err("newer queue recovery admitted member provider IO");
+        }
+    }
+    if hash(&dump)? != dump_sha {
+        return Err("newer queue recovery changed the old matched backup");
+    }
+    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":11,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"restored_notifications_and_read_state":true,"restored_personal_layout_and_newer_edits":true,"restored_provider_observations_and_newer_samples":true,"restored_media_connections_and_observations":true,"restored_queue_connections_and_observations":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
     crate::write(
         &out.join("recovery-proof.json"),
         &serde_json::to_vec(&report).map_err(|_| "recovery proof encoding failed")?,

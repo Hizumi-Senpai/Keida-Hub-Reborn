@@ -15,6 +15,8 @@ use std::{
 
 #[path = "support/media_contracts.rs"]
 mod media_contracts;
+#[path = "support/queues_contracts.rs"]
+mod queues_contracts;
 
 const BINARY: &str = env!("CARGO_BIN_EXE_keida-hub-reborn");
 const ORIGIN: &str = "https://reborn.example";

@@ -1,8 +1,8 @@
 # Reborn versions and safe updating
 
 Status: deterministic source identity, immutable manual release publication and
-matched packaged recovery are implemented. Reborn0.1.11 is the installed baseline;
-[issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6448326282)
+matched packaged recovery are implemented. Reborn0.1.13 is the installed baseline;
+[issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6455928640)
 contains exact evidence. Full draft-safe update discovery/refresh and an automatic
 host updater remain separate work. No daemon is activated by the manual release CLI.
 

@@ -41,6 +41,74 @@ pub struct Secrets {
 }
 
 impl Secrets {
+    /// Queue envelopes use a separate format/key/AAD domain and authenticate
+    /// the fixed provider, its admitted profile and monotonic enrollment revision.
+    pub fn seal_queues(
+        &self,
+        provider: crate::providers::queues::Provider,
+        revision: i64,
+        plaintext: &[u8],
+    ) -> Result<Vec<u8>, CryptoError> {
+        use ring::aead::{Aad, CHACHA20_POLY1305, LessSafeKey, Nonce, UnboundKey};
+        if revision <= 0 || plaintext.is_empty() || plaintext.len() > 30000 {
+            return Err(CryptoError::Invalid);
+        }
+        let mut salt = [0u8; 32];
+        let mut nonce = [0u8; 12];
+        getrandom::fill(&mut salt).map_err(|_| CryptoError::Unavailable)?;
+        getrandom::fill(&mut nonce).map_err(|_| CryptoError::Unavailable)?;
+        let key = Zeroizing::new(self.mac(&queue_key_domain(provider, revision), &salt));
+        let cipher = LessSafeKey::new(
+            UnboundKey::new(&CHACHA20_POLY1305, key.as_ref())
+                .map_err(|_| CryptoError::Unavailable)?,
+        );
+        let mut body = Zeroizing::new(plaintext.to_vec());
+        cipher
+            .seal_in_place_append_tag(
+                Nonce::assume_unique_for_key(nonce),
+                Aad::from(queue_aad(provider, revision)),
+                &mut *body,
+            )
+            .map_err(|_| CryptoError::Unavailable)?;
+        let mut out = Vec::with_capacity(45 + body.len());
+        out.push(3);
+        out.extend_from_slice(&salt);
+        out.extend_from_slice(&nonce);
+        out.extend_from_slice(&body);
+        Ok(out)
+    }
+
+    pub fn open_queues(
+        &self,
+        provider: crate::providers::queues::Provider,
+        revision: i64,
+        sealed: &[u8],
+    ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
+        use ring::aead::{Aad, CHACHA20_POLY1305, LessSafeKey, Nonce, UnboundKey};
+        if revision <= 0 || !(62..=30100).contains(&sealed.len()) || sealed[0] != 3 {
+            return Err(CryptoError::Invalid);
+        }
+        let key = Zeroizing::new(self.mac(&queue_key_domain(provider, revision), &sealed[1..33]));
+        let cipher = LessSafeKey::new(
+            UnboundKey::new(&CHACHA20_POLY1305, key.as_ref())
+                .map_err(|_| CryptoError::Unavailable)?,
+        );
+        let nonce: [u8; 12] = sealed[33..45]
+            .try_into()
+            .map_err(|_| CryptoError::Invalid)?;
+        let mut body = Zeroizing::new(sealed[45..].to_vec());
+        let size = cipher
+            .open_in_place(
+                Nonce::assume_unique_for_key(nonce),
+                Aad::from(queue_aad(provider, revision)),
+                &mut body,
+            )
+            .map_err(|_| CryptoError::Invalid)?
+            .len();
+        body.truncate(size);
+        Ok(body)
+    }
+
     /// Media envelopes have their own format/key/AAD domain, and authenticate
     /// both the fixed provider identity and its monotonic enrollment revision.
     pub fn seal_media(
@@ -342,6 +410,26 @@ fn media_key_domain(provider: crate::providers::media::Provider) -> Vec<u8> {
 fn media_aad(provider: crate::providers::media::Provider, revision: i64) -> Vec<u8> {
     let mut aad = b"keida-hub-reborn/media/connection/v1\0".to_vec();
     aad.extend_from_slice(provider.as_str().as_bytes());
+    aad.push(0);
+    aad.extend_from_slice(&revision.to_be_bytes());
+    aad
+}
+
+fn queue_key_domain(provider: crate::providers::queues::Provider, revision: i64) -> Vec<u8> {
+    let mut domain = b"reborn/queues/encryption-key/v1\0".to_vec();
+    domain.extend_from_slice(provider.as_str().as_bytes());
+    domain.push(0);
+    domain.extend_from_slice(provider.profile().as_bytes());
+    domain.push(0);
+    domain.extend_from_slice(&revision.to_be_bytes());
+    domain
+}
+
+fn queue_aad(provider: crate::providers::queues::Provider, revision: i64) -> Vec<u8> {
+    let mut aad = b"keida-hub-reborn/queues/connection/v1\0".to_vec();
+    aad.extend_from_slice(provider.as_str().as_bytes());
+    aad.push(0);
+    aad.extend_from_slice(provider.profile().as_bytes());
     aad.push(0);
     aad.extend_from_slice(&revision.to_be_bytes());
     aad
@@ -686,6 +774,102 @@ mod tests {
         assert!(first.seal_media(Seerr, -1, private).is_err());
         assert!(first.seal_media(Jellyfin, 1, b"").is_err());
         assert!(first.seal_media(Jellyfin, 1, &[0; 30001]).is_err());
+    }
+
+    #[test]
+    fn queue_envelopes_authenticate_provider_profile_revision_key_and_other_domains() {
+        use crate::providers::media::Provider::Jellyfin;
+        use crate::providers::queues::Provider::{Qbittorrent, Radarr, Sonarr};
+        use ring::aead::{Aad, CHACHA20_POLY1305, LessSafeKey, Nonce, UnboundKey};
+
+        let first = form_secrets();
+        let second = Secrets {
+            key: Zeroizing::new([2; 32]),
+            dummy_phc: Zeroizing::new(String::new()),
+        };
+        let private = b"{\"token\":\"only-a-fictional-queue-key\"}";
+        let providers = [Sonarr, Radarr, Qbittorrent];
+        let crafty = first.seal_connection(7, private).unwrap();
+        let media = first.seal_media(Jellyfin, 7, private).unwrap();
+        for provider in providers {
+            let envelope = first.seal_queues(provider, 7, private).unwrap();
+            let repeated = first.seal_queues(provider, 7, private).unwrap();
+            assert_eq!(envelope[0], 3);
+            assert_ne!(envelope, repeated);
+            assert_ne!(&envelope[1..33], &repeated[1..33]);
+            assert!(
+                !envelope
+                    .windows(private.len())
+                    .any(|window| window == private)
+            );
+            assert_eq!(
+                first
+                    .open_queues(provider, 7, &envelope)
+                    .unwrap()
+                    .as_slice(),
+                private
+            );
+            assert!(first.open_queues(provider, 8, &envelope).is_err());
+            assert!(second.open_queues(provider, 7, &envelope).is_err());
+            for other in providers.into_iter().filter(|other| *other != provider) {
+                assert!(first.open_queues(other, 7, &envelope).is_err());
+            }
+            assert!(first.open_connection(7, &envelope).is_err());
+            assert!(first.open_media(Jellyfin, 7, &envelope).is_err());
+            assert!(first.open_queues(provider, 7, &crafty).is_err());
+            assert!(first.open_queues(provider, 7, &media).is_err());
+            for position in 0..envelope.len() {
+                let mut bad = envelope.clone();
+                bad[position] ^= 1;
+                assert!(first.open_queues(provider, 7, &bad).is_err());
+            }
+            for length in 0..envelope.len() {
+                assert!(first.open_queues(provider, 7, &envelope[..length]).is_err());
+            }
+            assert!(first.seal_queues(provider, 0, private).is_err());
+            assert!(first.seal_queues(provider, -1, private).is_err());
+            assert!(first.seal_queues(provider, 1, b"").is_err());
+            assert!(first.seal_queues(provider, 1, &[0; 30001]).is_err());
+        }
+
+        // Isolate profile authentication from provider authentication. These
+        // fictional frames keep Sonarr identity/revision but use a different
+        // profile in either the derived subkey or authenticated data.
+        let mut foreign_key = b"reborn/queues/encryption-key/v1\0sonarr\0sonarr-v5\0".to_vec();
+        foreign_key.extend_from_slice(&7_i64.to_be_bytes());
+        let mut foreign_aad =
+            b"keida-hub-reborn/queues/connection/v1\0sonarr\0sonarr-v5\0".to_vec();
+        foreign_aad.extend_from_slice(&7_i64.to_be_bytes());
+        for foreign_subkey in [false, true] {
+            let salt = [if foreign_subkey { 9 } else { 7 }; 32];
+            let nonce = [if foreign_subkey { 10 } else { 8 }; 12];
+            let key_domain = if foreign_subkey {
+                foreign_key.clone()
+            } else {
+                queue_key_domain(Sonarr, 7)
+            };
+            let aad = if foreign_subkey {
+                queue_aad(Sonarr, 7)
+            } else {
+                foreign_aad.clone()
+            };
+            let key = Zeroizing::new(first.mac(&key_domain, &salt));
+            let cipher =
+                LessSafeKey::new(UnboundKey::new(&CHACHA20_POLY1305, key.as_ref()).unwrap());
+            let mut body = Zeroizing::new(private.to_vec());
+            cipher
+                .seal_in_place_append_tag(
+                    Nonce::assume_unique_for_key(nonce),
+                    Aad::from(aad),
+                    &mut *body,
+                )
+                .unwrap();
+            let mut frame = vec![3];
+            frame.extend_from_slice(&salt);
+            frame.extend_from_slice(&nonce);
+            frame.extend_from_slice(&body);
+            assert!(first.open_queues(Sonarr, 7, &frame).is_err());
+        }
     }
 
     #[test]

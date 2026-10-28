@@ -32,6 +32,15 @@ export type MediaObservation = { revision: string; configured: boolean; checked_
 export type MediaState = { phase: 'idle' | 'loading' | 'ready' | 'error'; status?: { revision: string; configured: boolean }; observation?: MediaObservation; save: 'idle' | 'saving' | 'conflict' | 'uncertain'; message: string };
 const mediaProviders: MediaProvider[] = ['jellyfin', 'seerr'];
 const emptyMedia = (): Record<MediaProvider, MediaState> => ({ jellyfin: { phase: 'idle', save: 'idle', message: '' }, seerr: { phase: 'idle', save: 'idle', message: '' } });
+export type QueueProvider = 'sonarr' | 'radarr' | 'qbittorrent';
+export type QueueEnrollment = { endpoint: string; token: string; ca_pem: string; profile: string; acknowledge_broad_access: boolean };
+export type QueueItem = { id: string; title: string | null; status: string; import_state: string | null; warning: boolean | null; progress_basis_points: number | null; size_bytes: number | null; download_bytes_per_second: number | null; upload_bytes_per_second: number | null };
+export type QueueObservation = { revision: string; configured: boolean; profile: string; checked_at: number | null; freshness: 'fresh' | 'stale' | 'unknown'; error: string | null; complete: boolean; offset: number; next_offset: number | null; total: number | null; truncated: boolean; items: QueueItem[] };
+export type QueueState = { phase: 'idle' | 'loading' | 'ready' | 'error'; status?: { revision: string; configured: boolean; profile: string }; observation?: QueueObservation; offset: number; save: 'idle' | 'saving' | 'conflict' | 'uncertain'; message: string };
+const queueProviders: QueueProvider[] = ['sonarr', 'radarr', 'qbittorrent'];
+export const queueProfiles: Record<QueueProvider, string> = { sonarr: 'sonarr-v3', radarr: 'radarr-v3', qbittorrent: 'qbittorrent-v2-key' };
+const emptyQueue = (): QueueState => ({ phase: 'idle', offset: 0, save: 'idle', message: '' });
+const emptyQueues = (): Record<QueueProvider, QueueState> => ({ sonarr: emptyQueue(), radarr: emptyQueue(), qbittorrent: emptyQueue() });
 export type Model = {
   phase: 'checking' | 'ready' | 'paused' | 'blocked'; message: string;
   snapshot?: Snapshot; draft: string; base: string; dirty: boolean;
@@ -41,9 +50,9 @@ export type Model = {
   directorySave: 'idle' | 'saving' | 'conflict' | 'uncertain'; directoryMessage: string;
   layoutDraft?: { base: string; panels: HomePanel[] };
   layoutSave: 'idle' | 'saving' | 'checking-conflict' | 'conflict' | 'uncertain'; layoutMessage: string;
-  guide: GuideState; observations: ObservationState; media: Record<MediaProvider, MediaState>;
+  guide: GuideState; observations: ObservationState; media: Record<MediaProvider, MediaState>; queues: Record<QueueProvider, QueueState>;
 };
-const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '', layoutSave: 'idle', layoutMessage: '', guide: emptyGuide(), observations: emptyObservations(), media: emptyMedia() });
+const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '', layoutSave: 'idle', layoutMessage: '', guide: emptyGuide(), observations: emptyObservations(), media: emptyMedia(), queues: emptyQueues() });
 const record = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const decimal = (v: unknown, positive = false): v is string => typeof v === 'string' && /^(0|[1-9][0-9]{0,18})$/.test(v) && BigInt(v) <= MAX_REVISION && (!positive || v !== '0');
 const text = (v: unknown): v is string => typeof v === 'string' && !v.includes('\0') && new TextEncoder().encode(v).length <= 4096;
@@ -80,7 +89,7 @@ function parseGuide(v: Record<string, unknown>): Guide {
   const c = v.catalog, r = v.roadmap;
   if (!Array.isArray(c) || c.length !== ids.length || new Set(c.map(i => record(i) ? i.id : null)).size !== ids.length
       || c.some((i: unknown) => !record(i) || !ids.includes(String(i.id)) || !field(i.name, 80, true)
-        || i.status !== (['crafty', 'jellyfin', 'seerr'].includes(String(i.id)) ? 'available' : 'planned') || !field(i.summary, 512, true)
+        || i.status !== (['crafty', 'jellyfin', 'seerr', 'sonarr', 'radarr', 'qbittorrent'].includes(String(i.id)) ? 'available' : 'planned') || !field(i.summary, 512, true)
         || !strings(i.requirements, 8, 512) || !strings(i.capabilities, 8, 512))
       || !record(r) || typeof r.as_of !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.as_of) || !field(r.intro, 1024, true)
       || !strings(r.priorities, 8, 512) || r.tracker_url !== 'https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/2'
@@ -172,6 +181,55 @@ function mediaObservation(v: unknown, provider: MediaProvider, offset: number): 
     playback: value.playback === null ? null : { playing: value.playback.playing, paused: value.playback.paused, error: value.playback.error },
   });
 }
+const queueErrors = ['checking', 'timeout', 'transport', 'denied', 'rate_limited', 'provider_error', 'oversized', 'malformed', 'unsupported_profile', 'page_moved', 'unavailable'];
+const arrQueueStates = ['unknown', 'queued', 'paused', 'downloading', 'completed', 'failed', 'warning', 'delay', 'downloadClientUnavailable', 'fallback'];
+const queueImportStates = ['downloading', 'importBlocked', 'importPending', 'importing', 'imported', 'failedPending', 'failed', 'ignored', 'unknown'];
+const torrentStates = ['error', 'missingFiles', 'uploading', 'stoppedUP', 'queuedUP', 'stalledUP', 'checkingUP', 'forcedUP', 'downloading', 'metaDL', 'forcedMetaDL', 'stoppedDL', 'queuedDL', 'stalledDL', 'checkingDL', 'forcedDL', 'checkingResumeData', 'moving', 'unknown'];
+const queueError = (v: unknown): v is string | null => v === null || (typeof v === 'string' && queueErrors.includes(v));
+const queueQuantity = (v: unknown): v is number | null => v === null || boundedNumber(v, Number.MAX_SAFE_INTEGER);
+function agedQueueObservation(value: QueueObservation, at = Math.floor(Date.now() / 1000)): QueueObservation {
+  const collected = value.checked_at;
+  const freshness = !Number.isFinite(at) || at < 0 || collected === null || collected > at ? 'unknown'
+    : value.freshness === 'fresh' && at - collected > 90 ? 'stale' : value.freshness;
+  return freshness === value.freshness ? value : { ...value, freshness };
+}
+function queueObservation(v: unknown, provider: QueueProvider, offset: number): QueueObservation {
+  const torrent = provider === 'qbittorrent';
+  if (!record(v) || !decimal(v.revision) || typeof v.configured !== 'boolean' || v.profile !== queueProfiles[provider]
+      || !(v.checked_at === null || boundedNumber(v.checked_at, 253402300799))
+      || !['fresh', 'stale', 'unknown'].includes(String(v.freshness)) || !queueError(v.error) || typeof v.complete !== 'boolean'
+      || v.offset !== offset || !mediaOffset(v.offset) || !(v.next_offset === null || (mediaOffset(v.next_offset) && v.next_offset === offset + 12))
+      || !(v.total === null || boundedNumber(v.total, 1_000_000_000)) || (torrent && v.total !== null) || typeof v.truncated !== 'boolean'
+      || !Array.isArray(v.items) || v.items.length > 12 || new Set(v.items.map(i => record(i) ? i.id : null)).size !== v.items.length
+      || v.items.some((i: unknown) => !record(i) || typeof i.id !== 'string' || !/^[a-f0-9]{64}$/.test(i.id)
+        || !(i.title === null || field(i.title, 240, true)) || typeof i.status !== 'string' || !(torrent ? torrentStates : arrQueueStates).includes(i.status)
+        || !(i.import_state === null || (!torrent && typeof i.import_state === 'string' && queueImportStates.includes(i.import_state)))
+        || !(i.warning === null || typeof i.warning === 'boolean')
+        || !(i.progress_basis_points === null || boundedNumber(i.progress_basis_points, 10000)) || !queueQuantity(i.size_bytes)
+        || !queueQuantity(i.download_bytes_per_second) || !queueQuantity(i.upload_bytes_per_second)
+        || (!torrent && (i.download_bytes_per_second !== null || i.upload_bytes_per_second !== null)))
+      || (!v.configured && (v.items.length !== 0 || v.complete || v.checked_at !== null || v.next_offset !== null || v.total !== null || v.error !== null || v.freshness !== 'unknown' || v.truncated))
+      || (v.error !== null && v.complete)
+      || (v.error !== null && v.error !== 'checking' && (v.items.length !== 0 || v.next_offset !== null || v.total !== null))
+      || (v.error === 'page_moved' && (v.items.length !== 0 || v.next_offset !== null || v.total !== null))
+      || (v.next_offset !== null && v.items.length !== 12)
+      || (v.complete && v.items.some(i => i.title === null || i.status === 'unknown' || i.warning === null || (!torrent && (i.import_state === null || i.import_state === 'unknown'))))) throw new Error('Invalid queue response');
+  if (v.configured && v.error === null && !torrent) {
+    if (v.total === null || v.items.length !== Math.min(12, Math.max(0, (v.total as number) - offset))
+        || v.next_offset !== (offset + 12 <= 48 && offset + v.items.length < (v.total as number) ? offset + 12 : null)
+        || v.truncated !== ((v.total as number) > 60)) throw new Error('Invalid queue page');
+  }
+  if (torrent && v.truncated && (offset !== 48 || v.items.length !== 12 || v.next_offset !== null)) throw new Error('Invalid transfer window');
+  const value = v as unknown as QueueObservation;
+  // Only the current projection can become browser state. Ignored provider or
+  // future response fields cannot carry private data through a broad cast.
+  return agedQueueObservation({
+    revision: value.revision, configured: value.configured, profile: value.profile, checked_at: value.checked_at,
+    freshness: value.freshness, error: value.error, complete: value.complete, offset: value.offset,
+    next_offset: value.next_offset, total: value.total, truncated: value.truncated,
+    items: value.items.map(({ id, title, status, import_state, warning, progress_basis_points, size_bytes, download_bytes_per_second, upload_bytes_per_second }) => ({ id, title, status, import_state, warning, progress_basis_points, size_bytes, download_bytes_per_second, upload_bytes_per_second })),
+  });
+}
 export function workspace(binding: string) {
   const model = writable<Model>(empty('checking', 'Checking your workspace…'));
   let epoch = 0;
@@ -193,6 +251,12 @@ export function workspace(binding: string) {
   const mediaSaving: Partial<Record<MediaProvider, AbortController>> = {};
   const mediaSerial: Record<MediaProvider, number> = { jellyfin: 0, seerr: 0 };
   const mediaStatusSerial: Record<MediaProvider, number> = { jellyfin: 0, seerr: 0 };
+  let queuesActive = false;
+  const queueReading: Partial<Record<QueueProvider, AbortController>> = {};
+  const queueStatusReading: Partial<Record<QueueProvider, AbortController>> = {};
+  const queueSaving: Partial<Record<QueueProvider, AbortController>> = {};
+  const queueSerial: Record<QueueProvider, number> = { sonarr: 0, radarr: 0, qbittorrent: 0 };
+  const queueStatusSerial: Record<QueueProvider, number> = { sonarr: 0, radarr: 0, qbittorrent: 0 };
   let key: string | undefined;
   let held: { key: string; draft: Draft } | undefined;
   let channel: BroadcastChannel | undefined;
@@ -214,11 +278,16 @@ export function workspace(binding: string) {
     catch { model.update((m) => ({ ...m, storageLimited: true })); }
   }
   function cancel(): void {
-    ++epoch; mediaActive = false;
+    ++epoch; mediaActive = false; queuesActive = false;
     for (const provider of mediaProviders) {
       ++mediaSerial[provider]; ++mediaStatusSerial[provider];
       mediaReading[provider]?.abort(); mediaStatusReading[provider]?.abort(); mediaSaving[provider]?.abort();
       delete mediaReading[provider]; delete mediaStatusReading[provider]; delete mediaSaving[provider];
+    }
+    for (const provider of queueProviders) {
+      ++queueSerial[provider]; ++queueStatusSerial[provider];
+      queueReading[provider]?.abort(); queueStatusReading[provider]?.abort(); queueSaving[provider]?.abort();
+      delete queueReading[provider]; delete queueStatusReading[provider]; delete queueSaving[provider];
     }
     if (timer) clearTimeout(timer);
     timer = undefined;
@@ -237,7 +306,7 @@ export function workspace(binding: string) {
   function schedule(): void {
     if (timer) clearTimeout(timer);
     if (!disposed && !terminal && state().phase === 'ready' && state().notificationSave !== 'uncertain' && state().layoutSave !== 'uncertain' && document.visibilityState === 'visible') {
-      timer = setTimeout(() => { timer = undefined; ageMedia(); void read(); }, 15000);
+      timer = setTimeout(() => { timer = undefined; ageMedia(); ageQueues(); void read(); }, 15000);
     }
   }
   async function request(path: string, controller: AbortController, body?: unknown): Promise<{ status: number; value?: unknown }> {
@@ -246,7 +315,7 @@ export function workspace(binding: string) {
     try {
       const response = await fetch(path, {
         method: body ? 'PUT' : 'GET', credentials: 'same-origin', cache: 'no-store', redirect: 'error', signal: controller.signal,
-        headers: { 'X-Reborn-Product': PRODUCT, 'X-Reborn-Contract': CONTRACT, 'X-CSRF-Token': binding, ...(path === '/api/workspace/guide' ? { 'X-Reborn-Guide': 'media-v1' } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
+        headers: { 'X-Reborn-Product': PRODUCT, 'X-Reborn-Contract': CONTRACT, 'X-CSRF-Token': binding, ...(path === '/api/workspace/guide' ? { 'X-Reborn-Guide': 'queues-v1' } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
         body: body ? JSON.stringify(body) : undefined,
       });
       const value: unknown = response.ok ? await response.json() : undefined;
@@ -329,6 +398,12 @@ export function workspace(binding: string) {
         for (const provider of mediaProviders) {
           const pending = state().media[provider].observation;
           if (pending?.error === 'checking' && !mediaReading[provider] && !mediaSaving[provider]) void loadMedia(provider, pending.offset);
+        }
+      }
+      if (queuesActive && state().snapshot?.account.role === 'owner') {
+        for (const provider of queueProviders) {
+          const pending = state().queues[provider].observation;
+          if (pending?.error === 'checking' && !queueReading[provider] && !queueSaving[provider] && !queueStatusReading[provider]) void loadQueues(provider, pending.offset);
         }
       }
       schedule();
@@ -735,6 +810,126 @@ export function workspace(binding: string) {
       if (!disposed && current === epoch && currentScope(captured) && mediaSaving[provider] === controller) setMedia(provider, { phase: 'error', save: 'uncertain', message: 'The save may have completed. Check the connection state before entering credentials again.' }, true);
     } finally { if (mediaSaving[provider] === controller) delete mediaSaving[provider]; }
   }
+  function ageQueues(): void {
+    const current = state();
+    if (disposed || terminal || current.phase !== 'ready') return;
+    const at = Math.floor(Date.now() / 1000);
+    let changed = false;
+    const queues = { ...current.queues };
+    for (const provider of queueProviders) {
+      const observation = queues[provider].observation;
+      if (!observation) continue;
+      const aged = agedQueueObservation(observation, at);
+      if (aged !== observation) { changed = true; queues[provider] = { ...queues[provider], observation: aged }; }
+    }
+    // Reuse the existing tick for held presentation only; no successful sample
+    // is polled again just because its collection age changed.
+    if (changed) model.set({ ...current, queues });
+  }
+  function setQueue(provider: QueueProvider, value: QueueState, flush = false): void {
+    const update = () => model.update(m => ({ ...m, queues: { ...m.queues, [provider]: value } }));
+    if (flush) flushSync(update); else update();
+  }
+  function clearQueueRead(provider: QueueProvider): void {
+    ++queueSerial[provider]; queueReading[provider]?.abort(); delete queueReading[provider];
+  }
+  function closeQueues(): void {
+    queuesActive = false;
+    for (const provider of queueProviders) {
+      clearQueueRead(provider); ++queueStatusSerial[provider]; queueStatusReading[provider]?.abort(); delete queueStatusReading[provider];
+      const prior = state().queues[provider], savingNow = !!queueSaving[provider];
+      queueSaving[provider]?.abort(); delete queueSaving[provider];
+      setQueue(provider, { ...emptyQueue(), save: savingNow ? 'uncertain' : prior.save, message: savingNow ? 'The save may have completed. Check the connection state before another change.' : prior.save === 'uncertain' || prior.save === 'conflict' ? prior.message : '' }, true);
+    }
+  }
+  async function checkQueues(provider: QueueProvider): Promise<void> {
+    const captured = ownerSnapshot(); if (!captured || queueSaving[provider]) return;
+    queuesActive = true;
+    clearQueueRead(provider); queueStatusReading[provider]?.abort();
+    const controller = new AbortController(); queueStatusReading[provider] = controller;
+    const serial = ++queueStatusSerial[provider], current = epoch, prior = state().queues[provider];
+    setQueue(provider, { ...prior, phase: 'loading', observation: undefined, message: 'Checking the current enrollment…' }, true);
+    try {
+      const response = await request(`/api/owner/queues/${provider}`, controller);
+      if (disposed || !queuesActive || controller.signal.aborted || serial !== queueStatusSerial[provider] || current !== epoch || !currentScope(captured)) return;
+      if (document.visibilityState !== 'visible') { invalidate('Workspace hidden. Checking access on return.'); return; }
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      const value = response.value;
+      if (response.status !== 200 || !record(value) || !decimal(value.revision) || typeof value.configured !== 'boolean' || value.profile !== queueProfiles[provider]) throw new Error('Queue enrollment unavailable');
+      const existing = state().queues[provider].status;
+      if (existing && (BigInt(value.revision) < BigInt(existing.revision) || (value.revision === existing.revision && value.configured !== existing.configured))) throw new Error('Older enrollment reply');
+      const offset = value.configured && existing?.revision === value.revision ? prior.offset : 0;
+      setQueue(provider, { phase: 'ready', offset, status: { revision: value.revision, configured: value.configured, profile: value.profile as string }, save: 'idle', message: value.configured ? 'Enrollment checked. Check observations when you want a provider sample.' : 'No connection is enrolled.' }, true);
+    } catch {
+      if (!disposed && queuesActive && serial === queueStatusSerial[provider] && current === epoch && currentScope(captured)) {
+        setQueue(provider, { ...state().queues[provider], phase: 'error', observation: undefined, message: 'The connection state could not be checked. Retry deliberately before entering credentials.' }, true);
+      }
+    } finally { if (queueStatusReading[provider] === controller) delete queueStatusReading[provider]; }
+  }
+  async function openQueues(): Promise<void> {
+    if (!ownerSnapshot()) return;
+    queuesActive = true;
+    // Opening this private view checks status only. It does not enroll access or
+    // contact a provider until the owner explicitly asks for observations.
+    await Promise.all(queueProviders.map(provider => checkQueues(provider)));
+  }
+  async function loadQueues(provider: QueueProvider, offset = state().queues[provider].offset): Promise<void> {
+    const captured = ownerSnapshot(); if (!captured || !mediaOffset(offset) || queueSaving[provider]) return;
+    queuesActive = true;
+    clearQueueRead(provider);
+    const controller = new AbortController(); queueReading[provider] = controller;
+    const serial = queueSerial[provider], current = epoch, prior = state().queues[provider];
+    setQueue(provider, { ...prior, offset, phase: 'loading', observation: undefined, message: 'Checking queue observations…' }, true);
+    try {
+      const response = await request(`/api/workspace/queues/${provider}?offset=${offset}`, controller);
+      if (disposed || !queuesActive || controller.signal.aborted || serial !== queueSerial[provider] || current !== epoch || !currentScope(captured)) return;
+      if (document.visibilityState !== 'visible') { invalidate('Workspace hidden. Checking access on return.'); return; }
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      if (response.status === 409) {
+        clearQueueRead(provider);
+        setQueue(provider, { ...emptyQueue(), phase: 'error', save: prior.save, message: 'Enrollment changed. Check the connection state before reading its new scope.' }, true); return;
+      }
+      if (response.status !== 200) throw new Error('Queues unavailable');
+      if (!scoped(response.value, captured)) { invalidate('Your account scope changed. Open a fresh workspace.', true); return; }
+      if (response.value.provider !== provider) throw new Error('Wrong queue provider');
+      const observation = queueObservation(response.value.observation, provider, offset), status = state().queues[provider].status;
+      if (status && (BigInt(observation.revision) < BigInt(status.revision) || (observation.revision === status.revision && observation.configured !== status.configured))) throw new Error('Older queue scope');
+      if (status?.revision !== observation.revision) { ++queueStatusSerial[provider]; queueStatusReading[provider]?.abort(); delete queueStatusReading[provider]; }
+      const message = !observation.configured ? 'No connection is enrolled.'
+        : observation.error === 'checking' ? 'A sample is being collected. Displayed rows, if any, retain their earlier collection time.'
+        : observation.error === 'page_moved' ? 'The provider moved this page as its queue changed. Reload the first page deliberately.'
+        : observation.error === 'unsupported_profile' ? 'This provider does not match the supported API profile. Review the enrolled version and address.'
+        : observation.error === 'denied' ? 'The provider denied access. Review deliberate key enrollment.'
+        : observation.error === 'rate_limited' ? 'The provider limited requests. Try again deliberately later.'
+        : observation.error ? 'Queue observations are unavailable. Unknown values stay unknown.'
+        : observation.complete ? 'Queue observations checked.' : 'An incomplete sample is available; unreported values stay unknown.';
+      setQueue(provider, { phase: 'ready', offset, status: { revision: observation.revision, configured: observation.configured, profile: observation.profile }, observation, save: state().queues[provider].save, message }, true);
+    } catch {
+      if (!disposed && queuesActive && serial === queueSerial[provider] && current === epoch && currentScope(captured)) setQueue(provider, { ...state().queues[provider], phase: 'error', observation: undefined, message: 'Queue observations could not be checked. Retry deliberately; your private note is unchanged.' }, true);
+    } finally { if (queueReading[provider] === controller) delete queueReading[provider]; }
+  }
+  async function saveQueues(provider: QueueProvider, base: string, connection: QueueEnrollment | null): Promise<void> {
+    const captured = ownerSnapshot(), prior = state().queues[provider];
+    if (!captured || queueSaving[provider] || prior.phase !== 'ready' || prior.save !== 'idle' || prior.status?.revision !== base || !decimal(base)) return;
+    queuesActive = true;
+    clearQueueRead(provider); ++queueStatusSerial[provider]; queueStatusReading[provider]?.abort(); delete queueStatusReading[provider];
+    const controller = new AbortController(); queueSaving[provider] = controller;
+    const current = epoch;
+    setQueue(provider, { ...prior, observation: undefined, save: 'saving', message: connection ? 'Saving the deliberately enrolled connection…' : 'Removing the connection…' }, true);
+    try {
+      const response = await request(`/api/owner/queues/${provider}`, controller, { base_revision: base, connection });
+      if (disposed || !queuesActive || controller.signal.aborted || current !== epoch || !currentScope(captured) || queueSaving[provider] !== controller) return;
+      if (document.visibilityState !== 'visible') { invalidate('Workspace hidden. Checking access on return.'); return; }
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      if (response.status === 409) { setQueue(provider, { ...emptyQueue(), phase: 'error', save: 'conflict', message: 'The connection changed elsewhere. Check its current state before enrolling again.' }, true); return; }
+      if ([400, 413, 429].includes(response.status)) { setQueue(provider, { ...prior, observation: undefined, save: 'idle', message: 'Connection not accepted. Review the root HTTPS address, supported version, certificate and broad-access acknowledgement.' }, true); return; }
+      const value = response.value;
+      if (response.status !== 200 || !record(value) || !decimal(value.revision, true) || BigInt(value.revision) !== BigInt(base) + 1n || value.configured !== (connection !== null) || value.profile !== queueProfiles[provider]) throw new Error('Uncertain queue save');
+      setQueue(provider, { phase: 'ready', offset: 0, status: { revision: value.revision, configured: value.configured as boolean, profile: value.profile as string }, save: 'idle', message: connection ? 'Connection saved. Check its observations.' : 'Connection removed.' }, true);
+    } catch {
+      if (!disposed && queuesActive && current === epoch && currentScope(captured) && queueSaving[provider] === controller) setQueue(provider, { ...state().queues[provider], phase: 'error', observation: undefined, save: 'uncertain', message: 'The save may have completed. Check the connection state before entering credentials again.' }, true);
+    } finally { if (queueSaving[provider] === controller) delete queueSaving[provider]; }
+  }
   function signOut(): void {
     removeDraft(); invalidate('Signing out…', true);
     try { channel?.postMessage({ kind: 'auth-changed' }); } catch { /* No optional feature blocks native submission. */ }
@@ -760,5 +955,5 @@ export function workspace(binding: string) {
       document.removeEventListener('visibilitychange', visibility);
     };
   }
-  return { model, start, edit, recover, resolve, save, signOut, check: () => read(true), editService, pins, activity, markNotification, beginLayout, moveLayout, toggleLayout, resetLayout, cancelLayout, resolveLayout, saveLayout, checkLayout: () => read(true), loadGuide, observations, openMedia, closeMedia, checkMedia, loadMedia, saveMedia };
+  return { model, start, edit, recover, resolve, save, signOut, check: () => read(true), editService, pins, activity, markNotification, beginLayout, moveLayout, toggleLayout, resetLayout, cancelLayout, resolveLayout, saveLayout, checkLayout: () => read(true), loadGuide, observations, openMedia, closeMedia, checkMedia, loadMedia, saveMedia, openQueues, closeQueues, checkQueues, loadQueues, saveQueues };
 }

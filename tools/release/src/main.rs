@@ -47,7 +47,7 @@ impl Manifest {
             || self.ordinal == 0
             || self.channel != "accepted"
             || self.contract != "reborn-workspace-v1"
-            || !(4..=10).contains(&self.database_schema)
+            || !(4..=11).contains(&self.database_schema)
             || !digest(&self.commit, 40)
             || !digest(&self.tree, 40)
             || !digest(&self.binary_sha256, 64)
@@ -59,7 +59,7 @@ impl Manifest {
             || !digest(&self.qualification_execution_sha256, 64)
             || self.ci_run == 0
             || self.assets.is_empty()
-            || self.assets.len() > 16
+            || self.assets.len() > 18
             || self.assets.iter().any(|v| !digest(v, 64))
         {
             return Err("invalid release manifest");

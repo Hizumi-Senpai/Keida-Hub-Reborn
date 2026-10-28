@@ -784,3 +784,25 @@ textarea::placeholder {
 .media-ack { display: flex; align-items: flex-start; gap: .65rem; line-height: 1.5; margin: .7rem 0; }
 .media-ack input { flex: 0 0 auto; margin-top: .25rem; }
 @media(max-width:600px) { .media-sample { grid-template-columns: 1fr; gap: .15rem; } .media-sample dd { margin-bottom: .55rem; } .media-actions .button { width: 100%; } .media-table th,.media-table td { padding: .6rem .35rem; } }
+
+.queues-view,.queue-providers { display: grid; gap: 1.4rem; min-width: 0; }
+.queue-provider { min-width: 0; }
+.queue-actions { flex-wrap: wrap; }
+.queue-sample { display: grid; grid-template-columns: minmax(5rem, 8rem) 1fr; gap: .4rem 1rem; font-size: .9rem; }
+.queue-sample dt { color: var(--muted); }
+.queue-sample dd { margin: 0; overflow-wrap: anywhere; }
+.queue-table-scroll { max-width: 100%; overflow-x: auto; }
+.queue-table { width: 100%; min-width: 40rem; border-collapse: collapse; text-align: left; font-size: .92rem; }
+.queue-table caption { text-align: left; font-weight: 650; padding: .7rem 0; }
+.queue-table th,.queue-table td { padding: .75rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+.queue-table td:first-child { min-width: 10rem; }
+.queue-table small { display: block; color: var(--muted); margin-top: .3rem; }
+.queue-pagination { align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.queue-enrollment { margin: 1.3rem 0; border-top: 1px solid var(--line); padding-top: 1rem; }
+.queue-enrollment summary { cursor: pointer; font-weight: 650; }
+.queue-enrollment form { display: grid; gap: .55rem; margin-top: 1rem; }
+.queue-enrollment input:not([type=checkbox]),.queue-enrollment textarea { width: 100%; box-sizing: border-box; }
+.queue-enrollment .button { justify-self: start; margin-top: .5rem; }
+.queue-ack { display: flex; align-items: flex-start; gap: .65rem; line-height: 1.5; margin: .7rem 0; }
+.queue-ack input { flex: 0 0 auto; margin-top: .25rem; }
+@media(max-width:600px) { .queue-sample { grid-template-columns: 1fr; gap: .15rem; } .queue-sample dd { margin-bottom: .55rem; } .queue-actions .button { width: 100%; } .queue-table th,.queue-table td { padding: .6rem .35rem; } .queue-enrollment .button { width: 100%; } }

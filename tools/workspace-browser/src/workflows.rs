@@ -247,6 +247,524 @@ async fn media_error(b: &Browser, name: &'static str, expected: &str) -> Check<(
         tokio::time::sleep(Duration::from_millis(80)).await;
     }
 }
+async fn queue_form(
+    b: &Browser,
+    provider: &reborn_crafty_fixture::queues::Queues,
+    name: &'static str,
+) -> Check<u64> {
+    use reborn_crafty_fixture::queues as q;
+    check(
+        matches!(name, "sonarr" | "radarr" | "qbittorrent"),
+        "closed queue fixture provider",
+    )?;
+    b.wait("const s=document.querySelector('[data-queue-provider='+arguments[0]+']');return !!s && /^(0|[1-9][0-9]*)$/.test(s.dataset.queueRevision) && !s.querySelector('.queue-save').disabled;",json!([name])).await?;
+    if b.evaluate("return document.querySelector('[data-queue-provider='+arguments[0]+'] details.queue-enrollment').open;",json!([name])).await? != true {
+        b.click(&format!("[data-queue-provider={name}] details.queue-enrollment > summary")).await?;
+    }
+    let revision = b.evaluate("return document.querySelector('[data-queue-provider='+arguments[0]+']').dataset.queueRevision;",json!([name])).await?.as_str().and_then(|s|s.parse::<u64>().ok()).ok_or("canonical queue enrollment revision")?;
+    b.fill(&format!("#queue-{name}-endpoint"), &provider.origin)
+        .await?;
+    b.fill(&format!("#queue-{name}-token"), q::TOKEN).await?;
+    b.fill(&format!("#queue-{name}-ca"), &provider.ca).await?;
+    if b.evaluate(
+        "return document.querySelector('#queue-'+arguments[0]+'-ack').checked;",
+        json!([name]),
+    )
+    .await?
+        == true
+    {
+        b.click(&format!("#queue-{name}-ack")).await?;
+    }
+    check(b.evaluate("const s=document.querySelector('[data-queue-provider='+arguments[0]+']');return !s.querySelector('form').checkValidity() && document.querySelector('#queue-'+arguments[0]+'-ack').validity.valueMissing;",json!([name])).await? == true,"native queue form requires deliberate broad-key acknowledgement")?;
+    b.click(&format!("#queue-{name}-ack")).await?;
+    check(b.evaluate("return document.querySelector('[data-queue-provider='+arguments[0]+'] form').checkValidity();",json!([name])).await? == true,"native queue enrollment accepts the actual HTTPS fixture only after acknowledgement")?;
+    Ok(revision)
+}
+
+async fn queue_enroll(
+    b: &Browser,
+    provider: &reborn_crafty_fixture::queues::Queues,
+    name: &'static str,
+) -> Check<()> {
+    let revision = queue_form(b, provider, name).await?;
+    b.click(&format!("[data-queue-provider={name}] .queue-save"))
+        .await?;
+    b.wait("const s=document.querySelector('[data-queue-provider='+arguments[0]+']');return s?.dataset.queueRevision===arguments[1] && s.dataset.queueConfigured==='true' && s.querySelectorAll('[data-queue-item]').length===0 && ['endpoint','token','ca'].every(field=>document.querySelector('#queue-'+arguments[0]+'-'+field).value==='') && !document.querySelector('#queue-'+arguments[0]+'-ack').checked;",json!([name,(revision+1).to_string()])).await
+}
+
+async fn queue_refresh(b: &Browser, name: &'static str) -> Check<()> {
+    // A completed "checking" reply disables duplicate reads. The real Check
+    // state control clears it without changing the requested page or polling a
+    // provider; the subsequent native observation click retrieves the flight.
+    b.wait("return document.querySelector('[data-queue-provider='+arguments[0]+']')?.dataset.queuePhase!=='loading';",json!([name])).await?;
+    if b.evaluate("return document.querySelector('[data-queue-provider='+arguments[0]+']')?.dataset.queueError==='checking';",json!([name])).await? == true {
+        let offset=b.evaluate("return document.querySelector('[data-queue-provider='+arguments[0]+']').dataset.queueOffset;",json!([name])).await?;
+        b.click(&format!("[data-queue-provider={name}] .queue-check-state")).await?;
+        b.wait("const s=document.querySelector('[data-queue-provider='+arguments[0]+']');return s?.dataset.queuePhase==='ready' && s.dataset.queueOffset===arguments[1] && !s.querySelector('.queue-check-observations').disabled;",json!([name,offset])).await?;
+    }
+    b.wait("const button=document.querySelector('[data-queue-provider='+arguments[0]+'] .queue-check-observations');return !!button && !button.disabled;",json!([name])).await?;
+    b.click(&format!(
+        "[data-queue-provider={name}] .queue-check-observations"
+    ))
+    .await
+}
+
+async fn queue_result(
+    b: &Browser,
+    name: &'static str,
+    offset: u32,
+    rows: usize,
+    error: &'static str,
+) -> Check<()> {
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(8);
+    loop {
+        if b.evaluate("const s=document.querySelector('[data-queue-provider='+arguments[0]+']');return s?.dataset.queuePhase==='ready' && s.dataset.queueOffset===String(arguments[1]) && s.dataset.queueError===arguments[3] && s.querySelectorAll('[data-queue-item]').length===arguments[2];",json!([name,offset,rows,error])).await? == true { return Ok(()); }
+        check(
+            tokio::time::Instant::now() < deadline,
+            "bounded user-driven queue observation completion",
+        )?;
+        if b.evaluate("const s=document.querySelector('[data-queue-provider='+arguments[0]+']');return s?.dataset.queuePhase==='ready' && s.dataset.queueError==='checking';",json!([name])).await? == true {
+            queue_refresh(b,name).await?;
+        }
+        tokio::time::sleep(Duration::from_millis(100)).await;
+    }
+}
+
+async fn queue_observed(b: &Browser, name: &'static str, rows: usize) -> Check<()> {
+    queue_refresh(b, name).await?;
+    queue_result(b, name, 0, rows, "").await
+}
+
+async fn owner_queue_observations() -> Check<()> {
+    use reborn_crafty_fixture::queues as q;
+    step("queues phase01 actual native owner enrollment and fixed navigation");
+    let f = Fixture::new().await?;
+    let sonarr = q::Queues::start("sonarr")
+        .await
+        .map_err(|_| "start fictional sonarr TLS fixture")?;
+    let radarr = q::Queues::start("radarr")
+        .await
+        .map_err(|_| "start fictional radarr TLS fixture")?;
+    let qbit = q::Queues::start("qbittorrent")
+        .await
+        .map_err(|_| "start fictional qbittorrent TLS fixture")?;
+    let mut owner = f.browser(true).await?;
+    claim(&f, &owner).await?;
+    let (member, password) = f.enroll_member(&owner).await?;
+    workspace(&f, &owner).await?;
+    note(&owner).await?;
+    let draft = "A private unfinished note while I inspect queue observations";
+    owner.fill("#workspace-note", draft).await?;
+    check(owner.evaluate("window.__queueEditor=document.querySelector('#workspace-note');window.__queueEditor.setSelectionRange(4,13);return window.__queueEditor.value===arguments[0];",json!([draft])).await? == true,"retain actual private editor before Queues")?;
+    owner.click(".main-nav button:nth-child(10)").await?;
+    owner.wait("return ['sonarr','radarr','qbittorrent'].every(name=>document.querySelector('[data-queue-provider='+name+']')?.dataset.queuePhase==='ready');",json!([])).await?;
+    check(owner.evaluate("const nav=[...document.querySelectorAll('.main-nav button')],labels=['Home','Workspace note','Connections','Services','Activity','Notifications','Integrations','Roadmap','Media','Queues'];return nav.length===labels.length && labels.every((label,index)=>nav[index].textContent.includes(label)) && document.querySelectorAll('[data-home-panel]').length===3;",json!([])).await? == true,"Queues is tenth, retaining every earlier navigation position and three Home panels")?;
+    check(
+        sonarr.requests().is_empty() && radarr.requests().is_empty() && qbit.requests().is_empty(),
+        "opening owner queue status does not collect provider observations",
+    )?;
+    for (name, provider) in [
+        ("sonarr", &sonarr),
+        ("radarr", &radarr),
+        ("qbittorrent", &qbit),
+    ] {
+        queue_enroll(&owner, provider, name).await?;
+    }
+    check(
+        sonarr.requests().is_empty() && radarr.requests().is_empty() && qbit.requests().is_empty(),
+        "native queue enrollment stores configuration without implicit provider collection",
+    )?;
+    for name in ["sonarr", "radarr", "qbittorrent"] {
+        queue_observed(&owner, name, 2).await?;
+    }
+    check(owner.evaluate("return ['sonarr','radarr'].every((name,index)=>{const s=document.querySelector('[data-queue-provider='+name+']'),rows=s.querySelectorAll('[data-queue-item]');return s.dataset.queueComplete==='true' && s.dataset.queueTotal==='2' && rows[0].cells[0].textContent.includes(index===0?'Queued series':'Queued movie') && rows[0].cells[3].textContent==='25.00%' && rows[1].cells[0].firstChild.textContent===(index===0?'Delayed series':'Delayed movie') && rows[1].cells[1].textContent==='delay' && rows[1].cells[2].textContent==='importPending' && rows[1].cells[3].textContent==='Not reported';});",json!([])).await? == true,"Arr includes delayed pending rows and distinguishes unknown progress from downloaded-byte progress")?;
+    check(owner.evaluate("const s=document.querySelector('[data-queue-provider=qbittorrent]'),rows=s.querySelectorAll('[data-queue-item]');return s.dataset.queueComplete==='false' && s.dataset.queueTotal==='' && s.textContent.includes('Provider total is not supplied.') && rows[0].cells[0].textContent.includes('Fixture transfer') && rows[0].cells[1].textContent==='checkingDL' && rows[0].cells[2].textContent==='25.00%' && !rows[0].textContent.includes('90.00%') && rows[0].cells[3].textContent==='1,000 B' && rows[0].cells[4].textContent==='128 B/s' && rows[0].cells[5].textContent==='0 B/s' && rows[1].cells[0].textContent.includes('Metadata pending') && rows[1].cells[1].textContent==='metaDL' && rows[1].cells[2].textContent==='Not reported' && rows[1].cells[3].textContent==='Not reported';",json!([])).await? == true,"qBittorrent wanted-byte progress is25 percent despite raw checking progress0.9, with metadata-pending size/progress unknown and no invented total")?;
+    check(owner.evaluate("const values=[document.body.textContent,...[...document.querySelectorAll('input,textarea')].map(e=>e.value),...Object.values(localStorage),...Object.values(sessionStorage)];return arguments[0].every(c=>values.every(v=>!v.includes(c)));",json!([[q::TOKEN,&sonarr.origin,&radarr.origin,&qbit.origin,&sonarr.ca,&radarr.ca,&qbit.ca,"PRIVATE_QUEUE","/private/queue-","queue-private.invalid","198.51.100.88","0000000000000000000000000000000000000001","0000000000000000000000000000000000000002"]])).await? == true,"queue credentials, addresses, CA, raw IDs and unprojected provider identity never reach DOM or storage")?;
+
+    step("queues phase02 existing scheduler ages held samples without provider IO");
+    let age_requests = [
+        sonarr.requests().len(),
+        radarr.requests().len(),
+        qbit.requests().len(),
+    ];
+    let age_reads = f.reads();
+    check(owner.evaluate("return ['sonarr','radarr','qbittorrent'].every(name=>document.querySelector('[data-queue-provider='+name+']').dataset.queueFreshness==='fresh');",json!([])).await? == true,"all held queue samples start recent")?;
+    check(owner.evaluate("if(window.__queueRealNow)return false;window.__queueRealNow=Date.now;Date.now=()=>window.__queueRealNow()+100000;return true;",json!([])).await? == true,"install explicit100-second browser-only queue aging fault")?;
+    let aged=async {
+        let deadline=tokio::time::Instant::now()+Duration::from_secs(20);
+        loop {
+            if owner.evaluate("return ['sonarr','radarr','qbittorrent'].every(name=>{const s=document.querySelector('[data-queue-provider='+name+']');return s.dataset.queueFreshness==='stale' && s.textContent.includes('Stale collection') && !s.textContent.includes('Recent collection') && s.querySelectorAll('[data-queue-item]').length===2});",json!([])).await? == true && f.reads()>age_reads { break; }
+            check(tokio::time::Instant::now()<deadline,"existing scheduler ages visible queue samples without explicit refresh")?;
+            tokio::time::sleep(Duration::from_millis(100)).await;
+        }
+        check([sonarr.requests().len(),radarr.requests().len(),qbit.requests().len()]==age_requests,"local queue aging creates no provider IO")?;
+        check(f.reads()<=age_reads+2,"queue aging reuses the single existing snapshot scheduler")
+    }.await;
+    let restored=owner.evaluate("if(!window.__queueRealNow)return false;Date.now=window.__queueRealNow;delete window.__queueRealNow;return true;",json!([])).await;
+    aged?;
+    check(
+        restored? == true,
+        "restore browser clock after queue aging fault",
+    )?;
+    for name in ["sonarr", "radarr", "qbittorrent"] {
+        queue_observed(&owner, name, 2).await?;
+    }
+    check(
+        [
+            sonarr.requests().len(),
+            radarr.requests().len(),
+            qbit.requests().len(),
+        ] == age_requests,
+        "completed current-revision reads use cache without new version or queue requests",
+    )?;
+
+    let read_writes = f.writes();
+    check(owner.evaluate("window.__queueForm=document.querySelector('[data-queue-provider=radarr] form');return !!window.__queueForm;",json!([])).await? == true,"retain unrelated native queue enrollment form identity")?;
+    owner
+        .fill(
+            "#queue-radarr-token",
+            "Unsubmitted fictional draft kept during a cached read",
+        )
+        .await?;
+    queue_observed(&owner, "sonarr", 2).await?;
+    let focus_checks = owner.evaluate("const button=document.querySelector('[data-queue-provider=sonarr] .queue-check-observations');return [window.__queueForm===document.querySelector('[data-queue-provider=radarr] form'),document.querySelector('#queue-radarr-token').value===arguments[0],document.activeElement===button,document.activeElement===document.body || document.activeElement===document.documentElement,document.hasFocus(),!!button && !button.disabled];",json!(["Unsubmitted fictional draft kept during a cached read"])).await?;
+    let focus_checks = focus_checks
+        .as_array()
+        .filter(|checks| checks.len() == 6)
+        .ok_or("closed queue focus diagnostic shape")?;
+    for (name, value) in [
+        "same_form",
+        "draft_matches",
+        "focus_on_pressed",
+        "focus_neutral",
+        "document_focused",
+        "button_enabled",
+    ]
+    .iter()
+    .zip(focus_checks)
+    {
+        let value = value
+            .as_bool()
+            .ok_or("closed queue focus diagnostic boolean")?;
+        println!("RUST_BROWSER_QUEUE_FOCUS {name}={value}");
+    }
+    check(owner.evaluate("return window.__queueForm===document.querySelector('[data-queue-provider=radarr] form') && document.querySelector('#queue-radarr-token').value===arguments[0] && document.activeElement===document.querySelector('[data-queue-provider=sonarr] .queue-check-observations');",json!(["Unsubmitted fictional draft kept during a cached read"])).await? == true,"completed queue reads preserve unrelated native form drafts and the actual pressed button focus")?;
+    check(
+        f.writes() == read_writes,
+        "completed queue reads cannot save private notes, layout or provider enrollment",
+    )?;
+    owner
+        .click("[data-queue-provider=radarr] .queue-check-state")
+        .await?;
+    owner.wait("const s=document.querySelector('[data-queue-provider=radarr]');return s.dataset.queuePhase==='ready' && document.querySelector('#queue-radarr-token').value==='';",json!([])).await?;
+
+    step("queues phase03 actual bounded12/12/2 pages, lookahead and first60 truncation");
+    for (name, provider, title) in [
+        ("sonarr", &sonarr, "Queued series"),
+        ("qbittorrent", &qbit, "Fixture transfer"),
+    ] {
+        provider.mode(q::MANY);
+        queue_enroll(&owner, provider, name).await?;
+        queue_observed(&owner, name, 12).await?;
+        let writes = f.writes();
+        for (offset, rows, first) in [
+            (12, 12, format!("{title} 13")),
+            (24, 2, format!("{title} 25")),
+        ] {
+            owner
+                .click(&format!("[data-queue-provider={name}] .queue-next"))
+                .await?;
+            queue_result(&owner, name, offset, rows, "").await?;
+            check(owner.evaluate("const s=document.querySelector('[data-queue-provider='+arguments[0]+']'),rows=s.querySelectorAll('[data-queue-item]');return s.dataset.queueComplete==='true' && s.dataset.queueTotal===(arguments[0]==='qbittorrent'?'':'26') && rows[0].cells[0].firstChild.textContent===arguments[1] && [...rows].every((row,index)=>row.cells[0].firstChild.textContent===arguments[2]+' '+(arguments[3]+index+1)) && !s.querySelector('.queue-previous').disabled && (arguments[3]!==24 || s.querySelector('.queue-next').disabled) && (arguments[0]!=='qbittorrent' || s.dataset.queueTotal==='');",json!([name,first,title,offset])).await? == true,"queue paging replaces rows with the requested offset, final partial page has no continuation, qBit never invents a total")?;
+        }
+        for (offset, rows) in [(12, 12), (0, 12)] {
+            owner
+                .click(&format!("[data-queue-provider={name}] .queue-previous"))
+                .await?;
+            queue_result(&owner, name, offset, rows, "").await?;
+        }
+        check(
+            f.writes() == writes,
+            "queue paging cannot save notes, layout or enrollment",
+        )?;
+    }
+    qbit.mode(q::TRUNCATED);
+    queue_enroll(&owner, &qbit, "qbittorrent").await?;
+    queue_observed(&owner, "qbittorrent", 12).await?;
+    for offset in [12, 24, 36, 48] {
+        owner
+            .click("[data-queue-provider=qbittorrent] .queue-next")
+            .await?;
+        queue_result(&owner, "qbittorrent", offset, 12, "").await?;
+    }
+    check(owner.evaluate("const s=document.querySelector('[data-queue-provider=qbittorrent]');return s.dataset.queueOffset==='48' && s.dataset.queueTotal==='' && s.dataset.queueTruncated==='true' && s.dataset.queueComplete==='true' && [...s.querySelectorAll('[data-queue-item]')].every((row,index)=>row.cells[0].firstChild.textContent==='Fixture transfer '+(49+index)) && s.querySelector('.queue-next').disabled && s.textContent.includes('More items exist beyond this bounded view.');",json!([])).await? == true,"qBit13th-row lookahead reports truncation at first60 without manufacturing a total or sixth page")?;
+
+    step(
+        "queues phase04 moving Arr page remains at requested offset until explicit first-page reload",
+    );
+    sonarr.mode(q::MANY);
+    queue_enroll(&owner, &sonarr, "sonarr").await?;
+    queue_observed(&owner, "sonarr", 12).await?;
+    sonarr.mode(q::PAGE_MOVED);
+    owner
+        .click("[data-queue-provider=sonarr] .queue-next")
+        .await?;
+    queue_result(&owner, "sonarr", 12, 0, "page_moved").await?;
+    check(owner.evaluate("const s=document.querySelector('[data-queue-provider=sonarr]');return s.dataset.queueOffset==='12' && s.dataset.queueComplete==='false' && s.dataset.queueTotal==='' && s.querySelector('.queue-next').disabled && s.querySelector('.queue-previous').disabled && s.textContent.includes('The provider moved this page as its queue changed.') && !!s.querySelector('.queue-first-page');",json!([])).await? == true,"page_moved clears obsolete rows and total, preserves requested page and offers explicit reload")?;
+    let moved_requests = sonarr.requests().len();
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    check(
+        sonarr.requests().len() == moved_requests,
+        "page_moved cannot automatically reset or retry provider pages",
+    )?;
+    owner
+        .click("[data-queue-provider=sonarr] .queue-first-page")
+        .await?;
+    queue_result(&owner, "sonarr", 0, 12, "").await?;
+
+    step("queues phase05 missing, empty, malformed and admitted versions stay distinct");
+    for (name, provider) in [("radarr", &radarr), ("qbittorrent", &qbit)] {
+        provider.mode(q::MISSING);
+        queue_enroll(&owner, provider, name).await?;
+        queue_observed(&owner, name, 2).await?;
+        check(owner.evaluate("const s=document.querySelector('[data-queue-provider='+arguments[0]+']'),row=s.querySelector('[data-queue-item]'),cells=row.cells;return s.dataset.queueComplete==='false' && cells[0].textContent.includes('Title unavailable') && cells[1].textContent==='Unknown' && [...cells].filter(c=>c.textContent==='Not reported').length>=(arguments[0]==='qbittorrent'?4:2) && !row.textContent.includes('0.00%') && !row.textContent.includes('25.00%') && (arguments[0]==='qbittorrent' || cells[2].textContent==='Unknown');",json!([name])).await? == true,"missing applicable fields remain unknown and incomplete while usable queue rows survive")?;
+        provider.mode(q::EMPTY);
+        queue_enroll(&owner, provider, name).await?;
+        queue_observed(&owner, name, 0).await?;
+        check(owner.evaluate("const s=document.querySelector('[data-queue-provider='+arguments[0]+']');return s.dataset.queueComplete==='true' && s.dataset.queueError==='' && s.textContent.includes(arguments[0]==='qbittorrent'?'No transfers were reported on this page.':'No queue or pending items were reported on this page.') && s.dataset.queueTotal===(arguments[0]==='qbittorrent'?'':'0');",json!([name])).await? == true,"valid empty query is observed empty while qBit total remains unknown")?;
+    }
+    radarr.mode(q::MALFORMED);
+    queue_enroll(&owner, &radarr, "radarr").await?;
+    queue_refresh(&owner, "radarr").await?;
+    queue_result(&owner, "radarr", 0, 0, "malformed").await?;
+    check(owner.evaluate("const s=document.querySelector('[data-queue-provider=radarr]');return s.dataset.queueComplete==='false' && !s.textContent.includes('No queue or pending items were reported on this page.');",json!([])).await? == true,"malformed provider data cannot masquerade as empty success")?;
+    qbit.mode(q::CHECKING_PROGRESS);
+    queue_enroll(&owner, &qbit, "qbittorrent").await?;
+    queue_observed(&owner, "qbittorrent", 2).await?;
+    check(owner.evaluate("const rows=document.querySelectorAll('[data-queue-provider=qbittorrent] [data-queue-item]');return rows[0].cells[1].textContent==='stoppedDL' && rows[1].cells[1].textContent==='moving' && [...rows].every(row=>row.cells[2].textContent==='25.00%' && !row.textContent.includes('90.00%'));",json!([])).await? == true,"stopped and moving qBit states still derive wanted-byte progress independently of raw0.9")?;
+    qbit.mode(q::QBIT52);
+    queue_enroll(&owner, &qbit, "qbittorrent").await?;
+    queue_observed(&owner, "qbittorrent", 2).await?;
+    qbit.mode(q::UNSUPPORTED);
+    queue_enroll(&owner, &qbit, "qbittorrent").await?;
+    let unsupported_start = qbit.requests().len();
+    queue_refresh(&owner, "qbittorrent").await?;
+    queue_result(&owner, "qbittorrent", 0, 0, "unsupported_profile").await?;
+    check(
+        qbit.requests().len() == unsupported_start + 1
+            && qbit.requests()[unsupported_start..]
+                .iter()
+                .all(|(method, path)| method == "GET" && path == "/api/v2/app/version"),
+        "unsupported qBit version stops before any transfer or authentication fallback request",
+    )?;
+
+    step("queues phase06 persistent note, secret navigation clearing and desktop390px Axe");
+    owner
+        .fill("#queue-radarr-token", "Unsubmitted fictional queue key")
+        .await?;
+    note(&owner).await?;
+    body(&owner, draft).await?;
+    check(owner.evaluate("return window.__queueEditor===document.querySelector('#workspace-note') && window.__queueEditor.selectionStart===4 && window.__queueEditor.selectionEnd===13;",json!([])).await? == true,"queue reads preserve actual note component, private draft and selection")?;
+    owner.click(".main-nav button:nth-child(10)").await?;
+    owner.wait("return ['sonarr','radarr','qbittorrent'].every(name=>document.querySelector('[data-queue-provider='+name+']')?.dataset.queuePhase==='ready');",json!([])).await?;
+    check(owner.evaluate("return ['sonarr','radarr','qbittorrent'].every(name=>['endpoint','token','ca'].every(field=>document.querySelector('#queue-'+name+'-'+field).value===''));",json!([])).await? == true,"leaving queue view clears all unsubmitted native secret fields")?;
+    qbit.mode(q::NORMAL);
+    queue_enroll(&owner, &qbit, "qbittorrent").await?;
+    queue_observed(&owner, "qbittorrent", 2).await?;
+    accessibility(&owner).await?;
+    owner.mobile().await?;
+    check(
+        owner
+            .evaluate(
+                "return innerWidth===390 && document.documentElement.scrollWidth<=innerWidth+1;",
+                json!([]),
+            )
+            .await?
+            == true,
+        "queue native forms and bounded tables reflow at390px without horizontal overflow",
+    )?;
+    accessibility(&owner).await?;
+
+    step("queues phase07 committed lost enrollment reply reconciles by GET without PUT replay");
+    radarr.mode(q::NORMAL);
+    let revision = queue_form(&owner, &radarr, "radarr").await?;
+    let writes = f.writes();
+    let lost = f.hold("/api/owner/queues/radarr");
+    owner
+        .click("[data-queue-provider=radarr] .queue-save")
+        .await?;
+    tokio::time::timeout(Duration::from_secs(3), lost.entered.notified())
+        .await
+        .map_err(|_| "actual committed queue enrollment response hold")?;
+    owner.wait("const s=document.querySelector('[data-queue-provider=radarr]');return s.dataset.queueSave==='uncertain' && s.querySelector('.queue-save').disabled && ['endpoint','token','ca'].every(field=>document.querySelector('#queue-radarr-'+field).value==='');",json!([])).await?;
+    lost.release.notify_one();
+    owner
+        .click("[data-queue-provider=radarr] .queue-check-state")
+        .await?;
+    owner.wait("const s=document.querySelector('[data-queue-provider=radarr]');return s.dataset.queueSave==='idle' && s.dataset.queueConfigured==='true' && s.dataset.queueRevision===arguments[0];",json!([(revision+1).to_string()])).await?;
+    check(
+        f.writes() == writes + 1,
+        "lost committed queue reply is reconciled by safe status GET with exactly one PUT and no replay",
+    )?;
+
+    step("queues phase08 removed enrollment rejects an actual late authorized payload");
+    sonarr.mode(q::NORMAL);
+    queue_enroll(&owner, &sonarr, "sonarr").await?;
+    queue_observed(&owner, "sonarr", 2).await?;
+    queue_observed(&owner, "radarr", 2).await?;
+    let mut other = f.browser(true).await?;
+    sign_in(&f, &other, &f.username, &f.password).await?;
+    workspace(&f, &other).await?;
+    other.click(".main-nav button:nth-child(10)").await?;
+    other.wait("return document.querySelector('[data-queue-provider=sonarr]')?.dataset.queueConfigured==='true' && document.querySelector('[data-queue-provider=sonarr]')?.dataset.queuePhase==='ready';",json!([])).await?;
+    owner
+        .fill(
+            "#queue-sonarr-token",
+            "Private unsubmitted key before authority removal",
+        )
+        .await?;
+    let held = f.hold("/api/workspace/queues/sonarr");
+    queue_refresh(&owner, "sonarr").await?;
+    tokio::time::timeout(Duration::from_secs(3), held.entered.notified())
+        .await
+        .map_err(|_| "actual authorized old Sonarr payload hold")?;
+    other
+        .click("[data-queue-provider=sonarr] .queue-remove")
+        .await?;
+    other.wait("return document.querySelector('[data-queue-provider=sonarr]')?.dataset.queueConfigured==='false';",json!([])).await?;
+    owner
+        .click("[data-queue-provider=sonarr] .queue-check-state")
+        .await?;
+    owner.wait("const s=document.querySelector('[data-queue-provider=sonarr]');return s.dataset.queueConfigured==='false' && s.querySelectorAll('[data-queue-item]').length===0 && document.querySelector('#queue-sonarr-token').value==='' && !s.textContent.includes('Queued series');",json!([])).await?;
+    held.release.notify_one();
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    check(owner.evaluate("const s=document.querySelector('[data-queue-provider=sonarr]');return s.dataset.queueConfigured==='false' && s.querySelectorAll('[data-queue-item]').length===0 && !s.textContent.includes('Queued series');",json!([])).await? == true,"released obsolete enrollment payload cannot rehydrate cleared queue rows")?;
+
+    step("queues phase09 revoke all clears private payload and member inherits no provider access");
+    let held = f.hold("/api/workspace/queues/radarr");
+    queue_refresh(&owner, "radarr").await?;
+    tokio::time::timeout(Duration::from_secs(3), held.entered.notified())
+        .await
+        .map_err(|_| "actual authorized Radarr payload hold before revocation")?;
+    f.revoke_all(&other).await?;
+    owner
+        .evaluate(
+            "window.dispatchEvent(new Event('focus'));return true;",
+            json!([]),
+        )
+        .await?;
+    cleared(&owner, &f.username).await?;
+    check(owner.evaluate("return document.querySelectorAll('[data-queue-item]').length===0 && !document.body.textContent.includes('Queued movie') && [...document.querySelectorAll('[id^=queue-][id$=-token],[id^=queue-][id$=-ca],[id^=queue-][id$=-endpoint]')].every(e=>e.value==='');",json!([])).await? == true,"queue authority loss synchronously clears all private rows, endpoint, key and CA fields")?;
+    held.release.notify_one();
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    cleared(&owner, "Queued movie").await?;
+    other.close().await?;
+    drop(other);
+    let requests = [
+        sonarr.requests().len(),
+        radarr.requests().len(),
+        qbit.requests().len(),
+    ];
+    sign_in(&f, &owner, &member, &password).await?;
+    workspace(&f, &owner).await?;
+    owner.click(".main-nav button:nth-child(10)").await?;
+    check(owner.evaluate("const s=document.querySelector('.queues-view');return !!s && !!s.querySelector('.queue-owner-only') && !s.querySelector('form') && !s.querySelector('[data-queue-item]') && !document.body.textContent.includes('Queued movie');",json!([])).await? == true,"member Queues explains owner-only access and has no inherited payload or enrollment forms")?;
+    check(
+        [
+            sonarr.requests().len(),
+            radarr.requests().len(),
+            qbit.requests().len(),
+        ] == requests,
+        "member queue navigation cannot trigger privileged provider work",
+    )?;
+    for (name, provider) in [
+        ("sonarr", &sonarr),
+        ("radarr", &radarr),
+        ("qbittorrent", &qbit),
+    ] {
+        check(
+            provider.requests().iter().all(|(method, path)| {
+                if method != "GET" || path.contains(q::TOKEN) {
+                    return false;
+                }
+                let Ok(parsed) = url::Url::parse(&format!("https://fixture.invalid{path}")) else {
+                    return false;
+                };
+                let pairs = parsed
+                    .query_pairs()
+                    .map(|(k, v)| (k.into_owned(), v.into_owned()))
+                    .collect::<Vec<_>>();
+                let query = pairs
+                    .iter()
+                    .cloned()
+                    .collect::<std::collections::BTreeMap<_, _>>();
+                if query.len() != pairs.len() {
+                    return false;
+                }
+                let version_path = if name == "qbittorrent" {
+                    "/api/v2/app/version"
+                } else {
+                    "/api/v3/system/status"
+                };
+                if parsed.path() == version_path {
+                    return query.is_empty();
+                }
+                let expected: &[(&str, &str)] = match name {
+                    "sonarr" => &[
+                        ("pageSize", "12"),
+                        ("sortKey", "added"),
+                        ("sortDirection", "descending"),
+                        ("includeUnknownSeriesItems", "false"),
+                        ("includeSeries", "false"),
+                        ("includeEpisode", "false"),
+                    ],
+                    "radarr" => &[
+                        ("pageSize", "12"),
+                        ("sortKey", "added"),
+                        ("sortDirection", "descending"),
+                        ("includeUnknownMovieItems", "false"),
+                        ("includeMovie", "false"),
+                    ],
+                    "qbittorrent" => &[
+                        ("filter", "all"),
+                        ("sort", "added_on"),
+                        ("reverse", "true"),
+                        ("limit", "13"),
+                    ],
+                    _ => return false,
+                };
+                let (queue_path, page_key, allowed): (&str, &str, &[&str]) =
+                    if name == "qbittorrent" {
+                        (
+                            "/api/v2/torrents/info",
+                            "offset",
+                            &["0", "12", "24", "36", "48"],
+                        )
+                    } else {
+                        ("/api/v3/queue", "page", &["1", "2", "3", "4", "5"])
+                    };
+                parsed.path() == queue_path
+                    && query.len() == expected.len() + 1
+                    && expected
+                        .iter()
+                        .all(|(key, value)| query.get(*key).is_some_and(|v| v == value))
+                    && query
+                        .get(page_key)
+                        .is_some_and(|v| allowed.contains(&v.as_str()))
+            }),
+            "the whole real queue browser workflow issues only fixed allowlisted GET observations with no key in URL",
+        )?;
+    }
+    accessibility(&owner).await?;
+    owner.close().await?;
+    drop(owner);
+    f.close().await?;
+    println!(
+        "PASS Rust browser: owner-only queues, native acknowledgement/enrollment, wanted-byte progress, bounded paging, page_moved, unknown/empty, aging, secret clearing and authority-safe lost replies"
+    );
+    Ok(())
+}
+
 async fn lifetime_and_recovery() -> Check<()> {
     step("native TLS, persistent editor, one poll owner and deliberate draft recovery");
     let f = Fixture::new().await?;
@@ -580,8 +1098,9 @@ pub async fn run() -> Check<()> {
     personal_home_layout().await?;
     catalog_roadmap_and_observations().await?;
     owner_media_observations().await?;
+    owner_queue_observations().await?;
     println!(
-        "Rust workspace browser acceptance: 12 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+        "Rust workspace browser acceptance: 13 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
     );
     Ok(())
 }
@@ -607,7 +1126,7 @@ async fn owner_media_observations() -> Check<()> {
     step("media phase01f navigate-Media-and-wait-native-fields");
     owner.click(".main-nav button:nth-child(9)").await?;
     owner.wait("return !!document.querySelector('#jellyfin-token') && !!document.querySelector('#seerr-token');", json!([])).await?;
-    check(owner.evaluate("const nav=[...document.querySelectorAll('.main-nav button')],labels=['Home','Workspace note','Connections','Services','Activity','Notifications','Integrations','Roadmap','Media'];return nav.length===labels.length && labels.every((label,index)=>nav[index].textContent.includes(label)) && document.querySelectorAll('[data-home-panel]').length===3;", json!([])).await? == true, "Media is appended after eight existing navigation positions without adding Home panels")?;
+    check(owner.evaluate("const nav=[...document.querySelectorAll('.main-nav button')],labels=['Home','Workspace note','Connections','Services','Activity','Notifications','Integrations','Roadmap','Media','Queues'];return nav.length===labels.length && labels.every((label,index)=>nav[index].textContent.includes(label)) && document.querySelectorAll('[data-home-panel]').length===3;", json!([])).await? == true, "Media retains its ninth position before Queues without adding Home panels")?;
     step("media phase01g enroll-Jellyfin");
     media_enroll(&owner, &provider, "jellyfin").await?;
     step("media phase01h enroll-Seerr");
@@ -873,7 +1392,8 @@ async fn catalog_roadmap_and_observations() -> Check<()> {
     step("catalog phase02 available and planned entries");
     owner.click(".main-nav button:nth-child(7)").await?;
     owner.wait("return document.querySelectorAll('.catalog-list > article[data-integration-id]').length===7",json!([])).await?;
-    check(owner.evaluate("const cards=[...document.querySelectorAll('.catalog-list > article[data-integration-id]')];return cards.length===7 && cards.map(c=>c.dataset.integrationId).join(',')==='crafty,jellyfin,seerr,sonarr,radarr,qbittorrent,discord' && cards.slice(0,3).every(c=>c.querySelectorAll('button').length===1) && cards.slice(3).every(c=>c.querySelectorAll('button').length===0 && c.textContent.includes('Planned')) && cards.slice(1,3).every(c=>c.textContent.toLowerCase().includes('owner'))",json!([])).await?==true,"catalog distinguishes Crafty and owner-only media observations from four planned integrations")?;
+    check(owner.evaluate("const cards=[...document.querySelectorAll('.catalog-list > article[data-integration-id]')],names=['Crafty','Jellyfin','Seerr','Sonarr','Radarr','qBittorrent','Discord'],actions=['Open Connections','Open Media','Open Media','Open Queues','Open Queues','Open Queues'];return cards.length===7 && cards.map(c=>c.dataset.integrationId).join(',')==='crafty,jellyfin,seerr,sonarr,radarr,qbittorrent,discord' && cards.every((c,index)=>c.querySelector('h2')?.textContent===names[index]) && cards.slice(0,6).every((c,index)=>c.querySelector('.integration-status')?.dataset.status==='available' && c.querySelectorAll('button').length===1 && c.querySelector('button').textContent===actions[index]) && cards.slice(6).every(c=>c.querySelector('.integration-status')?.dataset.status==='planned' && c.querySelectorAll('button').length===0 && c.textContent.includes('Planned')) && cards.slice(1,6).every(c=>c.textContent.toLowerCase().includes('owner'))",json!([])).await?==true,"current queues-v1 catalog exposes Crafty, owner-only Media and Queues as six available integrations while Discord remains planned")?;
+    check(owner.evaluate("const expected=[['sonarr',['Sonarr 4','queue and pending-release rows','root-mounted HTTPS','management access','reported byte progress','separate import state','unknown or partial data','not downloader health or playback availability']],['radarr',['Radarr 6','queue and pending-release rows','root-mounted HTTPS','management access','reported byte progress','separate import state','unknown or partial data','managing downloads is separate work']],['qbittorrent',['qBittorrent 5.2 and 5.3','all-state transfer observations','global Bearer API key','root-mounted HTTPS','password, Basic and cookie login modes are outside this profile','selected-byte progress','without files, peers, trackers, paths or download links','Provider total stays unknown','no download controls']]];return expected.every(([id,capabilities])=>{const card=document.querySelector('.catalog-list [data-integration-id='+id+']');return !!card && capabilities.every(capability=>card.textContent.includes(capability));});",json!([])).await?==true,"queue catalog states the exact supported major/version families, deliberate broad-key HTTPS access, bounded observation capabilities and unknown-total/privacy limits")?;
     step("catalog phase03 desktop catalog accessibility");
     accessibility(&owner).await?;
     step("catalog phase04 dated Roadmap and retained editor");

@@ -9,6 +9,7 @@ mod layout;
 mod media;
 mod notifications;
 mod observations;
+mod queues;
 pub mod store;
 #[cfg(test)]
 mod store_contracts;
@@ -54,6 +55,7 @@ pub struct Service {
     origin: Arc<str>,
     observer: Arc<crate::providers::crafty::Observer>,
     media_observer: Arc<crate::providers::media::Observer>,
+    queue_observer: Arc<crate::providers::queues::Observer>,
 }
 
 impl Service {
@@ -67,6 +69,7 @@ impl Service {
             origin: origin.into(),
             observer: Arc::new(crate::providers::crafty::Observer::new()),
             media_observer: Arc::new(crate::providers::media::Observer::new()),
+            queue_observer: Arc::new(crate::providers::queues::Observer::new()),
         })
     }
 
@@ -116,6 +119,7 @@ pub fn router(service: Service) -> Router {
         .merge(notifications::router(service.clone()))
         .merge(layout::router(service.clone()))
         .merge(media::router(service.clone()))
+        .merge(queues::router(service.clone()))
         .merge(observations::router(service.clone()))
         .merge(workspace::router(service))
 }
