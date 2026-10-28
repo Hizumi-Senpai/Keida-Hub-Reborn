@@ -4892,7 +4892,7 @@ function ks(e, t) {
 			revision: c.revision,
 			profile: c.profile,
 			offset: t,
-			disabledBlur: !1
+			wasDisabled: !1
 		} : void 0, o()(e, t);
 	}
 	zi(() => {
@@ -4904,7 +4904,7 @@ function ks(e, t) {
 			return;
 		}
 		let s = o === document.body || o === document.documentElement;
-		!s && o !== e.element ? _() : e.element.disabled ? s && (e.disabledBlur = !0) : (_(), e.disabledBlur && s && e.element.getClientRects().length > 0 && e.element.focus({ preventScroll: !0 }));
+		!s && o !== e.element ? _() : e.element.disabled ? e.wasDisabled = !0 : e.wasDisabled && (_(), s && e.element.getClientRects().length > 0 && e.element.focus({ preventScroll: !0 }));
 	}), Ii(() => {
 		let e = (e) => {
 			g && e.target !== g.element && e.target !== document.body && e.target !== document.documentElement && _();

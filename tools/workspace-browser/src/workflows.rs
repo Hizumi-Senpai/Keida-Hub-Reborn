@@ -427,6 +427,27 @@ async fn owner_queue_observations() -> Check<()> {
         )
         .await?;
     queue_observed(&owner, "sonarr", 2).await?;
+    let focus_checks = owner.evaluate("const button=document.querySelector('[data-queue-provider=sonarr] .queue-check-observations');return [window.__queueForm===document.querySelector('[data-queue-provider=radarr] form'),document.querySelector('#queue-radarr-token').value===arguments[0],document.activeElement===button,document.activeElement===document.body || document.activeElement===document.documentElement,document.hasFocus(),!!button && !button.disabled];",json!(["Unsubmitted fictional draft kept during a cached read"])).await?;
+    let focus_checks = focus_checks
+        .as_array()
+        .filter(|checks| checks.len() == 6)
+        .ok_or("closed queue focus diagnostic shape")?;
+    for (name, value) in [
+        "same_form",
+        "draft_matches",
+        "focus_on_pressed",
+        "focus_neutral",
+        "document_focused",
+        "button_enabled",
+    ]
+    .iter()
+    .zip(focus_checks)
+    {
+        let value = value
+            .as_bool()
+            .ok_or("closed queue focus diagnostic boolean")?;
+        println!("RUST_BROWSER_QUEUE_FOCUS {name}={value}");
+    }
     check(owner.evaluate("return window.__queueForm===document.querySelector('[data-queue-provider=radarr] form') && document.querySelector('#queue-radarr-token').value===arguments[0] && document.activeElement===document.querySelector('[data-queue-provider=sonarr] .queue-check-observations');",json!(["Unsubmitted fictional draft kept during a cached read"])).await? == true,"completed queue reads preserve unrelated native form drafts and the actual pressed button focus")?;
     check(
         f.writes() == read_writes,

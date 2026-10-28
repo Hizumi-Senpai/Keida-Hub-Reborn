@@ -15,12 +15,12 @@
   const progress = (value: number | null) => value === null ? 'Not reported' : `${(value / 100).toFixed(2)}%`;
   let forms: Partial<Record<QueueProvider, HTMLFormElement>> = {};
   let enrollmentScopes: Partial<Record<QueueProvider, string>> = {};
-  let observationFocus: { element: HTMLButtonElement; provider: QueueProvider; revision: string; profile: string; offset: number; disabledBlur: boolean } | undefined;
+  let observationFocus: { element: HTMLButtonElement; provider: QueueProvider; revision: string; profile: string; offset: number; wasDisabled: boolean } | undefined;
   function cancelObservationFocus(): void { observationFocus = undefined; }
   function observe(provider: QueueProvider, offset: number, event: MouseEvent): void {
     const element = event.currentTarget, status = state[provider].status;
     observationFocus = active && owner && status?.configured && element instanceof HTMLButtonElement && document.activeElement === element
-      ? { element, provider, revision: status.revision, profile: status.profile, offset, disabledBlur: false } : undefined;
+      ? { element, provider, revision: status.revision, profile: status.profile, offset, wasDisabled: false } : undefined;
     void load(provider, offset);
   }
   afterUpdate(() => {
@@ -32,11 +32,13 @@
         || document.visibilityState !== 'visible' || !document.hasFocus()) { cancelObservationFocus(); return; }
     const neutral = element === document.body || element === document.documentElement;
     if (!neutral && element !== prior.element) { cancelObservationFocus(); return; }
-    // Chromium can blur a native button as loading disables it. Keep that one
-    // focus request through a completed checking reply until the control is usable.
-    if (prior.element.disabled) { if (neutral) prior.disabledBlur = true; return; }
+    // A synchronous flush can render the focus request before the loading props.
+    // Wait for the native disabled state, even if its blur has not happened yet,
+    // then keep the request through checking until the control is usable again.
+    if (prior.element.disabled) { prior.wasDisabled = true; return; }
+    if (!prior.wasDisabled) return;
     cancelObservationFocus();
-    if (prior.disabledBlur && neutral && prior.element.getClientRects().length > 0) prior.element.focus({ preventScroll: true });
+    if (neutral && prior.element.getClientRects().length > 0) prior.element.focus({ preventScroll: true });
   });
   onMount(() => {
     const moved = (event: FocusEvent) => {
