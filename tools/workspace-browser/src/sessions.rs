@@ -396,6 +396,7 @@ pub(super) async fn run() -> Check<()> {
     step(
         "sessions phase04 private DOM lifecycle, late replies and fresh same-account session binding",
     );
+    step("sessions phase04a hold before leaving the active view");
     let read_count = f.session_reads();
     let leaving = f.hold("/api/workspace/sessions");
     a.click(".sessions-check").await?;
@@ -406,6 +407,7 @@ pub(super) async fn run() -> Check<()> {
     tokio::time::sleep(Duration::from_millis(120)).await;
     no_rows(&a).await?;
     check(a.evaluate("const b=document.querySelector('[data-open-sessions]');b.focus();return document.activeElement===b;",json!([])).await?==true,"account session-review action receives actual keyboard focus")?;
+    step("sessions phase04b await keyboard reopening a fresh scoped list");
     a.keys("\u{e007}").await?;
     loaded(&a).await?;
     check(
@@ -424,6 +426,7 @@ pub(super) async fn run() -> Check<()> {
         json!([]),
     )
     .await?;
+    step("sessions phase04c await a fresh list after focus returns");
     loaded(&a).await?;
     check(a.evaluate("window.dispatchEvent(new PageTransitionEvent('pagehide'));return !document.querySelector('[data-session-row]');",json!([])).await?==true,"pagehide retires the actual private session DOM synchronously")?;
     a.evaluate(
@@ -431,7 +434,9 @@ pub(super) async fn run() -> Check<()> {
         json!([]),
     )
     .await?;
+    step("sessions phase04d await a fresh list after pageshow");
     loaded(&a).await?;
+    step("sessions phase04e hold the prior session list before native rotation");
     let same_account = f.hold("/api/workspace/sessions");
     a.click(".sessions-check").await?;
     held(&same_account).await?;
@@ -447,9 +452,11 @@ pub(super) async fn run() -> Check<()> {
     same_account.release.notify_one();
     a.switch(&first).await?;
     no_rows(&a).await?;
-    a.navigate(&format!("{}/workspace#sessions", f.origin))
-        .await?;
-    loaded(&a).await?;
+    // View changes do not rewrite this document's #sessions fragment. A
+    // same-URL WebDriver navigation can remain in its deliberately blocked
+    // controller; use the actual native Account link for a document boundary.
+    step("sessions phase04f await the native Account bridge after session rotation");
+    native_account(&f, &a, &reconciled.ids(), &f.username).await?;
     let fresh = snapshot(&f, &a).await?;
     original.same_authority(&fresh)?;
     check(
@@ -472,9 +479,8 @@ pub(super) async fn run() -> Check<()> {
     switched.release.notify_one();
     a.switch(&first).await?;
     no_rows(&a).await?;
-    a.navigate(&format!("{}/workspace#sessions", f.origin))
-        .await?;
-    loaded(&a).await?;
+    step("sessions phase05a await the native Account bridge after account switch");
+    native_account(&f, &a, &fresh.ids(), &member).await?;
     let member_fresh = snapshot(&f, &a).await?;
     check(
         member_fresh.account == member_initial.account
