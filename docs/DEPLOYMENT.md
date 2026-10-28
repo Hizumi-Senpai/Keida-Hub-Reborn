@@ -1,7 +1,7 @@
 # Keida Hub Reborn deployment contract
 
-Status: deployment contract. Reborn0.1.13 is installed and qualified under the
-[exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6455928640).
+Status: deployment contract. Reborn0.1.14 is installed and qualified under the
+[exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6458999115).
 The bootstrap examples below preserve their planning context; they are not current
 resource ownership or installation state. Refresh issue1 and actual host identity.
 
@@ -189,8 +189,18 @@ health/HTTP evidence, public/browser result and terminal success/failure/recover
 state. Record limitations and pending owner acceptance explicitly. Preserve prior
 checkpoint history rather than replacing it with an unqualified success claim.
 
-Current installed baseline: **Reborn0.1.13**, as recorded in the
-[exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6455928640).
+Current installed baseline: **Reborn0.1.14/schema11**, as recorded in the
+[exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6458999115).
 Source/fixture CI, publication, installation, loaded owner browser, real provider
 acceptance and separately authorized host-updater activation remain distinct.
 Refresh issue1 before any host action; bootstrap examples above are historical.
+
+
+The current frozen implementation slice is [M4.1 identity](M4_IDENTITY.md), issue25.
+Documentation-only accepted source0.1.15 did not publish/install a new image.
+Expected next application source0.1.16/schema12 must qualify against actual live14
+schema11, including16 prior domain relations, all four sequence states/is_called,
+ledger1–11, accepted Discord application/link/newer-write preservation and loss
+of unfinished RAM attempts. A schema11 binary must reject12; no old backup may
+silently erase newer writes. Dedicated real Discord enrollment/callback log privacy
+and owner browser acceptance remain distinct from synthetic protocol fixtures.

@@ -16,14 +16,15 @@ use std::{
     process::{Child, Command, Stdio},
     sync::{
         Arc, Mutex,
-        atomic::{AtomicU64, Ordering},
+        atomic::{AtomicBool, AtomicU64, Ordering},
     },
     time::Duration,
 };
 use tokio::{
+    io::{AsyncReadExt, AsyncWriteExt},
     net::{TcpListener, TcpStream},
-    sync::Notify,
-    task::JoinHandle,
+    sync::{Notify, Semaphore},
+    task::{JoinHandle, JoinSet},
 };
 use tokio_rustls::{
     TlsAcceptor,
@@ -33,6 +34,81 @@ use tokio_rustls::{
     },
     server::TlsStream,
 };
+
+/// A closed test transport: Chrome can CONNECT only the synthetic Discord
+/// authority. It never resolves a destination or forwards arbitrary requests.
+struct DiscordProxy {
+    address: SocketAddr,
+    task: JoinHandle<()>,
+}
+impl DiscordProxy {
+    async fn start(target: SocketAddr) -> Check<Self> {
+        check(
+            target.ip().is_loopback() && target.port() != 0,
+            "closed Discord proxy target",
+        )?;
+        let listener = TcpListener::bind("127.0.0.1:0")
+            .await
+            .map_err(|_| "Discord browser proxy listener")?;
+        let address = listener
+            .local_addr()
+            .map_err(|_| "Discord browser proxy address")?;
+        let task = tokio::spawn(async move {
+            let permits = Arc::new(Semaphore::new(16));
+            let mut bridges = JoinSet::new();
+            loop {
+                tokio::select! {
+                    accepted = listener.accept() => {
+                        let Ok((mut incoming, _)) = accepted else { break };
+                        let Ok(permit) = permits.clone().try_acquire_owned() else { continue };
+                        bridges.spawn(async move {
+                            let _permit = permit;
+                            let _ = tokio::time::timeout(Duration::from_secs(15), async {
+                                let mut preface = Vec::with_capacity(1024);
+                                tokio::time::timeout(Duration::from_secs(2), async {
+                                    while preface.len() < 4096 && !preface.ends_with(b"\r\n\r\n") {
+                                        preface.push(incoming.read_u8().await.map_err(|_| ())?);
+                                    }
+                                    Ok::<(), ()>(())
+                                }).await.map_err(|_| ())??;
+                                let preface = std::str::from_utf8(&preface).map_err(|_| ())?;
+                                if !preface.ends_with("\r\n\r\n") || !preface.is_ascii() {
+                                    return Err(());
+                                }
+                                let mut lines = preface.split("\r\n");
+                                if lines.next() != Some("CONNECT discord.com:443 HTTP/1.1") {
+                                    return Err(());
+                                }
+                                let mut host = false;
+                                for line in lines.filter(|line| !line.is_empty()) {
+                                    let Some((name, value)) = line.split_once(':') else { return Err(()) };
+                                    if name.eq_ignore_ascii_case("host") {
+                                        if host || value.trim() != "discord.com:443" { return Err(()) }
+                                        host = true;
+                                    } else if !["proxy-connection", "user-agent"].iter().any(|allowed| name.eq_ignore_ascii_case(allowed)) {
+                                        return Err(());
+                                    }
+                                }
+                                if !host { return Err(()) }
+                                let mut upstream = TcpStream::connect(target).await.map_err(|_| ())?;
+                                incoming.write_all(b"HTTP/1.1 200 Connection Established\r\n\r\n").await.map_err(|_| ())?;
+                                tokio::io::copy_bidirectional(&mut incoming, &mut upstream).await.map_err(|_| ())?;
+                                Ok::<(), ()>(())
+                            }).await;
+                        });
+                    }
+                    _ = bridges.join_next(), if !bridges.is_empty() => {}
+                }
+            }
+        });
+        Ok(Self { address, task })
+    }
+}
+impl Drop for DiscordProxy {
+    fn drop(&mut self) {
+        self.task.abort();
+    }
+}
 
 pub struct Hold {
     pub entered: Notify,
@@ -44,6 +120,8 @@ struct Proxy {
     hold: Mutex<Option<(&'static str, Arc<Hold>)>>,
     pub reads: AtomicU64,
     pub writes: AtomicU64,
+    callback_requests: AtomicU64,
+    callback_auth_cookie: AtomicBool,
 }
 struct TlsListener {
     listener: TcpListener,
@@ -71,6 +149,20 @@ impl axum::serve::Listener for TlsListener {
 }
 async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response {
     let path = request.uri().path();
+    if path == "/account/discord/callback" {
+        proxy.callback_requests.fetch_add(1, Ordering::SeqCst);
+        if request
+            .headers()
+            .get("cookie")
+            .and_then(|v| v.to_str().ok())
+            .is_some_and(|v| {
+                v.split(';')
+                    .any(|v| v.trim().starts_with("__Host-keida-reborn-session="))
+            })
+        {
+            proxy.callback_auth_cookie.store(true, Ordering::SeqCst);
+        }
+    }
     if path == "/api/workspace/snapshot" {
         proxy.reads.fetch_add(1, Ordering::SeqCst);
     }
@@ -81,6 +173,10 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
             | "/api/workspace/pins"
             | "/api/workspace/notifications/read"
             | "/api/workspace/layout"
+            | "/api/workspace/discord/review"
+            | "/api/workspace/discord/confirm"
+            | "/api/workspace/discord/cancel"
+            | "/api/workspace/discord/unlink"
     ) || (request.method() == axum::http::Method::PUT
         && matches!(
             path,
@@ -89,6 +185,7 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
                 | "/api/owner/queues/sonarr"
                 | "/api/owner/queues/radarr"
                 | "/api/owner/queues/qbittorrent"
+                | "/api/owner/discord/application"
         ))
     {
         proxy.writes.fetch_add(1, Ordering::SeqCst);
@@ -255,6 +352,8 @@ pub struct Fixture {
     pub username: String,
     pub password: String,
     pub setup: String,
+    pub discord: Option<reborn_crafty_fixture::discord::Discord>,
+    discord_proxy: Option<DiscordProxy>,
     root: PathBuf,
     home: PathBuf,
     admin: String,
@@ -269,6 +368,12 @@ pub struct Fixture {
 }
 impl Fixture {
     pub async fn new() -> Check<Self> {
+        Self::new_inner(false).await
+    }
+    pub async fn with_discord() -> Check<Self> {
+        Self::new_inner(true).await
+    }
+    async fn new_inner(with_discord: bool) -> Check<Self> {
         let admin = std::env::var("REBORN_TEST_DATABASE_URL")
             .map_err(|_| "local PostgreSQL prerequisite missing")?;
         let mut url = url::Url::parse(&admin).map_err(|_| "fixture URL")?;
@@ -298,6 +403,22 @@ impl Fixture {
         private_dir(&root)?;
         let home = root.join("home");
         private_dir(&home)?;
+        let discord = if with_discord {
+            Some(reborn_crafty_fixture::discord::Discord::start().await?)
+        } else {
+            None
+        };
+        let discord_proxy = if let Some(discord) = &discord {
+            Some(DiscordProxy::start(discord.address).await?)
+        } else {
+            None
+        };
+        let discord_ca = root.join("discord-ca.pem");
+        if let Some(discord) = &discord {
+            fs::write(&discord_ca, &discord.ca).map_err(|_| "private Discord fixture CA copy")?;
+            fs::set_permissions(&discord_ca, fs::Permissions::from_mode(0o600))
+                .map_err(|_| "private Discord fixture CA permissions")?;
+        }
         let ca = root.join("ca.crt");
         let ca_key = root.join("ca.key");
         let cert = root.join("server.crt");
@@ -402,6 +523,25 @@ impl Fixture {
                 .to_vec(),
             )
             .await?;
+            if discord.is_some() {
+                tool(
+                    "certutil",
+                    [
+                        "-A",
+                        "-d",
+                        &nss,
+                        "-n",
+                        "Discord private fixture",
+                        "-t",
+                        "C,,",
+                        "-i",
+                        &s(&discord_ca),
+                    ]
+                    .map(str::to_owned)
+                    .to_vec(),
+                )
+                .await?;
+            }
         }
         let certificates = CertificateDer::pem_file_iter(&cert)
             .map_err(|_| "fixture certificate read")?
@@ -499,6 +639,10 @@ impl Fixture {
                     "REBORN_PUBLIC_ORIGIN",
                     "-e",
                     "REBORN_INSTANCE_KEY_FILE",
+                    "-e",
+                    "REBORN_DISCORD_FIXTURE_SOCKET",
+                    "-e",
+                    "REBORN_DISCORD_FIXTURE_CA_FILE",
                     image,
                 ]);
                 cmd
@@ -509,7 +653,13 @@ impl Fixture {
                 .env("DATABASE_URL", &db_url)
                 .env("REBORN_BIND", bind.to_string())
                 .env("REBORN_PUBLIC_ORIGIN", &origin)
-                .env("REBORN_INSTANCE_KEY_FILE", &key);
+                .env("REBORN_INSTANCE_KEY_FILE", &key)
+                .env_remove("REBORN_DISCORD_FIXTURE_SOCKET")
+                .env_remove("REBORN_DISCORD_FIXTURE_CA_FILE");
+            if let Some(discord) = &discord {
+                cmd.env("REBORN_DISCORD_FIXTURE_SOCKET", discord.address.to_string())
+                    .env("REBORN_DISCORD_FIXTURE_CA_FILE", &discord_ca);
+            }
             cmd
         };
         for args in [
@@ -556,6 +706,8 @@ impl Fixture {
             hold: Mutex::new(None),
             reads: AtomicU64::new(0),
             writes: AtomicU64::new(0),
+            callback_requests: AtomicU64::new(0),
+            callback_auth_cookie: AtomicBool::new(false),
         });
         let router = Router::new().fallback(forward).with_state(proxy.clone());
         let server = tokio::spawn(async move {
@@ -584,6 +736,8 @@ impl Fixture {
             username,
             password,
             setup,
+            discord,
+            discord_proxy,
         };
         allocation.armed = false;
         let deadline = tokio::time::Instant::now() + Duration::from_secs(10);
@@ -640,6 +794,10 @@ impl Fixture {
             &self.root.join(format!("profile-{}", random()?)),
             &self.driver,
             &self.chromium,
+            self.discord
+                .as_ref()
+                .zip(self.discord_proxy.as_ref())
+                .map(|(discord, proxy)| (discord.address, proxy.address)),
         )
         .await
     }
@@ -650,6 +808,12 @@ impl Fixture {
         });
         *self.proxy.hold.lock().expect("fixture hold mutex") = Some((path, h.clone()));
         h
+    }
+    pub fn callback_evidence(&self) -> (u64, bool) {
+        (
+            self.proxy.callback_requests.load(Ordering::SeqCst),
+            self.proxy.callback_auth_cookie.load(Ordering::SeqCst),
+        )
     }
     pub fn reads(&self) -> u64 {
         self.proxy.reads.load(Ordering::SeqCst)
@@ -857,5 +1021,51 @@ fn stop_container(cid_file: &Path) {
             .stderr(Stdio::null())
             .status();
         let _ = fs::remove_file(cid_file);
+    }
+}
+
+#[cfg(test)]
+mod discord_proxy_tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn fixed_authority_tunnel_never_forwards_another_destination() {
+        let target = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let proxy = DiscordProxy::start(target.local_addr().unwrap())
+            .await
+            .unwrap();
+        let mut wrong = TcpStream::connect(proxy.address).await.unwrap();
+        wrong
+            .write_all(b"CONNECT other.invalid:443 HTTP/1.1\r\nHost: other.invalid:443\r\n\r\n")
+            .await
+            .unwrap();
+        let mut byte = [0];
+        assert_eq!(
+            tokio::time::timeout(Duration::from_secs(1), wrong.read(&mut byte))
+                .await
+                .unwrap()
+                .unwrap(),
+            0
+        );
+        assert!(
+            tokio::time::timeout(Duration::from_millis(30), target.accept())
+                .await
+                .is_err()
+        );
+
+        let mut allowed = TcpStream::connect(proxy.address).await.unwrap();
+        allowed.write_all(b"CONNECT discord.com:443 HTTP/1.1\r\nHost: discord.com:443\r\nProxy-Connection: keep-alive\r\n\r\n").await.unwrap();
+        let (mut upstream, _) = tokio::time::timeout(Duration::from_secs(1), target.accept())
+            .await
+            .unwrap()
+            .unwrap();
+        let expected = b"HTTP/1.1 200 Connection Established\r\n\r\n";
+        let mut reply = vec![0; expected.len()];
+        allowed.read_exact(&mut reply).await.unwrap();
+        assert_eq!(&reply, expected);
+        upstream.write_all(b"synthetic TLS bytes").await.unwrap();
+        let mut forwarded = [0; 19];
+        allowed.read_exact(&mut forwarded).await.unwrap();
+        assert_eq!(&forwarded, b"synthetic TLS bytes");
     }
 }

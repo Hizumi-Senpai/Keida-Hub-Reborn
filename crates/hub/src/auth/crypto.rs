@@ -41,6 +41,74 @@ pub struct Secrets {
 }
 
 impl Secrets {
+    /// Discord application credentials have a dedicated frame/key/AAD domain.
+    /// Both derived key and authenticated data bind the fixed OAuth profile and
+    /// application revision; this envelope never stores OAuth codes or tokens.
+    pub fn seal_discord_application(
+        &self,
+        revision: i64,
+        plaintext: &[u8],
+    ) -> Result<Vec<u8>, CryptoError> {
+        use ring::aead::{Aad, CHACHA20_POLY1305, LessSafeKey, Nonce, UnboundKey};
+        if revision <= 0 || plaintext.is_empty() || plaintext.len() > 1024 {
+            return Err(CryptoError::Invalid);
+        }
+        let mut salt = [0u8; 32];
+        let mut nonce = [0u8; 12];
+        getrandom::fill(&mut salt).map_err(|_| CryptoError::Unavailable)?;
+        getrandom::fill(&mut nonce).map_err(|_| CryptoError::Unavailable)?;
+        let key = Zeroizing::new(self.mac(&discord_application_key_domain(revision), &salt));
+        let cipher = LessSafeKey::new(
+            UnboundKey::new(&CHACHA20_POLY1305, key.as_ref())
+                .map_err(|_| CryptoError::Unavailable)?,
+        );
+        let mut body = Zeroizing::new(plaintext.to_vec());
+        cipher
+            .seal_in_place_append_tag(
+                Nonce::assume_unique_for_key(nonce),
+                Aad::from(discord_application_aad(revision)),
+                &mut *body,
+            )
+            .map_err(|_| CryptoError::Unavailable)?;
+        let mut out = Vec::with_capacity(45 + body.len());
+        out.push(4);
+        out.extend_from_slice(&salt);
+        out.extend_from_slice(&nonce);
+        out.extend_from_slice(&body);
+        Ok(out)
+    }
+
+    pub fn open_discord_application(
+        &self,
+        revision: i64,
+        sealed: &[u8],
+    ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
+        use ring::aead::{Aad, CHACHA20_POLY1305, LessSafeKey, Nonce, UnboundKey};
+        if revision <= 0 || !(62..=1085).contains(&sealed.len()) || sealed[0] != 4 {
+            return Err(CryptoError::Invalid);
+        }
+        let key =
+            Zeroizing::new(self.mac(&discord_application_key_domain(revision), &sealed[1..33]));
+        let cipher = LessSafeKey::new(
+            UnboundKey::new(&CHACHA20_POLY1305, key.as_ref())
+                .map_err(|_| CryptoError::Unavailable)?,
+        );
+        let nonce: [u8; 12] = sealed[33..45]
+            .try_into()
+            .map_err(|_| CryptoError::Invalid)?;
+        let mut body = Zeroizing::new(sealed[45..].to_vec());
+        let size = cipher
+            .open_in_place(
+                Nonce::assume_unique_for_key(nonce),
+                Aad::from(discord_application_aad(revision)),
+                &mut body,
+            )
+            .map_err(|_| CryptoError::Invalid)?
+            .len();
+        body.truncate(size);
+        Ok(body)
+    }
+
     /// Queue envelopes use a separate format/key/AAD domain and authenticate
     /// the fixed provider, its admitted profile and monotonic enrollment revision.
     pub fn seal_queues(
@@ -400,6 +468,19 @@ fn connection_aad(revision: i64) -> Vec<u8> {
     aad
 }
 
+fn discord_application_key_domain(revision: i64) -> Vec<u8> {
+    let mut domain =
+        b"reborn/discord/application/encryption-key/v1\0discord-identify-v1\0".to_vec();
+    domain.extend_from_slice(&revision.to_be_bytes());
+    domain
+}
+
+fn discord_application_aad(revision: i64) -> Vec<u8> {
+    let mut aad = b"keida-hub-reborn/discord/application/v1\0discord-identify-v1\0".to_vec();
+    aad.extend_from_slice(&revision.to_be_bytes());
+    aad
+}
+
 fn media_key_domain(provider: crate::providers::media::Provider) -> Vec<u8> {
     let mut domain = b"reborn/media/encryption-key/v1\0".to_vec();
     domain.extend_from_slice(provider.as_str().as_bytes());
@@ -701,6 +782,132 @@ mod tests {
         Secrets {
             key: Zeroizing::new([1u8; 32]),
             dummy_phc: Zeroizing::new(String::new()),
+        }
+    }
+
+    #[test]
+    fn discord_application_envelopes_are_bounded_randomized_and_separate_from_other_frames() {
+        use crate::providers::media::Provider::Jellyfin;
+        use crate::providers::queues::Provider::Sonarr;
+
+        let first = form_secrets();
+        let other_key = Secrets {
+            key: Zeroizing::new([2; 32]),
+            dummy_phc: Zeroizing::new(String::new()),
+        };
+        let private =
+            b"{\"client_id\":\"123456789\",\"client_secret\":\"fictional-client-secret\"}";
+        let envelope = first.seal_discord_application(7, private).unwrap();
+        let repeated = first.seal_discord_application(7, private).unwrap();
+        assert_eq!(envelope[0], 4);
+        assert_eq!(envelope.len(), 61 + private.len());
+        assert_ne!(envelope, repeated);
+        assert_ne!(&envelope[1..33], &repeated[1..33]);
+        assert!(!envelope.windows(private.len()).any(|v| v == private));
+        assert_eq!(
+            first
+                .open_discord_application(7, &envelope)
+                .unwrap()
+                .as_slice(),
+            private
+        );
+        assert!(first.open_discord_application(8, &envelope).is_err());
+        assert!(other_key.open_discord_application(7, &envelope).is_err());
+        for position in 0..envelope.len() {
+            let mut bad = envelope.clone();
+            bad[position] ^= 1;
+            assert!(first.open_discord_application(7, &bad).is_err());
+        }
+        for length in 0..envelope.len() {
+            assert!(
+                first
+                    .open_discord_application(7, &envelope[..length])
+                    .is_err()
+            );
+        }
+        for mut foreign in [
+            first.seal_connection(7, private).unwrap(),
+            first.seal_media(Jellyfin, 7, private).unwrap(),
+            first.seal_queues(Sonarr, 7, private).unwrap(),
+        ] {
+            assert!(first.open_discord_application(7, &foreign).is_err());
+            // Even a forged format marker cannot cross the derived-key/AAD
+            // boundary from one of the existing credential categories.
+            foreign[0] = 4;
+            assert!(first.open_discord_application(7, &foreign).is_err());
+        }
+        assert!(first.open_connection(7, &envelope).is_err());
+        assert!(first.open_media(Jellyfin, 7, &envelope).is_err());
+        assert!(first.open_queues(Sonarr, 7, &envelope).is_err());
+        let mut foreign = envelope.clone();
+        foreign[0] = 1;
+        assert!(first.open_connection(7, &foreign).is_err());
+        foreign[0] = 2;
+        assert!(first.open_media(Jellyfin, 7, &foreign).is_err());
+        foreign[0] = 3;
+        assert!(first.open_queues(Sonarr, 7, &foreign).is_err());
+
+        for revision in [0, -1] {
+            assert!(first.seal_discord_application(revision, private).is_err());
+            assert!(first.open_discord_application(revision, &envelope).is_err());
+        }
+        assert!(first.seal_discord_application(1, b"").is_err());
+        assert!(first.seal_discord_application(1, &[0; 1025]).is_err());
+        assert!(first.open_discord_application(1, &[0; 1086]).is_err());
+        for private in [vec![1], vec![2; 1024]] {
+            let envelope = first.seal_discord_application(1, &private).unwrap();
+            assert_eq!(envelope.len(), 61 + private.len());
+            assert_eq!(
+                first
+                    .open_discord_application(1, &envelope)
+                    .unwrap()
+                    .as_slice(),
+                private
+            );
+        }
+    }
+
+    #[test]
+    fn discord_profile_and_revision_are_authenticated_independently_in_key_and_aad() {
+        use ring::aead::{Aad, CHACHA20_POLY1305, LessSafeKey, Nonce, UnboundKey};
+
+        let secrets = form_secrets();
+        let mut foreign_profile_key =
+            b"reborn/discord/application/encryption-key/v1\0discord-identify-v2\0".to_vec();
+        foreign_profile_key.extend_from_slice(&7_i64.to_be_bytes());
+        let mut foreign_profile_aad =
+            b"keida-hub-reborn/discord/application/v1\0discord-identify-v2\0".to_vec();
+        foreign_profile_aad.extend_from_slice(&7_i64.to_be_bytes());
+        for (key_domain, aad) in [
+            (foreign_profile_key, discord_application_aad(7)),
+            (discord_application_key_domain(7), foreign_profile_aad),
+            (
+                discord_application_key_domain(8),
+                discord_application_aad(7),
+            ),
+            (
+                discord_application_key_domain(7),
+                discord_application_aad(8),
+            ),
+        ] {
+            let salt = [7u8; 32];
+            let nonce = [8u8; 12];
+            let key = Zeroizing::new(secrets.mac(&key_domain, &salt));
+            let cipher =
+                LessSafeKey::new(UnboundKey::new(&CHACHA20_POLY1305, key.as_ref()).unwrap());
+            let mut body = Zeroizing::new(b"fictional-application-credentials".to_vec());
+            cipher
+                .seal_in_place_append_tag(
+                    Nonce::assume_unique_for_key(nonce),
+                    Aad::from(aad),
+                    &mut *body,
+                )
+                .unwrap();
+            let mut frame = vec![4];
+            frame.extend_from_slice(&salt);
+            frame.extend_from_slice(&nonce);
+            frame.extend_from_slice(&body);
+            assert!(secrets.open_discord_application(7, &frame).is_err());
         }
     }
 

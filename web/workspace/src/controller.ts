@@ -41,6 +41,16 @@ const queueProviders: QueueProvider[] = ['sonarr', 'radarr', 'qbittorrent'];
 export const queueProfiles: Record<QueueProvider, string> = { sonarr: 'sonarr-v3', radarr: 'radarr-v3', qbittorrent: 'qbittorrent-v2-key' };
 const emptyQueue = (): QueueState => ({ phase: 'idle', offset: 0, save: 'idle', message: '' });
 const emptyQueues = (): Record<QueueProvider, QueueState> => ({ sonarr: emptyQueue(), radarr: emptyQueue(), qbittorrent: emptyQueue() });
+export type DiscordApplication = { client_id: string; client_secret: string; callback_logging_reviewed: boolean };
+export type DiscordIdentity = { id: string; display_name: string };
+export type DiscordValue = {
+  application: { configured: boolean; revision: string; callback_uri: string; profile: 'discord-identify-v1' };
+  link: { revision: string; flow_generation: string; identity: (DiscordIdentity & { verified_at: string }) | null };
+  attempt: { phase: 'none' | 'awaiting_discord' | 'ready_to_review' | 'reviewing' | 'review_ready' | 'cancelled' | 'failed' | 'restart_required'; candidate: DiscordIdentity | null; cleanup: null | 'acknowledged' | 'unconfirmed'; error: string | null };
+};
+export type IdentityState = { phase: 'idle' | 'loading' | 'ready' | 'error'; value?: DiscordValue; save: 'idle' | 'saving' | 'conflict' | 'uncertain'; message: string };
+export type IdentityAction = 'review' | 'confirm' | 'cancel' | 'unlink';
+const emptyIdentity = (): IdentityState => ({ phase: 'idle', save: 'idle', message: '' });
 export type Model = {
   phase: 'checking' | 'ready' | 'paused' | 'blocked'; message: string;
   snapshot?: Snapshot; draft: string; base: string; dirty: boolean;
@@ -50,9 +60,9 @@ export type Model = {
   directorySave: 'idle' | 'saving' | 'conflict' | 'uncertain'; directoryMessage: string;
   layoutDraft?: { base: string; panels: HomePanel[] };
   layoutSave: 'idle' | 'saving' | 'checking-conflict' | 'conflict' | 'uncertain'; layoutMessage: string;
-  guide: GuideState; observations: ObservationState; media: Record<MediaProvider, MediaState>; queues: Record<QueueProvider, QueueState>;
+  guide: GuideState; observations: ObservationState; media: Record<MediaProvider, MediaState>; queues: Record<QueueProvider, QueueState>; identity: IdentityState;
 };
-const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '', layoutSave: 'idle', layoutMessage: '', guide: emptyGuide(), observations: emptyObservations(), media: emptyMedia(), queues: emptyQueues() });
+const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '', layoutSave: 'idle', layoutMessage: '', guide: emptyGuide(), observations: emptyObservations(), media: emptyMedia(), queues: emptyQueues(), identity: emptyIdentity() });
 const record = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const decimal = (v: unknown, positive = false): v is string => typeof v === 'string' && /^(0|[1-9][0-9]{0,18})$/.test(v) && BigInt(v) <= MAX_REVISION && (!positive || v !== '0');
 const text = (v: unknown): v is string => typeof v === 'string' && !v.includes('\0') && new TextEncoder().encode(v).length <= 4096;
@@ -112,6 +122,37 @@ function observationPage(v: Record<string, unknown>, prior: ObservationState, ol
       || (v.next_before !== null && (v.entries.length !== 25 || v.next_before !== v.entries.at(-1)?.id))) throw new Error('Invalid observation history');
   return { phase: 'ready', entries: v.entries as Observation[], revision: v.current_revision as string, through: v.through as string, next: v.next_before as string | null, message: 'Retained provider observations checked.' };
 }
+const discordId = (v: unknown): v is string => typeof v === 'string' && /^[1-9][0-9]{0,19}$/.test(v) && BigInt(v) <= 18446744073709551615n;
+const discordName = (v: unknown): v is string => field(v, 320) && v.length > 0 && Array.from(v).length <= 80
+  && !/^[\u0009-\u000d\u0020\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]+$/u.test(v)
+  && !/[\u0080-\u009f\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/u.test(v);
+const discordIdentity = (v: unknown): v is DiscordIdentity => record(v) && discordId(v.id) && discordName(v.display_name);
+const discordErrors = ['denied', 'invalid_response', 'timeout', 'transport', 'provider_error', 'unavailable', 'restart_required'];
+function discordValue(v: Record<string, unknown>): DiscordValue {
+  const a = v.application, l = v.link, t = v.attempt;
+  if (!record(a) || typeof a.configured !== 'boolean' || !decimal(a.revision) || a.profile !== 'discord-identify-v1'
+      || a.callback_uri !== `${window.location.origin}/account/discord/callback`
+      || !record(l) || !decimal(l.revision) || !decimal(l.flow_generation)
+      || !(l.identity === null || (record(l.identity) && timestamp(l.identity.verified_at) && discordIdentity(l.identity)))
+      || !record(t) || !['none', 'awaiting_discord', 'ready_to_review', 'reviewing', 'review_ready', 'cancelled', 'failed', 'restart_required'].includes(String(t.phase))
+      || !(t.candidate === null || discordIdentity(t.candidate))
+      || !(t.cleanup === null || t.cleanup === 'acknowledged' || t.cleanup === 'unconfirmed')
+      || !(t.error === null || (typeof t.error === 'string' && discordErrors.includes(t.error)))
+      || (t.candidate !== null && t.phase !== 'review_ready') || (t.phase === 'review_ready' && t.candidate === null)
+      || (l.identity !== null && t.candidate !== null)) throw new Error('Invalid identity response');
+  // Retain only the declared fields, never an unexpected provider payload.
+  return { application: { configured: a.configured, revision: a.revision, callback_uri: a.callback_uri as string, profile: 'discord-identify-v1' },
+    link: { revision: l.revision, flow_generation: l.flow_generation, identity: l.identity === null ? null : { id: (l.identity as DiscordIdentity).id, display_name: (l.identity as DiscordIdentity).display_name, verified_at: (l.identity as DiscordIdentity & { verified_at: string }).verified_at } },
+    attempt: { phase: t.phase as DiscordValue['attempt']['phase'], candidate: t.candidate === null ? null : { id: (t.candidate as DiscordIdentity).id, display_name: (t.candidate as DiscordIdentity).display_name },
+      cleanup: t.cleanup as DiscordValue['attempt']['cleanup'], error: t.error as string | null } };
+}
+const identityMessage = (value: DiscordValue): string => value.attempt.phase === 'review_ready' ? 'Review the Discord identity below, then confirm deliberately.'
+  : value.attempt.phase === 'ready_to_review' ? 'Discord returned. Review the identity before choosing whether to link it.'
+  : value.attempt.phase === 'awaiting_discord' ? 'Continue with Discord in this browser, or cancel this unfinished link.'
+  : value.attempt.phase === 'reviewing' ? 'The identity review is still in progress. Check status before another action.'
+  : ['failed', 'restart_required'].includes(value.attempt.phase) ? 'The unfinished link could not be completed. Start a new link when ready.'
+  : value.attempt.phase === 'cancelled' ? 'The unfinished link was cancelled.'
+  : value.link.identity ? 'Your saved Discord identity is shown below.' : value.application.configured ? 'No Discord identity is linked. You can start a link when ready.' : 'Discord linking is waiting for owner setup.';
 const samePanels = (a: HomePanel[], b: HomePanel[]): boolean => a.length === b.length && a.every((p, i) => p.id === b[i].id && p.visible === b[i].visible);
 function snapshot(value: unknown): Snapshot {
   if (!record(value) || value.product !== PRODUCT || value.contract !== CONTRACT || value.schema !== 1
@@ -251,6 +292,10 @@ export function workspace(binding: string) {
   const mediaSaving: Partial<Record<MediaProvider, AbortController>> = {};
   const mediaSerial: Record<MediaProvider, number> = { jellyfin: 0, seerr: 0 };
   const mediaStatusSerial: Record<MediaProvider, number> = { jellyfin: 0, seerr: 0 };
+  let identityActive = false;
+  let identityReading: AbortController | undefined;
+  let identitySaving: AbortController | undefined;
+  let identitySerial = 0;
   let queuesActive = false;
   const queueReading: Partial<Record<QueueProvider, AbortController>> = {};
   const queueStatusReading: Partial<Record<QueueProvider, AbortController>> = {};
@@ -278,7 +323,8 @@ export function workspace(binding: string) {
     catch { model.update((m) => ({ ...m, storageLimited: true })); }
   }
   function cancel(): void {
-    ++epoch; mediaActive = false; queuesActive = false;
+    ++epoch; mediaActive = false; queuesActive = false; identityActive = false;
+    ++identitySerial; identityReading?.abort(); identitySaving?.abort(); identityReading = undefined; identitySaving = undefined;
     for (const provider of mediaProviders) {
       ++mediaSerial[provider]; ++mediaStatusSerial[provider];
       mediaReading[provider]?.abort(); mediaStatusReading[provider]?.abort(); mediaSaving[provider]?.abort();
@@ -309,13 +355,13 @@ export function workspace(binding: string) {
       timer = setTimeout(() => { timer = undefined; ageMedia(); ageQueues(); void read(); }, 15000);
     }
   }
-  async function request(path: string, controller: AbortController, body?: unknown): Promise<{ status: number; value?: unknown }> {
+  async function request(path: string, controller: AbortController, body?: unknown, method = body ? 'PUT' : 'GET'): Promise<{ status: number; value?: unknown }> {
     const started = performance.now();
     const deadline = setTimeout(() => controller.abort(), 4000);
     try {
       const response = await fetch(path, {
-        method: body ? 'PUT' : 'GET', credentials: 'same-origin', cache: 'no-store', redirect: 'error', signal: controller.signal,
-        headers: { 'X-Reborn-Product': PRODUCT, 'X-Reborn-Contract': CONTRACT, 'X-CSRF-Token': binding, ...(path === '/api/workspace/guide' ? { 'X-Reborn-Guide': 'queues-v1' } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
+        method, credentials: 'same-origin', cache: 'no-store', redirect: 'error', signal: controller.signal,
+        headers: { 'X-Reborn-Product': PRODUCT, 'X-Reborn-Contract': CONTRACT, 'X-CSRF-Token': binding, ...(path === '/api/workspace/guide' ? { 'X-Reborn-Guide': 'identity-v1' } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
         body: body ? JSON.stringify(body) : undefined,
       });
       const value: unknown = response.ok ? await response.json() : undefined;
@@ -930,6 +976,88 @@ export function workspace(binding: string) {
       if (!disposed && queuesActive && current === epoch && currentScope(captured) && queueSaving[provider] === controller) setQueue(provider, { ...state().queues[provider], phase: 'error', observation: undefined, save: 'uncertain', message: 'The save may have completed. Check the connection state before entering credentials again.' }, true);
     } finally { if (queueSaving[provider] === controller) delete queueSaving[provider]; }
   }
+  function identitySnapshot(): Snapshot | undefined {
+    const s = state();
+    return !disposed && !terminal && s.phase === 'ready' && s.snapshot && document.visibilityState === 'visible' ? s.snapshot : undefined;
+  }
+  function setIdentity(value: IdentityState): void { flushSync(() => model.update(m => ({ ...m, identity: value }))); }
+  function closeIdentity(): void {
+    identityActive = false; ++identitySerial; identityReading?.abort(); identityReading = undefined;
+    const pending = !!identitySaving; identitySaving?.abort(); identitySaving = undefined;
+    setIdentity({ ...emptyIdentity(), save: pending ? 'uncertain' : state().identity.save,
+      message: pending ? 'The change may have completed. Check identity status before another action.' : '' });
+  }
+  function acceptIdentity(value: unknown, captured: Snapshot, prior = state().identity.value): DiscordValue {
+    if (!scoped(value, captured)) { invalidate('Your account scope changed. Open a fresh workspace.', true); throw new Error('Identity scope changed'); }
+    const next = discordValue(value);
+    if (prior && (BigInt(next.application.revision) < BigInt(prior.application.revision)
+        || BigInt(next.link.revision) < BigInt(prior.link.revision)
+        || BigInt(next.link.flow_generation) < BigInt(prior.link.flow_generation))) throw new Error('Older identity response');
+    return next;
+  }
+  async function checkIdentity(): Promise<void> {
+    const captured = identitySnapshot(); if (!captured || identitySaving) return;
+    identityActive = true; identityReading?.abort();
+    const controller = new AbortController(); identityReading = controller;
+    const serial = ++identitySerial, current = epoch, prior = state().identity.value;
+    setIdentity({ ...state().identity, phase: 'loading', value: undefined, message: 'Checking your current Discord link…' });
+    try {
+      const response = await request('/api/workspace/discord', controller);
+      if (disposed || !identityActive || controller.signal.aborted || serial !== identitySerial || current !== epoch || !currentScope(captured)) return;
+      if (document.visibilityState !== 'visible') { invalidate('Workspace hidden. Checking access on return.'); return; }
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      if (response.status !== 200) throw new Error('Identity unavailable');
+      const value = acceptIdentity(response.value, captured, prior);
+      setIdentity({ phase: 'ready', value, save: 'idle', message: identityMessage(value) });
+    } catch {
+      if (!disposed && identityActive && serial === identitySerial && current === epoch && currentScope(captured)) setIdentity({ phase: 'error', save: state().identity.save, message: 'Identity status could not be checked. Check again before making a change.' });
+    } finally { if (identityReading === controller) identityReading = undefined; }
+  }
+  async function openIdentity(): Promise<void> { if (!identitySnapshot()) return; identityActive = true; await checkIdentity(); }
+  async function identityAction(action: IdentityAction): Promise<void> {
+    const captured = identitySnapshot(), prior = state().identity, value = prior.value;
+    if (!captured || !identityActive || identitySaving || prior.phase !== 'ready' || prior.save !== 'idle' || !value) return;
+    if (action === 'review' && value.attempt.phase !== 'ready_to_review' || action === 'confirm' && value.attempt.phase !== 'review_ready') return;
+    const body = { base_revision: value.link.revision, base_flow_generation: value.link.flow_generation,
+      ...(['review', 'confirm'].includes(action) ? { base_application_revision: value.application.revision } : {}) };
+    identityReading?.abort(); identityReading = undefined; ++identitySerial;
+    const controller = new AbortController(); identitySaving = controller; const current = epoch;
+    setIdentity({ ...prior, value: undefined, save: 'saving', message: action === 'review' ? 'Reviewing the identity returned by Discord…' : action === 'confirm' ? 'Saving your confirmed identity…' : action === 'unlink' ? 'Unlinking this identity locally…' : 'Cancelling this unfinished link…' });
+    try {
+      const response = await request(`/api/workspace/discord/${action}`, controller, body, 'POST');
+      if (disposed || !identityActive || controller.signal.aborted || current !== epoch || !currentScope(captured) || identitySaving !== controller) return;
+      if (document.visibilityState !== 'visible') { invalidate('Workspace hidden. Checking access on return.'); return; }
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      if (response.status === 409) { setIdentity({ phase: 'error', save: 'conflict', message: 'This link or application changed. Check identity status before another action.' }); return; }
+      if ([400, 413, 429].includes(response.status)) { setIdentity({ phase: 'error', save: 'idle', message: 'The action was not accepted. Check identity status before starting again.' }); return; }
+      if (response.status !== 200) throw new Error('Uncertain identity change');
+      const next = acceptIdentity(response.value, captured, value);
+      setIdentity({ phase: 'ready', value: next, save: 'idle', message: action === 'unlink' ? 'The Discord identity is unlinked locally. Your local sign-in is unchanged.' : action === 'cancel' ? 'The unfinished link is cancelled.' : identityMessage(next) });
+    } catch {
+      if (!disposed && identityActive && current === epoch && currentScope(captured) && identitySaving === controller) setIdentity({ phase: 'error', save: 'uncertain', message: 'The action may have completed. Check identity status before making another choice. It has not been sent again.' });
+    } finally { if (identitySaving === controller) identitySaving = undefined; }
+  }
+  async function saveDiscordApplication(base: string, application: DiscordApplication | null): Promise<void> {
+    const captured = ownerSnapshot(), prior = state().identity;
+    if (!captured || !identityActive || identitySaving || prior.phase !== 'ready' || prior.save !== 'idle' || prior.value?.application.revision !== base || !decimal(base)) return;
+    identityReading?.abort(); identityReading = undefined; ++identitySerial;
+    const controller = new AbortController(); identitySaving = controller; const current = epoch;
+    setIdentity({ phase: 'loading', save: 'saving', message: application ? 'Saving dedicated Discord application access…' : 'Removing Discord application access…' });
+    try {
+      const response = await request('/api/owner/discord/application', controller, { base_revision: base, application });
+      if (disposed || !identityActive || controller.signal.aborted || current !== epoch || !currentScope(captured) || identitySaving !== controller) return;
+      if (document.visibilityState !== 'visible') { invalidate('Workspace hidden. Checking access on return.'); return; }
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      if (response.status === 409) { setIdentity({ phase: 'error', save: 'conflict', message: 'The application changed elsewhere. Check status before entering credentials again.' }); return; }
+      if ([400, 413, 429].includes(response.status)) { setIdentity({ phase: 'error', save: 'idle', message: 'Application access was not accepted. Check status, then review the application ID, secret and callback logging acknowledgement.' }); return; }
+      if (response.status !== 200) throw new Error('Uncertain application save');
+      const next = acceptIdentity(response.value, captured, prior.value);
+      if (BigInt(next.application.revision) !== BigInt(base) + 1n || next.application.configured !== (application !== null)) throw new Error('Uncertain application revision');
+      setIdentity({ phase: 'ready', value: next, save: 'idle', message: application ? 'Discord application saved. Existing identity links are unchanged.' : 'Discord application removed. Existing links remain available for local unlinking.' });
+    } catch {
+      if (!disposed && identityActive && current === epoch && currentScope(captured) && identitySaving === controller) setIdentity({ phase: 'error', save: 'uncertain', message: 'The application save may have completed. Check status before entering credentials again.' });
+    } finally { if (application) application.client_secret = ''; if (identitySaving === controller) identitySaving = undefined; }
+  }
   function signOut(): void {
     removeDraft(); invalidate('Signing out…', true);
     try { channel?.postMessage({ kind: 'auth-changed' }); } catch { /* No optional feature blocks native submission. */ }
@@ -955,5 +1083,5 @@ export function workspace(binding: string) {
       document.removeEventListener('visibilitychange', visibility);
     };
   }
-  return { model, start, edit, recover, resolve, save, signOut, check: () => read(true), editService, pins, activity, markNotification, beginLayout, moveLayout, toggleLayout, resetLayout, cancelLayout, resolveLayout, saveLayout, checkLayout: () => read(true), loadGuide, observations, openMedia, closeMedia, checkMedia, loadMedia, saveMedia, openQueues, closeQueues, checkQueues, loadQueues, saveQueues };
+  return { model, start, edit, recover, resolve, save, signOut, check: () => read(true), editService, pins, activity, markNotification, beginLayout, moveLayout, toggleLayout, resetLayout, cancelLayout, resolveLayout, saveLayout, checkLayout: () => read(true), loadGuide, observations, openMedia, closeMedia, checkMedia, loadMedia, saveMedia, openQueues, closeQueues, checkQueues, loadQueues, saveQueues, openIdentity, closeIdentity, checkIdentity, identityAction, saveDiscordApplication };
 }

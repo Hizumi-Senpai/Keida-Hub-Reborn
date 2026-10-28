@@ -9,4 +9,6 @@ axum.workspace = true
 tokio.workspace = true
 tokio-rustls.workspace = true
 serde_json.workspace = true
+sha2.workspace = true
+url.workspace = true
 chrono.workspace = true

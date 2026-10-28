@@ -1,4 +1,6 @@
 //! Independent end-to-end expectations over real Rust, PostgreSQL and Chromium.
+#[path = "discord.rs"]
+mod discord;
 use crate::{Check, check, driver::Browser, fixture::Fixture};
 use serde_json::json;
 use std::{fs, time::Duration};
@@ -358,7 +360,7 @@ async fn owner_queue_observations() -> Check<()> {
     check(owner.evaluate("window.__queueEditor=document.querySelector('#workspace-note');window.__queueEditor.setSelectionRange(4,13);return window.__queueEditor.value===arguments[0];",json!([draft])).await? == true,"retain actual private editor before Queues")?;
     owner.click(".main-nav button:nth-child(10)").await?;
     owner.wait("return ['sonarr','radarr','qbittorrent'].every(name=>document.querySelector('[data-queue-provider='+name+']')?.dataset.queuePhase==='ready');",json!([])).await?;
-    check(owner.evaluate("const nav=[...document.querySelectorAll('.main-nav button')],labels=['Home','Workspace note','Connections','Services','Activity','Notifications','Integrations','Roadmap','Media','Queues'];return nav.length===labels.length && labels.every((label,index)=>nav[index].textContent.includes(label)) && document.querySelectorAll('[data-home-panel]').length===3;",json!([])).await? == true,"Queues is tenth, retaining every earlier navigation position and three Home panels")?;
+    check(owner.evaluate("const nav=[...document.querySelectorAll('.main-nav button')],labels=['Home','Workspace note','Connections','Services','Activity','Notifications','Integrations','Roadmap','Media','Queues','Identity'];return nav.length===labels.length && labels.every((label,index)=>nav[index].textContent.includes(label)) && document.querySelectorAll('[data-home-panel]').length===3;",json!([])).await? == true,"Queues is tenth, retaining every earlier navigation position and three Home panels")?;
     check(
         sonarr.requests().is_empty() && radarr.requests().is_empty() && qbit.requests().is_empty(),
         "opening owner queue status does not collect provider observations",
@@ -1099,8 +1101,9 @@ pub async fn run() -> Check<()> {
     catalog_roadmap_and_observations().await?;
     owner_media_observations().await?;
     owner_queue_observations().await?;
+    discord::run().await?;
     println!(
-        "Rust workspace browser acceptance: 13 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+        "Rust workspace browser acceptance: 14 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
     );
     Ok(())
 }
@@ -1126,7 +1129,7 @@ async fn owner_media_observations() -> Check<()> {
     step("media phase01f navigate-Media-and-wait-native-fields");
     owner.click(".main-nav button:nth-child(9)").await?;
     owner.wait("return !!document.querySelector('#jellyfin-token') && !!document.querySelector('#seerr-token');", json!([])).await?;
-    check(owner.evaluate("const nav=[...document.querySelectorAll('.main-nav button')],labels=['Home','Workspace note','Connections','Services','Activity','Notifications','Integrations','Roadmap','Media','Queues'];return nav.length===labels.length && labels.every((label,index)=>nav[index].textContent.includes(label)) && document.querySelectorAll('[data-home-panel]').length===3;", json!([])).await? == true, "Media retains its ninth position before Queues without adding Home panels")?;
+    check(owner.evaluate("const nav=[...document.querySelectorAll('.main-nav button')],labels=['Home','Workspace note','Connections','Services','Activity','Notifications','Integrations','Roadmap','Media','Queues','Identity'];return nav.length===labels.length && labels.every((label,index)=>nav[index].textContent.includes(label)) && document.querySelectorAll('[data-home-panel]').length===3;", json!([])).await? == true, "Media retains its ninth position before Queues without adding Home panels")?;
     step("media phase01g enroll-Jellyfin");
     media_enroll(&owner, &provider, "jellyfin").await?;
     step("media phase01h enroll-Seerr");
@@ -1392,7 +1395,7 @@ async fn catalog_roadmap_and_observations() -> Check<()> {
     step("catalog phase02 available and planned entries");
     owner.click(".main-nav button:nth-child(7)").await?;
     owner.wait("return document.querySelectorAll('.catalog-list > article[data-integration-id]').length===7",json!([])).await?;
-    check(owner.evaluate("const cards=[...document.querySelectorAll('.catalog-list > article[data-integration-id]')],names=['Crafty','Jellyfin','Seerr','Sonarr','Radarr','qBittorrent','Discord'],actions=['Open Connections','Open Media','Open Media','Open Queues','Open Queues','Open Queues'];return cards.length===7 && cards.map(c=>c.dataset.integrationId).join(',')==='crafty,jellyfin,seerr,sonarr,radarr,qbittorrent,discord' && cards.every((c,index)=>c.querySelector('h2')?.textContent===names[index]) && cards.slice(0,6).every((c,index)=>c.querySelector('.integration-status')?.dataset.status==='available' && c.querySelectorAll('button').length===1 && c.querySelector('button').textContent===actions[index]) && cards.slice(6).every(c=>c.querySelector('.integration-status')?.dataset.status==='planned' && c.querySelectorAll('button').length===0 && c.textContent.includes('Planned')) && cards.slice(1,6).every(c=>c.textContent.toLowerCase().includes('owner'))",json!([])).await?==true,"current queues-v1 catalog exposes Crafty, owner-only Media and Queues as six available integrations while Discord remains planned")?;
+    check(owner.evaluate("const cards=[...document.querySelectorAll('.catalog-list > article[data-integration-id]')],names=['Crafty','Jellyfin','Seerr','Sonarr','Radarr','qBittorrent','Discord'],actions=['Open Connections','Open Media','Open Media','Open Queues','Open Queues','Open Queues'];return cards.length===7 && cards.map(c=>c.dataset.integrationId).join(',')==='crafty,jellyfin,seerr,sonarr,radarr,qbittorrent,discord' && cards.every((c,index)=>c.querySelector('h2')?.textContent===names[index]) && cards.slice(0,6).every((c,index)=>c.querySelector('.integration-status')?.dataset.status==='available' && c.querySelectorAll('button').length===1 && c.querySelector('button').textContent===actions[index]) && cards.slice(6).every(c=>c.querySelector('.integration-status')?.dataset.status==='planned' && c.querySelectorAll('button').length===1 && c.querySelector('button').textContent==='Open Identity' && c.textContent.includes('Planned')) && cards.slice(1,6).every(c=>c.textContent.toLowerCase().includes('owner'))",json!([])).await?==true,"current identity-v1 catalog retains six available integrations and offers bounded Identity while broader Discord remains planned")?;
     check(owner.evaluate("const expected=[['sonarr',['Sonarr 4','queue and pending-release rows','root-mounted HTTPS','management access','reported byte progress','separate import state','unknown or partial data','not downloader health or playback availability']],['radarr',['Radarr 6','queue and pending-release rows','root-mounted HTTPS','management access','reported byte progress','separate import state','unknown or partial data','managing downloads is separate work']],['qbittorrent',['qBittorrent 5.2 and 5.3','all-state transfer observations','global Bearer API key','root-mounted HTTPS','password, Basic and cookie login modes are outside this profile','selected-byte progress','without files, peers, trackers, paths or download links','Provider total stays unknown','no download controls']]];return expected.every(([id,capabilities])=>{const card=document.querySelector('.catalog-list [data-integration-id='+id+']');return !!card && capabilities.every(capability=>card.textContent.includes(capability));});",json!([])).await?==true,"queue catalog states the exact supported major/version families, deliberate broad-key HTTPS access, bounded observation capabilities and unknown-total/privacy limits")?;
     step("catalog phase03 desktop catalog accessibility");
     accessibility(&owner).await?;

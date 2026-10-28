@@ -17,49 +17,49 @@ function m() {
 		reject: t
 	};
 }
-var h = 1024, g = 2048, _ = 4096, v = 8192, y = 16384, b = 32768, x = 1 << 25, S = 65536, C = 1 << 19, w = 1 << 20, ee = 1 << 25, te = 1 << 21, ne = 1 << 22, re = 1 << 23, ie = Symbol("$state"), T = Symbol("component"), ae = Symbol("legacy props"), E = Symbol(""), oe = Symbol("attributes"), se = Symbol("class"), ce = Symbol("style"), le = Symbol("text"), D = Symbol("form reset"), ue = new class extends Error {
+var h = 1024, g = 2048, _ = 4096, v = 8192, y = 16384, b = 32768, x = 1 << 25, S = 65536, C = 1 << 19, w = 1 << 20, T = 1 << 25, ee = 1 << 21, te = 1 << 22, ne = 1 << 23, re = Symbol("$state"), ie = Symbol("component"), ae = Symbol("legacy props"), oe = Symbol(""), se = Symbol("attributes"), E = Symbol("class"), ce = Symbol("style"), D = Symbol("text"), le = Symbol("form reset"), ue = new class extends Error {
 	name = "StaleReactionError";
 	message = "The reaction that called `getAbortSignal()` was re-run or destroyed";
-}(), de = !!globalThis.document?.contentType && /* @__PURE__ */ globalThis.document.contentType.includes("xml"), fe = {}, pe = Symbol("uninitialized"), me = "http://www.w3.org/1999/xhtml";
-function he() {
+}(), de = !!globalThis.document?.contentType && /* @__PURE__ */ globalThis.document.contentType.includes("xml"), fe = {}, O = Symbol("uninitialized"), pe = "http://www.w3.org/1999/xhtml";
+function me() {
 	console.warn("https://svelte.dev/e/derived_inert");
 }
-function ge(e) {
+function he(e) {
 	console.warn("https://svelte.dev/e/hydration_mismatch");
 }
-function _e() {
+function ge() {
 	console.warn("https://svelte.dev/e/select_multiple_invalid_value");
 }
-function ve() {
+function _e() {
 	console.warn("https://svelte.dev/e/svelte_boundary_reset_noop");
 }
 // ../node_modules/svelte/src/internal/client/dom/hydration.js
-var O = !1;
+var k = !1;
+function ve(e) {
+	k = e;
+}
+var A;
 function ye(e) {
-	O = e;
+	if (e === null) throw he(), fe;
+	return A = e;
 }
-var k;
-function be(e) {
-	if (e === null) throw ge(), fe;
-	return k = e;
+function be() {
+	return ye(/* @__PURE__ */ sn(A));
 }
-function xe() {
-	return be(/* @__PURE__ */ cn(k));
-}
-function A(e) {
-	if (O) {
-		if (/* @__PURE__ */ cn(k) !== null) throw ge(), fe;
-		k = e;
+function j(e) {
+	if (k) {
+		if (/* @__PURE__ */ sn(A) !== null) throw he(), fe;
+		A = e;
 	}
 }
-function Se(e = 1) {
-	if (O) {
-		for (var t = e, n = k; t--;) n = /* @__PURE__ */ cn(n);
-		k = n;
+function xe(e = 1) {
+	if (k) {
+		for (var t = e, n = A; t--;) n = /* @__PURE__ */ sn(n);
+		A = n;
 	}
 }
-function Ce(e = !0) {
-	for (var t = 0, n = k;;) {
+function Se(e = !0) {
+	for (var t = 0, n = A;;) {
 		if (n.nodeType === 8) {
 			var r = n.data;
 			if (r === "]") {
@@ -67,149 +67,149 @@ function Ce(e = !0) {
 				--t;
 			} else (r === "[" || r === "[!" || r[0] === "[" && !isNaN(Number(r.slice(1)))) && (t += 1);
 		}
-		var i = /* @__PURE__ */ cn(n);
+		var i = /* @__PURE__ */ sn(n);
 		e && n.remove(), n = i;
 	}
 }
-function we(e) {
-	if (!e || e.nodeType !== 8) throw ge(), fe;
+function Ce(e) {
+	if (!e || e.nodeType !== 8) throw he(), fe;
 	return e.data;
 }
 // ../node_modules/svelte/src/internal/client/reactivity/equality.js
-function Te(e) {
+function we(e) {
 	return e === this.v;
 }
-function Ee(e, t) {
+function Te(e, t) {
 	return e == e ? e !== t || typeof e == "object" && !!e || typeof e == "function" : t == t;
 }
-function De(e) {
-	return !Ee(e, this.v);
+function Ee(e) {
+	return !Te(e, this.v);
 }
-function Oe(e) {
+function De(e) {
 	throw Error("https://svelte.dev/e/lifecycle_outside_component");
 }
 // ../node_modules/svelte/src/internal/client/errors.js
-function ke() {
+function Oe() {
 	throw Error("https://svelte.dev/e/async_derived_orphan");
 }
-function Ae(e, t, n) {
+function ke(e, t, n) {
 	throw Error("https://svelte.dev/e/each_key_duplicate");
 }
-function je(e) {
+function Ae(e) {
 	throw Error("https://svelte.dev/e/effect_in_teardown");
 }
-function Me() {
+function je() {
 	throw Error("https://svelte.dev/e/effect_in_unowned_derived");
 }
-function Ne(e) {
+function Me(e) {
 	throw Error("https://svelte.dev/e/effect_orphan");
 }
-function Pe() {
+function Ne() {
 	throw Error("https://svelte.dev/e/effect_update_depth_exceeded");
 }
-function Fe(e) {
+function Pe(e) {
 	throw Error("https://svelte.dev/e/lifecycle_legacy_only");
 }
-function Ie(e) {
+function Fe(e) {
 	throw Error("https://svelte.dev/e/props_invalid_value");
 }
-function Le() {
+function Ie() {
 	throw Error("https://svelte.dev/e/state_descriptors_fixed");
 }
-function Re() {
+function Le() {
 	throw Error("https://svelte.dev/e/state_prototype_fixed");
 }
-function ze() {
+function Re() {
 	throw Error("https://svelte.dev/e/state_unsafe_mutation");
 }
-function Be() {
+function ze() {
 	throw Error("https://svelte.dev/e/svelte_boundary_reset_onerror");
 }
 // ../node_modules/svelte/src/internal/flags/index.js
-var Ve = !1;
-function He() {
-	Ve = !0;
+var Be = !1;
+function Ve() {
+	Be = !0;
 }
 // ../node_modules/svelte/src/internal/client/context.js
-var j = null;
-function Ue(e) {
-	j = e;
+var M = null;
+function He(e) {
+	M = e;
 }
-function We(e, t = !1, n) {
-	j = {
-		p: j,
+function Ue(e, t = !1, n) {
+	M = {
+		p: M,
 		i: !1,
 		c: null,
 		e: null,
 		s: e,
 		x: null,
 		r: V,
-		l: Ve && !t ? {
+		l: Be && !t ? {
 			s: null,
 			u: null,
 			$: []
 		} : null
 	};
 }
-function Ge(e) {
-	var t = j, n = t.e;
+function We(e) {
+	var t = M, n = t.e;
 	if (n !== null) {
 		t.e = null;
-		for (var r of n) Sn(r);
+		for (var r of n) xn(r);
 	}
-	return e !== void 0 && (t.x = e), t.i = !0, j = t.p, Ke(e);
+	return e !== void 0 && (t.x = e), t.i = !0, M = t.p, Ge(e);
 }
-function Ke(e = {}) {
-	return i(e, T, { value: !0 }), e;
+function Ge(e = {}) {
+	return i(e, ie, { value: !0 }), e;
 }
-function qe() {
-	return !Ve || j !== null && j.l === null;
+function Ke() {
+	return !Be || M !== null && M.l === null;
 }
 // ../node_modules/svelte/src/internal/client/dom/task.js
-var Je = [];
-function Ye() {
-	var e = Je;
-	Je = [], p(e);
+var qe = [];
+function Je() {
+	var e = qe;
+	qe = [], p(e);
 }
-function Xe(e) {
-	if (Je.length === 0 && !wt) {
-		var t = Je;
+function Ye(e) {
+	if (qe.length === 0 && !Ct) {
+		var t = qe;
 		queueMicrotask(() => {
-			t === Je && Ye();
+			t === qe && Je();
 		});
 	}
-	Je.push(e);
+	qe.push(e);
 }
-function Ze() {
-	for (; Je.length > 0;) Ye();
+function Xe() {
+	for (; qe.length > 0;) Je();
 }
 // ../node_modules/svelte/src/internal/client/reactivity/status.js
-var Qe = ~(g | _ | h);
-function $e(e, t) {
-	e.f = e.f & Qe | t;
+var Ze = ~(g | _ | h);
+function Qe(e, t) {
+	e.f = e.f & Ze | t;
 }
-function et(e) {
-	e.f & 512 || e.deps === null ? $e(e, h) : $e(e, _);
+function $e(e) {
+	e.f & 512 || e.deps === null ? Qe(e, h) : Qe(e, _);
 }
 // ../node_modules/svelte/src/internal/client/reactivity/utils.js
-function tt(e, t, n) {
-	e.f & 2048 ? t.add(e) : e.f & 4096 && n.add(e), $e(e, h);
+function et(e, t, n) {
+	e.f & 2048 ? t.add(e) : e.f & 4096 && n.add(e), Qe(e, h);
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/misc.js
-function nt(e) {
-	O && /* @__PURE__ */ sn(e) !== null && un(e);
+function tt(e) {
+	k && /* @__PURE__ */ on(e) !== null && ln(e);
 }
-var rt = !1;
-function it() {
-	rt || (rt = !0, document.addEventListener("reset", (e) => {
+var nt = !1;
+function rt() {
+	nt || (nt = !0, document.addEventListener("reset", (e) => {
 		Promise.resolve().then(() => {
-			if (!e.defaultPrevented) for (let t of e.target.elements) t[D]?.();
+			if (!e.defaultPrevented) for (let t of e.target.elements) t[le]?.();
 		});
 	}, { capture: !0 }));
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/bindings/shared.js
-function at(e) {
-	var t = B, n = V;
+function it(e) {
+	var t = Gn, n = V;
 	qn(null), Jn(null);
 	try {
 		return e();
@@ -217,107 +217,107 @@ function at(e) {
 		qn(t), Jn(n);
 	}
 }
-function ot(e, t, n, r = n) {
-	e.addEventListener(t, () => at(n));
-	let i = e[D];
-	e[D] = i ? () => {
+function at(e, t, n, r = n) {
+	e.addEventListener(t, () => it(n));
+	let i = e[le];
+	e[le] = i ? () => {
 		i(), r(!0);
-	} : () => r(!0), it();
+	} : () => r(!0), rt();
 }
 // ../node_modules/svelte/src/internal/client/reactivity/async.js
-function st(e, t, n, r) {
-	let i = qe() ? dt : M;
+function ot(e, t, n, r) {
+	let i = Ke() ? ut : N;
 	var a = e.filter((e) => !e.settled), o = t.map(i);
 	if (n.length === 0 && a.length === 0) {
 		r(o);
 		return;
 	}
-	var s = V, c = ct(), l = a.length === 1 ? a[0].promise : a.length > 1 ? Promise.all(a.map((e) => e.promise)) : null;
+	var s = V, c = st(), l = a.length === 1 ? a[0].promise : a.length > 1 ? Promise.all(a.map((e) => e.promise)) : null;
 	function u(e) {
 		if (!(s.f & 16384)) {
 			c();
 			try {
 				r([...o, ...e]);
 			} catch (e) {
-				hn(e, s);
+				mn(e, s);
 			}
-			lt();
+			ct();
 		}
 	}
-	var d = ut();
+	var d = lt();
 	if (n.length === 0) {
 		l.then(() => u([])).finally(d);
 		return;
 	}
 	function f() {
-		Promise.all(n.map((e) => /* @__PURE__ */ pt(e))).then(u).catch((e) => hn(e, s)).finally(d);
+		Promise.all(n.map((e) => /* @__PURE__ */ ft(e))).then(u).catch((e) => mn(e, s)).finally(d);
 	}
 	l ? l.then(() => {
-		s.f & 16384 ? d() : (c(), f(), lt());
+		s.f & 16384 ? d() : (c(), f(), ct());
 	}) : f();
 }
-function ct() {
-	var e = V, t = B, n = j, r = N;
+function st() {
+	var e = V, t = Gn, n = M, r = P;
 	return function(i = !0) {
-		Jn(e), qn(t), Ue(n), i && !(e.f & 16384) && (r?.activate(), r?.apply());
+		Jn(e), qn(t), He(n), i && !(e.f & 16384) && (r?.activate(), r?.apply());
 	};
 }
-function lt(e = !0) {
-	Jn(null), qn(null), Ue(null), e && N?.deactivate();
+function ct(e = !0) {
+	Jn(null), qn(null), He(null), e && P?.deactivate();
 }
-function ut() {
-	var e = V, t = e.b, n = N, r = !!t?.is_rendered();
+function lt() {
+	var e = V, t = e.b, n = P, r = !!t?.is_rendered();
 	return t?.update_pending_count(1, n), n.increment(r, e), () => {
 		t?.update_pending_count(-1, n), n.decrement(r, e);
 	};
 }
 /*#__NO_SIDE_EFFECTS__*/
-function dt(e) {
+function ut(e) {
 	var t = 2 | g;
 	return V !== null && (V.f |= C), {
-		ctx: j,
+		ctx: M,
 		deps: null,
 		effects: null,
-		equals: Te,
+		equals: we,
 		f: t,
 		fn: e,
 		reactions: null,
 		rv: 0,
-		v: pe,
+		v: O,
 		wv: 0,
 		parent: V,
 		ac: null
 	};
 }
-var ft = Symbol("obsolete");
+var dt = Symbol("obsolete");
 /*#__NO_SIDE_EFFECTS__*/
-function pt(e, t, n) {
+function ft(e, t, n) {
 	let r = V;
-	r === null && ke();
-	var i = void 0, a = Vt(pe), o = !B, s = /* @__PURE__ */ new Set();
-	return On(() => {
+	r === null && Oe();
+	var i = void 0, a = Bt(O), o = !Gn, s = /* @__PURE__ */ new Set();
+	return Dn(() => {
 		var t = V, n = m();
 		i = n.promise;
 		try {
 			Promise.resolve(e()).then(n.resolve, (e) => {
 				e !== ue && n.reject(e);
-			}).finally(lt);
+			}).finally(ct);
 		} catch (e) {
-			n.reject(e), lt();
+			n.reject(e), ct();
 		}
-		var c = N;
+		var c = P;
 		if (o) {
-			if (t.f & 32768) var l = ut();
-			if (r.b?.is_rendered()) c.async_deriveds.get(t)?.reject(ft);
-			else for (let e of s.values()) e.reject(ft);
+			if (t.f & 32768) var l = lt();
+			if (r.b?.is_rendered()) c.async_deriveds.get(t)?.reject(dt);
+			else for (let e of s.values()) e.reject(dt);
 			s.add(n), c.async_deriveds.set(t, n);
 		}
 		let u = (e, t = void 0) => {
-			l?.(), s.delete(n), t !== ft && (c.activate(), t ? (a.f |= re, Kt(a, t)) : (a.f & 8388608 && (a.f ^= re), Kt(a, e)), c.deactivate());
+			l?.(), s.delete(n), t !== dt && (c.activate(), t ? (a.f |= ne, Gt(a, t)) : (a.f & 8388608 && (a.f ^= ne), Gt(a, e)), c.deactivate());
 		};
 		n.promise.then(u, (e) => u(null, e || "unknown"));
-	}), bn(() => {
-		for (let e of s) e.reject(ft);
+	}), yn(() => {
+		for (let e of s) e.reject(dt);
 	}), new Promise((e) => {
 		function t(n) {
 			function r() {
@@ -329,48 +329,48 @@ function pt(e, t, n) {
 	});
 }
 /*#__NO_SIDE_EFFECTS__*/
-function mt(e) {
-	let t = /* @__PURE__ */ dt(e);
+function pt(e) {
+	let t = /* @__PURE__ */ ut(e);
 	return Xn(t), t;
 }
 /*#__NO_SIDE_EFFECTS__*/
-function M(e) {
-	let t = /* @__PURE__ */ dt(e);
-	return t.equals = De, t;
+function N(e) {
+	let t = /* @__PURE__ */ ut(e);
+	return t.equals = Ee, t;
 }
-function ht(e) {
+function mt(e) {
 	var t = e.effects;
 	if (t !== null) {
 		e.effects = null;
-		for (var n = 0; n < t.length; n += 1) Fn(t[n]);
+		for (var n = 0; n < t.length; n += 1) Pn(t[n]);
 	}
 }
-function gt(e) {
+function ht(e) {
 	var t, n = V, r = e.parent;
-	if (!Wn && r !== null && e.v !== pe && r.f & 24576) return he(), e.v;
+	if (!Un && r !== null && e.v !== O && r.f & 24576) return me(), e.v;
 	Jn(r);
 	try {
-		ht(e), t = cr(e);
+		mt(e), t = cr(e);
 	} finally {
 		Jn(n);
 	}
 	return t;
 }
+function gt(e) {
+	var t = ht(e);
+	!e.equals(t) && (e.wv = ar(), (!P?.is_fork || e.deps === null) && (P === null ? e.v = t : (P.capture(e, t, !0), bt?.capture(e, t, !0)), e.deps === null)) ? Qe(e, h) : Un || (xt === null ? $e(e) : (vn() || P?.is_fork) && xt.set(e, t));
+}
 function _t(e) {
-	var t = gt(e);
-	!e.equals(t) && (e.wv = ar(), (!N?.is_fork || e.deps === null) && (N === null ? e.v = t : (N.capture(e, t, !0), xt?.capture(e, t, !0)), e.deps === null)) ? $e(e, h) : Wn || (St === null ? et(e) : (yn() || N?.is_fork) && St.set(e, t));
+	if (e.effects !== null) for (let t of e.effects) (t.teardown || t.ac) && (t.teardown?.(), t.ac !== null && it(() => {
+		t.ac.abort(ue), t.ac = null;
+	}), t.fn !== null && (t.teardown = d), dr(t, 0), Mn(t));
 }
 function vt(e) {
-	if (e.effects !== null) for (let t of e.effects) (t.teardown || t.ac) && (t.teardown?.(), t.ac !== null && at(() => {
-		t.ac.abort(ue), t.ac = null;
-	}), t.fn !== null && (t.teardown = d), dr(t, 0), Nn(t));
-}
-function yt(e) {
 	if (e.effects !== null) for (let t of e.effects) t.teardown && t.fn !== null && fr(t);
 }
 // ../node_modules/svelte/src/internal/client/reactivity/batch.js
-var bt = null, N = null, xt = null, St = null, Ct = null, wt = !1, Tt = !1, Et = null, Dt = null, Ot = 0, kt = 1, At = class e {
-	id = kt++;
+var yt = null, P = null, bt = null, xt = null, St = null, Ct = !1, wt = !1, Tt = null, Et = null, Dt = 0, Ot = 1, kt = class e {
+	id = Ot++;
 	#e = !1;
 	linked = !0;
 	#t = null;
@@ -392,7 +392,7 @@ var bt = null, N = null, xt = null, St = null, Ct = null, wt = !1, Tt = !1, Et =
 	is_fork = !1;
 	#m = !1;
 	constructor() {
-		bt === null ? bt = this : (bt.#n = this, this.#t = bt), bt = this;
+		yt === null ? yt = this : (yt.#n = this, this.#t = yt), yt = this;
 	}
 	#h() {
 		if (this.is_fork) return !0;
@@ -418,8 +418,8 @@ var bt = null, N = null, xt = null, St = null, Ct = null, wt = !1, Tt = !1, Et =
 		var n = this.#f.get(e);
 		if (n) {
 			this.#f.delete(e);
-			for (var r of n.d) $e(r, g), t(r);
-			for (r of n.m) $e(r, _), t(r);
+			for (var r of n.d) Qe(r, g), t(r);
+			for (r of n.m) Qe(r, _), t(r);
 		}
 		this.#p.add(e);
 	}
@@ -443,25 +443,25 @@ var bt = null, N = null, xt = null, St = null, Ct = null, wt = !1, Tt = !1, Et =
 	}
 	#_() {
 		this.#e = !0;
-		for (let e of this.#u) this.#d.delete(e), $e(e, g), this.schedule(e);
-		for (let e of this.#d) $e(e, _), this.schedule(e);
+		for (let e of this.#u) this.#d.delete(e), Qe(e, g), this.schedule(e);
+		for (let e of this.#d) Qe(e, _), this.schedule(e);
 		this.apply();
-		for (var t = Et = [], n = [], r = Dt = []; this.#c.length > 0;) {
-			Ot++ > 1e3 && (this.#S(), Mt());
+		for (var t = Tt = [], n = [], r = Et = []; this.#c.length > 0;) {
+			Dt++ > 1e3 && (this.#S(), jt());
 			for (let e of this.#g()) try {
 				this.#v(e, t, n);
 			} catch (t) {
-				throw Lt(e), this.#h() || this.discard(), t;
+				throw It(e), this.#h() || this.discard(), t;
 			}
 		}
-		if (N = null, r.length > 0) {
+		if (P = null, r.length > 0) {
 			var i = e.ensure();
 			for (let e of r) i.schedule(e);
 		}
-		if (Et = null, Dt = null, this.#h()) {
+		if (Tt = null, Et = null, this.#h()) {
 			this.#x(n), this.#x(t);
-			for (let [e, t] of this.#f) It(e, t);
-			r.length > 0 && N.#_();
+			for (let [e, t] of this.#f) Ft(e, t);
+			r.length > 0 && P.#_();
 			return;
 		}
 		let a = this.#y();
@@ -469,15 +469,15 @@ var bt = null, N = null, xt = null, St = null, Ct = null, wt = !1, Tt = !1, Et =
 		else {
 			this.#u.clear(), this.#d.clear();
 			for (let e of this.#r) e(this);
-			this.#r.clear(), xt = this, Pt(n), Pt(t), xt = null, this.#s?.resolve();
-			var o = N;
+			this.#r.clear(), bt = this, Nt(n), Nt(t), bt = null, this.#s?.resolve();
+			var o = P;
 			if (this.#a === 0 && (this.#c.length === 0 || o !== null) && this.#S(), this.#c.length > 0) {
 				if (o !== null) {
 					for (let e of this.#c) o.#c.push(e);
 					this.#c = [];
 				} else o = this;
 			}
-			o !== null && (zt.clear(), o.#_());
+			o !== null && (Rt.clear(), o.#_());
 		}
 	}
 	#v(e, t, n) {
@@ -525,36 +525,36 @@ var bt = null, N = null, xt = null, St = null, Ct = null, wt = !1, Tt = !1, Et =
 				if (r & 2) t(e);
 				else {
 					var i = e;
-					r & 4194320 && !this.async_deriveds.has(i) && (this.#d.delete(i), $e(i, g), this.schedule(i));
+					r & 4194320 && !this.async_deriveds.has(i) && (this.#d.delete(i), Qe(i, g), this.schedule(i));
 				}
 			}
 		};
 		for (let e of this.current.keys()) t(e);
-		this.oncommit(() => e.discard()), e.#S(), N = this, this.#_();
+		this.oncommit(() => e.discard()), e.#S(), P = this, this.#_();
 	}
 	#x(e) {
-		for (var t = 0; t < e.length; t += 1) tt(e[t], this.#u, this.#d);
+		for (var t = 0; t < e.length; t += 1) et(e[t], this.#u, this.#d);
 	}
 	capture(e, t, n = !1) {
-		e.v !== pe && !this.previous.has(e) && this.previous.set(e, e.v), e.f & 8388608 || (this.current.set(e, [t, n]), St?.set(e, t)), this.is_fork || (e.v = t);
+		e.v !== O && !this.previous.has(e) && this.previous.set(e, e.v), e.f & 8388608 || (this.current.set(e, [t, n]), xt?.set(e, t)), this.is_fork || (e.v = t);
 	}
 	activate() {
-		N = this;
+		P = this;
 	}
 	deactivate() {
-		N = null, St = null;
+		P = null, xt = null;
 	}
 	flush() {
 		try {
-			Tt = !0, N = this, this.#_();
+			wt = !0, P = this, this.#_();
 		} finally {
-			Ot = 0, Ct = null, Et = null, Dt = null, Tt = !1, N = null, St = null, zt.clear();
+			Dt = 0, St = null, Tt = null, Et = null, wt = !1, P = null, xt = null, Rt.clear();
 		}
 	}
 	discard() {
 		for (let e of this.#i) e(this);
 		this.#i.clear();
-		for (let e of this.async_deriveds.values()) e.reject(ft);
+		for (let e of this.async_deriveds.values()) e.reject(dt);
 		this.#S(), this.#s?.resolve();
 	}
 	register_created_effect(e) {
@@ -571,7 +571,7 @@ var bt = null, N = null, xt = null, St = null, Ct = null, wt = !1, Tt = !1, Et =
 			let e = this.#o.get(t) ?? 0;
 			e === 1 ? this.#o.delete(t) : this.#o.set(t, e - 1);
 		}
-		this.#m || (this.#m = !0, Xe(() => {
+		this.#m || (this.#m = !0, Ye(() => {
 			this.#m = !1, this.linked && this.flush();
 		}));
 	}
@@ -590,128 +590,128 @@ var bt = null, N = null, xt = null, St = null, Ct = null, wt = !1, Tt = !1, Et =
 		return (this.#s ??= m()).promise;
 	}
 	static ensure() {
-		if (N === null) {
-			let t = N = new e();
-			!Tt && !wt && Xe(() => {
+		if (P === null) {
+			let t = P = new e();
+			!wt && !Ct && Ye(() => {
 				t.#e || t.flush();
 			});
 		}
-		return N;
+		return P;
 	}
 	apply() {
-		St = null;
+		xt = null;
 	}
 	schedule(e) {
-		Ct = e, e.b?.is_pending && e.f & 16777228 && !(e.f & 32768) ? e.b.defer_effect(e) : this.#c.push(e);
+		St = e, e.b?.is_pending && e.f & 16777228 && !(e.f & 32768) ? e.b.defer_effect(e) : this.#c.push(e);
 	}
 	#S() {
 		if (this.linked) {
 			var e = this.#t, t = this.#n;
-			e === null || (e.#n = t), t === null ? bt = e : t.#t = e, this.linked = !1;
+			e === null || (e.#n = t), t === null ? yt = e : t.#t = e, this.linked = !1;
 		}
 	}
 };
-function jt(e) {
-	var t = wt, n = xt;
-	xt = null, wt = !0;
+function At(e) {
+	var t = Ct, n = bt;
+	bt = null, Ct = !0;
 	try {
 		var r;
-		for (e && (jt(), r = e());;) {
-			if (Ze(), N === null) return r;
-			N.flush();
+		for (e && (At(), r = e());;) {
+			if (Xe(), P === null) return r;
+			P.flush();
 		}
 	} finally {
-		wt = t, xt = n;
+		Ct = t, bt = n;
 	}
 }
-function Mt() {
+function jt() {
 	try {
-		Pe();
+		Ne();
 	} catch (e) {
-		hn(e, Ct);
+		mn(e, St);
 	}
 }
-var Nt = null;
-function Pt(e) {
+var Mt = null;
+function Nt(e) {
 	var t = e.length;
 	if (t !== 0) {
 		for (var n = 0; n < t;) {
 			var r = e[n++];
-			if (!(r.f & 24576) && or(r) && (Nt = /* @__PURE__ */ new Set(), fr(r), r.deps === null && r.first === null && r.nodes === null && r.teardown === null && r.ac === null && Ln(r), Nt?.size > 0)) {
-				zt.clear();
-				for (let e of Nt) {
+			if (!(r.f & 24576) && or(r) && (Mt = /* @__PURE__ */ new Set(), fr(r), r.deps === null && r.first === null && r.nodes === null && r.teardown === null && r.ac === null && In(r), Mt?.size > 0)) {
+				Rt.clear();
+				for (let e of Mt) {
 					if (e.f & 24576) continue;
 					let t = [e], n = e.parent;
-					for (; n !== null;) Nt.has(n) && (Nt.delete(n), t.push(n)), n = n.parent;
+					for (; n !== null;) Mt.has(n) && (Mt.delete(n), t.push(n)), n = n.parent;
 					for (let e = t.length - 1; e >= 0; e--) {
 						let n = t[e];
 						n.f & 24576 || fr(n);
 					}
 				}
-				Nt.clear();
+				Mt.clear();
 			}
 		}
-		Nt = null;
+		Mt = null;
 	}
 }
-function Ft(e) {
-	N.schedule(e);
+function Pt(e) {
+	P.schedule(e);
 }
-function It(e, t) {
+function Ft(e, t) {
 	if (!(e.f & 32 && e.f & 1024)) {
-		e.f & 2048 ? t.d.push(e) : e.f & 4096 && t.m.push(e), $e(e, h);
-		for (var n = e.first; n !== null;) It(n, t), n = n.next;
+		e.f & 2048 ? t.d.push(e) : e.f & 4096 && t.m.push(e), Qe(e, h);
+		for (var n = e.first; n !== null;) Ft(n, t), n = n.next;
 	}
 }
-function Lt(e) {
-	$e(e, h);
-	for (var t = e.first; t !== null;) Lt(t), t = t.next;
+function It(e) {
+	Qe(e, h);
+	for (var t = e.first; t !== null;) It(t), t = t.next;
 }
 // ../node_modules/svelte/src/internal/client/reactivity/sources.js
-var Rt = /* @__PURE__ */ new Set(), zt = /* @__PURE__ */ new Map(), Bt = !1;
-function Vt(e, t) {
+var Lt = /* @__PURE__ */ new Set(), Rt = /* @__PURE__ */ new Map(), zt = !1;
+function Bt(e, t) {
 	return {
 		f: 0,
 		v: e,
 		reactions: null,
-		equals: Te,
+		equals: we,
 		rv: 0,
 		wv: 0
 	};
 }
 /*#__NO_SIDE_EFFECTS__*/
-function Ht(e, t) {
-	let n = Vt(e, t);
+function Vt(e, t) {
+	let n = Bt(e, t);
 	return Xn(n), n;
 }
 /*#__NO_SIDE_EFFECTS__*/
-function P(e, t = !1, n = !0) {
-	let r = Vt(e);
-	return t || (r.equals = De), Ve && n && j !== null && j.l !== null && (j.l.s ??= []).push(r), r;
+function F(e, t = !1, n = !0) {
+	let r = Bt(e);
+	return t || (r.equals = Ee), Be && n && M !== null && M.l !== null && (M.l.s ??= []).push(r), r;
 }
-function Ut(e, t) {
-	return F(e, U(() => H(e))), t;
+function Ht(e, t) {
+	return I(e, U(() => H(e))), t;
 }
-function F(e, t, n = !1) {
-	return B !== null && (!Kn || B.f & 131072) && qe() && B.f & 4325394 && (Yn === null || !Yn.has(e)) && ze(), Kt(e, n ? Zt(t) : t, Dt);
+function I(e, t, n = !1) {
+	return Gn !== null && (!Kn || Gn.f & 131072) && Ke() && Gn.f & 4325394 && (Yn === null || !Yn.has(e)) && Re(), Gt(e, n ? Xt(t) : t, Et);
 }
-var Wt = null, Gt = 0;
-function Kt(e, t, n = null) {
+var Ut = null, Wt = 0;
+function Gt(e, t, n = null) {
 	if (!e.equals(t)) {
-		Wn ? zt.set(e, t) : zt.has(e) || zt.set(e, e.v);
-		var r = At.ensure();
+		Un ? Rt.set(e, t) : Rt.has(e) || Rt.set(e, e.v);
+		var r = kt.ensure();
 		if (r.capture(e, t), e.f & 2) {
 			let t = e;
-			e.f & 2048 && gt(t), St === null && et(t);
+			e.f & 2048 && ht(t), xt === null && $e(t);
 		}
-		e.wv = ar(), Wt = null, Gt = 0, Xt(e, g, n), Wt = null, qe() && V !== null && V.f & 1024 && !(V.f & 96) && ($n === null ? er([e]) : $n.push(e)), !r.is_fork && Rt.size > 0 && !Bt && qt();
+		e.wv = ar(), Ut = null, Wt = 0, Yt(e, g, n), Ut = null, Ke() && V !== null && V.f & 1024 && !(V.f & 96) && ($n === null ? er([e]) : $n.push(e)), !r.is_fork && Lt.size > 0 && !zt && Kt();
 	}
 	return t;
 }
-function qt() {
-	Bt = !1;
-	for (let e of Rt) {
-		e.f & 1024 && $e(e, _);
+function Kt() {
+	zt = !1;
+	for (let e of Lt) {
+		e.f & 1024 && Qe(e, _);
 		let t;
 		try {
 			t = or(e);
@@ -720,75 +720,75 @@ function qt() {
 		}
 		t && fr(e);
 	}
-	Rt.clear();
+	Lt.clear();
 }
-function Jt(e, t = 1) {
+function qt(e, t = 1) {
 	var n = H(e);
-	return F(e, t === 1 ? ++n : --n);
+	return I(e, t === 1 ? ++n : --n);
 }
-function Yt(e) {
-	F(e, e.v + 1);
+function Jt(e) {
+	I(e, e.v + 1);
 }
-function Xt(e, t, n) {
+function Yt(e, t, n) {
 	var r = e.reactions;
 	if (r !== null) {
-		var i = qe(), a = r.length;
-		if (Gt += a, Gt > 1e5 && Wt === null && (Wt = /* @__PURE__ */ new Set()), Wt !== null) {
-			if (Wt.has(e)) return;
-			Wt.add(e);
+		var i = Ke(), a = r.length;
+		if (Wt += a, Wt > 1e5 && Ut === null && (Ut = /* @__PURE__ */ new Set()), Ut !== null) {
+			if (Ut.has(e)) return;
+			Ut.add(e);
 		}
 		for (var o = 0; o < a; o++) {
 			var s = r[o], c = s.f;
 			if (i || s !== V) {
 				var l = (c & g) === 0;
-				if (l && $e(s, t), c & 131072) Rt.add(s);
+				if (l && Qe(s, t), c & 131072) Lt.add(s);
 				else if (c & 2) {
 					var u = s;
-					St?.delete(u), Xt(u, _, n);
+					xt?.delete(u), Yt(u, _, n);
 				} else if (l) {
 					var d = s;
-					c & 16 && Nt !== null && Nt.add(d), n === null ? Ft(d) : n.push(d);
+					c & 16 && Mt !== null && Mt.add(d), n === null ? Pt(d) : n.push(d);
 				}
 			}
 		}
 	}
 }
-function Zt(t) {
-	if (typeof t != "object" || !t || ie in t || T in t) return t;
+function Xt(t) {
+	if (typeof t != "object" || !t || re in t || ie in t) return t;
 	let n = l(t);
 	if (n !== s && n !== c) return t;
-	var r = /* @__PURE__ */ new Map(), i = e(t), o = /* @__PURE__ */ Ht(0), u = null, d = rr, f = (e) => {
+	var r = /* @__PURE__ */ new Map(), i = e(t), o = /* @__PURE__ */ Vt(0), u = null, d = rr, f = (e) => {
 		if (rr === d) return e();
-		var t = B, n = rr;
+		var t = Gn, n = rr;
 		qn(null), ir(d);
 		var r = e();
 		return qn(t), ir(n), r;
 	};
-	return i && r.set("length", /* @__PURE__ */ Ht(t.length, u)), new Proxy(t, {
+	return i && r.set("length", /* @__PURE__ */ Vt(t.length, u)), new Proxy(t, {
 		defineProperty(e, t, n) {
-			"value" in n && n.configurable !== !1 && n.enumerable !== !1 && n.writable !== !1 || Le();
+			"value" in n && n.configurable !== !1 && n.enumerable !== !1 && n.writable !== !1 || Ie();
 			var i = r.get(t);
 			return i === void 0 ? f(() => {
-				var e = /* @__PURE__ */ Ht(n.value, u);
+				var e = /* @__PURE__ */ Vt(n.value, u);
 				return r.set(t, e), e;
-			}) : F(i, n.value, !0), !0;
+			}) : I(i, n.value, !0), !0;
 		},
 		deleteProperty(e, t) {
 			var n = r.get(t);
 			if (n === void 0) {
 				if (t in e) {
-					let e = f(() => /* @__PURE__ */ Ht(pe, u));
-					r.set(t, e), Yt(o);
+					let e = f(() => /* @__PURE__ */ Vt(O, u));
+					r.set(t, e), Jt(o);
 				}
-			} else F(n, pe), Yt(o);
+			} else I(n, O), Jt(o);
 			return !0;
 		},
 		get(e, n, i) {
-			if (n === ie) return t;
+			if (n === re) return t;
 			var o = r.get(n), s = n in e;
-			if (o === void 0 && (!s || a(e, n)?.writable) && (o = f(() => /* @__PURE__ */ Ht(Zt(s ? e[n] : pe), u)), r.set(n, o)), o !== void 0) {
+			if (o === void 0 && (!s || a(e, n)?.writable) && (o = f(() => /* @__PURE__ */ Vt(Xt(s ? e[n] : O), u)), r.set(n, o)), o !== void 0) {
 				var c = H(o);
-				return c === pe ? void 0 : c;
+				return c === O ? void 0 : c;
 			}
 			return Reflect.get(e, n, i);
 		},
@@ -797,7 +797,7 @@ function Zt(t) {
 			var n = Reflect.getOwnPropertyDescriptor(e, t), i = r.get(t);
 			if (i !== void 0) {
 				var a = H(i);
-				if (a === pe) return;
+				if (a === O) return;
 				if (n && "value" in n) n.value = a;
 				else return {
 					enumerable: !0,
@@ -809,29 +809,29 @@ function Zt(t) {
 			return n;
 		},
 		has(e, t) {
-			if (t === ie) return !0;
-			var n = r.get(t), i = n !== void 0 && n.v !== pe || Reflect.has(e, t);
-			return (n !== void 0 || V !== null && (!i || a(e, t)?.writable)) && (n === void 0 && (n = f(() => /* @__PURE__ */ Ht(i ? Zt(e[t]) : pe, u)), r.set(t, n)), H(n) === pe) ? !1 : i;
+			if (t === re) return !0;
+			var n = r.get(t), i = n !== void 0 && n.v !== O || Reflect.has(e, t);
+			return (n !== void 0 || V !== null && (!i || a(e, t)?.writable)) && (n === void 0 && (n = f(() => /* @__PURE__ */ Vt(i ? Xt(e[t]) : O, u)), r.set(t, n)), H(n) === O) ? !1 : i;
 		},
 		set(e, t, n, s) {
 			var c = r.get(t), l = t in e;
 			if (i && t === "length") for (var d = n; d < c.v; d += 1) {
 				var p = r.get(d + "");
-				p === void 0 ? d in e && (p = f(() => /* @__PURE__ */ Ht(pe, u)), r.set(d + "", p)) : F(p, pe);
+				p === void 0 ? d in e && (p = f(() => /* @__PURE__ */ Vt(O, u)), r.set(d + "", p)) : I(p, O);
 			}
-			if (c === void 0) (!l || a(e, t)?.writable) && (c = f(() => /* @__PURE__ */ Ht(void 0, u)), F(c, Zt(n)), r.set(t, c));
+			if (c === void 0) (!l || a(e, t)?.writable) && (c = f(() => /* @__PURE__ */ Vt(void 0, u)), I(c, Xt(n)), r.set(t, c));
 			else {
-				l = c.v !== pe;
-				var m = f(() => Zt(n));
-				F(c, m);
+				l = c.v !== O;
+				var m = f(() => Xt(n));
+				I(c, m);
 			}
 			var h = Reflect.getOwnPropertyDescriptor(e, t);
 			if (h?.set && h.set.call(s, n), !l) {
 				if (i && typeof t == "string") {
 					var g = r.get("length"), _ = Number(t);
-					Number.isInteger(_) && _ >= g.v && F(g, _ + 1);
+					Number.isInteger(_) && _ >= g.v && I(g, _ + 1);
 				}
-				Yt(o);
+				Jt(o);
 			}
 			return !0;
 		},
@@ -839,107 +839,107 @@ function Zt(t) {
 			H(o);
 			var t = Reflect.ownKeys(e).filter((e) => {
 				var t = r.get(e);
-				return t === void 0 || t.v !== pe;
+				return t === void 0 || t.v !== O;
 			});
-			for (var [n, i] of r) i.v !== pe && !(n in e) && t.push(n);
+			for (var [n, i] of r) i.v !== O && !(n in e) && t.push(n);
 			return t;
 		},
 		setPrototypeOf() {
-			Re();
+			Le();
 		}
 	});
 }
-function Qt(e) {
+function Zt(e) {
 	try {
-		if (typeof e == "object" && e && ie in e) return e[ie];
+		if (typeof e == "object" && e && re in e) return e[re];
 	} catch {}
 	return e;
 }
-function $t(e, t) {
-	return Object.is(Qt(e), Qt(t));
+function Qt(e, t) {
+	return Object.is(Zt(e), Zt(t));
 }
-var en, tn, nn, rn;
-function an() {
-	if (en === void 0) {
-		en = window, tn = /Firefox/.test(navigator.userAgent);
+var $t, en, tn, nn;
+function rn() {
+	if ($t === void 0) {
+		$t = window, en = /Firefox/.test(navigator.userAgent);
 		var e = Element.prototype, t = Node.prototype, n = Text.prototype;
-		nn = a(t, "firstChild").get, rn = a(t, "nextSibling").get, u(e) && (e[se] = void 0, e[oe] = null, e[ce] = void 0, e.__e = void 0), u(n) && (n[le] = void 0);
+		tn = a(t, "firstChild").get, nn = a(t, "nextSibling").get, u(e) && (e[E] = void 0, e[se] = null, e[ce] = void 0, e.__e = void 0), u(n) && (n[D] = void 0);
 	}
 }
-function on(e = "") {
+function an(e = "") {
 	return document.createTextNode(e);
+}
+/*@__NO_SIDE_EFFECTS__*/
+function on(e) {
+	return tn.call(e);
 }
 /*@__NO_SIDE_EFFECTS__*/
 function sn(e) {
 	return nn.call(e);
 }
-/*@__NO_SIDE_EFFECTS__*/
-function cn(e) {
-	return rn.call(e);
-}
-function I(e, t) {
-	if (!O) return /* @__PURE__ */ sn(e);
-	var n = /* @__PURE__ */ sn(k);
-	if (n === null) n = k.appendChild(on());
+function L(e, t) {
+	if (!k) return /* @__PURE__ */ on(e);
+	var n = /* @__PURE__ */ on(A);
+	if (n === null) n = A.appendChild(an());
 	else if (t && n.nodeType !== 3) {
-		var r = on();
-		return n?.before(r), be(r), r;
+		var r = an();
+		return n?.before(r), ye(r), r;
 	}
-	return t && pn(n), be(n), n;
+	return t && fn(n), ye(n), n;
 }
-function ln(e, t = !1) {
-	if (!O) {
-		var n = /* @__PURE__ */ sn(e);
-		return n instanceof Comment && n.data === "" ? /* @__PURE__ */ cn(n) : n;
+function cn(e, t = !1) {
+	if (!k) {
+		var n = /* @__PURE__ */ on(e);
+		return n instanceof Comment && n.data === "" ? /* @__PURE__ */ sn(n) : n;
 	}
 	if (t) {
-		if (k?.nodeType !== 3) {
-			var r = on();
-			return k?.before(r), be(r), r;
+		if (A?.nodeType !== 3) {
+			var r = an();
+			return A?.before(r), ye(r), r;
 		}
-		pn(k);
+		fn(A);
 	}
-	return k;
+	return A;
 }
-function L(e, t = !1) {
-	if (!O) return /* @__PURE__ */ sn(e);
-	var n = I(e, t);
-	return A(e), n;
+function R(e, t = !1) {
+	if (!k) return /* @__PURE__ */ on(e);
+	var n = L(e, t);
+	return j(e), n;
 }
-function R(e, t = 1, n = !1) {
-	let r = O ? k : e;
-	for (var i; t--;) i = r, r = /* @__PURE__ */ cn(r);
-	if (!O) return r;
+function z(e, t = 1, n = !1) {
+	let r = k ? A : e;
+	for (var i; t--;) i = r, r = /* @__PURE__ */ sn(r);
+	if (!k) return r;
 	if (n) {
 		if (r?.nodeType !== 3) {
-			var a = on();
-			return r === null ? i?.after(a) : r.before(a), be(a), a;
+			var a = an();
+			return r === null ? i?.after(a) : r.before(a), ye(a), a;
 		}
-		pn(r);
+		fn(r);
 	}
-	return be(r), r;
+	return ye(r), r;
 }
-function un(e) {
+function ln(e) {
 	e.textContent = "";
 }
-function dn() {
+function un() {
 	return !1;
 }
-function fn(e, t, n) {
+function dn(e, t, n) {
 	return t == null || t === "http://www.w3.org/1999/xhtml" ? n ? document.createElement(e, { is: n }) : document.createElement(e) : n ? document.createElementNS(t, e, { is: n }) : document.createElementNS(t, e);
 }
-function pn(e) {
+function fn(e) {
 	if (e.nodeValue.length < 65536) return;
 	let t = e.nextSibling;
 	for (; t !== null && t.nodeType === 3;) t.remove(), e.nodeValue += t.nodeValue, t = e.nextSibling;
 }
-function mn(e) {
+function pn(e) {
 	var t = V;
-	if (t === null) return B.f |= re, e;
+	if (t === null) return Gn.f |= ne, e;
 	if (!(t.f & 32768) && !(t.f & 4)) throw e;
-	hn(e, t);
+	mn(e, t);
 }
-function hn(e, t) {
+function mn(e, t) {
 	if (e === fe) throw e;
 	if (!(t !== null && t.f & 16384)) {
 		for (; t !== null;) {
@@ -958,18 +958,18 @@ function hn(e, t) {
 	}
 }
 // ../node_modules/svelte/src/internal/client/reactivity/effects.js
-function gn(e) {
-	V === null && (B === null && Ne(e), Me()), Wn && je(e);
+function hn(e) {
+	V === null && (Gn === null && Me(e), je()), Un && Ae(e);
 }
-function _n(e, t) {
+function gn(e, t) {
 	var n = t.last;
 	n === null ? t.last = t.first = e : (n.next = e, e.prev = n, t.last = e);
 }
-function vn(e, t) {
+function _n(e, t) {
 	var n = V;
 	n !== null && n.f & 8192 && (e |= v);
 	var r = {
-		ctx: j,
+		ctx: M,
 		deps: null,
 		nodes: null,
 		f: e | g | 512,
@@ -984,63 +984,63 @@ function vn(e, t) {
 		wv: 0,
 		ac: null
 	};
-	N?.register_created_effect(r);
+	P?.register_created_effect(r);
 	var i = r;
-	if (e & 4) Et === null ? At.ensure().schedule(r) : Et.push(r);
+	if (e & 4) Tt === null ? kt.ensure().schedule(r) : Tt.push(r);
 	else if (t !== null) {
 		try {
 			fr(r);
 		} catch (e) {
-			throw Fn(r), e;
+			throw Pn(r), e;
 		}
 		i.deps === null && i.teardown === null && i.nodes === null && i.first === i.last && !(i.f & 524288) && (i = i.first, e & 16 && e & 65536 && i !== null && (i.f |= S));
 	}
-	if (i !== null && (i.parent = n, n !== null && _n(i, n), B !== null && B.f & 2 && !(e & 64))) {
-		var a = B;
+	if (i !== null && (i.parent = n, n !== null && gn(i, n), Gn !== null && Gn.f & 2 && !(e & 64))) {
+		var a = Gn;
 		(a.effects ??= []).push(i);
 	}
 	return r;
 }
-function yn() {
-	return B !== null && !Kn;
+function vn() {
+	return Gn !== null && !Kn;
+}
+function yn(e) {
+	let t = _n(8, null);
+	return Qe(t, h), t.teardown = e, t;
 }
 function bn(e) {
-	let t = vn(8, null);
-	return $e(t, h), t.teardown = e, t;
+	hn("$effect");
+	var t = V.f;
+	if (!Gn && t & 32 && M !== null && !M.i) {
+		var n = M;
+		(n.e ??= []).push(e);
+	} else return xn(e);
 }
 function xn(e) {
-	gn("$effect");
-	var t = V.f;
-	if (!B && t & 32 && j !== null && !j.i) {
-		var n = j;
-		(n.e ??= []).push(e);
-	} else return Sn(e);
+	return _n(4 | w, e);
 }
 function Sn(e) {
-	return vn(4 | w, e);
+	return hn("$effect.pre"), _n(8 | w, e);
 }
 function Cn(e) {
-	return gn("$effect.pre"), vn(8 | w, e);
-}
-function wn(e) {
-	At.ensure();
-	let t = vn(64 | C, e);
+	kt.ensure();
+	let t = _n(64 | C, e);
 	return (e = {}) => new Promise((n) => {
-		e.outro ? Rn(t, () => {
-			Fn(t), n(void 0);
-		}) : (Fn(t), n(void 0));
+		e.outro ? Ln(t, () => {
+			Pn(t), n(void 0);
+		}) : (Pn(t), n(void 0));
 	});
 }
-function Tn(e) {
-	return vn(4, e);
+function wn(e) {
+	return _n(4, e);
 }
-function En(e, t) {
-	var n = j, r = {
+function Tn(e, t) {
+	var n = M, r = {
 		effect: null,
 		ran: !1,
 		deps: e
 	};
-	n.l.$.push(r), r.effect = kn(() => {
+	n.l.$.push(r), r.effect = On(() => {
 		if (e(), !r.ran) {
 			r.ran = !0;
 			var n = V;
@@ -1052,97 +1052,97 @@ function En(e, t) {
 		}
 	});
 }
-function Dn() {
-	var e = j;
-	kn(() => {
+function En() {
+	var e = M;
+	On(() => {
 		for (var t of e.l.$) {
 			t.deps();
 			var n = t.effect;
-			n.f & 1024 && n.deps !== null && $e(n, _), or(n) && fr(n), t.ran = !1;
+			n.f & 1024 && n.deps !== null && Qe(n, _), or(n) && fr(n), t.ran = !1;
 		}
 	});
 }
-function On(e) {
-	return vn(ne | C, e);
+function Dn(e) {
+	return _n(te | C, e);
 }
-function kn(e, t = 0) {
-	return vn(8 | t, e);
+function On(e, t = 0) {
+	return _n(8 | t, e);
 }
-function z(e, t = [], n = [], r = []) {
-	st(r, t, n, (t) => {
-		vn(8, () => {
+function B(e, t = [], n = [], r = []) {
+	ot(r, t, n, (t) => {
+		_n(8, () => {
 			e(...t.map(H));
 		});
 	});
 }
-function An(e, t = 0) {
-	return vn(16 | t, e);
+function kn(e, t = 0) {
+	return _n(16 | t, e);
+}
+function An(e) {
+	return _n(32 | C, e);
 }
 function jn(e) {
-	return vn(32 | C, e);
-}
-function Mn(e) {
 	var t = e.teardown;
 	if (t !== null) {
-		let n = Wn, r = B;
-		Gn(!0), qn(null);
+		let n = Un, r = Gn;
+		Wn(!0), qn(null);
 		try {
 			t.call(null);
 		} catch (t) {
-			hn(t, e.parent);
+			mn(t, e.parent);
 		} finally {
-			Gn(n), qn(r);
+			Wn(n), qn(r);
 		}
 	}
 }
-function Nn(e, t = !1) {
+function Mn(e, t = !1) {
 	var n = e.first;
 	for (e.first = e.last = null; n !== null;) {
 		let e = n.ac;
-		e !== null && at(() => {
+		e !== null && it(() => {
 			e.abort(ue);
 		});
 		var r = n.next;
-		n.f & 64 ? n.parent = null : Fn(n, t), n = r;
+		n.f & 64 ? n.parent = null : Pn(n, t), n = r;
 	}
 }
-function Pn(e) {
+function Nn(e) {
 	for (var t = e.first; t !== null;) {
 		var n = t.next;
-		t.f & 32 || Fn(t), t = n;
+		t.f & 32 || Pn(t), t = n;
 	}
 }
-function Fn(e, t = !0) {
+function Pn(e, t = !0) {
 	var n = !1;
-	(t || e.f & 262144) && e.nodes !== null && e.nodes.end !== null && (In(e.nodes.start, e.nodes.end), n = !0), e.f |= x, Nn(e, t && !n), dr(e, 0);
+	(t || e.f & 262144) && e.nodes !== null && e.nodes.end !== null && (Fn(e.nodes.start, e.nodes.end), n = !0), e.f |= x, Mn(e, t && !n), dr(e, 0);
 	var r = e.nodes && e.nodes.t;
 	if (r !== null) for (let e of r) e.stop();
-	Mn(e), e.f ^= x, e.f |= y;
+	jn(e), e.f ^= x, e.f |= y;
 	var i = e.parent;
-	i !== null && i.first !== null && Ln(e), e.next = e.prev = e.teardown = e.ctx = e.deps = e.fn = e.nodes = e.ac = e.b = null;
+	i !== null && i.first !== null && In(e), e.next = e.prev = e.teardown = e.ctx = e.deps = e.fn = e.nodes = e.ac = e.b = null;
 }
-function In(e, t) {
+function Fn(e, t) {
 	for (; e !== null;) {
-		var n = e === t ? null : /* @__PURE__ */ cn(e);
+		var n = e === t ? null : /* @__PURE__ */ sn(e);
 		e.remove(), e = n;
 	}
 }
-function Ln(e) {
+function In(e) {
 	var t = e.parent, n = e.prev, r = e.next;
 	n !== null && (n.next = r), r !== null && (r.prev = n), t !== null && (t.first === e && (t.first = r), t.last === e && (t.last = n));
 }
-function Rn(e, t, n = !0) {
+function Ln(e, t, n = !0) {
 	var r = [];
-	e.f |= 256, zn(e, r, !0);
+	e.f |= 256, Rn(e, r, !0);
 	var i = () => {
-		n && Fn(e), t && t();
+		n && Pn(e), t && t();
 	}, a = r.length;
 	if (a > 0) {
 		var o = () => --a || i();
 		for (var s of r) s.out(o);
 	} else i();
 }
-function zn(e, t, n) {
+function Rn(e, t, n) {
 	if (!(e.f & 8192)) {
 		e.f ^= v;
 		var r = e.nodes && e.nodes.t;
@@ -1151,40 +1151,40 @@ function zn(e, t, n) {
 			var a = i.next;
 			if (!(i.f & 64)) {
 				var o = !!(i.f & 65536) || !!(i.f & 32) && !!(e.f & 16);
-				zn(i, t, o ? n : !1);
+				Rn(i, t, o ? n : !1);
 			}
 			i = a;
 		}
 	}
 }
-function Bn(e) {
-	e.f &= -257, Vn(e, !0);
+function zn(e) {
+	e.f &= -257, Bn(e, !0);
 }
-function Vn(e, t) {
+function Bn(e, t) {
 	if (!(e.f & 256) && e.f & 8192) {
-		e.f ^= v, e.f & 1024 || ($e(e, g), At.ensure().schedule(e));
+		e.f ^= v, e.f & 1024 || (Qe(e, g), kt.ensure().schedule(e));
 		for (var n = e.first; n !== null;) {
 			var r = n.next, i = !!(n.f & 65536) || !!(n.f & 32);
-			Vn(n, i ? t : !1), n = r;
+			Bn(n, i ? t : !1), n = r;
 		}
 		var a = e.nodes && e.nodes.t;
 		if (a !== null) for (let e of a) (e.is_global || t) && e.in();
 	}
 }
-function Hn(e, t) {
+function Vn(e, t) {
 	if (e.nodes) for (var n = e.nodes.start, r = e.nodes.end; n !== null;) {
-		var i = n === r ? null : /* @__PURE__ */ cn(n);
+		var i = n === r ? null : /* @__PURE__ */ sn(n);
 		t.append(n), n = i;
 	}
 }
 // ../node_modules/svelte/src/internal/client/legacy.js
-var Un = null, Wn = !1;
-function Gn(e) {
-	Wn = e;
+var Hn = null, Un = !1;
+function Wn(e) {
+	Un = e;
 }
-var B = null, Kn = !1;
+var Gn = null, Kn = !1;
 function qn(e) {
-	B = e;
+	Gn = e;
 }
 var V = null;
 function Jn(e) {
@@ -1192,7 +1192,7 @@ function Jn(e) {
 }
 var Yn = null;
 function Xn(e) {
-	B !== null && (B.f & 2097152 || B.f & 2) && (Yn ??= /* @__PURE__ */ new Set()).add(e);
+	Gn !== null && (Gn.f & 2097152 || Gn.f & 2) && (Yn ??= /* @__PURE__ */ new Set()).add(e);
 }
 var Zn = null, Qn = 0, $n = null;
 function er(e) {
@@ -1211,9 +1211,9 @@ function or(e) {
 	if (t & 4096) {
 		for (var n = e.deps, r = n.length, i = 0; i < r; i++) {
 			var a = n[i];
-			if (or(a) && _t(a), a.wv > e.wv) return !0;
+			if (or(a) && gt(a), a.wv > e.wv) return !0;
 		}
-		t & 512 && St === null && $e(e, h);
+		t & 512 && xt === null && Qe(e, h);
 	}
 	return !1;
 }
@@ -1221,39 +1221,39 @@ function sr(e, t, n = !0) {
 	var r = e.reactions;
 	if (r !== null && !(Yn !== null && Yn.has(e))) for (var i = 0; i < r.length; i++) {
 		var a = r[i];
-		a.f & 2 ? sr(a, t, !1) : t === a && (n ? $e(a, g) : a.f & 1024 && $e(a, _), Ft(a));
+		a.f & 2 ? sr(a, t, !1) : t === a && (n ? Qe(a, g) : a.f & 1024 && Qe(a, _), Pt(a));
 	}
 }
 function cr(e) {
-	var t = Zn, n = Qn, r = $n, i = B, a = Yn, o = j, s = Kn, c = rr, l = e.f;
-	Zn = null, Qn = 0, $n = null, B = l & 96 ? null : e, Yn = null, Ue(e.ctx), Kn = !1, rr = ++nr, e.ac !== null && (at(() => {
+	var t = Zn, n = Qn, r = $n, i = Gn, a = Yn, o = M, s = Kn, c = rr, l = e.f;
+	Zn = null, Qn = 0, $n = null, Gn = l & 96 ? null : e, Yn = null, He(e.ctx), Kn = !1, rr = ++nr, e.ac !== null && (it(() => {
 		e.ac.abort(ue);
 	}), e.ac = null);
 	try {
-		e.f |= te;
+		e.f |= ee;
 		var u = e.fn, d = u();
 		e.f |= b;
 		var f = lr(e);
-		if (qe() && $n !== null && !Kn && f !== null && !(e.f & 6146)) for (var p = 0; p < $n.length; p++) sr($n[p], e);
+		if (Ke() && $n !== null && !Kn && f !== null && !(e.f & 6146)) for (var p = 0; p < $n.length; p++) sr($n[p], e);
 		if (i !== null && i !== e) {
 			if (nr++, i.deps !== null) for (let e = 0; e < n; e += 1) i.deps[e].rv = nr;
 			if (t !== null) for (let e of t) e.rv = nr;
 			$n !== null && (r === null ? r = $n : r.push(...$n));
 		}
-		return e.f & 8388608 && (e.f ^= re), d;
+		return e.f & 8388608 && (e.f ^= ne), d;
 	} catch (t) {
-		return lr(e), mn(t);
+		return lr(e), pn(t);
 	} finally {
-		e.f ^= te, Zn = t, Qn = n, $n = r, B = i, Yn = a, Ue(o), Kn = s, rr = c;
+		e.f ^= ee, Zn = t, Qn = n, $n = r, Gn = i, Yn = a, He(o), Kn = s, rr = c;
 	}
 }
 function lr(e) {
-	var t = e.deps, n = N?.is_fork;
+	var t = e.deps, n = P?.is_fork;
 	if (Zn !== null) {
 		var r;
 		if (n || dr(e, Qn), t !== null && Qn > 0) for (t.length = Qn + Zn.length, r = 0; r < Zn.length; r++) t[Qn + r] = Zn[r];
 		else e.deps = t = Zn;
-		if (yn() && e.f & 512) for (r = Qn; r < t.length; r++) (t[r].reactions ??= []).push(e);
+		if (vn() && e.f & 512) for (r = Qn; r < t.length; r++) (t[r].reactions ??= []).push(e);
 	} else !n && t !== null && Qn < t.length && (dr(e, Qn), t.length = Qn);
 	return t;
 }
@@ -1268,9 +1268,9 @@ function ur(e, r) {
 	}
 	if (i === null && r.f & 2 && (Zn === null || !n.call(Zn, r))) {
 		var s = r;
-		s.f & 512 && (s.f ^= 512), s.v !== pe && et(s), s.ac !== null && at(() => {
-			s.ac.abort(ue), s.ac = null, $e(s, g);
-		}), vt(s), dr(s, 0);
+		s.f & 512 && (s.f ^= 512), s.v !== O && $e(s), s.ac !== null && it(() => {
+			s.ac.abort(ue), s.ac = null, Qe(s, g);
+		}), _t(s), dr(s, 0);
 	}
 }
 function dr(e, t) {
@@ -1280,11 +1280,11 @@ function dr(e, t) {
 function fr(e) {
 	var t = e.f;
 	if (!(t & 16384)) {
-		$e(e, h);
+		Qe(e, h);
 		var n = V;
 		V = e;
 		try {
-			t & 16777232 ? Pn(e) : Nn(e), Mn(e);
+			t & 16777232 ? Nn(e) : Mn(e), jn(e);
 			var r = cr(e);
 			e.teardown = typeof r == "function" ? r : null, e.wv = tr;
 		} finally {
@@ -1293,43 +1293,43 @@ function fr(e) {
 	}
 }
 async function pr() {
-	await Promise.resolve(), jt();
+	await Promise.resolve(), At();
 }
 function H(e) {
 	var t = !!(e.f & 2);
-	if (Un?.add(e), B !== null && !Kn && !(V !== null && V.f & 16384) && (Yn === null || !Yn.has(e))) {
-		var r = B.deps;
-		if (B.f & 2097152) e.rv < nr && (e.rv = nr, Zn === null && r !== null && r[Qn] === e ? Qn++ : Zn === null ? Zn = [e] : Zn.push(e));
+	if (Hn?.add(e), Gn !== null && !Kn && !(V !== null && V.f & 16384) && (Yn === null || !Yn.has(e))) {
+		var r = Gn.deps;
+		if (Gn.f & 2097152) e.rv < nr && (e.rv = nr, Zn === null && r !== null && r[Qn] === e ? Qn++ : Zn === null ? Zn = [e] : Zn.push(e));
 		else {
-			B.deps ??= [], n.call(B.deps, e) || B.deps.push(e);
+			Gn.deps ??= [], n.call(Gn.deps, e) || Gn.deps.push(e);
 			var i = e.reactions;
-			i === null ? e.reactions = [B] : n.call(i, B) || i.push(B);
+			i === null ? e.reactions = [Gn] : n.call(i, Gn) || i.push(Gn);
 		}
 	}
-	if (Wn && zt.has(e)) return zt.get(e);
+	if (Un && Rt.has(e)) return Rt.get(e);
 	if (t) {
 		var a = e;
-		if (Wn) {
+		if (Un) {
 			var o = a.v;
-			return (!(a.f & 1024) && a.reactions !== null || hr(a)) && (o = gt(a)), zt.set(a, o), o;
+			return (!(a.f & 1024) && a.reactions !== null || hr(a)) && (o = ht(a)), Rt.set(a, o), o;
 		}
-		var s = !(a.f & 512) && !Kn && B !== null && !!(B.f & 512), c = (a.f & b) === 0;
-		or(a) && (s && (a.f |= 512), _t(a)), s && !c && (yt(a), mr(a));
+		var s = !(a.f & 512) && !Kn && Gn !== null && !!(Gn.f & 512), c = (a.f & b) === 0;
+		or(a) && (s && (a.f |= 512), gt(a)), s && !c && (vt(a), mr(a));
 	}
-	if (St?.has(e)) return St.get(e);
+	if (xt?.has(e)) return xt.get(e);
 	if (e.f & 8388608) throw e.v;
 	return e.v;
 }
 function mr(e) {
 	if (e.f |= 512, e.deps !== null) for (let r of e.deps) {
 		var t = r.reactions;
-		t === null ? r.reactions = [e] : n.call(t, e) || t.push(e), r.f & 2 && !(r.f & 512) && (yt(r), mr(r));
+		t === null ? r.reactions = [e] : n.call(t, e) || t.push(e), r.f & 2 && !(r.f & 512) && (vt(r), mr(r));
 	}
 }
 function hr(e) {
-	if (e.v === pe) return !0;
+	if (e.v === O) return !0;
 	if (e.deps === null) return !1;
-	for (let t of e.deps) if (zt.has(t) || t.f & 2 && hr(t)) return !0;
+	for (let t of e.deps) if (Rt.has(t) || t.f & 2 && hr(t)) return !0;
 	return !1;
 }
 function U(e) {
@@ -1342,10 +1342,10 @@ function U(e) {
 }
 function W(e) {
 	if (!(typeof e != "object" || !e || e instanceof EventTarget)) {
-		if (ie in e) gr(e);
+		if (re in e) gr(e);
 		else if (!Array.isArray(e)) for (let t in e) {
 			let n = e[t];
-			typeof n == "object" && n && ie in n && gr(n);
+			typeof n == "object" && n && re in n && gr(n);
 		}
 	}
 }
@@ -1376,9 +1376,9 @@ function vr(e) {
 var yr = Symbol("events"), br = /* @__PURE__ */ new Set(), xr = /* @__PURE__ */ new Set();
 function Sr(e, t, n, r = {}) {
 	function i(e) {
-		if (r.capture || Dr.call(t, e), !e.cancelBubble) return at(() => n?.call(this, e));
+		if (r.capture || Dr.call(t, e), !e.cancelBubble) return it(() => n?.call(this, e));
 	}
-	return e.startsWith("pointer") || e.startsWith("touch") || e === "wheel" ? (i.__removed = !1, Xe(() => {
+	return e.startsWith("pointer") || e.startsWith("touch") || e === "wheel" ? (i.__removed = !1, Ye(() => {
 		i.__removed || t.addEventListener(e, i, r);
 	})) : t.addEventListener(e, i, r), i;
 }
@@ -1387,7 +1387,7 @@ function Cr(e, t, n, r, i) {
 		capture: r,
 		passive: i
 	}, o = Sr(e, t, n, a);
-	(t === document.body || t === window || t === document || t instanceof HTMLMediaElement) && bn(() => {
+	(t === document.body || t === window || t === document || t instanceof HTMLMediaElement) && yn(() => {
 		o.__removed = !0, t.removeEventListener(e, o, a);
 	});
 }
@@ -1422,7 +1422,7 @@ function Dr(e) {
 				return o || n;
 			}
 		});
-		var d = B, f = V;
+		var d = Gn, f = V;
 		qn(null), Jn(null);
 		try {
 			for (var p, m = []; o !== null && o !== t;) {
@@ -1452,7 +1452,7 @@ function kr(e) {
 	return Or?.createHTML(e) ?? e;
 }
 function Ar(e) {
-	var t = fn("template");
+	var t = dn("template");
 	return t.innerHTML = kr(e.replaceAll("<!>", "<!---->")), t.content;
 }
 // ../node_modules/svelte/src/internal/client/dom/template.js
@@ -1469,42 +1469,42 @@ function jr(e, t) {
 function K(e, t) {
 	var n = !!(t & 1), r = !!(t & 2), i, a = !e.startsWith("<!>");
 	return () => {
-		if (O) return jr(k, null), k;
-		i === void 0 && (i = Ar(a ? e : "<!>" + e), n || (i = /* @__PURE__ */ sn(i)));
-		var t = r || tn ? document.importNode(i, !0) : i.cloneNode(!0);
+		if (k) return jr(A, null), A;
+		i === void 0 && (i = Ar(a ? e : "<!>" + e), n || (i = /* @__PURE__ */ on(i)));
+		var t = r || en ? document.importNode(i, !0) : i.cloneNode(!0);
 		if (n) {
-			var o = /* @__PURE__ */ sn(t), s = t.lastChild;
+			var o = /* @__PURE__ */ on(t), s = t.lastChild;
 			jr(o, s);
 		} else jr(t, t);
 		return t;
 	};
 }
 function Mr(e = "") {
-	if (!O) {
-		var t = on(e + "");
+	if (!k) {
+		var t = an(e + "");
 		return jr(t, t), t;
 	}
-	var n = k;
-	return n.nodeType === 3 ? pn(n) : (n.before(n = on()), be(n)), jr(n, n), n;
+	var n = A;
+	return n.nodeType === 3 ? fn(n) : (n.before(n = an()), ye(n)), jr(n, n), n;
 }
 function Nr() {
-	if (O) return jr(k, null), k;
-	var e = document.createDocumentFragment(), t = document.createComment(""), n = on();
+	if (k) return jr(A, null), A;
+	var e = document.createDocumentFragment(), t = document.createComment(""), n = an();
 	return e.append(t, n), jr(t, n), e;
 }
 function q(e, t) {
-	if (O) {
+	if (k) {
 		var n = V;
-		n.f & 32768 && n.nodes.end !== null || (n.nodes.end = k), xe();
+		n.f & 32768 && n.nodes.end !== null || (n.nodes.end = A), be();
 	} else e !== null && e.before(t);
 }
 // ../node_modules/svelte/src/reactivity/create-subscriber.js
 function Pr(e) {
-	let t = 0, n = Vt(0), r;
+	let t = 0, n = Bt(0), r;
 	return () => {
-		yn() && (H(n), kn(() => (t === 0 && (r = U(() => e(() => Yt(n)))), t += 1, () => {
-			Xe(() => {
-				--t, t === 0 && (r?.(), r = void 0, Yt(n));
+		vn() && (H(n), On(() => (t === 0 && (r = U(() => e(() => Jt(n)))), t += 1, () => {
+			Ye(() => {
+				--t, t === 0 && (r?.(), r = void 0, Jt(n));
 			});
 		})));
 	};
@@ -1519,7 +1519,7 @@ var Lr = class {
 	is_pending = !1;
 	transform_error;
 	#e;
-	#t = O ? k : null;
+	#t = k ? A : null;
 	#n;
 	#r;
 	#i;
@@ -1533,42 +1533,42 @@ var Lr = class {
 	#f = /* @__PURE__ */ new Set();
 	#p = /* @__PURE__ */ new Set();
 	#m = null;
-	#h = Pr(() => (this.#m = Vt(this.#l), () => {
+	#h = Pr(() => (this.#m = Bt(this.#l), () => {
 		this.#m = null;
 	}));
 	constructor(e, t, n, r) {
 		this.#e = e, this.#n = t, this.#r = (e) => {
 			var t = V;
 			t.b = this, t.f |= 128, n(e);
-		}, this.parent = V.b, this.transform_error = r ?? this.parent?.transform_error ?? ((e) => e), this.#i = An(() => {
-			if (O) {
-				let e = we(this.#t);
-				xe();
+		}, this.parent = V.b, this.transform_error = r ?? this.parent?.transform_error ?? ((e) => e), this.#i = kn(() => {
+			if (k) {
+				let e = Ce(this.#t);
+				be();
 				let t = e === "[!";
 				if (e.startsWith("[?")) {
 					let t = JSON.parse(e.slice(2));
 					this.#_(t);
 				} else t ? this.#b() : this.#g();
 			} else this.#x();
-		}, Fr), O && (this.#e = k);
+		}, Fr), k && (this.#e = A);
 	}
 	#g() {
 		try {
-			this.#a = jn(() => this.#r(this.#e));
+			this.#a = An(() => this.#r(this.#e));
 		} catch (e) {
 			this.error(e);
 		}
 	}
 	#_(e) {
 		let t = this.#n.failed, { reset: n, invoke_onerror: r } = this.#v(e);
-		Xe(r), t && (this.#s = jn(() => {
+		Ye(r), t && (this.#s = An(() => {
 			t(this.#e, () => e, () => n);
 		}));
 	}
 	#v(e) {
 		var t = !1, n = !1;
 		let r = () => {
-			this.#y() || (t ? ve() : (t = !0, n && Be(), this.#s !== null && Rn(this.#s, () => {
+			this.#y() || (t ? _e() : (t = !0, n && ze(), this.#s !== null && Ln(this.#s, () => {
 				this.#s = null;
 			}), this.#C(() => {
 				this.#x();
@@ -1580,7 +1580,7 @@ var Lr = class {
 				if (!this.#y()) try {
 					n = !0, this.#n.onerror?.(e, r), n = !1;
 				} catch (e) {
-					hn(e, this.#i && this.#i.parent);
+					mn(e, this.#i && this.#i.parent);
 				}
 			}
 		};
@@ -1590,36 +1590,36 @@ var Lr = class {
 	}
 	#b() {
 		let e = this.#n.pending;
-		e && (this.is_pending = !0, this.#o = jn(() => e(this.#e)), Xe(() => {
+		e && (this.is_pending = !0, this.#o = An(() => e(this.#e)), Ye(() => {
 			if (!this.#y()) {
-				var e = this.#c = document.createDocumentFragment(), t = on(), n = !1;
+				var e = this.#c = document.createDocumentFragment(), t = an(), n = !1;
 				e.append(t), this.#a = this.#C(() => {
 					try {
-						return jn(() => this.#r(t));
+						return An(() => this.#r(t));
 					} catch (e) {
 						try {
 							this.error(e), n = !0;
 						} catch (e) {
-							hn(e, this.#i.parent);
+							mn(e, this.#i.parent);
 						}
 						return null;
 					}
-				}), this.#a === null ? (this.#c = null, n && this.#S(N)) : this.#u === 0 && (this.#e.before(e), this.#c = null, Rn(this.#o, () => {
+				}), this.#a === null ? (this.#c = null, n && this.#S(P)) : this.#u === 0 && (this.#e.before(e), this.#c = null, Ln(this.#o, () => {
 					this.#o = null;
-				}), this.#S(N));
+				}), this.#S(P));
 			}
 		}));
 	}
 	#x() {
 		try {
-			if (this.is_pending = this.has_pending_snippet(), this.#u = 0, this.#l = 0, this.#a = jn(() => {
+			if (this.is_pending = this.has_pending_snippet(), this.#u = 0, this.#l = 0, this.#a = An(() => {
 				this.#r(this.#e);
 			}), this.#u > 0) {
 				var e = this.#c = document.createDocumentFragment();
-				Hn(this.#a, e);
+				Vn(this.#a, e);
 				let t = this.#n.pending;
-				this.#o = jn(() => t(this.#e));
-			} else this.#S(N);
+				this.#o = An(() => t(this.#e));
+			} else this.#S(P);
 		} catch (e) {
 			this.error(e);
 		}
@@ -1628,7 +1628,7 @@ var Lr = class {
 		this.is_pending = !1, e.transfer_effects(this.#f, this.#p);
 	}
 	defer_effect(e) {
-		tt(e, this.#f, this.#p);
+		et(e, this.#f, this.#p);
 	}
 	is_rendered() {
 		return !this.is_pending && (!this.parent || this.parent.is_rendered());
@@ -1637,22 +1637,22 @@ var Lr = class {
 		return !!this.#n.pending;
 	}
 	#C(e) {
-		var t = V, n = B, r = j;
-		Jn(this.#i), qn(this.#i), Ue(this.#i.ctx);
+		var t = V, n = Gn, r = M;
+		Jn(this.#i), qn(this.#i), He(this.#i.ctx);
 		try {
-			return At.ensure(), e();
+			return kt.ensure(), e();
 		} finally {
-			Jn(t), qn(n), Ue(r);
+			Jn(t), qn(n), He(r);
 		}
 	}
 	#w(e, t) {
-		this.has_pending_snippet() ? (this.#u += e, this.#u === 0 && (this.#S(t), this.#o && Rn(this.#o, () => {
+		this.has_pending_snippet() ? (this.#u += e, this.#u === 0 && (this.#S(t), this.#o && Ln(this.#o, () => {
 			this.#o = null;
 		}), this.#c &&= (this.#e.before(this.#c), null))) : this.parent && this.parent.#w(e, t);
 	}
 	update_pending_count(e, t) {
-		this.#w(e, t), this.#l += e, !(!this.#m || this.#d) && (this.#d = !0, Xe(() => {
-			this.#d = !1, this.#m && Kt(this.#m, this.#l);
+		this.#w(e, t), this.#l += e, !(!this.#m || this.#d) && (this.#d = !0, Ye(() => {
+			this.#d = !1, this.#m && Gt(this.#m, this.#l);
 		}));
 	}
 	get_effect_pending() {
@@ -1660,57 +1660,57 @@ var Lr = class {
 	}
 	error(e) {
 		if (e === fe || !this.#n.onerror && !this.#n.failed) throw e;
-		N?.is_fork ? (this.#a && N.skip_effect(this.#a), this.#o && N.skip_effect(this.#o), this.#s && N.skip_effect(this.#s), N.oncommit(() => {
+		P?.is_fork ? (this.#a && P.skip_effect(this.#a), this.#o && P.skip_effect(this.#o), this.#s && P.skip_effect(this.#s), P.oncommit(() => {
 			this.#y() || this.#T(e);
 		})) : this.#T(e);
 	}
 	#T(e) {
-		this.#a &&= (Fn(this.#a), null), this.#o &&= (Fn(this.#o), null), this.#s &&= (Fn(this.#s), null), O && (be(this.#t), Se(), be(Ce()));
+		this.#a &&= (Pn(this.#a), null), this.#o &&= (Pn(this.#o), null), this.#s &&= (Pn(this.#s), null), k && (ye(this.#t), xe(), ye(Se()));
 		let t = this.#n.failed, n = (e) => {
 			if (this.#y()) return;
 			let { reset: n, invoke_onerror: r } = this.#v(e);
 			r(), t && !this.#y() && (this.#s = this.#C(() => {
 				try {
-					return jn(() => {
+					return An(() => {
 						var r = V;
 						r.b = this, r.f |= 128, t(this.#e, () => e, () => n);
 					});
 				} catch (e) {
-					return hn(e, this.#i.parent), null;
+					return mn(e, this.#i.parent), null;
 				}
 			}));
 		};
-		Xe(() => {
+		Ye(() => {
 			if (!this.#y()) {
 				var t;
 				try {
 					t = this.transform_error(e);
 				} catch (e) {
-					hn(e, this.#i && this.#i.parent);
+					mn(e, this.#i && this.#i.parent);
 					return;
 				}
-				typeof t == "object" && t && typeof t.then == "function" ? t.then(n, (e) => hn(e, this.#i && this.#i.parent)) : n(t);
+				typeof t == "object" && t && typeof t.then == "function" ? t.then(n, (e) => mn(e, this.#i && this.#i.parent)) : n(t);
 			}
 		});
 	}
 };
 function J(e, t) {
 	var n = t == null ? "" : typeof t == "object" ? `${t}` : t;
-	n !== (e[le] ??= e.nodeValue) && (e[le] = n, e.nodeValue = `${n}`);
+	n !== (e[D] ??= e.nodeValue) && (e[D] = n, e.nodeValue = `${n}`);
 }
 function Rr(e, t) {
 	return Br(e, t);
 }
 var zr = /* @__PURE__ */ new Map();
 function Br(e, { target: t, anchor: n, props: i = {}, events: a, context: o, intro: s = !0, transformError: c }) {
-	an();
-	var l = void 0, u = wn(() => {
-		var s = n ?? t.appendChild(on());
+	rn();
+	var l = void 0, u = Cn(() => {
+		var s = n ?? t.appendChild(an());
 		Ir(s, { pending: () => {} }, (t) => {
-			We({});
-			var n = j;
-			if (o && (n.c = o), a && (i.$$events = a), O && jr(t, null), l = e(t, i) || Ke(), O && (V.nodes.end = k, k === null || k.nodeType !== 8 || k.data !== "]")) throw ge(), fe;
-			Ge();
+			Ue({});
+			var n = M;
+			if (o && (n.c = o), a && (i.$$events = a), k && jr(t, null), l = e(t, i) || Ge(), k && (V.nodes.end = A, A === null || A.nodeType !== 8 || A.data !== "]")) throw he(), fe;
+			We();
 		}, c);
 		var u = /* @__PURE__ */ new Set(), d = (e) => {
 			for (var n = 0; n < e.length; n++) {
@@ -1750,72 +1750,72 @@ var Vr = /* @__PURE__ */ new WeakMap(), Hr = class {
 	#a = (e) => {
 		if (this.#e.has(e)) {
 			var t = this.#e.get(e), n = this.#t.get(t);
-			if (n) Bn(n), this.#r.delete(t);
+			if (n) zn(n), this.#r.delete(t);
 			else {
 				var r = this.#n.get(t);
-				r && (Bn(r.effect), this.#t.set(t, r.effect), this.#n.delete(t), r.fragment.lastChild.remove(), this.anchor.before(r.fragment), n = r.effect);
+				r && (zn(r.effect), this.#t.set(t, r.effect), this.#n.delete(t), r.fragment.lastChild.remove(), this.anchor.before(r.fragment), n = r.effect);
 			}
 			for (let [t, n] of this.#e) {
 				if (this.#e.delete(t), t === e) break;
 				let r = this.#n.get(n);
-				r && (Fn(r.effect), this.#n.delete(n));
+				r && (Pn(r.effect), this.#n.delete(n));
 			}
 			for (let [e, r] of this.#t) {
 				if (e === t || this.#r.has(e)) continue;
 				let i = () => {
 					if (Array.from(this.#e.values()).includes(e)) {
 						var t = document.createDocumentFragment();
-						Hn(r, t), t.append(on()), this.#n.set(e, {
+						Vn(r, t), t.append(an()), this.#n.set(e, {
 							effect: r,
 							fragment: t
 						});
-					} else Fn(r);
+					} else Pn(r);
 					this.#r.delete(e), this.#t.delete(e);
 				};
-				this.#i || !n ? (this.#r.add(e), Rn(r, i, !1)) : i();
+				this.#i || !n ? (this.#r.add(e), Ln(r, i, !1)) : i();
 			}
 		}
 	};
 	#o = (e) => {
 		this.#e.delete(e);
 		let t = Array.from(this.#e.values());
-		for (let [e, n] of this.#n) t.includes(e) || (Fn(n.effect), this.#n.delete(e));
+		for (let [e, n] of this.#n) t.includes(e) || (Pn(n.effect), this.#n.delete(e));
 	};
 	ensure(e, t) {
-		var n = N, r = dn();
+		var n = P, r = un();
 		if (t && !this.#t.has(e) && !this.#n.has(e)) {
 			if (r) {
-				var i = document.createDocumentFragment(), a = on();
+				var i = document.createDocumentFragment(), a = an();
 				i.append(a), this.#n.set(e, {
-					effect: jn(() => t(a)),
+					effect: An(() => t(a)),
 					fragment: i
 				});
-			} else this.#t.set(e, jn(() => t(this.anchor)));
+			} else this.#t.set(e, An(() => t(this.anchor)));
 		}
 		if (this.#e.set(n, e), r) {
 			for (let [t, r] of this.#t) t === e ? n.unskip_effect(r) : n.skip_effect(r);
 			for (let [t, r] of this.#n) t === e ? n.unskip_effect(r.effect) : n.skip_effect(r.effect);
 			n.oncommit(this.#a), n.ondiscard(this.#o);
-		} else O && (this.anchor = k), this.#a(n);
+		} else k && (this.anchor = A), this.#a(n);
 	}
 };
 // ../node_modules/svelte/src/internal/client/dom/blocks/if.js
 function Y(e, t, n = !1) {
 	var r;
-	O && (r = k, xe());
+	k && (r = A, be());
 	var i = new Hr(e), a = n ? S : 0;
 	function o(e, t) {
-		if (O) {
-			var n = we(r);
+		if (k) {
+			var n = Ce(r);
 			if (e !== parseInt(n.substring(1))) {
-				var a = Ce();
-				be(a), i.anchor = a, ye(!1), i.ensure(e, t), ye(!0);
+				var a = Se();
+				ye(a), i.anchor = a, ve(!1), i.ensure(e, t), ve(!0);
 				return;
 			}
 		}
 		i.ensure(e, t);
 	}
-	An(() => {
+	kn(() => {
 		var e = !1;
 		t((t, n = 0) => {
 			e = !0, o(n, t);
@@ -1829,7 +1829,7 @@ function Ur(e, t) {
 function Wr(e, t, n) {
 	for (var i = [], a = t.length, o, s = t.length, c = 0; c < a; c++) {
 		let n = t[c];
-		Rn(n, () => {
+		Ln(n, () => {
 			if (o) {
 				if (o.pending.delete(n), o.done.add(n), o.pending.size === 0) {
 					var t = e.outrogroups;
@@ -1842,7 +1842,7 @@ function Wr(e, t, n) {
 		var l = i.length === 0 && n !== null && e.pending.size === 0;
 		if (l) {
 			var u = n, d = u.parentNode;
-			un(d), d.append(u), e.items.clear();
+			ln(d), d.append(u), e.items.clear();
 		}
 		Gr(e, t, !l);
 	} else o = {
@@ -1858,7 +1858,7 @@ function Gr(e, t, n = !0) {
 	}
 	for (var i = 0; i < t.length; i++) {
 		var a = t[i];
-		r?.has(a) ? (a.f |= ee, Hn(a, document.createDocumentFragment())) : Fn(t[i], n);
+		r?.has(a) ? (a.f |= T, Vn(a, document.createDocumentFragment())) : Pn(t[i], n);
 	}
 }
 var Kr;
@@ -1866,10 +1866,10 @@ function qr(t, n, i, a, o, s = null) {
 	var c = t, l = /* @__PURE__ */ new Map();
 	if (n & 4) {
 		var u = t;
-		c = O ? be(/* @__PURE__ */ sn(u)) : u.appendChild(on());
+		c = k ? ye(/* @__PURE__ */ on(u)) : u.appendChild(an());
 	}
-	O && xe();
-	var d = null, f = /* @__PURE__ */ M(() => {
+	k && be();
+	var d = null, f = /* @__PURE__ */ N(() => {
 		var t = i();
 		return e(t) ? t : t == null ? [] : r(t);
 	}), p = /* @__PURE__ */ new Map(), m = !0;
@@ -1877,7 +1877,7 @@ function qr(t, n, i, a, o, s = null) {
 		if (!(_.effect.f & 16384)) {
 			_.pending.delete(e);
 			var t = H(f);
-			_.fallback = d, Yr(_, t, c, n, a), d !== null && (t.length === 0 ? d.f & 33554432 ? (d.f ^= ee, Zr(d, null, c)) : Bn(d) : Rn(d, () => {
+			_.fallback = d, Yr(_, t, c, n, a), d !== null && (t.length === 0 ? d.f & 33554432 ? (d.f ^= T, Zr(d, null, c)) : zn(d) : Ln(d, () => {
 				d = null;
 			}));
 		}
@@ -1886,22 +1886,22 @@ function qr(t, n, i, a, o, s = null) {
 		_.pending.delete(e);
 	}
 	var _ = {
-		effect: An(() => {
+		effect: kn(() => {
 			var e = H(f), t = e.length;
 			let r = !1;
-			O && we(c) === "[!" != (t === 0) && (c = Ce(), be(c), ye(!1), r = !0);
-			for (var u = /* @__PURE__ */ new Set(), _ = N, v = dn(), y = 0; y < t; y += 1) {
-				O && k.nodeType === 8 && k.data === "]" && (c = k, r = !0, ye(!1));
+			k && Ce(c) === "[!" != (t === 0) && (c = Se(), ye(c), ve(!1), r = !0);
+			for (var u = /* @__PURE__ */ new Set(), _ = P, v = un(), y = 0; y < t; y += 1) {
+				k && A.nodeType === 8 && A.data === "]" && (c = A, r = !0, ve(!1));
 				var b = e[y], x = a(b, y), S = m ? null : l.get(x);
-				S ? (S.v && Kt(S.v, b), S.i && Kt(S.i, y), v && _.unskip_effect(S.e)) : (S = Xr(l, m ? c : Kr ??= on(), b, x, y, o, n, i), m || (S.e.f |= ee), l.set(x, S)), u.add(x);
+				S ? (S.v && Gt(S.v, b), S.i && Gt(S.i, y), v && _.unskip_effect(S.e)) : (S = Xr(l, m ? c : Kr ??= an(), b, x, y, o, n, i), m || (S.e.f |= T), l.set(x, S)), u.add(x);
 			}
-			if (t === 0 && s && !d && (m ? d = jn(() => s(c)) : (d = jn(() => s(Kr ??= on())), d.f |= ee)), t > u.size && Ae("", "", ""), O && t > 0 && be(Ce()), !m) {
+			if (t === 0 && s && !d && (m ? d = An(() => s(c)) : (d = An(() => s(Kr ??= an())), d.f |= T)), t > u.size && ke("", "", ""), k && t > 0 && ye(Se()), !m) {
 				if (p.set(_, u), v) {
 					for (let [e, t] of l) u.has(e) || _.skip_effect(t.e);
 					_.oncommit(h), _.ondiscard(g);
 				} else h(_);
 			}
-			r && ye(!0), H(f);
+			r && ve(!0), H(f);
 		}),
 		flags: n,
 		items: l,
@@ -1909,7 +1909,7 @@ function qr(t, n, i, a, o, s = null) {
 		outrogroups: null,
 		fallback: d
 	};
-	m = !1, O && (c = k);
+	m = !1, k && (c = A);
 }
 function Jr(e) {
 	for (; e !== null && !(e.f & 32);) e = e.next;
@@ -1920,8 +1920,8 @@ function Yr(e, t, n, i, a) {
 	if (o) for (v = 0; v < s; v += 1) h = t[v], g = a(h, v), _ = c.get(g).e, _.f & 33554432 || (_.nodes?.a?.measure(), (f ??= /* @__PURE__ */ new Set()).add(_));
 	for (v = 0; v < s; v += 1) {
 		if (h = t[v], g = a(h, v), _ = c.get(g).e, e.outrogroups !== null) for (let t of e.outrogroups) t.pending.delete(_), t.done.delete(_);
-		if (_.f & 8192 && (Bn(_), o && (_.nodes?.a?.unfix(), (f ??= /* @__PURE__ */ new Set()).delete(_))), _.f & 33554432) {
-			if (_.f ^= ee, _ === l) Zr(_, null, n);
+		if (_.f & 8192 && (zn(_), o && (_.nodes?.a?.unfix(), (f ??= /* @__PURE__ */ new Set()).delete(_))), _.f & 33554432) {
+			if (_.f ^= T, _ === l) Zr(_, null, n);
 			else {
 				var y = d ? d.next : l;
 				_ === e.effect.last && (e.effect.last = _.prev), _.prev && (_.prev.next = _.next), _.next && (_.next.prev = _.prev), Qr(e, d, _), Qr(e, _, y), Zr(_, y, n), d = _, p = [], m = [], l = Jr(d.next);
@@ -1953,33 +1953,33 @@ function Yr(e, t, n, i, a) {
 		var w = [];
 		if (u !== void 0) for (_ of u) _.f & 8192 || w.push(_);
 		for (; l !== null;) !(l.f & 8192) && l !== e.fallback && w.push(l), l = Jr(l.next);
-		var te = w.length;
-		if (te > 0) {
-			var ne = i & 4 && s === 0 ? n : null;
+		var ee = w.length;
+		if (ee > 0) {
+			var te = i & 4 && s === 0 ? n : null;
 			if (o) {
-				for (v = 0; v < te; v += 1) w[v].nodes?.a?.measure();
-				for (v = 0; v < te; v += 1) w[v].nodes?.a?.fix();
+				for (v = 0; v < ee; v += 1) w[v].nodes?.a?.measure();
+				for (v = 0; v < ee; v += 1) w[v].nodes?.a?.fix();
 			}
-			Wr(e, w, ne);
+			Wr(e, w, te);
 		}
 	}
-	o && Xe(() => {
+	o && Ye(() => {
 		if (f !== void 0) for (_ of f) _.nodes?.a?.apply();
 	});
 }
 function Xr(e, t, n, r, i, a, o, s) {
-	var c = o & 1 ? o & 16 ? Vt(n) : /* @__PURE__ */ P(n, !1, !1) : null, l = o & 2 ? Vt(i) : null;
+	var c = o & 1 ? o & 16 ? Bt(n) : /* @__PURE__ */ F(n, !1, !1) : null, l = o & 2 ? Bt(i) : null;
 	return {
 		v: c,
 		i: l,
-		e: jn(() => (a(t, c ?? n, l ?? i, s), () => {
+		e: An(() => (a(t, c ?? n, l ?? i, s), () => {
 			e.delete(r);
 		}))
 	};
 }
 function Zr(e, t, n) {
 	if (e.nodes) for (var r = e.nodes.start, i = e.nodes.end, a = t && !(t.f & 33554432) ? t.nodes.start : n; r !== null;) {
-		var o = /* @__PURE__ */ cn(r);
+		var o = /* @__PURE__ */ sn(r);
 		if (a.before(r), r === i) return;
 		r = o;
 	}
@@ -2002,10 +2002,10 @@ function ei(e, t, n) {
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/class.js
 function ti(e, t, n, r, i, a) {
-	var o = e[se];
-	if (O || o !== n || o === void 0) {
+	var o = e[E];
+	if (k || o !== n || o === void 0) {
 		var s = ei(n, r, a);
-		O && s === e.getAttribute("class") || (s == null ? e.removeAttribute("class") : t ? e.className = s : e.setAttribute("class", s)), e[se] = n;
+		k && s === e.getAttribute("class") || (s == null ? e.removeAttribute("class") : t ? e.className = s : e.setAttribute("class", s)), e[E] = n;
 	} else if (a && i !== a) for (var c in a) {
 		var l = !!a[c];
 		(i == null || l !== !!i[c]) && e.classList.toggle(c, l);
@@ -2022,7 +2022,7 @@ function ri(t, n) {
 		var o = t.selectedIndex, s = n && i ? new Set(t.selectedOptions) : null;
 		for (var c of t.options) {
 			var l = si(c);
-			ni(c, i ? a.includes(l) : $t(l, r));
+			ni(c, i ? a.includes(l) : Qt(l, r));
 		}
 		if (n) {
 			if (s !== null) for (c of t.options) {
@@ -2036,10 +2036,10 @@ function ri(t, n) {
 function ii(t, n, r = !1) {
 	if (t.multiple) {
 		if (n == null) return;
-		if (!e(n)) return _e();
+		if (!e(n)) return ge();
 		for (var i of t.options) i.selected = n.includes(si(i));
 	} else {
-		for (i of t.options) if ($t(si(i), n)) {
+		for (i of t.options) if (Qt(si(i), n)) {
 			i.selected = !0;
 			return;
 		}
@@ -2055,24 +2055,24 @@ function ai(e) {
 		subtree: !0,
 		attributes: !0,
 		attributeFilter: ["value"]
-	}), bn(() => {
+	}), yn(() => {
 		t.disconnect();
 	});
 }
 function oi(e, t, n = t) {
 	var r = /* @__PURE__ */ new WeakSet(), i = !0;
-	ot(e, "change", (t) => {
+	at(e, "change", (t) => {
 		var i = t ? "[selected]" : ":checked", a;
 		if (e.multiple) a = [].map.call(e.querySelectorAll(i), si);
 		else {
 			var o = e.querySelector(i) ?? e.querySelector("option:not([disabled])");
 			a = o && si(o);
 		}
-		n(a), e.__value = a, N !== null && r.add(N);
-	}), Tn(() => {
+		n(a), e.__value = a, P !== null && r.add(P);
+	}), wn(() => {
 		var a = t();
 		if (e === document.activeElement) {
-			var o = N;
+			var o = P;
 			if (r.has(o)) return;
 		}
 		if (ii(e, a, i), i && a === void 0) {
@@ -2096,7 +2096,7 @@ function ci(e) {
 // ../node_modules/svelte/src/internal/client/dom/elements/attributes.js
 var li = Symbol("is custom element"), ui = Symbol("is html"), di = de ? "link" : "LINK", fi = de ? "progress" : "PROGRESS";
 function pi(e) {
-	if (O) {
+	if (k) {
 		var t = !1, n = () => {
 			if (!t) {
 				if (t = !0, e.hasAttribute("value")) {
@@ -2109,7 +2109,7 @@ function pi(e) {
 				}
 			}
 		};
-		e[D] = n, Xe(n), it();
+		e[le] = n, Ye(n), rt();
 	}
 }
 function mi(e, t) {
@@ -2122,12 +2122,12 @@ function hi(e, t) {
 }
 function X(e, t, n, r) {
 	var i = gi(e);
-	O && (i[t] = e.getAttribute(t), t === "src" || t === "srcset" || t === "href" && e.nodeName === di) || i[t] !== (i[t] = n) && (t === "loading" && (e[E] = n), n == null ? e.removeAttribute(t) : typeof n != "string" && vi(e).has(t) ? e[t] = n : e.setAttribute(t, n));
+	k && (i[t] = e.getAttribute(t), t === "src" || t === "srcset" || t === "href" && e.nodeName === di) || i[t] !== (i[t] = n) && (t === "loading" && (e[oe] = n), n == null ? e.removeAttribute(t) : typeof n != "string" && vi(e).has(t) ? e[t] = n : e.setAttribute(t, n));
 }
 function gi(e) {
-	return e[oe] ??= {
+	return e[se] ??= {
 		[li]: e.nodeName.includes("-"),
-		[ui]: e.namespaceURI === me
+		[ui]: e.namespaceURI === pe
 	};
 }
 var _i = /* @__PURE__ */ new Map();
@@ -2144,28 +2144,28 @@ function vi(e) {
 // ../node_modules/svelte/src/internal/client/dom/elements/bindings/input.js
 function yi(e, t, n = t) {
 	var r = /* @__PURE__ */ new WeakSet();
-	ot(e, "input", async (i) => {
+	at(e, "input", async (i) => {
 		var a = i ? e.defaultValue : e.value;
-		if (a = xi(e) ? Si(a) : a, n(a), N !== null && r.add(N), await pr(), a !== (a = t())) {
+		if (a = xi(e) ? Si(a) : a, n(a), P !== null && r.add(P), await pr(), a !== (a = t())) {
 			var o = e.selectionStart, s = e.selectionEnd, c = e.value.length;
 			if (e.value = a ?? "", s !== null) {
 				var l = e.value.length;
 				o === s && s === c && l > c ? (e.selectionStart = l, e.selectionEnd = l) : (e.selectionStart = o, e.selectionEnd = Math.min(s, l));
 			}
 		}
-	}), (O && e.defaultValue !== e.value || U(t) == null && e.value) && (n(xi(e) ? Si(e.value) : e.value), N !== null && r.add(N)), kn(() => {
+	}), (k && e.defaultValue !== e.value || U(t) == null && e.value) && (n(xi(e) ? Si(e.value) : e.value), P !== null && r.add(P)), On(() => {
 		var n = t();
 		if (e === document.activeElement) {
-			var i = N;
+			var i = P;
 			if (r.has(i)) return;
 		}
 		xi(e) && n === Si(e.value) || (e.type !== "date" || n || e.value) && n !== e.value && (e.value = n ?? "");
 	});
 }
 function bi(e, t, n = t) {
-	ot(e, "change", (t) => {
+	at(e, "change", (t) => {
 		n(t ? e.defaultChecked : e.checked);
-	}), (O && e.defaultChecked !== e.checked || U(t) == null) && n(e.checked), kn(() => {
+	}), (k && e.defaultChecked !== e.checked || U(t) == null) && n(e.checked), On(() => {
 		e.checked = !!t();
 	});
 }
@@ -2178,13 +2178,13 @@ function Si(e) {
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/bindings/this.js
 function Ci(e, t) {
-	return e === t || e?.[ie] === t;
+	return e === t || e?.[re] === t;
 }
-function wi(e = Ke(), t, n, r) {
-	var i = j.r, a = V;
-	return Tn(() => {
+function wi(e = Ge(), t, n, r) {
+	var i = M.r, a = V;
+	return wn(() => {
 		var o, s;
-		return kn(() => {
+		return On(() => {
 			o = s, s = r?.() || [], U(() => {
 				Ci(n(...s), e) || (t(e, ...s), o && Ci(n(...o), e) && t(null, ...o));
 			});
@@ -2202,25 +2202,25 @@ function wi(e = Ke(), t, n, r) {
 }
 // ../node_modules/svelte/src/internal/client/dom/legacy/lifecycle.js
 function Ti(e = !1) {
-	let t = j, n = t.l.u;
+	let t = M, n = t.l.u;
 	if (!n) return;
 	let r = () => W(t.s);
 	if (e) {
-		let e = 0, n = {}, i = /* @__PURE__ */ dt(() => {
+		let e = 0, n = {}, i = /* @__PURE__ */ ut(() => {
 			let r = !1, i = t.s;
 			for (let e in i) i[e] !== n[e] && (n[e] = i[e], r = !0);
 			return r && e++, e;
 		});
 		r = () => H(i);
 	}
-	n.b.length && Cn(() => {
+	n.b.length && Sn(() => {
 		Ei(t, r), p(n.b);
-	}), xn(() => {
+	}), bn(() => {
 		let e = U(() => n.m.map(f));
 		return () => {
 			for (let t of e) typeof t == "function" && t();
 		};
-	}), n.a.length && xn(() => {
+	}), n.a.length && bn(() => {
 		Ei(t, r), p(n.a);
 	});
 }
@@ -2239,7 +2239,7 @@ var Oi = [];
 function ki(e, t = d) {
 	let n = null, r = /* @__PURE__ */ new Set();
 	function i(t) {
-		if (Ee(e, t) && (e = t, n)) {
+		if (Te(e, t) && (e = t, n)) {
 			let t = !Oi.length;
 			for (let t of r) t[1](), Oi.push(t, e);
 			if (t) {
@@ -2272,7 +2272,7 @@ var ji = !1, Mi = Symbol("unmounted");
 function Ni(e, t, n) {
 	let r = n[t] ??= {
 		store: null,
-		source: /* @__PURE__ */ P(void 0),
+		source: /* @__PURE__ */ F(void 0),
 		unsubscribe: d
 	};
 	if (r.store !== e && !(Mi in n)) {
@@ -2280,7 +2280,7 @@ function Ni(e, t, n) {
 		else {
 			var i = !0;
 			r.unsubscribe = Di(e, (e) => {
-				i ? r.source.v = e : F(r.source, e);
+				i ? r.source.v = e : I(r.source, e);
 			}), i = !1;
 		}
 	}
@@ -2289,7 +2289,7 @@ function Ni(e, t, n) {
 function Pi() {
 	let e = {};
 	function t() {
-		bn(() => {
+		yn(() => {
 			for (var t in e) e[t].unsubscribe();
 			i(e, Mi, {
 				enumerable: !1,
@@ -2309,14 +2309,14 @@ function Fi(e) {
 }
 // ../node_modules/svelte/src/internal/client/reactivity/props.js
 function Z(e, t, n, r) {
-	var i = !Ve || !!(n & 2), o = !!(n & 8), s = !!(n & 16), c = r, l = !0, u = void 0, d = () => s && i ? (u ??= /* @__PURE__ */ dt(r), H(u)) : (l && (l = !1, c = s ? U(r) : r), c);
+	var i = !Be || !!(n & 2), o = !!(n & 8), s = !!(n & 16), c = r, l = !0, u = void 0, d = () => s && i ? (u ??= /* @__PURE__ */ ut(r), H(u)) : (l && (l = !1, c = s ? U(r) : r), c);
 	let f;
 	if (o) {
-		var p = ie in e || ae in e;
+		var p = re in e || ae in e;
 		f = a(e, t)?.set ?? (p && t in e ? (n) => e[t] = n : void 0);
 	}
 	var m, h = !1;
-	o ? [m, h] = Fi(() => e[t]) : m = e[t], m === void 0 && r !== void 0 && (m = d(), f && (i && Ie(t), f(m)));
+	o ? [m, h] = Fi(() => e[t]) : m = e[t], m === void 0 && r !== void 0 && (m = d(), f && (i && Fe(t), f(m)));
 	var g = i ? () => {
 		var n = e[t];
 		return n === void 0 ? d() : (l = !0, n);
@@ -2331,31 +2331,31 @@ function Z(e, t, n, r) {
 			return arguments.length > 0 ? ((!i || !t || _ || h) && f(t ? g() : e), e) : g();
 		});
 	}
-	var v = !1, y = (n & 1 ? dt : M)(() => (v = !1, g()));
+	var v = !1, y = (n & 1 ? ut : N)(() => (v = !1, g()));
 	o && H(y);
 	var b = V;
 	return (function(e, t) {
 		if (arguments.length > 0) {
-			let n = t ? H(y) : i && o ? Zt(e) : e;
-			return F(y, n), v = !0, c !== void 0 && (c = n), e;
+			let n = t ? H(y) : i && o ? Xt(e) : e;
+			return I(y, n), v = !0, c !== void 0 && (c = n), e;
 		}
-		return Wn && v || b.f & 16384 ? y.v : H(y);
+		return Un && v || b.f & 16384 ? y.v : H(y);
 	});
 }
 function Ii(e) {
-	j === null && Oe("onMount"), Ve && j.l !== null ? Bi(j).m.push(e) : xn(() => {
+	M === null && De("onMount"), Be && M.l !== null ? Bi(M).m.push(e) : bn(() => {
 		let t = U(e);
 		if (typeof t == "function") return t;
 	});
 }
 function Li(e) {
-	j === null && Oe("onDestroy"), Ii(() => () => U(e));
+	M === null && De("onDestroy"), Ii(() => () => U(e));
 }
 function Ri(e) {
-	j === null && Oe("beforeUpdate"), j.l === null && Fe("beforeUpdate"), Bi(j).b.push(e);
+	M === null && De("beforeUpdate"), M.l === null && Pe("beforeUpdate"), Bi(M).b.push(e);
 }
 function zi(e) {
-	j === null && Oe("afterUpdate"), j.l === null && Fe("afterUpdate"), Bi(j).a.push(e);
+	M === null && De("afterUpdate"), M.l === null && Pe("afterUpdate"), Bi(M).a.push(e);
 }
 function Bi(e) {
 	var t = e.l;
@@ -2366,7 +2366,7 @@ function Bi(e) {
 	};
 }
 // ../node_modules/svelte/src/internal/flags/legacy.js
-typeof window < "u" && ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5"), He();
+typeof window < "u" && ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5"), Ve();
 // src/controller.ts
 var Vi = "keida-hub-reborn", Hi = "reborn-workspace-v1", Ui = 9223372036854775807n, Wi = () => [
 	{
@@ -2427,7 +2427,11 @@ var Vi = "keida-hub-reborn", Hi = "reborn-workspace-v1", Ui = 922337203685477580
 	sonarr: $i(),
 	radarr: $i(),
 	qbittorrent: $i()
-}), ta = (e, t) => ({
+}), ta = () => ({
+	phase: "idle",
+	save: "idle",
+	message: ""
+}), na = (e, t) => ({
 	phase: e,
 	message: t,
 	draft: "",
@@ -2445,8 +2449,9 @@ var Vi = "keida-hub-reborn", Hi = "reborn-workspace-v1", Ui = 922337203685477580
 	guide: qi(),
 	observations: Ji(),
 	media: Xi(),
-	queues: ea()
-}), Q = (e) => typeof e == "object" && !!e && !Array.isArray(e), $ = (e, t = !1) => typeof e == "string" && /^(0|[1-9][0-9]{0,18})$/.test(e) && BigInt(e) <= Ui && (!t || e !== "0"), na = (e) => typeof e == "string" && !e.includes("\0") && new TextEncoder().encode(e).length <= 4096, ra = (e, t, n = !1) => typeof e == "string" && (!n || e.trim().length > 0) && new TextEncoder().encode(e).length <= t && !/[\u0000-\u001f\u007f]/u.test(e), ia = (e, t, n) => Array.isArray(e) && e.length <= t && e.every((e) => ra(e, n, !0)), aa = (e) => $(e) && BigInt(e) <= 253402300799n, oa = [
+	queues: ea(),
+	identity: ta()
+}), Q = (e) => typeof e == "object" && !!e && !Array.isArray(e), $ = (e, t = !1) => typeof e == "string" && /^(0|[1-9][0-9]{0,18})$/.test(e) && BigInt(e) <= Ui && (!t || e !== "0"), ra = (e) => typeof e == "string" && !e.includes("\0") && new TextEncoder().encode(e).length <= 4096, ia = (e, t, n = !1) => typeof e == "string" && (!n || e.trim().length > 0) && new TextEncoder().encode(e).length <= t && !/[\u0000-\u001f\u007f]/u.test(e), aa = (e, t, n) => Array.isArray(e) && e.length <= t && e.every((e) => ia(e, n, !0)), oa = (e) => $(e) && BigInt(e) <= 253402300799n, sa = [
 	"unavailable",
 	"invalid_configuration",
 	"timeout",
@@ -2456,8 +2461,8 @@ var Vi = "keida-hub-reborn", Hi = "reborn-workspace-v1", Ui = 922337203685477580
 	"oversized",
 	"malformed",
 	"not_discovered"
-], sa = (e) => e === null || typeof e == "string" && oa.includes(e), ca = (e) => e === null || typeof e == "number" && Number.isSafeInteger(e) && e >= 0 && e <= 1e6;
-function la(e) {
+], ca = (e) => e === null || typeof e == "string" && sa.includes(e), la = (e) => e === null || typeof e == "number" && Number.isSafeInteger(e) && e >= 0 && e <= 1e6;
+function ua(e) {
 	if (typeof e != "string" || new TextEncoder().encode(e).length > 1024 || !/^https:\/\/[^/]/.test(e) || /[\s\u0000-\u001f\u007f\\]/u.test(e)) return !1;
 	try {
 		let t = new URL(e);
@@ -2466,7 +2471,7 @@ function la(e) {
 		return !1;
 	}
 }
-function ua(e) {
+function da(e) {
 	if (!Q(e) || !Array.isArray(e.groups) || e.groups.length > 2 || !Number.isInteger(e.unread_groups) || new Set(e.groups.map((e) => Q(e) ? e.category : null)).size !== e.groups.length || e.groups.some((e) => !Q(e) || !["services", "connections"].includes(String(e.category)) || !$(e.revision, !0) || !$(e.read_through) || !$(e.unread) || BigInt(e.read_through) > BigInt(e.revision) || BigInt(e.unread) !== BigInt(e.revision) - BigInt(e.read_through) || !Q(e.latest) || !$(e.latest.source_revision, !0) || !$(e.latest.occurred_at) || BigInt(e.latest.occurred_at) > 253402300799n || typeof e.latest.label != "string" || !/^[A-Za-z ]{1,64}$/.test(e.latest.label) || !(e.category === "services" ? [
 		"service_added",
 		"service_updated",
@@ -2474,7 +2479,7 @@ function ua(e) {
 	] : ["connection_saved", "connection_removed"]).includes(String(e.latest.kind))) || e.unread_groups !== e.groups.filter((e) => e.unread !== "0").length) throw Error("Invalid notification response");
 	return e;
 }
-function da(e) {
+function fa(e) {
 	if (!Q(e) || !$(e.revision) || !Array.isArray(e.panels) || e.panels.length !== 3 || e.panels.some((e) => !Q(e) || ![
 		"note",
 		"connections",
@@ -2482,7 +2487,7 @@ function da(e) {
 	].includes(String(e.id)) || typeof e.visible != "boolean") || new Set(e.panels.map((e) => e.id)).size !== 3 || !e.panels.some((e) => e.visible)) throw Error("Invalid layout response");
 	return e;
 }
-function fa(e) {
+function pa(e) {
 	let t = [
 		"crafty",
 		"jellyfin",
@@ -2492,29 +2497,29 @@ function fa(e) {
 		"qbittorrent",
 		"discord"
 	], n = e.catalog, r = e.roadmap;
-	if (!Array.isArray(n) || n.length !== t.length || new Set(n.map((e) => Q(e) ? e.id : null)).size !== t.length || n.some((e) => !Q(e) || !t.includes(String(e.id)) || !ra(e.name, 80, !0) || e.status !== ([
+	if (!Array.isArray(n) || n.length !== t.length || new Set(n.map((e) => Q(e) ? e.id : null)).size !== t.length || n.some((e) => !Q(e) || !t.includes(String(e.id)) || !ia(e.name, 80, !0) || e.status !== ([
 		"crafty",
 		"jellyfin",
 		"seerr",
 		"sonarr",
 		"radarr",
 		"qbittorrent"
-	].includes(String(e.id)) ? "available" : "planned") || !ra(e.summary, 512, !0) || !ia(e.requirements, 8, 512) || !ia(e.capabilities, 8, 512)) || !Q(r) || typeof r.as_of != "string" || !/^\d{4}-\d{2}-\d{2}$/.test(r.as_of) || !ra(r.intro, 1024, !0) || !ia(r.priorities, 8, 512) || r.tracker_url !== "https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/2" || !Array.isArray(r.milestones) || r.milestones.length !== 9 || r.milestones.some((e, t) => !Q(e) || e.id !== `M${t}` || !ra(e.title, 120, !0) || !ra(e.status, 160, !0) || !ia(e.delivered, 8, 512) || !ia(e.remaining, 8, 512))) throw Error("Invalid workspace guide");
+	].includes(String(e.id)) ? "available" : "planned") || !ia(e.summary, 512, !0) || !aa(e.requirements, 8, 512) || !aa(e.capabilities, 8, 512)) || !Q(r) || typeof r.as_of != "string" || !/^\d{4}-\d{2}-\d{2}$/.test(r.as_of) || !ia(r.intro, 1024, !0) || !aa(r.priorities, 8, 512) || r.tracker_url !== "https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/2" || !Array.isArray(r.milestones) || r.milestones.length !== 9 || r.milestones.some((e, t) => !Q(e) || e.id !== `M${t}` || !ia(e.title, 120, !0) || !ia(e.status, 160, !0) || !aa(e.delivered, 8, 512) || !aa(e.remaining, 8, 512))) throw Error("Invalid workspace guide");
 	return {
 		catalog: n,
 		roadmap: r
 	};
 }
-function pa(e, t, n) {
-	if (!$(e.current_revision) || !$(e.through) || e.next_before !== null && !$(e.next_before, !0) || n && (e.current_revision !== t.revision || e.through !== t.through) || !Array.isArray(e.entries) || e.entries.length > 25 || e.entries.some((r) => !Q(r) || !$(r.id, !0) || !$(r.revision, !0) || !aa(r.checked_at) || !sa(r.error) || typeof r.complete != "boolean" || !Array.isArray(r.servers) || r.servers.length > 8 || BigInt(r.id) > BigInt(e.through) || n && BigInt(r.id) >= BigInt(t.next) || r.servers.some((e) => !Q(e) || !ra(e.name, 80, !0) || ![
+function ma(e, t, n) {
+	if (!$(e.current_revision) || !$(e.through) || e.next_before !== null && !$(e.next_before, !0) || n && (e.current_revision !== t.revision || e.through !== t.through) || !Array.isArray(e.entries) || e.entries.length > 25 || e.entries.some((r) => !Q(r) || !$(r.id, !0) || !$(r.revision, !0) || !oa(r.checked_at) || !ca(r.error) || typeof r.complete != "boolean" || !Array.isArray(r.servers) || r.servers.length > 8 || BigInt(r.id) > BigInt(e.through) || n && BigInt(r.id) >= BigInt(t.next) || r.servers.some((e) => !Q(e) || !ia(e.name, 80, !0) || ![
 		"running",
 		"stopped",
 		"unknown"
-	].includes(String(e.state)) || !ca(e.players) || !ca(e.capacity) || e.collected_at !== null && !aa(e.collected_at) || e.provider_at !== null && !aa(e.provider_at) || ![
+	].includes(String(e.state)) || !la(e.players) || !la(e.capacity) || e.collected_at !== null && !oa(e.collected_at) || e.provider_at !== null && !oa(e.provider_at) || ![
 		"fresh",
 		"stale",
 		"unknown"
-	].includes(String(e.freshness)) || !sa(e.error))) || e.entries.some((t, n) => n > 0 && BigInt(t.id) >= BigInt(e.entries[n - 1].id)) || e.next_before !== null && (e.entries.length !== 25 || e.next_before !== e.entries.at(-1)?.id)) throw Error("Invalid observation history");
+	].includes(String(e.freshness)) || !ca(e.error))) || e.entries.some((t, n) => n > 0 && BigInt(t.id) >= BigInt(e.entries[n - 1].id)) || e.next_before !== null && (e.entries.length !== 25 || e.next_before !== e.entries.at(-1)?.id)) throw Error("Invalid observation history");
 	return {
 		phase: "ready",
 		entries: e.entries,
@@ -2524,11 +2529,59 @@ function pa(e, t, n) {
 		message: "Retained provider observations checked."
 	};
 }
-var ma = (e, t) => e.length === t.length && e.every((e, n) => e.id === t[n].id && e.visible === t[n].visible);
-function ha(e) {
-	if (!Q(e) || e.product !== Vi || e.contract !== Hi || e.schema !== 1 || !Q(e.account) || !$(e.account.id, !0) || typeof e.account.username != "string" || !/^[a-z0-9_-]{3,32}$/.test(e.account.username) || e.account.role !== "owner" && e.account.role !== "member" || !$(e.session_generation) || !Q(e.note) || !na(e.note.body) || !$(e.note.revision)) throw Error("Invalid workspace response");
+var ha = (e) => typeof e == "string" && /^[1-9][0-9]{0,19}$/.test(e) && BigInt(e) <= 18446744073709551615n, ga = (e) => ia(e, 320) && e.length > 0 && Array.from(e).length <= 80 && !/^[\u0009-\u000d\u0020\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]+$/u.test(e) && !/[\u0080-\u009f\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/u.test(e), _a = (e) => Q(e) && ha(e.id) && ga(e.display_name), va = [
+	"denied",
+	"invalid_response",
+	"timeout",
+	"transport",
+	"provider_error",
+	"unavailable",
+	"restart_required"
+];
+function ya(e) {
+	let t = e.application, n = e.link, r = e.attempt;
+	if (!Q(t) || typeof t.configured != "boolean" || !$(t.revision) || t.profile !== "discord-identify-v1" || t.callback_uri !== `${window.location.origin}/account/discord/callback` || !Q(n) || !$(n.revision) || !$(n.flow_generation) || !(n.identity === null || Q(n.identity) && oa(n.identity.verified_at) && _a(n.identity)) || !Q(r) || ![
+		"none",
+		"awaiting_discord",
+		"ready_to_review",
+		"reviewing",
+		"review_ready",
+		"cancelled",
+		"failed",
+		"restart_required"
+	].includes(String(r.phase)) || !(r.candidate === null || _a(r.candidate)) || r.cleanup !== null && r.cleanup !== "acknowledged" && r.cleanup !== "unconfirmed" || !(r.error === null || typeof r.error == "string" && va.includes(r.error)) || r.candidate !== null && r.phase !== "review_ready" || r.phase === "review_ready" && r.candidate === null || n.identity !== null && r.candidate !== null) throw Error("Invalid identity response");
+	return {
+		application: {
+			configured: t.configured,
+			revision: t.revision,
+			callback_uri: t.callback_uri,
+			profile: "discord-identify-v1"
+		},
+		link: {
+			revision: n.revision,
+			flow_generation: n.flow_generation,
+			identity: n.identity === null ? null : {
+				id: n.identity.id,
+				display_name: n.identity.display_name,
+				verified_at: n.identity.verified_at
+			}
+		},
+		attempt: {
+			phase: r.phase,
+			candidate: r.candidate === null ? null : {
+				id: r.candidate.id,
+				display_name: r.candidate.display_name
+			},
+			cleanup: r.cleanup,
+			error: r.error
+		}
+	};
+}
+var ba = (e) => e.attempt.phase === "review_ready" ? "Review the Discord identity below, then confirm deliberately." : e.attempt.phase === "ready_to_review" ? "Discord returned. Review the identity before choosing whether to link it." : e.attempt.phase === "awaiting_discord" ? "Continue with Discord in this browser, or cancel this unfinished link." : e.attempt.phase === "reviewing" ? "The identity review is still in progress. Check status before another action." : ["failed", "restart_required"].includes(e.attempt.phase) ? "The unfinished link could not be completed. Start a new link when ready." : e.attempt.phase === "cancelled" ? "The unfinished link was cancelled." : e.link.identity ? "Your saved Discord identity is shown below." : e.application.configured ? "No Discord identity is linked. You can start a link when ready." : "Discord linking is waiting for owner setup.", xa = (e, t) => e.length === t.length && e.every((e, n) => e.id === t[n].id && e.visible === t[n].visible);
+function Sa(e) {
+	if (!Q(e) || e.product !== Vi || e.contract !== Hi || e.schema !== 1 || !Q(e.account) || !$(e.account.id, !0) || typeof e.account.username != "string" || !/^[a-z0-9_-]{3,32}$/.test(e.account.username) || e.account.role !== "owner" && e.account.role !== "member" || !$(e.session_generation) || !Q(e.note) || !ra(e.note.body) || !$(e.note.revision)) throw Error("Invalid workspace response");
 	let t = e.directory, n = (e, t, n = !1) => typeof e == "string" && (!n || e.length > 0) && new TextEncoder().encode(e).length <= t && !/[\u0000-\u001f\u007f]/u.test(e);
-	if (!Q(t) || !$(t.revision) || !$(t.pins_revision) || !Array.isArray(t.services) || t.services.length > 100 || t.services.some((e) => !Q(e) || !$(e.id, !0) || !n(e.name, 80, !0) || !n(e.category, 40, !0) || !n(e.description, 240) || !la(e.url)) || new Set(t.services.map((e) => e.id)).size !== t.services.length || !Array.isArray(t.pins) || t.pins.length > 24 || new Set(t.pins).size !== t.pins.length || t.pins.some((e) => !$(e, !0) || !t.services.some((t) => t.id === e))) throw Error("Invalid directory response");
+	if (!Q(t) || !$(t.revision) || !$(t.pins_revision) || !Array.isArray(t.services) || t.services.length > 100 || t.services.some((e) => !Q(e) || !$(e.id, !0) || !n(e.name, 80, !0) || !n(e.category, 40, !0) || !n(e.description, 240) || !ua(e.url)) || new Set(t.services.map((e) => e.id)).size !== t.services.length || !Array.isArray(t.pins) || t.pins.length > 24 || new Set(t.pins).size !== t.pins.length || t.pins.some((e) => !$(e, !0) || !t.services.some((t) => t.id === e))) throw Error("Invalid directory response");
 	if (e.crafty != null) {
 		let t = e.crafty, n = (e) => e === null || typeof e == "number" && Number.isSafeInteger(e) && e >= 0, r = (e) => e === null || typeof e == "string" && /^[a-z_]{1,40}$/.test(e);
 		if (!Q(t) || !$(t.revision) || typeof t.configured != "boolean" || !n(t.checked_at) || !r(t.error) || t.history_error !== void 0 && t.history_error !== null && t.history_error !== "unavailable" || !Array.isArray(t.servers) || t.servers.length > 8 || t.servers.some((e) => !Q(e) || typeof e.name != "string" || e.name.length > 80 || typeof e.join != "string" || e.join.length > 253 || ![
@@ -2541,18 +2594,18 @@ function ha(e) {
 			"unknown"
 		].includes(String(e.freshness)) || !n(e.players) || !n(e.capacity) || !n(e.collected_at) || !n(e.provider_at) || !r(e.error))) throw Error("Invalid connection response");
 	}
-	return ua(e.notifications), da(e.layout), e;
+	return da(e.notifications), fa(e.layout), e;
 }
-function ga(e) {
+function Ca(e) {
 	if (!(!e || e.length > 25e3)) try {
 		let t = JSON.parse(e);
-		if (Q(t) && t.schema === 1 && na(t.body) && $(t.base)) return {
+		if (Q(t) && t.schema === 1 && ra(t.body) && $(t.base)) return {
 			body: t.body,
 			base: t.base
 		};
 	} catch {}
 }
-var _a = (e) => e === null || typeof e == "string" && [
+var wa = (e) => e === null || typeof e == "string" && [
 	"checking",
 	"unavailable",
 	"invalid_configuration",
@@ -2562,29 +2615,29 @@ var _a = (e) => e === null || typeof e == "string" && [
 	"provider_error",
 	"oversized",
 	"malformed"
-].includes(e), va = (e, t, n = 0) => typeof e == "number" && Number.isSafeInteger(e) && e >= n && e <= t, ya = (e) => va(e, 48) && e % 12 == 0;
-function ba(e, t = Math.floor(Date.now() / 1e3)) {
+].includes(e), Ta = (e, t, n = 0) => typeof e == "number" && Number.isSafeInteger(e) && e >= n && e <= t, Ea = (e) => Ta(e, 48) && e % 12 == 0;
+function Da(e, t = Math.floor(Date.now() / 1e3)) {
 	let n = e.checked_at, r = !Number.isFinite(t) || t < 0 || n === null || n > t + 5 ? "unknown" : e.freshness === "fresh" && t - n > 90 ? "stale" : e.freshness;
 	return r === e.freshness ? e : {
 		...e,
 		freshness: r
 	};
 }
-function xa(e, t, n) {
-	if (!Q(e) || !$(e.revision) || typeof e.configured != "boolean" || !(e.checked_at === null || va(e.checked_at, 253402300799)) || ![
+function Oa(e, t, n) {
+	if (!Q(e) || !$(e.revision) || typeof e.configured != "boolean" || !(e.checked_at === null || Ta(e.checked_at, 253402300799)) || ![
 		"fresh",
 		"stale",
 		"unknown"
-	].includes(String(e.freshness)) || !_a(e.error) || typeof e.complete != "boolean" || e.offset !== n || !ya(e.offset) || !(e.next_offset === null || ya(e.next_offset) && e.next_offset === n + 12) || !(e.total === null || va(e.total, 1e9)) || typeof e.truncated != "boolean" || !Array.isArray(e.items) || e.items.length > 12 || new Set(e.items.map((e) => Q(e) ? e.id : null)).size !== e.items.length || e.items.some((e) => !Q(e) || typeof e.id != "string" || !/^[a-f0-9]{64}$/.test(e.id) || !(e.title === null || ra(e.title, 240, !0)) || !["movie", "series"].includes(String(e.kind)) || !(e.year === null || va(e.year, 9999, 1)) || !_a(e.detail_error) || (t === "jellyfin" ? e.request_status !== null : ![
+	].includes(String(e.freshness)) || !wa(e.error) || typeof e.complete != "boolean" || e.offset !== n || !Ea(e.offset) || !(e.next_offset === null || Ea(e.next_offset) && e.next_offset === n + 12) || !(e.total === null || Ta(e.total, 1e9)) || typeof e.truncated != "boolean" || !Array.isArray(e.items) || e.items.length > 12 || new Set(e.items.map((e) => Q(e) ? e.id : null)).size !== e.items.length || e.items.some((e) => !Q(e) || typeof e.id != "string" || !/^[a-f0-9]{64}$/.test(e.id) || !(e.title === null || ia(e.title, 240, !0)) || !["movie", "series"].includes(String(e.kind)) || !(e.year === null || Ta(e.year, 9999, 1)) || !wa(e.detail_error) || (t === "jellyfin" ? e.request_status !== null : ![
 		"pending",
 		"approved",
 		"declined",
 		"failed",
 		"completed",
 		"unknown"
-	].includes(String(e.request_status)))) || (t === "seerr" ? e.playback !== null : !(e.playback === null || Q(e.playback) && (e.playback.playing === null || va(e.playback.playing, 256)) && (e.playback.paused === null || va(e.playback.paused, 256)) && _a(e.playback.error))) || !e.configured && (e.items.length !== 0 || e.complete || e.checked_at !== null || e.next_offset !== null)) throw Error("Invalid media response");
+	].includes(String(e.request_status)))) || (t === "seerr" ? e.playback !== null : !(e.playback === null || Q(e.playback) && (e.playback.playing === null || Ta(e.playback.playing, 256)) && (e.playback.paused === null || Ta(e.playback.paused, 256)) && wa(e.playback.error))) || !e.configured && (e.items.length !== 0 || e.complete || e.checked_at !== null || e.next_offset !== null)) throw Error("Invalid media response");
 	let r = e;
-	return ba({
+	return Da({
 		revision: r.revision,
 		configured: r.configured,
 		checked_at: r.checked_at,
@@ -2610,7 +2663,7 @@ function xa(e, t, n) {
 		}
 	});
 }
-var Sa = [
+var ka = [
 	"checking",
 	"timeout",
 	"transport",
@@ -2622,7 +2675,7 @@ var Sa = [
 	"unsupported_profile",
 	"page_moved",
 	"unavailable"
-], Ca = [
+], Aa = [
 	"unknown",
 	"queued",
 	"paused",
@@ -2633,7 +2686,7 @@ var Sa = [
 	"delay",
 	"downloadClientUnavailable",
 	"fallback"
-], wa = [
+], ja = [
 	"downloading",
 	"importBlocked",
 	"importPending",
@@ -2643,7 +2696,7 @@ var Sa = [
 	"failed",
 	"ignored",
 	"unknown"
-], Ta = [
+], Ma = [
 	"error",
 	"missingFiles",
 	"uploading",
@@ -2663,25 +2716,25 @@ var Sa = [
 	"checkingResumeData",
 	"moving",
 	"unknown"
-], Ea = (e) => e === null || typeof e == "string" && Sa.includes(e), Da = (e) => e === null || va(e, 2 ** 53 - 1);
-function Oa(e, t = Math.floor(Date.now() / 1e3)) {
+], Na = (e) => e === null || typeof e == "string" && ka.includes(e), Pa = (e) => e === null || Ta(e, 2 ** 53 - 1);
+function Fa(e, t = Math.floor(Date.now() / 1e3)) {
 	let n = e.checked_at, r = !Number.isFinite(t) || t < 0 || n === null || n > t ? "unknown" : e.freshness === "fresh" && t - n > 90 ? "stale" : e.freshness;
 	return r === e.freshness ? e : {
 		...e,
 		freshness: r
 	};
 }
-function ka(e, t, n) {
+function Ia(e, t, n) {
 	let r = t === "qbittorrent";
-	if (!Q(e) || !$(e.revision) || typeof e.configured != "boolean" || e.profile !== Qi[t] || !(e.checked_at === null || va(e.checked_at, 253402300799)) || ![
+	if (!Q(e) || !$(e.revision) || typeof e.configured != "boolean" || e.profile !== Qi[t] || !(e.checked_at === null || Ta(e.checked_at, 253402300799)) || ![
 		"fresh",
 		"stale",
 		"unknown"
-	].includes(String(e.freshness)) || !Ea(e.error) || typeof e.complete != "boolean" || e.offset !== n || !ya(e.offset) || !(e.next_offset === null || ya(e.next_offset) && e.next_offset === n + 12) || !(e.total === null || va(e.total, 1e9)) || r && e.total !== null || typeof e.truncated != "boolean" || !Array.isArray(e.items) || e.items.length > 12 || new Set(e.items.map((e) => Q(e) ? e.id : null)).size !== e.items.length || e.items.some((e) => !Q(e) || typeof e.id != "string" || !/^[a-f0-9]{64}$/.test(e.id) || !(e.title === null || ra(e.title, 240, !0)) || typeof e.status != "string" || !(r ? Ta : Ca).includes(e.status) || !(e.import_state === null || !r && typeof e.import_state == "string" && wa.includes(e.import_state)) || e.warning !== null && typeof e.warning != "boolean" || !(e.progress_basis_points === null || va(e.progress_basis_points, 1e4)) || !Da(e.size_bytes) || !Da(e.download_bytes_per_second) || !Da(e.upload_bytes_per_second) || !r && (e.download_bytes_per_second !== null || e.upload_bytes_per_second !== null)) || !e.configured && (e.items.length !== 0 || e.complete || e.checked_at !== null || e.next_offset !== null || e.total !== null || e.error !== null || e.freshness !== "unknown" || e.truncated) || e.error !== null && e.complete || e.error !== null && e.error !== "checking" && (e.items.length !== 0 || e.next_offset !== null || e.total !== null) || e.error === "page_moved" && (e.items.length !== 0 || e.next_offset !== null || e.total !== null) || e.next_offset !== null && e.items.length !== 12 || e.complete && e.items.some((e) => e.title === null || e.status === "unknown" || e.warning === null || !r && (e.import_state === null || e.import_state === "unknown"))) throw Error("Invalid queue response");
+	].includes(String(e.freshness)) || !Na(e.error) || typeof e.complete != "boolean" || e.offset !== n || !Ea(e.offset) || !(e.next_offset === null || Ea(e.next_offset) && e.next_offset === n + 12) || !(e.total === null || Ta(e.total, 1e9)) || r && e.total !== null || typeof e.truncated != "boolean" || !Array.isArray(e.items) || e.items.length > 12 || new Set(e.items.map((e) => Q(e) ? e.id : null)).size !== e.items.length || e.items.some((e) => !Q(e) || typeof e.id != "string" || !/^[a-f0-9]{64}$/.test(e.id) || !(e.title === null || ia(e.title, 240, !0)) || typeof e.status != "string" || !(r ? Ma : Aa).includes(e.status) || !(e.import_state === null || !r && typeof e.import_state == "string" && ja.includes(e.import_state)) || e.warning !== null && typeof e.warning != "boolean" || !(e.progress_basis_points === null || Ta(e.progress_basis_points, 1e4)) || !Pa(e.size_bytes) || !Pa(e.download_bytes_per_second) || !Pa(e.upload_bytes_per_second) || !r && (e.download_bytes_per_second !== null || e.upload_bytes_per_second !== null)) || !e.configured && (e.items.length !== 0 || e.complete || e.checked_at !== null || e.next_offset !== null || e.total !== null || e.error !== null || e.freshness !== "unknown" || e.truncated) || e.error !== null && e.complete || e.error !== null && e.error !== "checking" && (e.items.length !== 0 || e.next_offset !== null || e.total !== null) || e.error === "page_moved" && (e.items.length !== 0 || e.next_offset !== null || e.total !== null) || e.next_offset !== null && e.items.length !== 12 || e.complete && e.items.some((e) => e.title === null || e.status === "unknown" || e.warning === null || !r && (e.import_state === null || e.import_state === "unknown"))) throw Error("Invalid queue response");
 	if (e.configured && e.error === null && !r && (e.total === null || e.items.length !== Math.min(12, Math.max(0, e.total - n)) || e.next_offset !== (n + 12 <= 48 && n + e.items.length < e.total ? n + 12 : null) || e.truncated !== e.total > 60)) throw Error("Invalid queue page");
 	if (r && e.truncated && (n !== 48 || e.items.length !== 12 || e.next_offset !== null)) throw Error("Invalid transfer window");
 	let i = e;
-	return Oa({
+	return Fa({
 		revision: i.revision,
 		configured: i.configured,
 		profile: i.profile,
@@ -2706,44 +2759,44 @@ function ka(e, t, n) {
 		}))
 	});
 }
-function Aa(e) {
-	let t = ki(ta("checking", "Checking your workspace…")), n = 0, r, i, a, o, s, c, l, u, d, f = 0, p = 0, m = 0, h = !1, g = {}, _ = {}, v = {}, y = {
+function La(e) {
+	let t = ki(na("checking", "Checking your workspace…")), n = 0, r, i, a, o, s, c, l, u, d, f = 0, p = 0, m = 0, h = !1, g = {}, _ = {}, v = {}, y = {
 		jellyfin: 0,
 		seerr: 0
 	}, b = {
 		jellyfin: 0,
 		seerr: 0
-	}, x = !1, S = {}, C = {}, w = {}, ee = {
+	}, x = !1, S, C, w = 0, T = !1, ee = {}, te = {}, ne = {}, re = {
 		sonarr: 0,
 		radarr: 0,
 		qbittorrent: 0
-	}, te = {
+	}, ie = {
 		sonarr: 0,
 		radarr: 0,
 		qbittorrent: 0
-	}, ne, re, ie, T = !1, ae = !1, E = () => Ai(t), oe = (e) => `${Vi}.workspace.v1:${e.account.id}:${e.session_generation}`;
-	function se() {
-		if (re = void 0, ne) try {
-			sessionStorage.removeItem(ne);
+	}, ae, oe, se, E = !1, ce = !1, D = () => Ai(t), le = (e) => `${Vi}.workspace.v1:${e.account.id}:${e.session_generation}`;
+	function ue() {
+		if (oe = void 0, ae) try {
+			sessionStorage.removeItem(ae);
 		} catch {}
 	}
-	function ce() {
-		let e = E();
-		if (!ne || !e.snapshot) return;
+	function de() {
+		let e = D();
+		if (!ae || !e.snapshot) return;
 		if (!e.dirty) {
-			se();
+			ue();
 			return;
 		}
 		let n = {
 			body: e.draft,
 			base: e.base
 		};
-		re = {
-			key: ne,
+		oe = {
+			key: ae,
 			draft: n
 		};
 		try {
-			sessionStorage.setItem(ne, JSON.stringify({
+			sessionStorage.setItem(ae, JSON.stringify({
 				schema: 1,
 				...n
 			}));
@@ -2754,25 +2807,25 @@ function Aa(e) {
 			}));
 		}
 	}
-	function le() {
-		++n, h = !1, x = !1;
+	function fe() {
+		++n, h = !1, T = !1, x = !1, ++w, S?.abort(), C?.abort(), S = void 0, C = void 0;
 		for (let e of Yi) ++y[e], ++b[e], g[e]?.abort(), _[e]?.abort(), v[e]?.abort(), delete g[e], delete _[e], delete v[e];
-		for (let e of Zi) ++ee[e], ++te[e], S[e]?.abort(), C[e]?.abort(), w[e]?.abort(), delete S[e], delete C[e], delete w[e];
+		for (let e of Zi) ++re[e], ++ie[e], ee[e]?.abort(), te[e]?.abort(), ne[e]?.abort(), delete ee[e], delete te[e], delete ne[e];
 		r && clearTimeout(r), r = void 0, i?.abort(), a?.abort(), i = void 0, a = void 0, o?.abort(), o = void 0, ++f, s?.abort(), s = void 0, ++p, c?.abort(), c = void 0, ++m, l?.abort(), l = void 0, u?.abort(), u = void 0, d?.abort(), d = void 0;
 	}
-	function D(e, n = !1) {
-		le(), ae ||= n, jt(() => t.set(ta(n ? "blocked" : "paused", e)));
+	function O(e, n = !1) {
+		fe(), ce ||= n, At(() => t.set(na(n ? "blocked" : "paused", e)));
 	}
-	function ue() {
-		r && clearTimeout(r), !T && !ae && E().phase === "ready" && E().notificationSave !== "uncertain" && E().layoutSave !== "uncertain" && document.visibilityState === "visible" && (r = setTimeout(() => {
-			r = void 0, Pe(), j(), _e();
+	function pe() {
+		r && clearTimeout(r), !E && !ce && D().phase === "ready" && D().notificationSave !== "uncertain" && D().layoutSave !== "uncertain" && document.visibilityState === "visible" && (r = setTimeout(() => {
+			r = void 0, Le(), Ge(), A();
 		}, 15e3));
 	}
-	async function de(t, n, r) {
-		let i = performance.now(), a = setTimeout(() => n.abort(), 4e3);
+	async function me(t, n, r, i = r ? "PUT" : "GET") {
+		let a = performance.now(), o = setTimeout(() => n.abort(), 4e3);
 		try {
-			let a = await fetch(t, {
-				method: r ? "PUT" : "GET",
+			let o = await fetch(t, {
+				method: i,
 				credentials: "same-origin",
 				cache: "no-store",
 				redirect: "error",
@@ -2781,35 +2834,35 @@ function Aa(e) {
 					"X-Reborn-Product": Vi,
 					"X-Reborn-Contract": Hi,
 					"X-CSRF-Token": e,
-					...t === "/api/workspace/guide" ? { "X-Reborn-Guide": "queues-v1" } : {},
+					...t === "/api/workspace/guide" ? { "X-Reborn-Guide": "identity-v1" } : {},
 					...r ? { "Content-Type": "application/json" } : {}
 				},
 				body: r ? JSON.stringify(r) : void 0
-			}), o = a.ok ? await a.json() : void 0;
-			if (n.signal.aborted || performance.now() - i >= 4e3) throw Error("Deadline");
+			}), s = o.ok ? await o.json() : void 0;
+			if (n.signal.aborted || performance.now() - a >= 4e3) throw Error("Deadline");
 			return {
-				status: a.status,
-				value: o
+				status: o.status,
+				value: s
 			};
 		} finally {
-			clearTimeout(a);
+			clearTimeout(o);
 		}
 	}
-	function fe(e) {
+	function he(e) {
 		return e === 401 || e === 403 ? "Your sign-in changed or ended. Open a fresh workspace after signing in." : e === 426 ? "This workspace needs a fresh document. Open workspace again." : "Your workspace could not be checked. Open workspace again when access is available.";
 	}
-	function pe(e) {
-		let t = E().snapshot;
+	function ge(e) {
+		let t = D().snapshot;
 		return !t || e.account.id === t.account.id && e.session_generation === t.session_generation && e.account.role === t.account.role;
 	}
-	function me(e, t) {
+	function _e(e, t) {
 		return Q(e) && e.product === Vi && e.contract === Hi && e.schema === 1 && Q(e.account) && e.account.id === t.account.id && e.account.username === t.account.username && e.account.role === t.account.role && e.session_generation === t.session_generation;
 	}
-	function he(e) {
-		let t = E();
+	function k(e) {
+		let t = D();
 		return t.phase === "ready" && !!t.snapshot && e.account.id === t.snapshot.account.id && e.account.username === t.snapshot.account.username && e.account.role === t.snapshot.account.role && e.session_generation === t.snapshot.session_generation;
 	}
-	function ge(e, t, n = !1) {
+	function ve(e, t, n = !1) {
 		let r = e.snapshot?.crafty, i = t ? r && (BigInt(t.revision) < BigInt(r.revision) || n && t.revision === r.revision) ? r : t : r ?? t;
 		return r?.revision === i?.revision ? {
 			crafty: i,
@@ -2824,30 +2877,30 @@ function Aa(e) {
 			changed: !0
 		});
 	}
-	async function _e(e = !1) {
-		if (T || ae || i || a || o || u || d || !e && E().layoutSave === "uncertain" || document.visibilityState !== "visible") return;
+	async function A(e = !1) {
+		if (E || ce || i || a || o || u || d || !e && D().layoutSave === "uncertain" || document.visibilityState !== "visible") return;
 		let r = new AbortController();
 		i = r;
 		let s = n;
 		try {
-			let i = await de("/api/workspace/snapshot", r);
-			if (T || r.signal.aborted || s !== n) return;
+			let i = await me("/api/workspace/snapshot", r);
+			if (E || r.signal.aborted || s !== n) return;
 			if (document.visibilityState !== "visible") {
-				D("Workspace hidden. Checking access on return.");
+				O("Workspace hidden. Checking access on return.");
 				return;
 			}
 			if (i.status !== 200) {
-				D(fe(i.status), !0);
+				O(he(i.status), !0);
 				return;
 			}
-			let a = ha(i.value);
-			if (!pe(a)) {
-				D("Your account scope changed. Open a fresh workspace.", !0);
+			let a = Sa(i.value);
+			if (!ge(a)) {
+				O("Your account scope changed. Open a fresh workspace.", !0);
 				return;
 			}
-			let o = E();
-			if (ne = oe(a), o.phase === "ready") {
-				let n = ge(o, a.crafty), r = o.dirty && a.note.revision !== o.base, i = !!o.layoutDraft && ma(o.layoutDraft.panels, a.layout.panels) && e && ["uncertain", "checking-conflict"].includes(o.layoutSave), s = !!o.layoutDraft && !i && o.layoutDraft.base !== a.layout.revision, c = {
+			let o = D();
+			if (ae = le(a), o.phase === "ready") {
+				let n = ve(o, a.crafty), r = o.dirty && a.note.revision !== o.base, i = !!o.layoutDraft && xa(o.layoutDraft.panels, a.layout.panels) && e && ["uncertain", "checking-conflict"].includes(o.layoutSave), s = !!o.layoutDraft && !i && o.layoutDraft.base !== a.layout.revision, c = {
 					...o,
 					snapshot: {
 						...a,
@@ -2866,22 +2919,22 @@ function Aa(e) {
 					directorySave: o.directorySave === "uncertain" ? "idle" : o.directorySave,
 					directoryMessage: o.directorySave === "uncertain" ? "Current saved directory and pins checked. Review them before making another change." : o.directoryMessage
 				};
-				n.changed ? jt(() => t.set(c)) : t.set(c), o.dirty && o.draft === a.note.body && (t.update((e) => ({
+				n.changed ? At(() => t.set(c)) : t.set(c), o.dirty && o.draft === a.note.body && (t.update((e) => ({
 					...e,
 					dirty: !1,
 					base: a.note.revision,
 					save: "saved",
 					message: "The current note is saved."
-				})), se());
+				})), ue());
 			} else {
-				let e = re?.key === ne ? re.draft : void 0, n = !1;
+				let e = oe?.key === ae ? oe.draft : void 0, n = !1;
 				try {
-					e ??= ga(sessionStorage.getItem(ne));
+					e ??= Ca(sessionStorage.getItem(ae));
 				} catch {
 					n = !0;
 				}
-				e?.body === a.note.body && (se(), e = void 0), t.set({
-					...ta("ready", "Workspace checked."),
+				e?.body === a.note.body && (ue(), e = void 0), t.set({
+					...na("ready", "Workspace checked."),
 					snapshot: a,
 					draft: a.note.body,
 					base: a.note.revision,
@@ -2889,37 +2942,37 @@ function Aa(e) {
 					storageLimited: n
 				});
 			}
-			if (h && E().snapshot?.account.role === "owner") for (let e of Yi) {
-				let t = E().media[e].observation;
-				t?.error === "checking" && !g[e] && !v[e] && Ve(e, t.offset);
+			if (h && D().snapshot?.account.role === "owner") for (let e of Yi) {
+				let t = D().media[e].observation;
+				t?.error === "checking" && !g[e] && !v[e] && Ue(e, t.offset);
 			}
-			if (x && E().snapshot?.account.role === "owner") for (let e of Zi) {
-				let t = E().queues[e].observation;
-				t?.error !== "checking" || S[e] || w[e] || C[e] || Je(e, t.offset);
+			if (T && D().snapshot?.account.role === "owner") for (let e of Zi) {
+				let t = D().queues[e].observation;
+				t?.error !== "checking" || ee[e] || ne[e] || te[e] || Ze(e, t.offset);
 			}
-			ue();
+			pe();
 		} catch {
-			i === r && s === n && !T && D("Your workspace could not be checked. Open workspace again to retry deliberately.", !0);
+			i === r && s === n && !E && O("Your workspace could not be checked. Open workspace again to retry deliberately.", !0);
 		} finally {
 			i === r && (i = void 0);
 		}
 	}
-	function ve(e) {
-		let n = E();
+	function ye(e) {
+		let n = D();
 		if (n.phase === "ready" && n.snapshot) {
 			if (t.set({
 				...n,
 				draft: e,
 				dirty: e !== n.snapshot.note.body,
 				save: n.save === "saved" ? "idle" : n.save
-			}), na(e)) ce();
-			else if (re = void 0, ne) try {
-				sessionStorage.removeItem(ne);
+			}), ra(e)) de();
+			else if (oe = void 0, ae) try {
+				sessionStorage.removeItem(ae);
 			} catch {}
 		}
 	}
-	function O() {
-		let e = E();
+	function be() {
+		let e = D();
 		e.recovery && e.snapshot && e.phase === "ready" && (t.set({
 			...e,
 			draft: e.recovery.body,
@@ -2928,10 +2981,10 @@ function Aa(e) {
 			recovery: void 0,
 			save: e.recovery.base === e.snapshot.note.revision ? "idle" : "conflict",
 			message: "Draft recovered. Review it before saving."
-		}), ce());
+		}), de());
 	}
-	function ye(e) {
-		let n = E();
+	function j(e) {
+		let n = D();
 		n.snapshot && n.phase === "ready" && (t.set({
 			...n,
 			draft: e ? n.snapshot.note.body : n.draft,
@@ -2940,11 +2993,11 @@ function Aa(e) {
 			recovery: void 0,
 			save: "idle",
 			message: e ? "Loaded the saved note." : "Draft kept against the latest saved revision. Review, then save deliberately."
-		}), ce());
+		}), de());
 	}
-	async function k() {
-		let e = E();
-		if (e.phase !== "ready" || !e.dirty || !na(e.draft) || [
+	async function xe() {
+		let e = D();
+		if (e.phase !== "ready" || !e.dirty || !ra(e.draft) || [
 			"conflict",
 			"checking-conflict",
 			"uncertain"
@@ -2962,13 +3015,13 @@ function Aa(e) {
 			message: "Saving your note…"
 		}));
 		try {
-			let e = await de("/api/workspace/note", o, {
+			let e = await me("/api/workspace/note", o, {
 				body: c.body,
 				base_revision: c.base
 			});
-			if (T || o.signal.aborted || s !== n) return;
+			if (E || o.signal.aborted || s !== n) return;
 			if (document.visibilityState !== "visible") {
-				D("Workspace hidden. Checking access on return.");
+				O("Workspace hidden. Checking access on return.");
 				return;
 			}
 			if ([
@@ -2976,7 +3029,7 @@ function Aa(e) {
 				403,
 				426
 			].includes(e.status)) {
-				D(fe(e.status), !0);
+				O(he(e.status), !0);
 				return;
 			}
 			if (e.status === 409) t.update((e) => ({
@@ -2985,9 +3038,9 @@ function Aa(e) {
 				message: "Another save won. Checking the latest saved note before comparing. Your draft is unchanged."
 			}));
 			else if (e.status === 200) {
-				let n = ha(e.value);
-				if (!pe(n) || n.note.body !== c.body || BigInt(n.note.revision) !== BigInt(c.base) + 1n) throw Error("Unqualified save result");
-				let r = E(), i = ge(r, n.crafty, !0), a = {
+				let n = Sa(e.value);
+				if (!ge(n) || n.note.body !== c.body || BigInt(n.note.revision) !== BigInt(c.base) + 1n) throw Error("Unqualified save result");
+				let r = D(), i = ve(r, n.crafty, !0), a = {
 					...r,
 					snapshot: {
 						...n,
@@ -3002,20 +3055,20 @@ function Aa(e) {
 					save: "saved",
 					message: r.draft === n.note.body ? "Saved to your account." : "Submitted version saved. Your newer edits are still unsaved."
 				};
-				i.changed ? jt(() => t.set(a)) : t.set(a), ce();
+				i.changed ? At(() => t.set(a)) : t.set(a), de();
 			} else throw Error("Save outcome unavailable");
 		} catch {
-			a === o && s === n && !T && t.update((e) => ({
+			a === o && s === n && !E && t.update((e) => ({
 				...e,
 				save: "uncertain",
 				message: "Save outcome is uncertain. Check the saved note before trying again."
 			}));
 		} finally {
-			a === o && (a = void 0), s === n && !T && (E().save === "checking-conflict" ? await _e() : ue());
+			a === o && (a = void 0), s === n && !E && (D().save === "checking-conflict" ? await A() : pe());
 		}
 	}
-	async function be(e, r) {
-		let a = E();
+	async function Se(e, r) {
+		let a = D();
 		if (a.phase !== "ready" || !a.snapshot || o || u || d || a.layoutSave === "checking-conflict" || a.directorySave === "uncertain") return !1;
 		i?.abort(), i = void 0;
 		let s = new AbortController();
@@ -3027,17 +3080,17 @@ function Aa(e) {
 			directoryMessage: "Saving your change…"
 		}));
 		try {
-			let i = await de(e, s, r);
-			if (T || s.signal.aborted || c !== n) return !1;
-			if (document.visibilityState !== "visible") return D("Workspace hidden. Checking access on return."), !1;
+			let i = await me(e, s, r);
+			if (E || s.signal.aborted || c !== n) return !1;
+			if (document.visibilityState !== "visible") return O("Workspace hidden. Checking access on return."), !1;
 			if ([
 				401,
 				403,
 				426
-			].includes(i.status)) return D(fe(i.status), !0), !1;
+			].includes(i.status)) return O(he(i.status), !0), !1;
 			if (i.status === 200) {
-				let e = ha(i.value);
-				return pe(e) ? (t.update((t) => ({
+				let e = Sa(i.value);
+				return ge(e) ? (t.update((t) => ({
 					...t,
 					snapshot: t.snapshot ? {
 						...t.snapshot,
@@ -3045,7 +3098,7 @@ function Aa(e) {
 					} : void 0,
 					directorySave: "idle",
 					directoryMessage: "Saved to your account."
-				})), !0) : (D("Your account scope changed. Open a fresh workspace.", !0), !1);
+				})), !0) : (O("Your account scope changed. Open a fresh workspace.", !0), !1);
 			}
 			if ([
 				400,
@@ -3060,32 +3113,32 @@ function Aa(e) {
 			})), !1;
 			throw Error("Uncertain directory outcome");
 		} catch {
-			return o === s && c === n && !T && t.update((e) => ({
+			return o === s && c === n && !E && t.update((e) => ({
 				...e,
 				directorySave: "uncertain",
 				directoryMessage: "The save may have completed. Check saved services before making another change."
 			})), !1;
 		} finally {
-			o === s && (o = void 0), c === n && !T && ue();
+			o === s && (o = void 0), c === n && !E && pe();
 		}
 	}
-	function xe(e, t) {
-		return be("/api/owner/directory", {
+	function Ce(e, t) {
+		return Se("/api/owner/directory", {
 			base_revision: e,
 			change: t
 		});
 	}
-	function A(e) {
-		let t = E().snapshot?.directory;
-		return t ? be("/api/workspace/pins", {
+	function we(e) {
+		let t = D().snapshot?.directory;
+		return t ? Se("/api/workspace/pins", {
 			base_directory_revision: t.revision,
 			base_revision: t.pins_revision,
 			ids: e
 		}) : Promise.resolve(!1);
 	}
-	async function Se(e, s) {
-		let c = E();
-		if (T || ae || c.phase !== "ready" || !c.snapshot || u || a || o || d || c.layoutSave === "checking-conflict" || c.notificationSave !== "idle" || !["services", "connections"].includes(e) || !$(s, !0)) return;
+	async function Te(e, s) {
+		let c = D();
+		if (E || ce || c.phase !== "ready" || !c.snapshot || u || a || o || d || c.layoutSave === "checking-conflict" || c.notificationSave !== "idle" || !["services", "connections"].includes(e) || !$(s, !0)) return;
 		i?.abort(), i = void 0, r && clearTimeout(r), r = void 0;
 		let l = new AbortController();
 		u = l;
@@ -3096,13 +3149,13 @@ function Aa(e) {
 			notificationMessage: "Saving your read marker…"
 		}));
 		try {
-			let r = await de("/api/workspace/notifications/read", l, {
+			let r = await me("/api/workspace/notifications/read", l, {
 				category: e,
 				through: s
 			});
-			if (T || l.signal.aborted || f !== n) return;
+			if (E || l.signal.aborted || f !== n) return;
 			if (document.visibilityState !== "visible") {
-				D("Workspace hidden. Checking access on return.");
+				O("Workspace hidden. Checking access on return.");
 				return;
 			}
 			if ([
@@ -3110,17 +3163,17 @@ function Aa(e) {
 				403,
 				426
 			].includes(r.status)) {
-				D(fe(r.status), !0);
+				O(he(r.status), !0);
 				return;
 			}
 			if (r.status === 409) throw Error("Read watermark changed");
 			let i = r.value;
 			if (r.status !== 200 || !Q(i)) throw Error("Read marker unavailable");
 			if (i.product !== Vi || i.contract !== Hi || i.schema !== 1 || !Q(i.account) || i.account.id !== c.snapshot.account.id || i.account.username !== c.snapshot.account.username || i.account.role !== c.snapshot.account.role || i.session_generation !== c.snapshot.session_generation) {
-				D("Your account scope changed. Open a fresh workspace.", !0);
+				O("Your account scope changed. Open a fresh workspace.", !0);
 				return;
 			}
-			let a = ua(i.notifications), o = a.groups.find((t) => t.category === e);
+			let a = da(i.notifications), o = a.groups.find((t) => t.category === e);
 			if (!o || BigInt(o.read_through) < BigInt(s)) throw Error("Unqualified read marker");
 			t.update((e) => ({
 				...e,
@@ -3132,17 +3185,17 @@ function Aa(e) {
 				notificationMessage: "Read marker saved. Newer changes remain unread."
 			}));
 		} catch {
-			u === l && f === n && !T && t.update((e) => ({
+			u === l && f === n && !E && t.update((e) => ({
 				...e,
 				notificationSave: "uncertain",
 				notificationMessage: "The read marker may have saved. Check notifications to see the current state."
 			}));
 		} finally {
-			u === l && (u = void 0), f === n && !T && ue();
+			u === l && (u = void 0), f === n && !E && pe();
 		}
 	}
-	function Ce() {
-		let e = E();
+	function Ee() {
+		let e = D();
 		e.phase !== "ready" || !e.snapshot || e.layoutDraft || a || o || u || d || (i?.abort(), i = void 0, r && clearTimeout(r), r = void 0, t.set({
 			...e,
 			layoutDraft: {
@@ -3151,10 +3204,10 @@ function Aa(e) {
 			},
 			layoutSave: "idle",
 			layoutMessage: "Arrange your Home panels, then save to your account."
-		}), ue());
+		}), pe());
 	}
-	function we(e) {
-		let n = E();
+	function De(e) {
+		let n = D();
 		n.phase === "ready" && n.layoutDraft && ![
 			"saving",
 			"checking-conflict",
@@ -3168,23 +3221,23 @@ function Aa(e) {
 			layoutMessage: "Your arrangement is unsaved."
 		});
 	}
-	function Te(e, t) {
-		let n = E().layoutDraft?.panels.map((e) => ({ ...e }));
+	function Oe(e, t) {
+		let n = D().layoutDraft?.panels.map((e) => ({ ...e }));
 		if (!n) return;
 		let r = n.findIndex((t) => t.id === e), i = r + t;
-		r < 0 || i < 0 || i >= n.length || ([n[r], n[i]] = [n[i], n[r]], we(n));
+		r < 0 || i < 0 || i >= n.length || ([n[r], n[i]] = [n[i], n[r]], De(n));
 	}
-	function Ee(e) {
-		let t = E().layoutDraft?.panels.map((e) => ({ ...e }));
+	function ke(e) {
+		let t = D().layoutDraft?.panels.map((e) => ({ ...e }));
 		if (!t) return;
 		let n = t.find((t) => t.id === e);
-		!n || n.visible && t.filter((e) => e.visible).length === 1 || (n.visible = !n.visible, we(t));
+		!n || n.visible && t.filter((e) => e.visible).length === 1 || (n.visible = !n.visible, De(t));
 	}
-	function De() {
-		we(Wi());
+	function Ae() {
+		De(Wi());
 	}
-	function Oe() {
-		let e = E();
+	function je() {
+		let e = D();
 		e.phase !== "ready" || [
 			"saving",
 			"checking-conflict",
@@ -3194,11 +3247,11 @@ function Aa(e) {
 			layoutDraft: void 0,
 			layoutSave: "idle",
 			layoutMessage: "Your saved Home layout is in use."
-		}), ue());
+		}), pe());
 	}
-	function ke(e) {
-		let n = E();
-		n.phase === "ready" && n.snapshot && n.layoutDraft && n.layoutSave === "conflict" && (e ? Oe() : t.set({
+	function Me(e) {
+		let n = D();
+		n.phase === "ready" && n.snapshot && n.layoutDraft && n.layoutSave === "conflict" && (e ? je() : t.set({
 			...n,
 			layoutDraft: {
 				...n.layoutDraft,
@@ -3208,14 +3261,14 @@ function Aa(e) {
 			layoutMessage: "Your arrangement is kept against the checked saved layout. Review, then save deliberately."
 		}));
 	}
-	async function Ae() {
-		let e = E();
-		if (T || ae || e.phase !== "ready" || !e.snapshot || !e.layoutDraft || e.layoutSave !== "idle" || a || o || u || d) return;
+	async function Ne() {
+		let e = D();
+		if (E || ce || e.phase !== "ready" || !e.snapshot || !e.layoutDraft || e.layoutSave !== "idle" || a || o || u || d) return;
 		let s = {
 			base: e.layoutDraft.base,
 			panels: e.layoutDraft.panels.map((e) => ({ ...e }))
 		};
-		if (!s.panels.some((e) => e.visible) || ma(s.panels, e.snapshot.layout.panels)) return;
+		if (!s.panels.some((e) => e.visible) || xa(s.panels, e.snapshot.layout.panels)) return;
 		i?.abort(), i = void 0, r && clearTimeout(r), r = void 0;
 		let c = new AbortController();
 		d = c;
@@ -3227,13 +3280,13 @@ function Aa(e) {
 		}));
 		let f = !1;
 		try {
-			let r = await de("/api/workspace/layout", c, {
+			let r = await me("/api/workspace/layout", c, {
 				base_revision: s.base,
 				panels: s.panels
 			});
-			if (T || c.signal.aborted || l !== n) return;
+			if (E || c.signal.aborted || l !== n) return;
 			if (document.visibilityState !== "visible") {
-				D("Workspace hidden. Checking access on return.");
+				O("Workspace hidden. Checking access on return.");
 				return;
 			}
 			if ([
@@ -3241,7 +3294,7 @@ function Aa(e) {
 				403,
 				426
 			].includes(r.status)) {
-				D(fe(r.status), !0);
+				O(he(r.status), !0);
 				return;
 			}
 			if (r.status === 409) f = !0, t.update((e) => ({
@@ -3262,11 +3315,11 @@ function Aa(e) {
 				let n = r.value;
 				if (r.status !== 200 || !Q(n)) throw Error("Layout unavailable");
 				if (n.product !== Vi || n.contract !== Hi || n.schema !== 1 || !Q(n.account) || n.account.id !== e.snapshot.account.id || n.account.username !== e.snapshot.account.username || n.account.role !== e.snapshot.account.role || n.session_generation !== e.snapshot.session_generation) {
-					D("Your account scope changed. Open a fresh workspace.", !0);
+					O("Your account scope changed. Open a fresh workspace.", !0);
 					return;
 				}
-				let i = da(n.layout);
-				if (BigInt(i.revision) !== BigInt(s.base) + 1n || !ma(i.panels, s.panels)) throw Error("Unqualified layout result");
+				let i = fa(n.layout);
+				if (BigInt(i.revision) !== BigInt(s.base) + 1n || !xa(i.panels, s.panels)) throw Error("Unqualified layout result");
 				t.update((e) => ({
 					...e,
 					snapshot: e.snapshot ? {
@@ -3279,18 +3332,18 @@ function Aa(e) {
 				}));
 			}
 		} catch {
-			d === c && l === n && !T && t.update((e) => ({
+			d === c && l === n && !E && t.update((e) => ({
 				...e,
 				layoutSave: "uncertain",
 				layoutMessage: "The layout may have saved. Check the saved layout before saving again; your changes have not been sent again."
 			}));
 		} finally {
-			d === c && (d = void 0), l === n && !T && (f ? await _e(!0) : ue());
+			d === c && (d = void 0), l === n && !E && (f ? await A(!0) : pe());
 		}
 	}
-	async function je(e = E().activity.category, r = E().activity.query, i = !1) {
-		let a = E();
-		if (T || ae || a.phase !== "ready" || !a.snapshot || document.visibilityState !== "visible") return;
+	async function Pe(e = D().activity.category, r = D().activity.query, i = !1) {
+		let a = D();
+		if (E || ce || a.phase !== "ready" || !a.snapshot || document.visibilityState !== "visible") return;
 		s?.abort();
 		let o = new AbortController();
 		s = o;
@@ -3313,10 +3366,10 @@ function Aa(e) {
 			}
 		}));
 		try {
-			let s = await de(`/api/workspace/activity?${d}`, o);
-			if (T || o.signal.aborted || c !== f || l !== n) return;
+			let s = await me(`/api/workspace/activity?${d}`, o);
+			if (E || o.signal.aborted || c !== f || l !== n) return;
 			if (document.visibilityState !== "visible") {
-				D("Workspace hidden. Checking access on return.");
+				O("Workspace hidden. Checking access on return.");
 				return;
 			}
 			if ([
@@ -3324,13 +3377,13 @@ function Aa(e) {
 				403,
 				426
 			].includes(s.status)) {
-				D(fe(s.status), !0);
+				O(he(s.status), !0);
 				return;
 			}
 			let p = s.value;
 			if (s.status !== 200 || !Q(p) || p.product !== Vi || p.contract !== Hi || p.schema !== 1 || !Q(p.account) || p.account.id !== a.snapshot.account.id || p.account.role !== a.snapshot.account.role || p.account.username !== a.snapshot.account.username || p.session_generation !== a.snapshot.session_generation) {
 				if (s.status === 200) {
-					D("Your account scope changed. Open a fresh workspace.", !0);
+					O("Your account scope changed. Open a fresh workspace.", !0);
 					return;
 				}
 				throw Error("Activity unavailable");
@@ -3362,7 +3415,7 @@ function Aa(e) {
 				}
 			}));
 		} catch {
-			!T && c === f && l === n && t.update((t) => ({
+			!E && c === f && l === n && t.update((t) => ({
 				...t,
 				activity: {
 					...Ki(),
@@ -3376,9 +3429,9 @@ function Aa(e) {
 			s === o && (s = void 0);
 		}
 	}
-	async function Me(e = !1) {
-		let r = E();
-		if (T || ae || r.phase !== "ready" || !r.snapshot || document.visibilityState !== "visible" || c || !e && r.guide.phase === "ready") return;
+	async function Fe(e = !1) {
+		let r = D();
+		if (E || ce || r.phase !== "ready" || !r.snapshot || document.visibilityState !== "visible" || c || !e && r.guide.phase === "ready") return;
 		let i = r.snapshot, a = new AbortController();
 		c = a;
 		let o = ++p, s = n;
@@ -3390,10 +3443,10 @@ function Aa(e) {
 			}
 		}));
 		try {
-			let e = await de("/api/workspace/guide", a);
-			if (T || a.signal.aborted || o !== p || s !== n || !he(i)) return;
+			let e = await me("/api/workspace/guide", a);
+			if (E || a.signal.aborted || o !== p || s !== n || !k(i)) return;
 			if (document.visibilityState !== "visible") {
-				D("Workspace hidden. Checking access on return.");
+				O("Workspace hidden. Checking access on return.");
 				return;
 			}
 			if ([
@@ -3401,15 +3454,15 @@ function Aa(e) {
 				403,
 				426
 			].includes(e.status)) {
-				D(fe(e.status), !0);
+				O(he(e.status), !0);
 				return;
 			}
 			if (e.status !== 200) throw Error("Guide unavailable");
-			if (!me(e.value, i)) {
-				D("Your account scope changed. Open a fresh workspace.", !0);
+			if (!_e(e.value, i)) {
+				O("Your account scope changed. Open a fresh workspace.", !0);
 				return;
 			}
-			let r = fa(e.value);
+			let r = pa(e.value);
 			t.update((e) => ({
 				...e,
 				guide: {
@@ -3419,7 +3472,7 @@ function Aa(e) {
 				}
 			}));
 		} catch {
-			!T && o === p && s === n && he(i) && t.update((e) => ({
+			!E && o === p && s === n && k(i) && t.update((e) => ({
 				...e,
 				guide: {
 					phase: "error",
@@ -3430,9 +3483,9 @@ function Aa(e) {
 			c === a && (c = void 0);
 		}
 	}
-	async function Ne(e = !1) {
-		let r = E();
-		if (T || ae || r.phase !== "ready" || !r.snapshot || document.visibilityState !== "visible") return;
+	async function Ie(e = !1) {
+		let r = D();
+		if (E || ce || r.phase !== "ready" || !r.snapshot || document.visibilityState !== "visible") return;
 		let i = r.observations;
 		if (e && (!i.next || i.phase !== "ready" || i.revision !== r.snapshot.crafty?.revision)) return;
 		l?.abort();
@@ -3448,10 +3501,10 @@ function Aa(e) {
 			}
 		}));
 		try {
-			let r = await de(`/api/workspace/observations${e ? `?${u}` : ""}`, o);
-			if (T || o.signal.aborted || s !== m || c !== n || !he(a)) return;
+			let r = await me(`/api/workspace/observations${e ? `?${u}` : ""}`, o);
+			if (E || o.signal.aborted || s !== m || c !== n || !k(a)) return;
 			if (document.visibilityState !== "visible") {
-				D("Workspace hidden. Checking access on return.");
+				O("Workspace hidden. Checking access on return.");
 				return;
 			}
 			if ([
@@ -3459,7 +3512,7 @@ function Aa(e) {
 				403,
 				426
 			].includes(r.status)) {
-				D(fe(r.status), !0);
+				O(he(r.status), !0);
 				return;
 			}
 			if (r.status === 409) {
@@ -3474,12 +3527,12 @@ function Aa(e) {
 				return;
 			}
 			if (r.status !== 200) throw Error("Observation history unavailable");
-			if (!me(r.value, a)) {
-				D("Your account scope changed. Open a fresh workspace.", !0);
+			if (!_e(r.value, a)) {
+				O("Your account scope changed. Open a fresh workspace.", !0);
 				return;
 			}
-			let l = pa(r.value, i, e);
-			if (l.revision !== a.crafty?.revision || l.revision !== E().snapshot?.crafty?.revision) {
+			let l = ma(r.value, i, e);
+			if (l.revision !== a.crafty?.revision || l.revision !== D().snapshot?.crafty?.revision) {
 				t.update((e) => ({
 					...e,
 					observations: {
@@ -3496,7 +3549,7 @@ function Aa(e) {
 				observations: l
 			}));
 		} catch {
-			!T && s === m && c === n && he(a) && t.update((e) => ({
+			!E && s === m && c === n && k(a) && t.update((e) => ({
 				...e,
 				observations: {
 					...Ji(),
@@ -3508,14 +3561,14 @@ function Aa(e) {
 			l === o && (l = void 0);
 		}
 	}
-	function Pe() {
-		let e = E();
-		if (T || ae || e.phase !== "ready") return;
+	function Le() {
+		let e = D();
+		if (E || ce || e.phase !== "ready") return;
 		let n = Math.floor(Date.now() / 1e3), r = !1, i = { ...e.media };
 		for (let e of Yi) {
 			let t = i[e].observation;
 			if (!t) continue;
-			let a = ba(t, n);
+			let a = Da(t, n);
 			a !== t && (r = !0, i[e] = {
 				...i[e],
 				observation: a
@@ -3526,7 +3579,7 @@ function Aa(e) {
 			media: i
 		});
 	}
-	function Fe(e, n, r = !1) {
+	function Re(e, n, r = !1) {
 		let i = () => t.update((t) => ({
 			...t,
 			media: {
@@ -3534,56 +3587,56 @@ function Aa(e) {
 				[e]: n
 			}
 		}));
-		r ? jt(i) : i();
+		r ? At(i) : i();
 	}
-	function Ie() {
-		let e = E();
-		return !T && !ae && e.phase === "ready" && e.snapshot?.account.role === "owner" && document.visibilityState === "visible" ? e.snapshot : void 0;
+	function ze() {
+		let e = D();
+		return !E && !ce && e.phase === "ready" && e.snapshot?.account.role === "owner" && document.visibilityState === "visible" ? e.snapshot : void 0;
 	}
-	function Le(e) {
+	function Be(e) {
 		++y[e], g[e]?.abort(), delete g[e];
 	}
-	function Re() {
+	function Ve() {
 		h = !1;
 		for (let e of Yi) {
-			Le(e), ++b[e], _[e]?.abort(), delete _[e];
-			let t = E().media[e], n = !!v[e];
-			v[e]?.abort(), delete v[e], Fe(e, {
+			Be(e), ++b[e], _[e]?.abort(), delete _[e];
+			let t = D().media[e], n = !!v[e];
+			v[e]?.abort(), delete v[e], Re(e, {
 				phase: "idle",
 				save: n ? "uncertain" : t.save,
 				message: n ? "The save may have completed. Check the connection state before another change." : t.save === "uncertain" || t.save === "conflict" ? t.message : ""
 			}, !0);
 		}
 	}
-	async function ze(e, t = !0) {
-		let r = Ie();
+	async function M(e, t = !0) {
+		let r = ze();
 		if (!r || v[e]) return;
-		h = !0, Le(e), _[e]?.abort();
+		h = !0, Be(e), _[e]?.abort();
 		let i = new AbortController();
 		_[e] = i;
-		let a = ++b[e], o = n, s = E().media[e];
-		Fe(e, {
+		let a = ++b[e], o = n, s = D().media[e];
+		Re(e, {
 			...s,
 			phase: "loading",
 			observation: void 0,
 			message: "Checking the current enrollment…"
 		}, !0);
 		try {
-			let s = await de(`/api/owner/media/${e}`, i);
-			if (T || i.signal.aborted || a !== b[e] || o !== n || !he(r)) return;
+			let s = await me(`/api/owner/media/${e}`, i);
+			if (E || i.signal.aborted || a !== b[e] || o !== n || !k(r)) return;
 			if ([
 				401,
 				403,
 				426
 			].includes(s.status)) {
-				D(fe(s.status), !0);
+				O(he(s.status), !0);
 				return;
 			}
 			let c = s.value;
 			if (s.status !== 200 || !Q(c) || !$(c.revision) || typeof c.configured != "boolean") throw Error("Media enrollment unavailable");
-			let l = E().media[e].status;
+			let l = D().media[e].status;
 			if (l && BigInt(c.revision) < BigInt(l.revision)) throw Error("Older enrollment reply");
-			Fe(e, {
+			Re(e, {
 				phase: "ready",
 				status: {
 					revision: c.revision,
@@ -3591,11 +3644,11 @@ function Aa(e) {
 				},
 				save: "idle",
 				message: c.configured ? "Enrollment checked. Only observation requests are sent." : "No connection is enrolled."
-			}, !0), t && c.configured && await Ve(e);
+			}, !0), t && c.configured && await Ue(e);
 		} catch {
-			if (!T && a === b[e] && o === n && he(r)) {
-				let t = E().media[e];
-				Fe(e, {
+			if (!E && a === b[e] && o === n && k(r)) {
+				let t = D().media[e];
+				Re(e, {
 					...t,
 					phase: "error",
 					observation: void 0,
@@ -3606,35 +3659,35 @@ function Aa(e) {
 			_[e] === i && delete _[e];
 		}
 	}
-	async function Be() {
-		Ie() && (h = !0, await Promise.all(Yi.map((e) => ze(e))));
+	async function He() {
+		ze() && (h = !0, await Promise.all(Yi.map((e) => M(e))));
 	}
-	async function Ve(e, t = 0) {
-		let r = Ie();
-		if (!r || !ya(t) || v[e]) return;
-		h = !0, Le(e);
+	async function Ue(e, t = 0) {
+		let r = ze();
+		if (!r || !Ea(t) || v[e]) return;
+		h = !0, Be(e);
 		let i = new AbortController();
 		g[e] = i;
-		let a = y[e], o = n, s = E().media[e];
-		Fe(e, {
+		let a = y[e], o = n, s = D().media[e];
+		Re(e, {
 			...s,
 			phase: "loading",
 			observation: void 0,
 			message: "Checking sampled media observations…"
 		}, !0);
 		try {
-			let c = await de(`/api/workspace/media/${e}?offset=${t}`, i);
-			if (T || i.signal.aborted || a !== y[e] || o !== n || !he(r)) return;
+			let c = await me(`/api/workspace/media/${e}?offset=${t}`, i);
+			if (E || i.signal.aborted || a !== y[e] || o !== n || !k(r)) return;
 			if ([
 				401,
 				403,
 				426
 			].includes(c.status)) {
-				D(fe(c.status), !0);
+				O(he(c.status), !0);
 				return;
 			}
 			if (c.status === 409) {
-				Le(e), Fe(e, {
+				Be(e), Re(e, {
 					phase: "error",
 					save: s.save,
 					message: "Enrollment changed. Check the connection state before reading its new scope."
@@ -3642,28 +3695,28 @@ function Aa(e) {
 				return;
 			}
 			if (c.status !== 200) throw Error("Media unavailable");
-			if (!me(c.value, r)) {
-				D("Your account scope changed. Open a fresh workspace.", !0);
+			if (!_e(c.value, r)) {
+				O("Your account scope changed. Open a fresh workspace.", !0);
 				return;
 			}
 			if (c.value.provider !== e) throw Error("Wrong media provider");
-			let l = xa(c.value.observation, e, t), u = E().media[e].status;
+			let l = Oa(c.value.observation, e, t), u = D().media[e].status;
 			if (u && BigInt(l.revision) < BigInt(u.revision)) throw Error("Older media scope");
 			u?.revision !== l.revision && (++b[e], _[e]?.abort(), delete _[e]);
 			let d = l.configured ? l.error === "checking" ? "A sample is being collected. Check observations again, or wait for the existing workspace access check." : l.error ? "This provider sample is unavailable or incomplete. Unknown values stay unknown." : l.complete ? "Media observations checked." : "A partial media sample is available; some details are unknown." : "No connection is enrolled.";
-			Fe(e, {
+			Re(e, {
 				phase: "ready",
 				status: {
 					revision: l.revision,
 					configured: l.configured
 				},
 				observation: l,
-				save: E().media[e].save,
+				save: D().media[e].save,
 				message: d
 			}, !0);
 		} catch {
-			!T && a === y[e] && o === n && he(r) && Fe(e, {
-				...E().media[e],
+			!E && a === y[e] && o === n && k(r) && Re(e, {
+				...D().media[e],
 				phase: "error",
 				observation: void 0,
 				message: "Media observations could not be checked. Retry deliberately; your workspace note is unchanged."
@@ -3672,35 +3725,35 @@ function Aa(e) {
 			g[e] === i && delete g[e];
 		}
 	}
-	async function He(e, t, r) {
-		let i = Ie(), a = E().media[e];
+	async function We(e, t, r) {
+		let i = ze(), a = D().media[e];
 		if (!i || v[e] || a.phase !== "ready" || a.save !== "idle" || a.status?.revision !== t || !$(t)) return;
-		h = !0, Le(e), ++b[e], _[e]?.abort(), delete _[e];
+		h = !0, Be(e), ++b[e], _[e]?.abort(), delete _[e];
 		let o = new AbortController();
 		v[e] = o;
 		let s = n;
-		Fe(e, {
+		Re(e, {
 			...a,
 			observation: void 0,
 			save: "saving",
 			message: r ? "Saving the dedicated connection…" : "Removing the connection…"
 		}, !0);
 		try {
-			let c = await de(`/api/owner/media/${e}`, o, {
+			let c = await me(`/api/owner/media/${e}`, o, {
 				base_revision: t,
 				connection: r
 			});
-			if (T || o.signal.aborted || s !== n || !he(i) || v[e] !== o) return;
+			if (E || o.signal.aborted || s !== n || !k(i) || v[e] !== o) return;
 			if ([
 				401,
 				403,
 				426
 			].includes(c.status)) {
-				D(fe(c.status), !0);
+				O(he(c.status), !0);
 				return;
 			}
 			if (c.status === 409) {
-				Fe(e, {
+				Re(e, {
 					phase: "error",
 					save: "conflict",
 					message: "The connection changed elsewhere. Check its current state before enrolling again."
@@ -3712,7 +3765,7 @@ function Aa(e) {
 				413,
 				429
 			].includes(c.status)) {
-				Fe(e, {
+				Re(e, {
 					...a,
 					observation: void 0,
 					save: "idle",
@@ -3722,7 +3775,7 @@ function Aa(e) {
 			}
 			let l = c.value;
 			if (c.status !== 200 || !Q(l) || !$(l.revision, !0) || BigInt(l.revision) !== BigInt(t) + 1n || l.configured !== (r !== null)) throw Error("Uncertain media save");
-			Fe(e, {
+			Re(e, {
 				phase: "ready",
 				status: {
 					revision: l.revision,
@@ -3732,7 +3785,7 @@ function Aa(e) {
 				message: r ? "Connection saved. Check its observations." : "Connection removed."
 			}, !0);
 		} catch {
-			!T && s === n && he(i) && v[e] === o && Fe(e, {
+			!E && s === n && k(i) && v[e] === o && Re(e, {
 				phase: "error",
 				save: "uncertain",
 				message: "The save may have completed. Check the connection state before entering credentials again."
@@ -3741,14 +3794,14 @@ function Aa(e) {
 			v[e] === o && delete v[e];
 		}
 	}
-	function j() {
-		let e = E();
-		if (T || ae || e.phase !== "ready") return;
+	function Ge() {
+		let e = D();
+		if (E || ce || e.phase !== "ready") return;
 		let n = Math.floor(Date.now() / 1e3), r = !1, i = { ...e.queues };
 		for (let e of Zi) {
 			let t = i[e].observation;
 			if (!t) continue;
-			let a = Oa(t, n);
+			let a = Fa(t, n);
 			a !== t && (r = !0, i[e] = {
 				...i[e],
 				observation: a
@@ -3759,7 +3812,7 @@ function Aa(e) {
 			queues: i
 		});
 	}
-	function Ue(e, n, r = !1) {
+	function Ke(e, n, r = !1) {
 		let i = () => t.update((t) => ({
 			...t,
 			queues: {
@@ -3767,41 +3820,41 @@ function Aa(e) {
 				[e]: n
 			}
 		}));
-		r ? jt(i) : i();
+		r ? At(i) : i();
 	}
-	function We(e) {
-		++ee[e], S[e]?.abort(), delete S[e];
+	function qe(e) {
+		++re[e], ee[e]?.abort(), delete ee[e];
 	}
-	function Ge() {
-		x = !1;
+	function Je() {
+		T = !1;
 		for (let e of Zi) {
-			We(e), ++te[e], C[e]?.abort(), delete C[e];
-			let t = E().queues[e], n = !!w[e];
-			w[e]?.abort(), delete w[e], Ue(e, {
+			qe(e), ++ie[e], te[e]?.abort(), delete te[e];
+			let t = D().queues[e], n = !!ne[e];
+			ne[e]?.abort(), delete ne[e], Ke(e, {
 				...$i(),
 				save: n ? "uncertain" : t.save,
 				message: n ? "The save may have completed. Check the connection state before another change." : t.save === "uncertain" || t.save === "conflict" ? t.message : ""
 			}, !0);
 		}
 	}
-	async function Ke(e) {
-		let t = Ie();
-		if (!t || w[e]) return;
-		x = !0, We(e), C[e]?.abort();
+	async function Ye(e) {
+		let t = ze();
+		if (!t || ne[e]) return;
+		T = !0, qe(e), te[e]?.abort();
 		let r = new AbortController();
-		C[e] = r;
-		let i = ++te[e], a = n, o = E().queues[e];
-		Ue(e, {
+		te[e] = r;
+		let i = ++ie[e], a = n, o = D().queues[e];
+		Ke(e, {
 			...o,
 			phase: "loading",
 			observation: void 0,
 			message: "Checking the current enrollment…"
 		}, !0);
 		try {
-			let s = await de(`/api/owner/queues/${e}`, r);
-			if (T || !x || r.signal.aborted || i !== te[e] || a !== n || !he(t)) return;
+			let s = await me(`/api/owner/queues/${e}`, r);
+			if (E || !T || r.signal.aborted || i !== ie[e] || a !== n || !k(t)) return;
 			if (document.visibilityState !== "visible") {
-				D("Workspace hidden. Checking access on return.");
+				O("Workspace hidden. Checking access on return.");
 				return;
 			}
 			if ([
@@ -3809,14 +3862,14 @@ function Aa(e) {
 				403,
 				426
 			].includes(s.status)) {
-				D(fe(s.status), !0);
+				O(he(s.status), !0);
 				return;
 			}
 			let c = s.value;
 			if (s.status !== 200 || !Q(c) || !$(c.revision) || typeof c.configured != "boolean" || c.profile !== Qi[e]) throw Error("Queue enrollment unavailable");
-			let l = E().queues[e].status;
+			let l = D().queues[e].status;
 			if (l && (BigInt(c.revision) < BigInt(l.revision) || c.revision === l.revision && c.configured !== l.configured)) throw Error("Older enrollment reply");
-			Ue(e, {
+			Ke(e, {
 				phase: "ready",
 				offset: c.configured && l?.revision === c.revision ? o.offset : 0,
 				status: {
@@ -3828,27 +3881,27 @@ function Aa(e) {
 				message: c.configured ? "Enrollment checked. Check observations when you want a provider sample." : "No connection is enrolled."
 			}, !0);
 		} catch {
-			!T && x && i === te[e] && a === n && he(t) && Ue(e, {
-				...E().queues[e],
+			!E && T && i === ie[e] && a === n && k(t) && Ke(e, {
+				...D().queues[e],
 				phase: "error",
 				observation: void 0,
 				message: "The connection state could not be checked. Retry deliberately before entering credentials."
 			}, !0);
 		} finally {
-			C[e] === r && delete C[e];
+			te[e] === r && delete te[e];
 		}
 	}
-	async function qe() {
-		Ie() && (x = !0, await Promise.all(Zi.map((e) => Ke(e))));
+	async function Xe() {
+		ze() && (T = !0, await Promise.all(Zi.map((e) => Ye(e))));
 	}
-	async function Je(e, t = E().queues[e].offset) {
-		let r = Ie();
-		if (!r || !ya(t) || w[e]) return;
-		x = !0, We(e);
+	async function Ze(e, t = D().queues[e].offset) {
+		let r = ze();
+		if (!r || !Ea(t) || ne[e]) return;
+		T = !0, qe(e);
 		let i = new AbortController();
-		S[e] = i;
-		let a = ee[e], o = n, s = E().queues[e];
-		Ue(e, {
+		ee[e] = i;
+		let a = re[e], o = n, s = D().queues[e];
+		Ke(e, {
 			...s,
 			offset: t,
 			phase: "loading",
@@ -3856,10 +3909,10 @@ function Aa(e) {
 			message: "Checking queue observations…"
 		}, !0);
 		try {
-			let c = await de(`/api/workspace/queues/${e}?offset=${t}`, i);
-			if (T || !x || i.signal.aborted || a !== ee[e] || o !== n || !he(r)) return;
+			let c = await me(`/api/workspace/queues/${e}?offset=${t}`, i);
+			if (E || !T || i.signal.aborted || a !== re[e] || o !== n || !k(r)) return;
 			if (document.visibilityState !== "visible") {
-				D("Workspace hidden. Checking access on return.");
+				O("Workspace hidden. Checking access on return.");
 				return;
 			}
 			if ([
@@ -3867,11 +3920,11 @@ function Aa(e) {
 				403,
 				426
 			].includes(c.status)) {
-				D(fe(c.status), !0);
+				O(he(c.status), !0);
 				return;
 			}
 			if (c.status === 409) {
-				We(e), Ue(e, {
+				qe(e), Ke(e, {
 					...$i(),
 					phase: "error",
 					save: s.save,
@@ -3880,16 +3933,16 @@ function Aa(e) {
 				return;
 			}
 			if (c.status !== 200) throw Error("Queues unavailable");
-			if (!me(c.value, r)) {
-				D("Your account scope changed. Open a fresh workspace.", !0);
+			if (!_e(c.value, r)) {
+				O("Your account scope changed. Open a fresh workspace.", !0);
 				return;
 			}
 			if (c.value.provider !== e) throw Error("Wrong queue provider");
-			let l = ka(c.value.observation, e, t), u = E().queues[e].status;
+			let l = Ia(c.value.observation, e, t), u = D().queues[e].status;
 			if (u && (BigInt(l.revision) < BigInt(u.revision) || l.revision === u.revision && l.configured !== u.configured)) throw Error("Older queue scope");
-			u?.revision !== l.revision && (++te[e], C[e]?.abort(), delete C[e]);
+			u?.revision !== l.revision && (++ie[e], te[e]?.abort(), delete te[e]);
 			let d = l.configured ? l.error === "checking" ? "A sample is being collected. Displayed rows, if any, retain their earlier collection time." : l.error === "page_moved" ? "The provider moved this page as its queue changed. Reload the first page deliberately." : l.error === "unsupported_profile" ? "This provider does not match the supported API profile. Review the enrolled version and address." : l.error === "denied" ? "The provider denied access. Review deliberate key enrollment." : l.error === "rate_limited" ? "The provider limited requests. Try again deliberately later." : l.error ? "Queue observations are unavailable. Unknown values stay unknown." : l.complete ? "Queue observations checked." : "An incomplete sample is available; unreported values stay unknown." : "No connection is enrolled.";
-			Ue(e, {
+			Ke(e, {
 				phase: "ready",
 				offset: t,
 				status: {
@@ -3898,41 +3951,41 @@ function Aa(e) {
 					profile: l.profile
 				},
 				observation: l,
-				save: E().queues[e].save,
+				save: D().queues[e].save,
 				message: d
 			}, !0);
 		} catch {
-			!T && x && a === ee[e] && o === n && he(r) && Ue(e, {
-				...E().queues[e],
+			!E && T && a === re[e] && o === n && k(r) && Ke(e, {
+				...D().queues[e],
 				phase: "error",
 				observation: void 0,
 				message: "Queue observations could not be checked. Retry deliberately; your private note is unchanged."
 			}, !0);
 		} finally {
-			S[e] === i && delete S[e];
+			ee[e] === i && delete ee[e];
 		}
 	}
-	async function Ye(e, t, r) {
-		let i = Ie(), a = E().queues[e];
-		if (!i || w[e] || a.phase !== "ready" || a.save !== "idle" || a.status?.revision !== t || !$(t)) return;
-		x = !0, We(e), ++te[e], C[e]?.abort(), delete C[e];
+	async function Qe(e, t, r) {
+		let i = ze(), a = D().queues[e];
+		if (!i || ne[e] || a.phase !== "ready" || a.save !== "idle" || a.status?.revision !== t || !$(t)) return;
+		T = !0, qe(e), ++ie[e], te[e]?.abort(), delete te[e];
 		let o = new AbortController();
-		w[e] = o;
+		ne[e] = o;
 		let s = n;
-		Ue(e, {
+		Ke(e, {
 			...a,
 			observation: void 0,
 			save: "saving",
 			message: r ? "Saving the deliberately enrolled connection…" : "Removing the connection…"
 		}, !0);
 		try {
-			let c = await de(`/api/owner/queues/${e}`, o, {
+			let c = await me(`/api/owner/queues/${e}`, o, {
 				base_revision: t,
 				connection: r
 			});
-			if (T || !x || o.signal.aborted || s !== n || !he(i) || w[e] !== o) return;
+			if (E || !T || o.signal.aborted || s !== n || !k(i) || ne[e] !== o) return;
 			if (document.visibilityState !== "visible") {
-				D("Workspace hidden. Checking access on return.");
+				O("Workspace hidden. Checking access on return.");
 				return;
 			}
 			if ([
@@ -3940,11 +3993,11 @@ function Aa(e) {
 				403,
 				426
 			].includes(c.status)) {
-				D(fe(c.status), !0);
+				O(he(c.status), !0);
 				return;
 			}
 			if (c.status === 409) {
-				Ue(e, {
+				Ke(e, {
 					...$i(),
 					phase: "error",
 					save: "conflict",
@@ -3957,7 +4010,7 @@ function Aa(e) {
 				413,
 				429
 			].includes(c.status)) {
-				Ue(e, {
+				Ke(e, {
 					...a,
 					observation: void 0,
 					save: "idle",
@@ -3967,7 +4020,7 @@ function Aa(e) {
 			}
 			let l = c.value;
 			if (c.status !== 200 || !Q(l) || !$(l.revision, !0) || BigInt(l.revision) !== BigInt(t) + 1n || l.configured !== (r !== null) || l.profile !== Qi[e]) throw Error("Uncertain queue save");
-			Ue(e, {
+			Ke(e, {
 				phase: "ready",
 				offset: 0,
 				status: {
@@ -3979,100 +4032,319 @@ function Aa(e) {
 				message: r ? "Connection saved. Check its observations." : "Connection removed."
 			}, !0);
 		} catch {
-			!T && x && s === n && he(i) && w[e] === o && Ue(e, {
-				...E().queues[e],
+			!E && T && s === n && k(i) && ne[e] === o && Ke(e, {
+				...D().queues[e],
 				phase: "error",
 				observation: void 0,
 				save: "uncertain",
 				message: "The save may have completed. Check the connection state before entering credentials again."
 			}, !0);
 		} finally {
-			w[e] === o && delete w[e];
+			ne[e] === o && delete ne[e];
 		}
 	}
-	function Xe() {
-		se(), D("Signing out…", !0);
+	function $e() {
+		let e = D();
+		return !E && !ce && e.phase === "ready" && e.snapshot && document.visibilityState === "visible" ? e.snapshot : void 0;
+	}
+	function et(e) {
+		At(() => t.update((t) => ({
+			...t,
+			identity: e
+		})));
+	}
+	function tt() {
+		x = !1, ++w, S?.abort(), S = void 0;
+		let e = !!C;
+		C?.abort(), C = void 0, et({
+			...ta(),
+			save: e ? "uncertain" : D().identity.save,
+			message: e ? "The change may have completed. Check identity status before another action." : ""
+		});
+	}
+	function nt(e, t, n = D().identity.value) {
+		if (!_e(e, t)) throw O("Your account scope changed. Open a fresh workspace.", !0), Error("Identity scope changed");
+		let r = ya(e);
+		if (n && (BigInt(r.application.revision) < BigInt(n.application.revision) || BigInt(r.link.revision) < BigInt(n.link.revision) || BigInt(r.link.flow_generation) < BigInt(n.link.flow_generation))) throw Error("Older identity response");
+		return r;
+	}
+	async function rt() {
+		let e = $e();
+		if (!e || C) return;
+		x = !0, S?.abort();
+		let t = new AbortController();
+		S = t;
+		let r = ++w, i = n, a = D().identity.value;
+		et({
+			...D().identity,
+			phase: "loading",
+			value: void 0,
+			message: "Checking your current Discord link…"
+		});
 		try {
-			ie?.postMessage({ kind: "auth-changed" });
+			let o = await me("/api/workspace/discord", t);
+			if (E || !x || t.signal.aborted || r !== w || i !== n || !k(e)) return;
+			if (document.visibilityState !== "visible") {
+				O("Workspace hidden. Checking access on return.");
+				return;
+			}
+			if ([
+				401,
+				403,
+				426
+			].includes(o.status)) {
+				O(he(o.status), !0);
+				return;
+			}
+			if (o.status !== 200) throw Error("Identity unavailable");
+			let s = nt(o.value, e, a);
+			et({
+				phase: "ready",
+				value: s,
+				save: "idle",
+				message: ba(s)
+			});
+		} catch {
+			!E && x && r === w && i === n && k(e) && et({
+				phase: "error",
+				save: D().identity.save,
+				message: "Identity status could not be checked. Check again before making a change."
+			});
+		} finally {
+			S === t && (S = void 0);
+		}
+	}
+	async function it() {
+		$e() && (x = !0, await rt());
+	}
+	async function at(e) {
+		let t = $e(), r = D().identity, i = r.value;
+		if (!t || !x || C || r.phase !== "ready" || r.save !== "idle" || !i || e === "review" && i.attempt.phase !== "ready_to_review" || e === "confirm" && i.attempt.phase !== "review_ready") return;
+		let a = {
+			base_revision: i.link.revision,
+			base_flow_generation: i.link.flow_generation,
+			...["review", "confirm"].includes(e) ? { base_application_revision: i.application.revision } : {}
+		};
+		S?.abort(), S = void 0, ++w;
+		let o = new AbortController();
+		C = o;
+		let s = n;
+		et({
+			...r,
+			value: void 0,
+			save: "saving",
+			message: e === "review" ? "Reviewing the identity returned by Discord…" : e === "confirm" ? "Saving your confirmed identity…" : e === "unlink" ? "Unlinking this identity locally…" : "Cancelling this unfinished link…"
+		});
+		try {
+			let r = await me(`/api/workspace/discord/${e}`, o, a, "POST");
+			if (E || !x || o.signal.aborted || s !== n || !k(t) || C !== o) return;
+			if (document.visibilityState !== "visible") {
+				O("Workspace hidden. Checking access on return.");
+				return;
+			}
+			if ([
+				401,
+				403,
+				426
+			].includes(r.status)) {
+				O(he(r.status), !0);
+				return;
+			}
+			if (r.status === 409) {
+				et({
+					phase: "error",
+					save: "conflict",
+					message: "This link or application changed. Check identity status before another action."
+				});
+				return;
+			}
+			if ([
+				400,
+				413,
+				429
+			].includes(r.status)) {
+				et({
+					phase: "error",
+					save: "idle",
+					message: "The action was not accepted. Check identity status before starting again."
+				});
+				return;
+			}
+			if (r.status !== 200) throw Error("Uncertain identity change");
+			let c = nt(r.value, t, i);
+			et({
+				phase: "ready",
+				value: c,
+				save: "idle",
+				message: e === "unlink" ? "The Discord identity is unlinked locally. Your local sign-in is unchanged." : e === "cancel" ? "The unfinished link is cancelled." : ba(c)
+			});
+		} catch {
+			!E && x && s === n && k(t) && C === o && et({
+				phase: "error",
+				save: "uncertain",
+				message: "The action may have completed. Check identity status before making another choice. It has not been sent again."
+			});
+		} finally {
+			C === o && (C = void 0);
+		}
+	}
+	async function ot(e, t) {
+		let r = ze(), i = D().identity;
+		if (!r || !x || C || i.phase !== "ready" || i.save !== "idle" || i.value?.application.revision !== e || !$(e)) return;
+		S?.abort(), S = void 0, ++w;
+		let a = new AbortController();
+		C = a;
+		let o = n;
+		et({
+			phase: "loading",
+			save: "saving",
+			message: t ? "Saving dedicated Discord application access…" : "Removing Discord application access…"
+		});
+		try {
+			let s = await me("/api/owner/discord/application", a, {
+				base_revision: e,
+				application: t
+			});
+			if (E || !x || a.signal.aborted || o !== n || !k(r) || C !== a) return;
+			if (document.visibilityState !== "visible") {
+				O("Workspace hidden. Checking access on return.");
+				return;
+			}
+			if ([
+				401,
+				403,
+				426
+			].includes(s.status)) {
+				O(he(s.status), !0);
+				return;
+			}
+			if (s.status === 409) {
+				et({
+					phase: "error",
+					save: "conflict",
+					message: "The application changed elsewhere. Check status before entering credentials again."
+				});
+				return;
+			}
+			if ([
+				400,
+				413,
+				429
+			].includes(s.status)) {
+				et({
+					phase: "error",
+					save: "idle",
+					message: "Application access was not accepted. Check status, then review the application ID, secret and callback logging acknowledgement."
+				});
+				return;
+			}
+			if (s.status !== 200) throw Error("Uncertain application save");
+			let c = nt(s.value, r, i.value);
+			if (BigInt(c.application.revision) !== BigInt(e) + 1n || c.application.configured !== (t !== null)) throw Error("Uncertain application revision");
+			et({
+				phase: "ready",
+				value: c,
+				save: "idle",
+				message: t ? "Discord application saved. Existing identity links are unchanged." : "Discord application removed. Existing links remain available for local unlinking."
+			});
+		} catch {
+			!E && x && o === n && k(r) && C === a && et({
+				phase: "error",
+				save: "uncertain",
+				message: "The application save may have completed. Check status before entering credentials again."
+			});
+		} finally {
+			t && (t.client_secret = ""), C === a && (C = void 0);
+		}
+	}
+	function st() {
+		ue(), O("Signing out…", !0);
+		try {
+			se?.postMessage({ kind: "auth-changed" });
 		} catch {}
 	}
-	function Ze() {
-		let e = () => D("Workspace hidden. Checking access on return."), n = () => {
-			_e();
+	function ct() {
+		let e = () => O("Workspace hidden. Checking access on return."), n = () => {
+			A();
 		}, r = () => {
 			document.visibilityState === "visible" ? n() : e();
 		};
 		try {
-			ie = new BroadcastChannel("keida-hub-reborn.account.v1"), ie.onmessage = (e) => {
-				Q(e.data) && e.data.kind === "auth-changed" && D("Your sign-in may have changed. Open a fresh workspace.", !0);
+			se = new BroadcastChannel("keida-hub-reborn.account.v1"), se.onmessage = (e) => {
+				Q(e.data) && e.data.kind === "auth-changed" && O("Your sign-in may have changed. Open a fresh workspace.", !0);
 			};
 		} catch {}
-		return window.addEventListener("blur", e), window.addEventListener("pagehide", e), window.addEventListener("focus", n), window.addEventListener("pageshow", n), document.addEventListener("visibilitychange", r), _e(), () => {
-			T = !0, le(), ie?.close(), t.set(ta("blocked", "Workspace closed.")), window.removeEventListener("blur", e), window.removeEventListener("pagehide", e), window.removeEventListener("focus", n), window.removeEventListener("pageshow", n), document.removeEventListener("visibilitychange", r);
+		return window.addEventListener("blur", e), window.addEventListener("pagehide", e), window.addEventListener("focus", n), window.addEventListener("pageshow", n), document.addEventListener("visibilitychange", r), A(), () => {
+			E = !0, fe(), se?.close(), t.set(na("blocked", "Workspace closed.")), window.removeEventListener("blur", e), window.removeEventListener("pagehide", e), window.removeEventListener("focus", n), window.removeEventListener("pageshow", n), document.removeEventListener("visibilitychange", r);
 		};
 	}
 	return {
 		model: t,
-		start: Ze,
-		edit: ve,
-		recover: O,
-		resolve: ye,
-		save: k,
-		signOut: Xe,
-		check: () => _e(!0),
-		editService: xe,
-		pins: A,
-		activity: je,
-		markNotification: Se,
-		beginLayout: Ce,
-		moveLayout: Te,
-		toggleLayout: Ee,
-		resetLayout: De,
-		cancelLayout: Oe,
-		resolveLayout: ke,
-		saveLayout: Ae,
-		checkLayout: () => _e(!0),
-		loadGuide: Me,
-		observations: Ne,
-		openMedia: Be,
-		closeMedia: Re,
-		checkMedia: ze,
-		loadMedia: Ve,
-		saveMedia: He,
-		openQueues: qe,
-		closeQueues: Ge,
-		checkQueues: Ke,
-		loadQueues: Je,
-		saveQueues: Ye
+		start: ct,
+		edit: ye,
+		recover: be,
+		resolve: j,
+		save: xe,
+		signOut: st,
+		check: () => A(!0),
+		editService: Ce,
+		pins: we,
+		activity: Pe,
+		markNotification: Te,
+		beginLayout: Ee,
+		moveLayout: Oe,
+		toggleLayout: ke,
+		resetLayout: Ae,
+		cancelLayout: je,
+		resolveLayout: Me,
+		saveLayout: Ne,
+		checkLayout: () => A(!0),
+		loadGuide: Fe,
+		observations: Ie,
+		openMedia: He,
+		closeMedia: Ve,
+		checkMedia: M,
+		loadMedia: Ue,
+		saveMedia: We,
+		openQueues: Xe,
+		closeQueues: Je,
+		checkQueues: Ye,
+		loadQueues: Ze,
+		saveQueues: Qe,
+		openIdentity: it,
+		closeIdentity: tt,
+		checkIdentity: rt,
+		identityAction: at,
+		saveDiscordApplication: ot
 	};
 }
 // src/LayoutEditor.svelte
-var ja = /* @__PURE__ */ K("<li tabindex=\"-1\"><label><input type=\"checkbox\"/><span> </span></label> <div class=\"layout-move\"><button class=\"button secondary layout-up\">↑<span class=\"sr-only\">Move up</span></button><button class=\"button secondary layout-down\">↓<span class=\"sr-only\">Move down</span></button></div></li>"), Ma = /* @__PURE__ */ K("<li> </li>"), Na = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Layout conflict\"><h3>There’s a newer saved layout</h3><p>Your arrangement is still shown. Compare it with the saved order below before choosing what to keep.</p><ol></ol><div class=\"button-row\"><button class=\"button secondary\">Keep my layout against saved layout</button><button class=\"text-button layout-use-saved\">Use saved layout</button></div></section>"), Pa = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain layout\"><h3>Check before saving again</h3><p>The layout may have saved. Your arrangement has not been sent again.</p><button class=\"button secondary check-layout check-saved-layout\">Check saved layout</button></section>"), Fa = /* @__PURE__ */ K("<section class=\"layout-editor card\" aria-label=\"Home layout\"><h2>Make Home yours</h2><p>Choose the panels you see and their order. Keep at least one visible. Your other views and open forms stay available.</p> <ol class=\"layout-list\"></ol> <!> <!> <div class=\"button-row\"><button class=\"button primary save-layout\"> </button><button class=\"text-button cancel-layout\">Cancel layout</button><button class=\"text-button reset-layout\">Reset layout</button></div> <p class=\"field-help\">Reset previews the default order and visibility. Save layout applies it to this account.</p></section>");
-function Ia(e, t) {
-	We(t, !1);
-	let n = /* @__PURE__ */ P(), r = /* @__PURE__ */ P(), i = /* @__PURE__ */ P(), a = Z(t, "draft", 8), o = Z(t, "saved", 8), s = Z(t, "state", 8), c = Z(t, "authorized", 8), l = Z(t, "move", 8), u = Z(t, "toggle", 8), d = Z(t, "save", 8), f = Z(t, "cancel", 8), p = Z(t, "reset", 8), m = Z(t, "resolve", 8), h = Z(t, "check", 8);
+var Ra = /* @__PURE__ */ K("<li tabindex=\"-1\"><label><input type=\"checkbox\"/><span> </span></label> <div class=\"layout-move\"><button class=\"button secondary layout-up\">↑<span class=\"sr-only\">Move up</span></button><button class=\"button secondary layout-down\">↓<span class=\"sr-only\">Move down</span></button></div></li>"), za = /* @__PURE__ */ K("<li> </li>"), Ba = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Layout conflict\"><h3>There’s a newer saved layout</h3><p>Your arrangement is still shown. Compare it with the saved order below before choosing what to keep.</p><ol></ol><div class=\"button-row\"><button class=\"button secondary\">Keep my layout against saved layout</button><button class=\"text-button layout-use-saved\">Use saved layout</button></div></section>"), Va = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain layout\"><h3>Check before saving again</h3><p>The layout may have saved. Your arrangement has not been sent again.</p><button class=\"button secondary check-layout check-saved-layout\">Check saved layout</button></section>"), Ha = /* @__PURE__ */ K("<section class=\"layout-editor card\" aria-label=\"Home layout\"><h2>Make Home yours</h2><p>Choose the panels you see and their order. Keep at least one visible. Your other views and open forms stay available.</p> <ol class=\"layout-list\"></ol> <!> <!> <div class=\"button-row\"><button class=\"button primary save-layout\"> </button><button class=\"text-button cancel-layout\">Cancel layout</button><button class=\"text-button reset-layout\">Reset layout</button></div> <p class=\"field-help\">Reset previews the default order and visibility. Save layout applies it to this account.</p></section>");
+function Ua(e, t) {
+	Ue(t, !1);
+	let n = /* @__PURE__ */ F(), r = /* @__PURE__ */ F(), i = /* @__PURE__ */ F(), a = Z(t, "draft", 8), o = Z(t, "saved", 8), s = Z(t, "state", 8), c = Z(t, "authorized", 8), l = Z(t, "move", 8), u = Z(t, "toggle", 8), d = Z(t, "save", 8), f = Z(t, "cancel", 8), p = Z(t, "reset", 8), m = Z(t, "resolve", 8), h = Z(t, "check", 8);
 	async function g(e, t) {
 		l()(e, t), await pr(), document.querySelector(`[data-layout-row="${e}"]`)?.focus();
 	}
-	En(() => (W(c()), W(s())), () => {
-		F(n, !c() || [
+	Tn(() => (W(c()), W(s())), () => {
+		I(n, !c() || [
 			"saving",
 			"checking-conflict",
 			"uncertain"
 		].includes(s()));
-	}), En(() => W(a()), () => {
-		F(r, a()?.panels.filter((e) => e.visible).length ?? 0);
-	}), En(() => (W(a()), W(o())), () => {
-		F(i, !!a() && !!o() && a().panels.some((e, t) => e.id !== o()?.panels[t].id || e.visible !== o()?.panels[t].visible));
-	}), Dn(), Ti();
-	var _ = Fa(), v = R(I(_), 3);
+	}), Tn(() => W(a()), () => {
+		I(r, a()?.panels.filter((e) => e.visible).length ?? 0);
+	}), Tn(() => (W(a()), W(o())), () => {
+		I(i, !!a() && !!o() && a().panels.some((e, t) => e.id !== o()?.panels[t].id || e.visible !== o()?.panels[t].visible));
+	}), En(), Ti();
+	var _ = Ha(), v = z(L(_), 3);
 	qr(v, 7, () => (W(a()), U(() => a()?.panels ?? [])), (e) => e.id, (e, t, i) => {
-		var a = ja(), o = I(a), s = I(o);
+		var a = Ra(), o = L(a), s = L(o);
 		pi(s);
-		var c = L(R(s), !0);
-		A(o);
-		var l = R(o, 2), d = I(l), f = R(d);
-		A(l), A(a), z((e, o, l, u) => {
+		var c = R(z(s), !0);
+		j(o);
+		var l = z(o, 2), d = L(l), f = z(d);
+		j(l), j(a), B((e, o, l, u) => {
 			X(a, "data-layout-row", (H(t), U(() => H(t).id))), X(s, "aria-label", e), hi(s, (H(t), U(() => H(t).visible))), s.disabled = (H(n), H(t), H(r), U(() => H(n) || H(t).visible && H(r) === 1)), J(c, o), X(d, "aria-label", l), d.disabled = H(n) || H(i) === 0, X(f, "aria-label", u), f.disabled = H(n) || H(i) === 2;
 		}, [
 			() => (W(Gi), H(t), U(() => `Show ${Gi(H(t).id)}`)),
@@ -4080,103 +4352,103 @@ function Ia(e, t) {
 			() => (W(Gi), H(t), U(() => `Move ${Gi(H(t).id)} up`)),
 			() => (W(Gi), H(t), U(() => `Move ${Gi(H(t).id)} down`))
 		]), G("change", s, () => u()(H(t).id)), G("click", d, () => g(H(t).id, -1)), G("click", f, () => g(H(t).id, 1)), q(e, a);
-	}), A(v);
-	var y = R(v, 2), b = (e) => {
-		var t = Na(), n = R(I(t), 2);
+	}), j(v);
+	var y = z(v, 2), b = (e) => {
+		var t = Ba(), n = z(L(t), 2);
 		qr(n, 5, () => (W(o()), U(() => o()?.panels ?? [])), (e) => e.id, (e, t) => {
-			var n = Ma(), r = L(n);
-			z((e) => J(r, `${e ?? ""} — ${H(t), U(() => H(t).visible ? "Shown" : "Hidden") ?? ""}`), [() => (W(Gi), H(t), U(() => Gi(H(t).id)))]), q(e, n);
-		}), A(n);
-		var r = R(n), i = I(r), a = R(i);
-		A(r), A(t), G("click", i, () => m()(!1)), G("click", a, () => m()(!0)), q(e, t);
+			var n = za(), r = R(n);
+			B((e) => J(r, `${e ?? ""} — ${H(t), U(() => H(t).visible ? "Shown" : "Hidden") ?? ""}`), [() => (W(Gi), H(t), U(() => Gi(H(t).id)))]), q(e, n);
+		}), j(n);
+		var r = z(n), i = L(r), a = z(i);
+		j(r), j(t), G("click", i, () => m()(!1)), G("click", a, () => m()(!0)), q(e, t);
 	};
 	Y(y, (e) => {
 		s() === "conflict" && e(b);
 	});
-	var x = R(y, 2), S = (e) => {
-		var t = Pa(), n = R(I(t), 2);
-		A(t), G("click", n, () => h()()), q(e, t);
+	var x = z(y, 2), S = (e) => {
+		var t = Va(), n = z(L(t), 2);
+		j(t), G("click", n, () => h()()), q(e, t);
 	};
 	Y(x, (e) => {
 		s() === "uncertain" && e(S);
 	});
-	var C = R(x, 2), w = I(C), ee = L(w, !0), te = R(w), ne = R(te);
-	A(C), Se(2), A(_), z(() => {
-		X(_, "hidden", !c() || !a()), w.disabled = H(n) || s() === "conflict" || !H(i), J(ee, s() === "saving" ? "Saving layout…" : "Save layout"), te.disabled = H(n), ne.disabled = H(n);
-	}), G("click", w, () => d()()), G("click", te, function(...e) {
+	var C = z(x, 2), w = L(C), T = R(w, !0), ee = z(w), te = z(ee);
+	j(C), xe(2), j(_), B(() => {
+		X(_, "hidden", !c() || !a()), w.disabled = H(n) || s() === "conflict" || !H(i), J(T, s() === "saving" ? "Saving layout…" : "Save layout"), ee.disabled = H(n), te.disabled = H(n);
+	}), G("click", w, () => d()()), G("click", ee, function(...e) {
 		f()?.apply(this, e);
-	}), G("click", ne, function(...e) {
+	}), G("click", te, function(...e) {
 		p()?.apply(this, e);
-	}), q(e, _), Ge();
+	}), q(e, _), We();
 }
 wr(["change", "click"]);
 // src/ObservationHistory.svelte
-var La = /* @__PURE__ */ K("<p class=\"observation-empty\">No retained observations in this window. A connection must be enrolled and observed before samples appear.</p>"), Ra = /* @__PURE__ */ K("<p class=\"notice\"> </p>"), za = /* @__PURE__ */ K("<p class=\"field-help\"> </p>"), Ba = /* @__PURE__ */ K("<section><h4> </h4> <dl><dt>Reported process</dt><dd> </dd> <dt>Players</dt><dd> </dd> <dt>Freshness at collection</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd></dl> <!></section>"), Va = /* @__PURE__ */ K("<li><div class=\"guide-card-heading\"><h3> </h3><time> </time></div> <p class=\"observation-completeness\"> </p> <!> <div class=\"observation-servers\"></div></li>"), Ha = /* @__PURE__ */ K("<p class=\"quiet-label\"> </p> <!> <ol class=\"observation-list\"></ol>", 1), Ua = /* @__PURE__ */ K("<section class=\"card observation-history\" aria-label=\"Provider observation history\"><p class=\"eyebrow\">RETAINED PROVIDER SAMPLES</p><h2 tabindex=\"-1\">Crafty observation history</h2> <p>Samples are collected while an authorized workspace checks the enrolled connection. At most the first sample per enrollment revision each minute is retained, up to the newest 10,000 batches.</p> <p class=\"field-help\">This is sampled, on-demand history. Gaps do not establish downtime, and a process or player report does not establish game readiness. Freshness below describes the sample at collection time.</p> <p> </p> <p class=\"workspace-status observation-status\" role=\"status\"> </p> <!> <div class=\"button-row\"><button class=\"button secondary observation-newest\">Check newest observations</button><button class=\"button secondary observation-older\">Older observations</button><button class=\"text-button\">Check current connection</button></div> <p class=\"field-help\">Up to 25 batches per page. New samples appear when you check newest. Older pages use the same history window; retention can shorten that window as new samples arrive. Reading history does not contact Crafty.</p></section>");
-function Wa(e, t) {
-	We(t, !1);
+var Wa = /* @__PURE__ */ K("<p class=\"observation-empty\">No retained observations in this window. A connection must be enrolled and observed before samples appear.</p>"), Ga = /* @__PURE__ */ K("<p class=\"notice\"> </p>"), Ka = /* @__PURE__ */ K("<p class=\"field-help\"> </p>"), qa = /* @__PURE__ */ K("<section><h4> </h4> <dl><dt>Reported process</dt><dd> </dd> <dt>Players</dt><dd> </dd> <dt>Freshness at collection</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd></dl> <!></section>"), Ja = /* @__PURE__ */ K("<li><div class=\"guide-card-heading\"><h3> </h3><time> </time></div> <p class=\"observation-completeness\"> </p> <!> <div class=\"observation-servers\"></div></li>"), Ya = /* @__PURE__ */ K("<p class=\"quiet-label\"> </p> <!> <ol class=\"observation-list\"></ol>", 1), Xa = /* @__PURE__ */ K("<section class=\"card observation-history\" aria-label=\"Provider observation history\"><p class=\"eyebrow\">RETAINED PROVIDER SAMPLES</p><h2 tabindex=\"-1\">Crafty observation history</h2> <p>Samples are collected while an authorized workspace checks the enrolled connection. At most the first sample per enrollment revision each minute is retained, up to the newest 10,000 batches.</p> <p class=\"field-help\">This is sampled, on-demand history. Gaps do not establish downtime, and a process or player report does not establish game readiness. Freshness below describes the sample at collection time.</p> <p> </p> <p class=\"workspace-status observation-status\" role=\"status\"> </p> <!> <div class=\"button-row\"><button class=\"button secondary observation-newest\">Check newest observations</button><button class=\"button secondary observation-older\">Older observations</button><button class=\"text-button\">Check current connection</button></div> <p class=\"field-help\">Up to 25 batches per page. New samples appear when you check newest. Older pages use the same history window; retention can shorten that window as new samples arrive. Reading history does not contact Crafty.</p></section>");
+function Za(e, t) {
+	Ue(t, !1);
 	let n = Z(t, "state", 8), r = Z(t, "authorized", 8, !1), i = Z(t, "owner", 8, !1), a = Z(t, "load", 8), o = Z(t, "checkConnection", 8), s = (e) => e === null ? "Not reported" : (/* @__PURE__ */ new Date(Number(e) * 1e3)).toLocaleString(), c = (e) => e === "denied" ? "Provider access denied" : e === "timeout" ? "Provider timed out" : e === "transport" ? "Provider could not be reached" : e === "not_discovered" ? "Selected server was not discovered" : e === "malformed" ? "Provider response was incomplete or malformed" : e === "oversized" ? "Provider response exceeded the observation limit" : e === "invalid_configuration" ? "Connection could not be checked" : e ? "Provider observation unavailable" : "";
 	Ti();
-	var l = Ua(), u = R(I(l), 7), d = L(u, !0), f = R(u, 2), p = L(f, !0), m = R(f, 2), h = (e) => {
-		var t = Ha(), r = ln(t), i = L(r), a = R(r, 2), o = (e) => {
-			q(e, La());
+	var l = Xa(), u = z(L(l), 7), d = R(u, !0), f = z(u, 2), p = R(f, !0), m = z(f, 2), h = (e) => {
+		var t = Ya(), r = cn(t), i = R(r), a = z(r, 2), o = (e) => {
+			q(e, Wa());
 		};
 		Y(a, (e) => {
 			W(n()), U(() => n().entries.length === 0) && e(o);
 		});
-		var l = R(a, 2);
+		var l = z(a, 2);
 		qr(l, 5, () => (W(n()), U(() => n().entries)), (e) => e.id, (e, t) => {
-			var n = Va(), r = I(n), i = I(r), a = L(i), o = R(i), l = L(o, !0);
-			A(r);
-			var u = R(r, 2), d = L(u, !0), f = R(u, 2), p = (e) => {
-				var n = Ra(), r = L(n, !0);
-				z((e) => J(r, e), [() => (H(t), U(() => c(H(t).error)))]), q(e, n);
+			var n = Ja(), r = L(n), i = L(r), a = R(i), o = z(i), l = R(o, !0);
+			j(r);
+			var u = z(r, 2), d = R(u, !0), f = z(u, 2), p = (e) => {
+				var n = Ga(), r = R(n, !0);
+				B((e) => J(r, e), [() => (H(t), U(() => c(H(t).error)))]), q(e, n);
 			};
 			Y(f, (e) => {
 				H(t), U(() => H(t).error) && e(p);
 			});
-			var m = R(f, 2);
+			var m = z(f, 2);
 			qr(m, 5, () => (H(t), U(() => H(t).servers)), Ur, (e, t) => {
-				var n = Ba(), r = I(n), i = L(r, !0), a = R(r, 2), o = R(I(a)), l = L(o, !0), u = R(o, 3), d = L(u), f = R(u, 3), p = L(f, !0), m = R(f, 3), h = L(m, !0), g = L(R(m, 2), !0);
-				A(a);
-				var _ = R(a, 2), v = (e) => {
-					var n = za(), r = L(n, !0);
-					z((e) => J(r, e), [() => (H(t), U(() => c(H(t).error)))]), q(e, n);
+				var n = qa(), r = L(n), i = R(r, !0), a = z(r, 2), o = z(L(a)), l = R(o, !0), u = z(o, 3), d = R(u), f = z(u, 3), p = R(f, !0), m = z(f, 3), h = R(m, !0), g = R(z(m, 2), !0);
+				j(a);
+				var _ = z(a, 2), v = (e) => {
+					var n = Ka(), r = R(n, !0);
+					B((e) => J(r, e), [() => (H(t), U(() => c(H(t).error)))]), q(e, n);
 				};
 				Y(_, (e) => {
 					H(t), U(() => H(t).error) && e(v);
-				}), A(n), z((e, r) => {
+				}), j(n), B((e, r) => {
 					X(n, "aria-label", (H(t), U(() => `Observation for ${H(t).name}`))), J(i, (H(t), U(() => H(t).name))), J(l, (H(t), U(() => H(t).state === "running" ? "Running" : H(t).state === "stopped" ? "Stopped" : "Unknown"))), J(d, `${H(t), U(() => H(t).players === null ? "Not reported" : `${H(t).players} reported`) ?? ""}${H(t), U(() => H(t).capacity === null ? "" : ` / ${H(t).capacity} capacity`) ?? ""}`), J(p, (H(t), U(() => H(t).freshness === "fresh" ? "Fresh at collection" : H(t).freshness === "stale" ? "Stale at collection" : "Sample age was unknown"))), J(h, e), J(g, r);
 				}, [() => (H(t), U(() => s(H(t).collected_at))), () => (H(t), U(() => s(H(t).provider_at)))]), q(e, n);
-			}), A(m), A(n), z((e, r) => {
+			}), j(m), j(n), B((e, r) => {
 				X(n, "data-observation-id", (H(t), U(() => H(t).id))), X(n, "data-observation-revision", (H(t), U(() => H(t).revision))), J(a, `Enrollment revision ${H(t), U(() => H(t).revision) ?? ""}`), X(o, "datetime", e), J(l, r), J(d, (H(t), U(() => H(t).complete ? "Complete provider sample" : "Incomplete provider sample")));
 			}, [() => (H(t), U(() => (/* @__PURE__ */ new Date(Number(H(t).checked_at) * 1e3)).toISOString())), () => (H(t), U(() => s(H(t).checked_at)))]), q(e, n);
-		}), A(l), z(() => {
+		}), j(l), B(() => {
 			X(r, "data-current-revision", (W(n()), U(() => n().revision))), J(i, `Current enrollment revision ${W(n()), U(() => n().revision) ?? ""}`);
 		}), q(e, t);
 	};
 	Y(m, (e) => {
 		W(r()), W(n()), U(() => r() && n().phase === "ready") && e(h);
 	});
-	var g = R(m, 2), _ = I(g), v = R(_), y = R(v);
-	A(g), Se(2), A(l), z(() => {
+	var g = z(m, 2), _ = L(g), v = z(_), y = z(v);
+	j(g), xe(2), j(l), B(() => {
 		J(d, i() ? "Your owner account can review retained samples from prior enrollment revisions." : "Your account sees samples only for the currently enrolled servers. Replacing or removing a connection changes this history scope."), J(p, (W(n()), U(() => n().message))), _.disabled = (W(r()), W(n()), U(() => !r() || n().phase === "loading")), v.disabled = (W(r()), W(n()), U(() => !r() || n().phase !== "ready" || !n().next)), y.disabled = !r();
-	}), G("click", _, () => void a()()), G("click", v, () => void a()(!0)), G("click", y, () => void o()()), q(e, l), Ge();
+	}), G("click", _, () => void a()()), G("click", v, () => void a()(!0)), G("click", y, () => void o()()), q(e, l), We();
 }
 wr(["click"]);
 // src/Connections.svelte
-var Ga = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\">This observation could not be added to history. Your workspace is still available; retained history may be incomplete.</p>"), Ka = /* @__PURE__ */ K("<section class=\"card small-card\"><h2>No Crafty connection enrolled</h2><p>An owner can add dedicated access and choose which servers to show.</p></section>"), qa = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\"> </p>"), Ja = /* @__PURE__ */ K("<p class=\"field-help\">This server could not be fully observed.</p>"), Ya = /* @__PURE__ */ K("<article class=\"card small-card server-card\"><h2> </h2> <p><strong> </strong> <span class=\"field-help\">Provider-reported process state</span></p> <dl><dt>Players</dt><dd> </dd> <dt>Freshness</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd> <dt>Join address</dt><dd> </dd></dl> <!></article>"), Xa = /* @__PURE__ */ K("<!> <div class=\"server-grid\"></div> <p class=\"field-help\">A running process does not establish game readiness. Join addresses are owner-reviewed; outside-network joining is accepted separately.</p>", 1), Za = /* @__PURE__ */ K("<button class=\"button secondary\">Check connection state</button>"), Qa = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove server</button>"), $a = /* @__PURE__ */ K("<fieldset><legend> </legend> <label>Crafty server UUID</label><input name=\"server-id\" required=\"\" maxlength=\"36\"/> <label>Display name</label><input name=\"server-name\" required=\"\" maxlength=\"80\"/> <label>Reviewed public join address, optional</label><input name=\"server-join\" maxlength=\"253\" placeholder=\"play.example:25565\"/> <!></fieldset>"), eo = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove connection</button>"), to = /* @__PURE__ */ K("<section class=\"card connection-setup\" aria-label=\"Dedicated Crafty enrollment\"><h2>Dedicated Crafty access</h2> <p>Create access specifically for Reborn, limited to viewing the selected servers. Credentials are encrypted on the server and are not shown again.</p> <p class=\"workspace-status\" role=\"status\"> </p> <!> <form autocomplete=\"off\"><label for=\"crafty-endpoint\">Crafty HTTPS address</label><input id=\"crafty-endpoint\" name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\" placeholder=\"https://crafty.example/\"/> <label for=\"crafty-token\">Dedicated API token</label><input id=\"crafty-token\" name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <label for=\"crafty-timezone\">Crafty’s configured time zone</label><input id=\"crafty-timezone\" name=\"timezone\" required=\"\" maxlength=\"64\" placeholder=\"America/Chicago or UTC\"/> <label for=\"crafty-ca\">Private CA certificate, if needed</label><textarea id=\"crafty-ca\" name=\"ca-pem\" maxlength=\"8192\" rows=\"3\"></textarea> <p class=\"field-help\">Leave the certificate blank for publicly trusted HTTPS. The address and certificate must pass normal hostname and trust checks.</p> <!> <div class=\"button-row\"><button class=\"button secondary\" type=\"button\">Add server</button> <button class=\"button primary\" type=\"submit\"> </button></div></form> <!></section>"), no = /* @__PURE__ */ K("<div><div class=\"button-row\"><button class=\"text-button\">View connection enrollment history</button><button class=\"text-button view-observation-history\">View provider observation history</button></div> <!> <div class=\"connections-intro\"><p>Server observations from your deliberately enrolled Crafty connection.</p><span class=\"quiet-label\">Read-only overview</span></div> <!> <!></div> <div><button class=\"text-button observation-back\">Back to connections</button> <!></div>", 1);
-function ro(e, t) {
-	We(t, !1);
-	let n = Z(t, "binding", 8), r = Z(t, "history", 8), i = Z(t, "overview", 8), a = Z(t, "owner", 8, !1), o = Z(t, "active", 8, !1), s = Z(t, "refresh", 8), c = Z(t, "observationState", 8), l = Z(t, "loadObservations", 8), u = /* @__PURE__ */ P(), d = /* @__PURE__ */ P([0]), f = /* @__PURE__ */ P(0), p = /* @__PURE__ */ P(), m = /* @__PURE__ */ P(""), h = /* @__PURE__ */ P(!1), g = 0, _ = /* @__PURE__ */ P(!1), v = /* @__PURE__ */ P(), y = /* @__PURE__ */ P(), b = (e) => e === null ? "Not reported" : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleString();
+var Qa = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\">This observation could not be added to history. Your workspace is still available; retained history may be incomplete.</p>"), $a = /* @__PURE__ */ K("<section class=\"card small-card\"><h2>No Crafty connection enrolled</h2><p>An owner can add dedicated access and choose which servers to show.</p></section>"), eo = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\"> </p>"), to = /* @__PURE__ */ K("<p class=\"field-help\">This server could not be fully observed.</p>"), no = /* @__PURE__ */ K("<article class=\"card small-card server-card\"><h2> </h2> <p><strong> </strong> <span class=\"field-help\">Provider-reported process state</span></p> <dl><dt>Players</dt><dd> </dd> <dt>Freshness</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd> <dt>Join address</dt><dd> </dd></dl> <!></article>"), ro = /* @__PURE__ */ K("<!> <div class=\"server-grid\"></div> <p class=\"field-help\">A running process does not establish game readiness. Join addresses are owner-reviewed; outside-network joining is accepted separately.</p>", 1), io = /* @__PURE__ */ K("<button class=\"button secondary\">Check connection state</button>"), ao = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove server</button>"), oo = /* @__PURE__ */ K("<fieldset><legend> </legend> <label>Crafty server UUID</label><input name=\"server-id\" required=\"\" maxlength=\"36\"/> <label>Display name</label><input name=\"server-name\" required=\"\" maxlength=\"80\"/> <label>Reviewed public join address, optional</label><input name=\"server-join\" maxlength=\"253\" placeholder=\"play.example:25565\"/> <!></fieldset>"), so = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove connection</button>"), co = /* @__PURE__ */ K("<section class=\"card connection-setup\" aria-label=\"Dedicated Crafty enrollment\"><h2>Dedicated Crafty access</h2> <p>Create access specifically for Reborn, limited to viewing the selected servers. Credentials are encrypted on the server and are not shown again.</p> <p class=\"workspace-status\" role=\"status\"> </p> <!> <form autocomplete=\"off\"><label for=\"crafty-endpoint\">Crafty HTTPS address</label><input id=\"crafty-endpoint\" name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\" placeholder=\"https://crafty.example/\"/> <label for=\"crafty-token\">Dedicated API token</label><input id=\"crafty-token\" name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <label for=\"crafty-timezone\">Crafty’s configured time zone</label><input id=\"crafty-timezone\" name=\"timezone\" required=\"\" maxlength=\"64\" placeholder=\"America/Chicago or UTC\"/> <label for=\"crafty-ca\">Private CA certificate, if needed</label><textarea id=\"crafty-ca\" name=\"ca-pem\" maxlength=\"8192\" rows=\"3\"></textarea> <p class=\"field-help\">Leave the certificate blank for publicly trusted HTTPS. The address and certificate must pass normal hostname and trust checks.</p> <!> <div class=\"button-row\"><button class=\"button secondary\" type=\"button\">Add server</button> <button class=\"button primary\" type=\"submit\"> </button></div></form> <!></section>"), lo = /* @__PURE__ */ K("<div><div class=\"button-row\"><button class=\"text-button\">View connection enrollment history</button><button class=\"text-button view-observation-history\">View provider observation history</button></div> <!> <div class=\"connections-intro\"><p>Server observations from your deliberately enrolled Crafty connection.</p><span class=\"quiet-label\">Read-only overview</span></div> <!> <!></div> <div><button class=\"text-button observation-back\">Back to connections</button> <!></div>", 1);
+function uo(e, t) {
+	Ue(t, !1);
+	let n = Z(t, "binding", 8), r = Z(t, "history", 8), i = Z(t, "overview", 8), a = Z(t, "owner", 8, !1), o = Z(t, "active", 8, !1), s = Z(t, "refresh", 8), c = Z(t, "observationState", 8), l = Z(t, "loadObservations", 8), u = /* @__PURE__ */ F(), d = /* @__PURE__ */ F([0]), f = /* @__PURE__ */ F(0), p = /* @__PURE__ */ F(), m = /* @__PURE__ */ F(""), h = /* @__PURE__ */ F(!1), g = 0, _ = /* @__PURE__ */ F(!1), v = /* @__PURE__ */ F(), y = /* @__PURE__ */ F(), b = (e) => e === null ? "Not reported" : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleString();
 	function x() {
-		++g, H(p)?.abort(), F(p, void 0), H(u)?.reset(), F(d, [Jt(f)]), F(m, ""), F(h, !1);
+		++g, H(p)?.abort(), I(p, void 0), H(u)?.reset(), I(d, [qt(f)]), I(m, ""), I(h, !1);
 	}
 	Li(x);
 	async function S() {
-		o() && (F(_, !0), l()(), await pr(), H(y)?.querySelector("h2")?.focus());
+		o() && (I(_, !0), l()(), await pr(), H(y)?.querySelector("h2")?.focus());
 	}
 	async function C() {
-		F(_, !1), await pr(), H(v)?.focus();
+		I(_, !1), await pr(), H(v)?.focus();
 	}
 	async function w(e = !1) {
 		if (!o() || !a() || H(p) || !i() || H(h)) return;
@@ -4191,11 +4463,11 @@ function ro(e, t) {
 				join: v[t] ?? ""
 			}))
 		};
-		H(u)?.reset(), F(d, [Jt(f)]);
+		H(u)?.reset(), I(d, [qt(f)]);
 		let b = new AbortController();
-		F(p, b);
+		I(p, b);
 		let x = ++g, S = setTimeout(() => b.abort(), 4e3);
-		F(m, e ? "Removing the connection…" : "Saving the dedicated connection…");
+		I(m, e ? "Removing the connection…" : "Saving the dedicated connection…");
 		try {
 			let r = await fetch("/api/owner/crafty", {
 				method: "PUT",
@@ -4215,105 +4487,105 @@ function ro(e, t) {
 				})
 			});
 			if (x !== g || !o()) return;
-			if (r.status === 200) F(m, e ? "Connection removed." : "Connection saved. Checking provider observations…");
-			else if (r.status === 409) F(m, "The connection changed elsewhere. Check its current state before enrolling again.");
+			if (r.status === 200) I(m, e ? "Connection removed." : "Connection saved. Checking provider observations…");
+			else if (r.status === 409) I(m, "The connection changed elsewhere. Check its current state before enrolling again.");
 			else if ([
 				400,
 				401,
 				403,
 				413,
 				426
-			].includes(r.status)) F(m, "Connection not accepted. Check your account and the dedicated connection details.");
+			].includes(r.status)) I(m, "Connection not accepted. Check your account and the dedicated connection details.");
 			else throw Error("Uncertain connection outcome");
 			await s()();
 		} catch {
-			x === g && o() && (F(h, !0), F(m, "The save outcome is uncertain. Check the connection before entering credentials again."));
+			x === g && o() && (I(h, !0), I(m, "The save outcome is uncertain. Check the connection before entering credentials again."));
 		} finally {
-			clearTimeout(S), H(p) === b && F(p, void 0);
+			clearTimeout(S), H(p) === b && I(p, void 0);
 		}
 	}
-	async function ee() {
-		await s()(), o() && (F(h, !1), F(m, "Review the current connection state before making another change."));
+	async function T() {
+		await s()(), o() && (I(h, !1), I(m, "Review the current connection state before making another change."));
 	}
-	En(() => W(o()), () => {
-		o() || (x(), F(_, !1));
-	}), Dn(), Ti();
-	var te = no(), ne = ln(te), re = I(ne), ie = I(re), T = R(ie);
-	wi(T, (e) => F(v, e), () => H(v)), A(re);
-	var ae = R(re, 2), E = (e) => {
-		q(e, Ga());
+	Tn(() => W(o()), () => {
+		o() || (x(), I(_, !1));
+	}), En(), Ti();
+	var ee = lo(), te = cn(ee), ne = L(te), re = L(ne), ie = z(re);
+	wi(ie, (e) => I(v, e), () => H(v)), j(ne);
+	var ae = z(ne, 2), oe = (e) => {
+		q(e, Qa());
 	};
 	Y(ae, (e) => {
-		W(i()), U(() => i()?.history_error === "unavailable") && e(E);
+		W(i()), U(() => i()?.history_error === "unavailable") && e(oe);
 	});
-	var oe = R(ae, 4), se = (e) => {
-		q(e, Ka());
+	var se = z(ae, 4), E = (e) => {
+		q(e, $a());
 	}, ce = (e) => {
-		var t = Xa(), n = ln(t), r = (e) => {
-			var t = qa(), n = L(t, !0);
-			z(() => J(n, (W(i()), U(() => i().error === "checking" ? "Checking the provider. Fresh results will appear on the next observation." : "Provider observations are unavailable or incomplete. Unknown player counts stay unknown.")))), q(e, t);
+		var t = ro(), n = cn(t), r = (e) => {
+			var t = eo(), n = R(t, !0);
+			B(() => J(n, (W(i()), U(() => i().error === "checking" ? "Checking the provider. Fresh results will appear on the next observation." : "Provider observations are unavailable or incomplete. Unknown player counts stay unknown.")))), q(e, t);
 		};
 		Y(n, (e) => {
 			W(i()), U(() => i().error) && e(r);
 		});
-		var a = R(n, 2);
+		var a = z(n, 2);
 		qr(a, 5, () => (W(i()), U(() => i().servers)), Ur, (e, t) => {
-			var n = Ya(), r = I(n), i = L(r, !0), a = R(r, 2), o = L(I(a), !0);
-			Se(2), A(a);
-			var s = R(a, 2), c = R(I(s)), l = L(c), u = R(c, 3), d = L(u, !0), f = R(u, 3), p = L(f, !0), m = R(f, 2), h = L(m, !0), g = L(R(m, 3), !0);
-			A(s);
-			var _ = R(s, 2), v = (e) => {
-				q(e, Ja());
+			var n = no(), r = L(n), i = R(r, !0), a = z(r, 2), o = R(L(a), !0);
+			xe(2), j(a);
+			var s = z(a, 2), c = z(L(s)), l = R(c), u = z(c, 3), d = R(u, !0), f = z(u, 3), p = R(f, !0), m = z(f, 2), h = R(m, !0), g = R(z(m, 3), !0);
+			j(s);
+			var _ = z(s, 2), v = (e) => {
+				q(e, to());
 			};
 			Y(_, (e) => {
 				H(t), U(() => H(t).error) && e(v);
-			}), A(n), z((e, n) => {
+			}), j(n), B((e, n) => {
 				J(i, (H(t), U(() => H(t).name))), J(o, (H(t), U(() => H(t).state === "running" ? "Running" : H(t).state === "stopped" ? "Stopped" : "Unknown"))), J(l, `${H(t), U(() => H(t).players === null ? "Not reported" : `${H(t).players} reported`) ?? ""}${H(t), U(() => H(t).capacity === null ? "" : ` / ${H(t).capacity} capacity`) ?? ""}`), J(d, (H(t), U(() => H(t).freshness === "fresh" ? "Recent provider sample" : H(t).freshness === "stale" ? "Stale provider sample" : "Provider sample age unknown"))), J(p, e), J(h, n), J(g, (H(t), U(() => H(t).join || "Not configured")));
 			}, [() => (H(t), U(() => b(H(t).collected_at))), () => (H(t), U(() => b(H(t).provider_at)))]), q(e, n);
-		}), A(a), Se(2), q(e, t);
+		}), j(a), xe(2), q(e, t);
 	};
-	Y(oe, (e) => {
-		W(i()), U(() => !i() || !i().configured) ? e(se) : e(ce, -1);
+	Y(se, (e) => {
+		W(i()), U(() => !i() || !i().configured) ? e(E) : e(ce, -1);
 	});
-	var le = R(oe, 2), D = (e) => {
-		var t = to(), n = R(I(t), 4), r = L(n, !0), a = R(n, 2), o = (e) => {
-			var t = Za();
-			G("click", t, () => void ee()), q(e, t);
+	var D = z(se, 2), le = (e) => {
+		var t = co(), n = z(L(t), 4), r = R(n, !0), a = z(n, 2), o = (e) => {
+			var t = io();
+			G("click", t, () => void T()), q(e, t);
 		};
 		Y(a, (e) => {
 			H(h) && e(o);
 		});
-		var s = R(a, 2), c = R(I(s)), l = R(c, 3), g = R(l, 3), _ = R(g, 3), v = R(_, 4);
+		var s = z(a, 2), c = z(L(s)), l = z(c, 3), g = z(l, 3), _ = z(g, 3), v = z(_, 4);
 		qr(v, 3, () => H(d), (e) => e, (e, t, n) => {
-			var r = $a(), i = I(r), a = L(i), o = R(i, 2), s = R(o), c = R(s, 2), l = R(c), u = R(l, 2), f = R(u), m = R(f, 2), g = (e) => {
-				var n = Qa();
-				z(() => n.disabled = !!H(p) || H(h)), G("click", n, () => F(d, H(d).filter((e) => e !== H(t)))), q(e, n);
+			var r = oo(), i = L(r), a = R(i), o = z(i, 2), s = z(o), c = z(s, 2), l = z(c), u = z(l, 2), f = z(u), m = z(f, 2), g = (e) => {
+				var n = ao();
+				B(() => n.disabled = !!H(p) || H(h)), G("click", n, () => I(d, H(d).filter((e) => e !== H(t)))), q(e, n);
 			};
 			Y(m, (e) => {
 				H(d), U(() => H(d).length > 1) && e(g);
-			}), A(r), z(() => {
+			}), j(r), B(() => {
 				J(a, `Server ${H(n) + 1}`), X(o, "for", `crafty-id-${H(t)}`), X(s, "id", `crafty-id-${H(t)}`), s.disabled = !!H(p) || H(h), X(c, "for", `crafty-name-${H(t)}`), X(l, "id", `crafty-name-${H(t)}`), l.disabled = !!H(p) || H(h), X(u, "for", `crafty-join-${H(t)}`), X(f, "id", `crafty-join-${H(t)}`), f.disabled = !!H(p) || H(h);
 			}), q(e, r);
 		});
-		var y = R(v, 2), b = I(y), x = R(b, 2), S = L(x, !0);
-		A(y), A(s), wi(s, (e) => F(u, e), () => H(u));
-		var C = R(s, 2), te = (e) => {
-			var t = eo();
-			z(() => t.disabled = !!H(p) || H(h)), G("click", t, () => void w(!0)), q(e, t);
+		var y = z(v, 2), b = L(y), x = z(b, 2), S = R(x, !0);
+		j(y), j(s), wi(s, (e) => I(u, e), () => H(u));
+		var C = z(s, 2), ee = (e) => {
+			var t = so();
+			B(() => t.disabled = !!H(p) || H(h)), G("click", t, () => void w(!0)), q(e, t);
 		};
 		Y(C, (e) => {
-			W(i()), U(() => i()?.configured) && e(te);
-		}), A(t), z(() => {
+			W(i()), U(() => i()?.configured) && e(ee);
+		}), j(t), B(() => {
 			J(r, H(m)), c.disabled = !!H(p) || H(h), l.disabled = !!H(p) || H(h), g.disabled = !!H(p) || H(h), _.disabled = !!H(p) || H(h), b.disabled = (H(d), H(p), H(h), U(() => H(d).length >= 8 || !!H(p) || H(h))), x.disabled = !!H(p) || H(h) || !i(), J(S, H(p) ? "Working…" : "Save dedicated connection");
 		}), Cr("submit", s, (e) => {
 			e.preventDefault(), w();
-		}), G("click", b, () => F(d, [...H(d), Jt(f)])), q(e, t);
+		}), G("click", b, () => I(d, [...H(d), qt(f)])), q(e, t);
 	};
-	Y(le, (e) => {
-		a() && o() && e(D);
-	}), A(ne);
-	var ue = R(ne, 2), de = I(ue);
-	Wa(R(de, 2), {
+	Y(D, (e) => {
+		a() && o() && e(le);
+	}), j(te);
+	var ue = z(te, 2), de = L(ue);
+	Za(z(de, 2), {
 		get state() {
 			return c();
 		},
@@ -4329,29 +4601,29 @@ function ro(e, t) {
 		get checkConnection() {
 			return s();
 		}
-	}), A(ue), wi(ue, (e) => F(y, e), () => H(y)), z(() => {
-		X(ne, "hidden", H(_)), T.disabled = !o(), X(ue, "hidden", !H(_));
-	}), G("click", ie, function(...e) {
+	}), j(ue), wi(ue, (e) => I(y, e), () => H(y)), B(() => {
+		X(te, "hidden", H(_)), ie.disabled = !o(), X(ue, "hidden", !H(_));
+	}), G("click", re, function(...e) {
 		r()?.apply(this, e);
-	}), G("click", T, () => void S()), G("click", de, () => void C()), q(e, te), Ge();
+	}), G("click", ie, () => void S()), G("click", de, () => void C()), q(e, ee), We();
 }
 wr(["click"]);
 // src/Directory.svelte
-var io = /* @__PURE__ */ K("<button class=\"text-button\">Browse services <span aria-hidden=\"true\">→</span></button>"), ao = /* @__PURE__ */ K("<section class=\"notice\"><h3>Review the saved state</h3><p> </p><button class=\"button secondary\">Check saved services</button></section>"), oo = /* @__PURE__ */ K("<option> </option>"), so = /* @__PURE__ */ K("<div class=\"directory-filters\"><div><label for=\"service-search\">Search services</label><input id=\"service-search\" type=\"search\" maxlength=\"120\" placeholder=\"Name, category or description\"/></div><div><label for=\"service-filter\">Category</label><select id=\"service-filter\"><option>All categories</option><!></select></div></div>"), co = /* @__PURE__ */ K("<section class=\"card small-card\"><h3> </h3><p> </p></section>"), lo = /* @__PURE__ */ K("<p> </p>"), uo = /* @__PURE__ */ K("<button class=\"text-button move-up\">↑</button><button class=\"text-button move-down\">↓</button>", 1), fo = /* @__PURE__ */ K("<p>The directory changed. Review the service and choose Remove again.</p>"), po = /* @__PURE__ */ K("<div class=\"notice\"><p> </p><!><div class=\"button-row\"><button class=\"button secondary confirm-remove\">Remove service</button><button class=\"text-button\">Keep service</button></div></div>"), mo = /* @__PURE__ */ K("<div class=\"button-row\"><button class=\"text-button edit-service\"> </button><button class=\"text-button remove-service\">Remove</button></div> <!>", 1), ho = /* @__PURE__ */ K("<article class=\"card small-card service-card\"><p class=\"eyebrow\"> </p><h3><a class=\"service-link\" target=\"_blank\" rel=\"noopener noreferrer\"> <span class=\"sr-only\">(opens in a new tab)</span> <span aria-hidden=\"true\">↗</span></a></h3> <!> <p class=\"field-help service-address\"> </p> <div class=\"button-row\"><button class=\"button secondary pin-service\"> </button> <!></div> <!></article>"), go = /* @__PURE__ */ K("<div class=\"directory-grid\"></div>"), _o = /* @__PURE__ */ K("<p class=\"field-help\">Up to 24 personal pins. Links open the selected service in a new tab. Each service handles its own sign-in; directory links do not check availability.</p>"), vo = /* @__PURE__ */ K("<div class=\"notice\"><p>The directory changed after this form was opened. Review the current entries, then choose whether to keep this edit.</p><button class=\"button secondary\" type=\"button\">Keep edit against current directory</button></div>"), yo = /* @__PURE__ */ K("<section class=\"card directory-editor\" aria-label=\"Service editor\"><h2> </h2><p>Add a reviewed HTTPS link without passwords, tokens, query parameters or fragments. These links are visible to signed-in accounts.</p> <form><label for=\"service-name\">Service name</label><input id=\"service-name\" name=\"service-name\" required=\"\" maxlength=\"80\"/> <label for=\"service-category\">Category</label><input id=\"service-category\" name=\"service-category\" required=\"\" maxlength=\"40\"/> <label for=\"service-url\">HTTPS link</label><input id=\"service-url\" name=\"service-url\" type=\"url\" required=\"\" maxlength=\"1024\" placeholder=\"https://service.example/\"/> <label for=\"service-description\">Description, optional</label><textarea id=\"service-description\" name=\"service-description\" maxlength=\"240\" rows=\"2\"></textarea> <!> <div class=\"button-row\"><button class=\"button primary\" type=\"submit\"> </button><button class=\"text-button\" type=\"button\"> </button></div></form></section>"), bo = /* @__PURE__ */ K("<div class=\"directory-heading\"><div><p class=\"eyebrow\"> </p><h2> </h2></div><!></div> <p class=\"directory-status\" role=\"status\"> </p> <!> <!> <!> <!> <!>", 1);
-function xo(e, t) {
-	We(t, !1);
-	let n = /* @__PURE__ */ P(), r = /* @__PURE__ */ P(), i = /* @__PURE__ */ P(), a = Z(t, "directory", 8), o = Z(t, "authorized", 8, !1), s = Z(t, "owner", 8, !1), c = Z(t, "compact", 8, !1), l = Z(t, "state", 8), u = Z(t, "message", 8), d = Z(t, "browse", 8), f = Z(t, "check", 8), p = Z(t, "edit", 8), m = Z(t, "pin", 8), h = /* @__PURE__ */ P(""), g = /* @__PURE__ */ P(""), _ = /* @__PURE__ */ P(""), v = /* @__PURE__ */ P(""), y = /* @__PURE__ */ P(""), b = /* @__PURE__ */ P(""), x = /* @__PURE__ */ P(""), S = /* @__PURE__ */ P(), C = /* @__PURE__ */ P(), w = 0;
+var fo = /* @__PURE__ */ K("<button class=\"text-button\">Browse services <span aria-hidden=\"true\">→</span></button>"), po = /* @__PURE__ */ K("<section class=\"notice\"><h3>Review the saved state</h3><p> </p><button class=\"button secondary\">Check saved services</button></section>"), mo = /* @__PURE__ */ K("<option> </option>"), ho = /* @__PURE__ */ K("<div class=\"directory-filters\"><div><label for=\"service-search\">Search services</label><input id=\"service-search\" type=\"search\" maxlength=\"120\" placeholder=\"Name, category or description\"/></div><div><label for=\"service-filter\">Category</label><select id=\"service-filter\"><option>All categories</option><!></select></div></div>"), go = /* @__PURE__ */ K("<section class=\"card small-card\"><h3> </h3><p> </p></section>"), _o = /* @__PURE__ */ K("<p> </p>"), vo = /* @__PURE__ */ K("<button class=\"text-button move-up\">↑</button><button class=\"text-button move-down\">↓</button>", 1), yo = /* @__PURE__ */ K("<p>The directory changed. Review the service and choose Remove again.</p>"), bo = /* @__PURE__ */ K("<div class=\"notice\"><p> </p><!><div class=\"button-row\"><button class=\"button secondary confirm-remove\">Remove service</button><button class=\"text-button\">Keep service</button></div></div>"), xo = /* @__PURE__ */ K("<div class=\"button-row\"><button class=\"text-button edit-service\"> </button><button class=\"text-button remove-service\">Remove</button></div> <!>", 1), So = /* @__PURE__ */ K("<article class=\"card small-card service-card\"><p class=\"eyebrow\"> </p><h3><a class=\"service-link\" target=\"_blank\" rel=\"noopener noreferrer\"> <span class=\"sr-only\">(opens in a new tab)</span> <span aria-hidden=\"true\">↗</span></a></h3> <!> <p class=\"field-help service-address\"> </p> <div class=\"button-row\"><button class=\"button secondary pin-service\"> </button> <!></div> <!></article>"), Co = /* @__PURE__ */ K("<div class=\"directory-grid\"></div>"), wo = /* @__PURE__ */ K("<p class=\"field-help\">Up to 24 personal pins. Links open the selected service in a new tab. Each service handles its own sign-in; directory links do not check availability.</p>"), To = /* @__PURE__ */ K("<div class=\"notice\"><p>The directory changed after this form was opened. Review the current entries, then choose whether to keep this edit.</p><button class=\"button secondary\" type=\"button\">Keep edit against current directory</button></div>"), Eo = /* @__PURE__ */ K("<section class=\"card directory-editor\" aria-label=\"Service editor\"><h2> </h2><p>Add a reviewed HTTPS link without passwords, tokens, query parameters or fragments. These links are visible to signed-in accounts.</p> <form><label for=\"service-name\">Service name</label><input id=\"service-name\" name=\"service-name\" required=\"\" maxlength=\"80\"/> <label for=\"service-category\">Category</label><input id=\"service-category\" name=\"service-category\" required=\"\" maxlength=\"40\"/> <label for=\"service-url\">HTTPS link</label><input id=\"service-url\" name=\"service-url\" type=\"url\" required=\"\" maxlength=\"1024\" placeholder=\"https://service.example/\"/> <label for=\"service-description\">Description, optional</label><textarea id=\"service-description\" name=\"service-description\" maxlength=\"240\" rows=\"2\"></textarea> <!> <div class=\"button-row\"><button class=\"button primary\" type=\"submit\"> </button><button class=\"text-button\" type=\"button\"> </button></div></form></section>"), Do = /* @__PURE__ */ K("<div class=\"directory-heading\"><div><p class=\"eyebrow\"> </p><h2> </h2></div><!></div> <p class=\"directory-status\" role=\"status\"> </p> <!> <!> <!> <!> <!>", 1);
+function Oo(e, t) {
+	Ue(t, !1);
+	let n = /* @__PURE__ */ F(), r = /* @__PURE__ */ F(), i = /* @__PURE__ */ F(), a = Z(t, "directory", 8), o = Z(t, "authorized", 8, !1), s = Z(t, "owner", 8, !1), c = Z(t, "compact", 8, !1), l = Z(t, "state", 8), u = Z(t, "message", 8), d = Z(t, "browse", 8), f = Z(t, "check", 8), p = Z(t, "edit", 8), m = Z(t, "pin", 8), h = /* @__PURE__ */ F(""), g = /* @__PURE__ */ F(""), _ = /* @__PURE__ */ F(""), v = /* @__PURE__ */ F(""), y = /* @__PURE__ */ F(""), b = /* @__PURE__ */ F(""), x = /* @__PURE__ */ F(""), S = /* @__PURE__ */ F(), C = /* @__PURE__ */ F(), w = 0;
+	function T() {
+		++w, I(h, ""), I(g, ""), I(_, ""), I(v, ""), I(y, ""), I(b, ""), I(x, ""), I(C, void 0), I(S, void 0);
+	}
+	Li(T);
 	function ee() {
-		++w, F(h, ""), F(g, ""), F(_, ""), F(v, ""), F(y, ""), F(b, ""), F(x, ""), F(C, void 0), F(S, void 0);
+		I(_, ""), I(v, ""), I(y, ""), I(b, ""), I(x, ""), I(C, void 0), I(S, a()?.revision);
 	}
-	Li(ee);
-	function te() {
-		F(_, ""), F(v, ""), F(y, ""), F(b, ""), F(x, ""), F(C, void 0), F(S, a()?.revision);
+	function te(e) {
+		I(x, e.id), I(_, e.name), I(v, e.description), I(y, e.url), I(b, e.category), I(S, a()?.revision), I(C, void 0), document.querySelector("#service-name")?.focus();
 	}
-	function ne(e) {
-		F(x, e.id), F(_, e.name), F(v, e.description), F(y, e.url), F(b, e.category), F(S, a()?.revision), F(C, void 0), document.querySelector("#service-name")?.focus();
-	}
-	async function re() {
+	async function ne() {
 		if (H(n) || !s() || H(S) === void 0) return;
 		let e = w, t = {
 			action: H(x) ? "update" : "create",
@@ -4363,12 +4635,12 @@ function xo(e, t) {
 				url: H(y)
 			}
 		};
-		await p()(H(S), t) && o() && e === w && (await pr(), o() && e === w && te());
+		await p()(H(S), t) && o() && e === w && (await pr(), o() && e === w && ee());
 	}
-	function ie(e) {
+	function re(e) {
 		!H(n) && a() && m()(a().pins.includes(e) ? a().pins.filter((t) => t !== e) : [...a().pins, e]);
 	}
-	function T(e, t) {
+	function ie(e, t) {
 		if (H(n) || !a()) return;
 		let r = [...a().pins], i = r.indexOf(e), o = i + t;
 		i < 0 || o < 0 || o >= r.length || ([r[i], r[o]] = [r[o], r[i]], m()(r));
@@ -4379,364 +4651,369 @@ function xo(e, t) {
 		await p()(H(C).base, {
 			action: "delete",
 			id: e
-		}) && o() && t === w && (await pr(), o() && t === w && (F(C, void 0), H(x) === e && te()));
+		}) && o() && t === w && (await pr(), o() && t === w && (I(C, void 0), H(x) === e && ee()));
 	}
-	En(() => (W(l()), W(o())), () => {
-		F(n, l() === "saving" || l() === "uncertain" || !o());
-	}), En(() => W(a()), () => {
-		F(r, [...new Set(a()?.services.map((e) => e.category) ?? [])].sort());
-	}), En(() => (H(g), H(r)), () => {
-		H(g) && !H(r).includes(H(g)) && F(g, "");
-	}), En(() => (W(a()), W(c()), H(g), H(h)), () => {
-		F(i, [...a()?.services ?? []].sort((e, t) => {
+	Tn(() => (W(l()), W(o())), () => {
+		I(n, l() === "saving" || l() === "uncertain" || !o());
+	}), Tn(() => W(a()), () => {
+		I(r, [...new Set(a()?.services.map((e) => e.category) ?? [])].sort());
+	}), Tn(() => (H(g), H(r)), () => {
+		H(g) && !H(r).includes(H(g)) && I(g, "");
+	}), Tn(() => (W(a()), W(c()), H(g), H(h)), () => {
+		I(i, [...a()?.services ?? []].sort((e, t) => {
 			let n = a()?.pins.indexOf(e.id) ?? -1, r = a()?.pins.indexOf(t.id) ?? -1;
 			return n >= 0 || r >= 0 ? (n < 0 ? 25 : n) - (r < 0 ? 25 : r) : e.name.localeCompare(t.name) || Number(BigInt(e.id) - BigInt(t.id));
 		}).filter((e) => c() ? a()?.pins.includes(e.id) : (!H(g) || e.category === H(g)) && `${e.name} ${e.category} ${e.description}`.toLocaleLowerCase().includes(H(h).toLocaleLowerCase())));
-	}), En(() => W(o()), () => {
-		o() || ee();
-	}), En(() => (W(o()), W(a()), H(S)), () => {
-		o() && a() && H(S) === void 0 && F(S, a().revision);
-	}), Dn(), Ti();
-	var E = bo(), oe = ln(E), se = I(oe), ce = I(se), le = L(ce, !0), D = L(R(ce), !0);
-	A(se);
-	var ue = R(se), de = (e) => {
-		var t = io();
+	}), Tn(() => W(o()), () => {
+		o() || T();
+	}), Tn(() => (W(o()), W(a()), H(S)), () => {
+		o() && a() && H(S) === void 0 && I(S, a().revision);
+	}), En(), Ti();
+	var oe = Do(), se = cn(oe), E = L(se), ce = L(E), D = R(ce, !0), le = R(z(ce), !0);
+	j(E);
+	var ue = z(E), de = (e) => {
+		var t = fo();
 		G("click", t, function(...e) {
 			d()?.apply(this, e);
 		}), q(e, t);
 	};
 	Y(ue, (e) => {
 		c() && e(de);
-	}), A(oe);
-	var fe = R(oe, 2), pe = L(fe, !0), me = R(fe, 2), he = (e) => {
-		var t = ao(), n = R(I(t)), r = L(n, !0), i = R(n);
-		A(t), z(() => J(r, l() === "uncertain" ? "Your change has not been sent again." : "Your edit is still in the form. Compare it with the current directory before saving.")), G("click", i, () => void f()()), q(e, t);
+	}), j(se);
+	var fe = z(se, 2), O = R(fe, !0), pe = z(fe, 2), me = (e) => {
+		var t = po(), n = z(L(t)), r = R(n, !0), i = z(n);
+		j(t), B(() => J(r, l() === "uncertain" ? "Your change has not been sent again." : "Your edit is still in the form. Compare it with the current directory before saving.")), G("click", i, () => void f()()), q(e, t);
 	};
-	Y(me, (e) => {
-		(l() === "uncertain" || l() === "conflict") && e(he);
+	Y(pe, (e) => {
+		(l() === "uncertain" || l() === "conflict") && e(me);
 	});
-	var ge = R(me, 2), _e = (e) => {
-		var t = so(), n = I(t), i = R(I(n));
-		pi(i), A(n);
-		var a = R(n), o = R(I(a)), s = I(o);
-		s.value = s.__value = "", qr(R(s), 1, () => H(r), Ur, (e, t) => {
-			var n = oo(), r = L(n, !0), i = {};
-			z(() => {
+	var he = z(pe, 2), ge = (e) => {
+		var t = ho(), n = L(t), i = z(L(n));
+		pi(i), j(n);
+		var a = z(n), o = z(L(a)), s = L(o);
+		s.value = s.__value = "", qr(z(s), 1, () => H(r), Ur, (e, t) => {
+			var n = mo(), r = R(n, !0), i = {};
+			B(() => {
 				J(r, H(t)), i !== (i = H(t)) && (n.value = (n.__value = i) ?? "");
 			}), q(e, n);
-		}), A(o), ai(o), A(a), A(t), yi(i, () => H(h), (e) => F(h, e)), oi(o, () => H(g), (e) => F(g, e)), q(e, t);
+		}), j(o), ai(o), j(a), j(t), yi(i, () => H(h), (e) => I(h, e)), oi(o, () => H(g), (e) => I(g, e)), q(e, t);
 	};
-	Y(ge, (e) => {
-		c() || e(_e);
+	Y(he, (e) => {
+		c() || e(ge);
 	});
-	var ve = R(ge, 2), O = (e) => {
-		var t = co(), n = I(t), r = L(n, !0), i = L(R(n), !0);
-		A(t), z(() => {
+	var _e = z(he, 2), k = (e) => {
+		var t = go(), n = L(t), r = R(n, !0), i = R(z(n), !0);
+		j(t), B(() => {
 			J(r, (W(c()), W(a()), U(() => c() ? "Keep your favorites close" : a()?.services.length ? "No matching services" : "Your directory starts here"))), J(i, (W(c()), W(a()), W(s()), U(() => c() ? "Pin services from the directory to show them on Home." : a()?.services.length ? "Try another search or category." : s() ? "Add a service below to make it available to signed-in accounts." : "An owner can add reviewed service links.")));
 		}), q(e, t);
-	}, ye = (e) => {
-		var t = go();
+	}, ve = (e) => {
+		var t = Co();
 		qr(t, 5, () => H(i), (e) => e.id, (e, t) => {
-			let r = /* @__PURE__ */ M(() => (W(a()), H(t), U(() => a()?.pins.includes(H(t).id) ?? !1))), i = /* @__PURE__ */ M(() => (W(a()), H(t), U(() => a()?.pins.indexOf(H(t).id) ?? -1)));
-			var o = ho(), l = I(o), u = L(l, !0), d = R(l), f = I(d), p = I(f, !0);
-			Se(3), A(f), A(d);
-			var m = R(d, 2), h = (e) => {
-				var n = lo(), r = L(n, !0);
-				z(() => J(r, (H(t), U(() => H(t).description)))), q(e, n);
+			let r = /* @__PURE__ */ N(() => (W(a()), H(t), U(() => a()?.pins.includes(H(t).id) ?? !1))), i = /* @__PURE__ */ N(() => (W(a()), H(t), U(() => a()?.pins.indexOf(H(t).id) ?? -1)));
+			var o = So(), l = L(o), u = R(l, !0), d = z(l), f = L(d), p = L(f, !0);
+			xe(3), j(f), j(d);
+			var m = z(d, 2), h = (e) => {
+				var n = _o(), r = R(n, !0);
+				B(() => J(r, (H(t), U(() => H(t).description)))), q(e, n);
 			};
 			Y(m, (e) => {
 				H(t), U(() => H(t).description) && e(h);
 			});
-			var g = R(m, 2), _ = L(g, !0), v = R(g, 2), y = I(v), b = L(y, !0), x = R(y, 2), S = (e) => {
-				var r = uo(), o = ln(r), s = R(o);
-				z(() => {
+			var g = z(m, 2), _ = R(g, !0), v = z(g, 2), y = L(v), b = R(y, !0), x = z(y, 2), S = (e) => {
+				var r = vo(), o = cn(r), s = z(o);
+				B(() => {
 					X(o, "aria-label", (H(t), U(() => `Move ${H(t).name} up`))), o.disabled = H(n) || H(i) === 0, X(s, "aria-label", (H(t), U(() => `Move ${H(t).name} down`))), s.disabled = (H(n), W(H(i)), W(a()), U(() => H(n) || H(i) === (a()?.pins.length ?? 0) - 1));
-				}), G("click", o, () => T(H(t).id, -1)), G("click", s, () => T(H(t).id, 1)), q(e, r);
+				}), G("click", o, () => ie(H(t).id, -1)), G("click", s, () => ie(H(t).id, 1)), q(e, r);
 			};
 			Y(x, (e) => {
 				H(r) && e(S);
-			}), A(v);
-			var w = R(v, 2), ee = (e) => {
-				var r = mo(), i = ln(r), o = I(i), s = L(o), c = R(o);
-				A(i);
-				var l = R(i, 2), u = (e) => {
-					var r = po(), i = I(r), o = L(i), s = R(i), c = (e) => {
-						q(e, fo());
+			}), j(v);
+			var w = z(v, 2), T = (e) => {
+				var r = xo(), i = cn(r), o = L(i), s = R(o), c = z(o);
+				j(i);
+				var l = z(i, 2), u = (e) => {
+					var r = bo(), i = L(r), o = R(i), s = z(i), c = (e) => {
+						q(e, yo());
 					};
 					Y(s, (e) => {
 						H(C), W(a()), U(() => H(C).base !== a()?.revision) && e(c);
 					});
-					var l = R(s), u = I(l), d = R(u);
-					A(l), A(r), z(() => {
+					var l = z(s), u = L(l), d = z(u);
+					j(l), j(r), B(() => {
 						J(o, `Remove ${H(C), U(() => H(C).name) ?? ""} from the directory and everyone’s pins?`), u.disabled = (H(n), H(C), W(a()), U(() => H(n) || H(C).base !== a()?.revision));
-					}), G("click", u, () => void ae(H(t).id)), G("click", d, () => F(C, void 0)), q(e, r);
+					}), G("click", u, () => void ae(H(t).id)), G("click", d, () => I(C, void 0)), q(e, r);
 				};
 				Y(l, (e) => {
 					H(C), H(t), U(() => H(C)?.id === H(t).id) && e(u);
-				}), z(() => {
+				}), B(() => {
 					o.disabled = H(n), J(s, `Edit ${H(t), U(() => H(t).name) ?? ""}`), c.disabled = H(n);
-				}), G("click", o, () => ne(H(t))), G("click", c, () => F(C, a() ? {
+				}), G("click", o, () => te(H(t))), G("click", c, () => I(C, a() ? {
 					id: H(t).id,
 					base: a().revision,
 					name: H(t).name
 				} : void 0)), q(e, r);
 			};
 			Y(w, (e) => {
-				s() && !c() && e(ee);
-			}), A(o), z(() => {
+				s() && !c() && e(T);
+			}), j(o), B(() => {
 				X(o, "data-service-id", (H(t), U(() => H(t).id))), J(u, (H(t), U(() => H(t).category))), X(f, "href", (H(t), U(() => H(t).url))), J(p, (H(t), U(() => H(t).name))), J(_, (H(t), U(() => H(t).url))), X(y, "aria-pressed", H(r)), X(y, "aria-label", (W(H(r)), H(t), U(() => `${H(r) ? "Unpin" : "Pin"} ${H(t).name}`))), y.disabled = (H(n), W(H(r)), W(a()), U(() => H(n) || !H(r) && (a()?.pins.length ?? 0) >= 24)), J(b, H(r) ? "Pinned" : "Pin to Home");
-			}), G("click", y, () => ie(H(t).id)), q(e, o);
-		}), A(t), q(e, t);
+			}), G("click", y, () => re(H(t).id)), q(e, o);
+		}), j(t), q(e, t);
 	};
-	Y(ve, (e) => {
-		H(i), U(() => H(i).length === 0) ? e(O) : e(ye, -1);
+	Y(_e, (e) => {
+		H(i), U(() => H(i).length === 0) ? e(k) : e(ve, -1);
 	});
-	var k = R(ve, 2), be = (e) => {
-		q(e, _o());
+	var A = z(_e, 2), ye = (e) => {
+		q(e, wo());
 	};
-	Y(k, (e) => {
-		c() || e(be);
+	Y(A, (e) => {
+		c() || e(ye);
 	});
-	var xe = R(k, 2), Ce = (e) => {
-		var t = yo(), r = I(t), i = L(r, !0), o = R(r, 3), s = R(I(o));
+	var be = z(A, 2), Se = (e) => {
+		var t = Eo(), r = L(t), i = R(r, !0), o = z(r, 3), s = z(L(o));
 		pi(s);
-		var u = R(s, 3);
+		var u = z(s, 3);
 		pi(u);
-		var d = R(u, 3);
+		var d = z(u, 3);
 		pi(d);
-		var f = R(d, 3);
-		nt(f);
-		var p = R(f, 2), m = (e) => {
-			var t = vo(), r = R(I(t));
-			A(t), z(() => r.disabled = H(n)), G("click", r, () => F(S, a()?.revision)), q(e, t);
+		var f = z(d, 3);
+		tt(f);
+		var p = z(f, 2), m = (e) => {
+			var t = To(), r = z(L(t));
+			j(t), B(() => r.disabled = H(n)), G("click", r, () => I(S, a()?.revision)), q(e, t);
 		};
 		Y(p, (e) => {
 			H(S), W(a()), U(() => H(S) !== void 0 && a() && H(S) !== a().revision) && e(m);
 		});
-		var h = R(p, 2), g = I(h), C = L(g, !0), w = R(g), ee = L(w, !0);
-		A(h), A(o), A(t), z(() => {
-			X(t, "hidden", c()), J(i, H(x) ? "Edit service" : "Add a service"), s.disabled = H(n), u.disabled = H(n), d.disabled = H(n), f.disabled = H(n), g.disabled = (H(n), H(S), W(a()), U(() => H(n) || H(S) !== a()?.revision)), J(C, l() === "saving" ? "Saving…" : H(x) ? "Save service" : "Add service"), w.disabled = H(n), J(ee, H(x) ? "Cancel edit" : "Clear form");
+		var h = z(p, 2), g = L(h), C = R(g, !0), w = z(g), T = R(w, !0);
+		j(h), j(o), j(t), B(() => {
+			X(t, "hidden", c()), J(i, H(x) ? "Edit service" : "Add a service"), s.disabled = H(n), u.disabled = H(n), d.disabled = H(n), f.disabled = H(n), g.disabled = (H(n), H(S), W(a()), U(() => H(n) || H(S) !== a()?.revision)), J(C, l() === "saving" ? "Saving…" : H(x) ? "Save service" : "Add service"), w.disabled = H(n), J(T, H(x) ? "Cancel edit" : "Clear form");
 		}), Cr("submit", o, (e) => {
-			e.preventDefault(), re();
-		}), yi(s, () => H(_), (e) => F(_, e)), yi(u, () => H(b), (e) => F(b, e)), yi(d, () => H(y), (e) => F(y, e)), yi(f, () => H(v), (e) => F(v, e)), G("click", w, te), q(e, t);
+			e.preventDefault(), ne();
+		}), yi(s, () => H(_), (e) => I(_, e)), yi(u, () => H(b), (e) => I(b, e)), yi(d, () => H(y), (e) => I(y, e)), yi(f, () => H(v), (e) => I(v, e)), G("click", w, ee), q(e, t);
 	};
-	Y(xe, (e) => {
-		s() && o() && e(Ce);
-	}), z(() => {
-		J(le, c() ? "YOUR SHORTCUTS" : "A PLACE FOR YOUR SERVICES"), J(D, c() ? "Pinned services" : "Service directory"), J(pe, u());
-	}), q(e, E), Ge();
+	Y(be, (e) => {
+		s() && o() && e(Se);
+	}), B(() => {
+		J(D, c() ? "YOUR SHORTCUTS" : "A PLACE FOR YOUR SERVICES"), J(le, c() ? "Pinned services" : "Service directory"), J(O, u());
+	}), q(e, oe), We();
 }
 wr(["click"]);
 // src/Activity.svelte
-var So = /* @__PURE__ */ K("<p class=\"activity-empty\">No matching activity in this window. Try another action name or check the newest entries.</p>"), Co = /* @__PURE__ */ K("<li><div><strong> </strong><p> </p></div><time> </time></li>"), wo = /* @__PURE__ */ K("<!> <ol class=\"activity-list\"></ol> <div class=\"button-row\"><button class=\"button secondary\">Check newest activity</button><button class=\"button secondary\">Older activity</button></div> <p class=\"field-help\">Up to 25 entries per page. New changes appear when you check newest; older pages stay within the current history window. Search matches action names, not note or credential contents.</p>", 1), To = /* @__PURE__ */ K("<button class=\"button secondary\">Retry activity</button>"), Eo = /* @__PURE__ */ K("<button class=\"button secondary\">Check activity</button>"), Do = /* @__PURE__ */ K("<section class=\"card activity-card\" aria-label=\"Your retained activity\"><h2>Your activity</h2> <p>Successful changes made by your account, retained from the introduction of Activity. Connection entries describe enrollment changes, not game actions or provider uptime.</p> <form class=\"activity-search\"><div><label for=\"activity-query\">Search action names</label><input id=\"activity-query\" maxlength=\"80\" placeholder=\"For example, saved or Crafty\"/></div> <div><label for=\"activity-category\">Activity category</label><select id=\"activity-category\"><option>All activity</option><option>Workspace notes</option><option>Services and pins</option><option>Connection enrollment</option></select></div> <button type=\"submit\" class=\"button primary\">Search activity</button></form> <p class=\"workspace-status\" role=\"status\"> </p> <!></section>");
-function Oo(e, t) {
-	We(t, !1);
-	let n = Z(t, "state", 8), r = Z(t, "authorized", 8, !1), i = Z(t, "load", 8), a = /* @__PURE__ */ P(""), o = /* @__PURE__ */ P("all"), s = /* @__PURE__ */ P(), c = (e) => (/* @__PURE__ */ new Date(Number(e) * 1e3)).toLocaleString();
-	En(() => W(r()), () => {
-		r() || (F(a, ""), F(o, "all"), F(s, void 0));
-	}), En(() => (W(n()), H(s)), () => {
-		n() !== H(s) && n().phase === "loading" && (F(s, n()), F(a, n().query), F(o, n().category));
-	}), Dn(), Ti();
-	var l = Do(), u = R(I(l), 4), d = I(u), f = R(I(d));
-	pi(f), A(d);
-	var p = R(d, 2), m = R(I(p)), h = I(m);
+var ko = /* @__PURE__ */ K("<p class=\"activity-empty\">No matching activity in this window. Try another action name or check the newest entries.</p>"), Ao = /* @__PURE__ */ K("<li><div><strong> </strong><p> </p></div><time> </time></li>"), jo = /* @__PURE__ */ K("<!> <ol class=\"activity-list\"></ol> <div class=\"button-row\"><button class=\"button secondary\">Check newest activity</button><button class=\"button secondary\">Older activity</button></div> <p class=\"field-help\">Up to 25 entries per page. New changes appear when you check newest; older pages stay within the current history window. Search matches action names, not note or credential contents.</p>", 1), Mo = /* @__PURE__ */ K("<button class=\"button secondary\">Retry activity</button>"), No = /* @__PURE__ */ K("<button class=\"button secondary\">Check activity</button>"), Po = /* @__PURE__ */ K("<section class=\"card activity-card\" aria-label=\"Your retained activity\"><h2>Your activity</h2> <p>Successful changes made by your account, retained from the introduction of Activity. Connection entries describe enrollment changes, not game actions or provider uptime.</p> <form class=\"activity-search\"><div><label for=\"activity-query\">Search action names</label><input id=\"activity-query\" maxlength=\"80\" placeholder=\"For example, saved or Crafty\"/></div> <div><label for=\"activity-category\">Activity category</label><select id=\"activity-category\"><option>All activity</option><option>Workspace notes</option><option>Services and pins</option><option>Connection enrollment</option></select></div> <button type=\"submit\" class=\"button primary\">Search activity</button></form> <p class=\"workspace-status\" role=\"status\"> </p> <!></section>");
+function Fo(e, t) {
+	Ue(t, !1);
+	let n = Z(t, "state", 8), r = Z(t, "authorized", 8, !1), i = Z(t, "load", 8), a = /* @__PURE__ */ F(""), o = /* @__PURE__ */ F("all"), s = /* @__PURE__ */ F(), c = (e) => (/* @__PURE__ */ new Date(Number(e) * 1e3)).toLocaleString();
+	Tn(() => W(r()), () => {
+		r() || (I(a, ""), I(o, "all"), I(s, void 0));
+	}), Tn(() => (W(n()), H(s)), () => {
+		n() !== H(s) && n().phase === "loading" && (I(s, n()), I(a, n().query), I(o, n().category));
+	}), En(), Ti();
+	var l = Po(), u = z(L(l), 4), d = L(u), f = z(L(d));
+	pi(f), j(d);
+	var p = z(d, 2), m = z(L(p)), h = L(m);
 	h.value = h.__value = "all";
-	var g = R(h);
+	var g = z(h);
 	g.value = g.__value = "workspace";
-	var _ = R(g);
+	var _ = z(g);
 	_.value = _.__value = "directory";
-	var v = R(_);
-	v.value = v.__value = "connections", A(m), ai(m), A(p);
-	var y = R(p, 2);
-	A(u);
-	var b = R(u, 2), x = L(b, !0), S = R(b, 2), C = (e) => {
-		var t = wo(), r = ln(t), a = (e) => {
-			q(e, So());
+	var v = z(_);
+	v.value = v.__value = "connections", j(m), ai(m), j(p);
+	var y = z(p, 2);
+	j(u);
+	var b = z(u, 2), x = R(b, !0), S = z(b, 2), C = (e) => {
+		var t = jo(), r = cn(t), a = (e) => {
+			q(e, ko());
 		};
 		Y(r, (e) => {
 			W(n()), U(() => n().entries.length === 0) && e(a);
 		});
-		var o = R(r, 2);
+		var o = z(r, 2);
 		qr(o, 5, () => (W(n()), U(() => n().entries)), (e) => e.id, (e, t) => {
-			var n = Co(), r = I(n), i = I(r), a = L(i, !0), o = L(R(i));
-			A(r);
-			var s = R(r), l = L(s, !0);
-			A(n), z((e, r) => {
+			var n = Ao(), r = L(n), i = L(r), a = R(i, !0), o = R(z(i));
+			j(r);
+			var s = z(r), l = R(s, !0);
+			j(n), B((e, r) => {
 				X(n, "data-activity-id", (H(t), U(() => H(t).id))), J(a, (H(t), U(() => H(t).label))), J(o, `Revision ${H(t), U(() => H(t).revision) ?? ""} · ${H(t), U(() => H(t).category === "connections" ? "Connection enrollment" : H(t).category === "directory" ? "Services and pins" : "Workspace note") ?? ""}`), X(s, "datetime", e), J(l, r);
 			}, [() => (H(t), U(() => (/* @__PURE__ */ new Date(Number(H(t).occurred_at) * 1e3)).toISOString())), () => (H(t), U(() => c(H(t).occurred_at)))]), q(e, n);
-		}), A(o);
-		var s = R(o, 2), l = I(s), u = R(l);
-		A(s), Se(2), z(() => u.disabled = (W(n()), U(() => !n().next))), G("click", l, () => void i()(n().category, n().query)), G("click", u, () => void i()(n().category, n().query, !0)), q(e, t);
+		}), j(o);
+		var s = z(o, 2), l = L(s), u = z(l);
+		j(s), xe(2), B(() => u.disabled = (W(n()), U(() => !n().next))), G("click", l, () => void i()(n().category, n().query)), G("click", u, () => void i()(n().category, n().query, !0)), q(e, t);
 	}, w = (e) => {
-		var t = To();
+		var t = Mo();
 		G("click", t, () => void i()(n().category, n().query)), q(e, t);
-	}, ee = (e) => {
-		var t = Eo();
-		z(() => t.disabled = !r()), G("click", t, () => void i()(H(o), H(a))), q(e, t);
+	}, T = (e) => {
+		var t = No();
+		B(() => t.disabled = !r()), G("click", t, () => void i()(H(o), H(a))), q(e, t);
 	};
 	Y(S, (e) => {
-		W(n()), U(() => n().phase === "ready") ? e(C) : (W(n()), U(() => n().phase === "error") ? e(w, 1) : (W(n()), U(() => n().phase === "idle") && e(ee, 2)));
-	}), A(l), z(() => {
+		W(n()), U(() => n().phase === "ready") ? e(C) : (W(n()), U(() => n().phase === "error") ? e(w, 1) : (W(n()), U(() => n().phase === "idle") && e(T, 2)));
+	}), j(l), B(() => {
 		f.disabled = !r(), m.disabled = !r(), y.disabled = !r(), J(x, (W(n()), U(() => n().message)));
 	}), Cr("submit", u, (e) => {
 		e.preventDefault(), i()(H(o), H(a));
-	}), yi(f, () => H(a), (e) => F(a, e)), oi(m, () => H(o), (e) => F(o, e)), q(e, l), Ge();
+	}), yi(f, () => H(a), (e) => I(a, e)), oi(m, () => H(o), (e) => I(o, e)), q(e, l), We();
 }
 wr(["click"]);
 // src/Notifications.svelte
-var ko = /* @__PURE__ */ K("<div class=\"notice\"><h3>Check your read markers</h3><p>The change may have completed. Check notifications before marking another group read.</p></div>"), Ao = /* @__PURE__ */ K("<p class=\"notification-empty\"> </p>"), jo = /* @__PURE__ */ K("<li><div><h3> </h3><p class=\"notification-count\"> </p><p> </p><p class=\"field-help\"><time> </time></p></div> <button class=\"button secondary mark-notification-read\"> </button></li>"), Mo = /* @__PURE__ */ K("<div class=\"notification-card card\"><div class=\"notification-heading\"><div><p class=\"eyebrow\">AT YOUR PACE</p><h2>Your notifications</h2></div><button class=\"button secondary check-notifications\">Check notifications</button></div> <p>Shared service and connection changes from other accounts, grouped together. Opening this inbox leaves them unread.</p> <label class=\"notification-filter\"><input id=\"notification-show-read\" type=\"checkbox\"/> Show read groups</label> <p class=\"notification-status\" role=\"status\"> </p> <!> <!> <ul class=\"notification-list\"></ul></div>");
-function No(e, t) {
-	We(t, !1);
-	let n = /* @__PURE__ */ P(), r = Z(t, "value", 8), i = Z(t, "authorized", 8), a = Z(t, "state", 8), o = Z(t, "message", 8), s = Z(t, "check", 8), c = Z(t, "mark", 8), l = /* @__PURE__ */ P(!1), u = (e) => (/* @__PURE__ */ new Date(Number(e) * 1e3)).toLocaleString();
-	En(() => W(i()), () => {
-		i() || F(l, !1);
-	}), En(() => (W(i()), W(r()), H(l)), () => {
-		F(n, i() ? (r()?.groups ?? []).filter((e) => H(l) || e.unread !== "0") : []);
-	}), Dn(), Ti();
-	var d = Mo(), f = I(d), p = R(I(f));
-	A(f);
-	var m = R(f, 4), h = I(m);
-	pi(h), Se(), A(m);
-	var g = R(m, 2), _ = L(g, !0), v = R(g, 2), y = (e) => {
-		q(e, ko());
+var Io = /* @__PURE__ */ K("<div class=\"notice\"><h3>Check your read markers</h3><p>The change may have completed. Check notifications before marking another group read.</p></div>"), Lo = /* @__PURE__ */ K("<p class=\"notification-empty\"> </p>"), Ro = /* @__PURE__ */ K("<li><div><h3> </h3><p class=\"notification-count\"> </p><p> </p><p class=\"field-help\"><time> </time></p></div> <button class=\"button secondary mark-notification-read\"> </button></li>"), zo = /* @__PURE__ */ K("<div class=\"notification-card card\"><div class=\"notification-heading\"><div><p class=\"eyebrow\">AT YOUR PACE</p><h2>Your notifications</h2></div><button class=\"button secondary check-notifications\">Check notifications</button></div> <p>Shared service and connection changes from other accounts, grouped together. Opening this inbox leaves them unread.</p> <label class=\"notification-filter\"><input id=\"notification-show-read\" type=\"checkbox\"/> Show read groups</label> <p class=\"notification-status\" role=\"status\"> </p> <!> <!> <ul class=\"notification-list\"></ul></div>");
+function Bo(e, t) {
+	Ue(t, !1);
+	let n = /* @__PURE__ */ F(), r = Z(t, "value", 8), i = Z(t, "authorized", 8), a = Z(t, "state", 8), o = Z(t, "message", 8), s = Z(t, "check", 8), c = Z(t, "mark", 8), l = /* @__PURE__ */ F(!1), u = (e) => (/* @__PURE__ */ new Date(Number(e) * 1e3)).toLocaleString();
+	Tn(() => W(i()), () => {
+		i() || I(l, !1);
+	}), Tn(() => (W(i()), W(r()), H(l)), () => {
+		I(n, i() ? (r()?.groups ?? []).filter((e) => H(l) || e.unread !== "0") : []);
+	}), En(), Ti();
+	var d = zo(), f = L(d), p = z(L(f));
+	j(f);
+	var m = z(f, 4), h = L(m);
+	pi(h), xe(), j(m);
+	var g = z(m, 2), _ = R(g, !0), v = z(g, 2), y = (e) => {
+		q(e, Io());
 	};
 	Y(v, (e) => {
 		a() === "uncertain" && e(y);
 	});
-	var b = R(v, 2), x = (e) => {
-		var t = Ao(), n = L(t, !0);
-		z(() => J(n, H(l) ? "No shared changes to show yet." : "You’re all caught up.")), q(e, t);
+	var b = z(v, 2), x = (e) => {
+		var t = Lo(), n = R(t, !0);
+		B(() => J(n, H(l) ? "No shared changes to show yet." : "You’re all caught up.")), q(e, t);
 	};
 	Y(b, (e) => {
 		H(n), U(() => H(n).length === 0) && e(x);
 	});
-	var S = R(b, 2);
+	var S = z(b, 2);
 	qr(S, 5, () => H(n), (e) => e.category, (e, t) => {
-		var n = jo(), r = I(n), o = I(r), s = L(o, !0), l = R(o), d = L(l, !0), f = R(l), p = L(f, !0), m = R(f), h = I(m), g = L(h, !0);
-		A(m), A(r);
-		var _ = R(r, 2), v = L(_);
-		A(n), z((e, r) => {
+		var n = Ro(), r = L(n), o = L(r), s = R(o, !0), l = z(o), d = R(l, !0), f = z(l), p = R(f, !0), m = z(f), h = L(m), g = R(h, !0);
+		j(m), j(r);
+		var _ = z(r, 2), v = R(_);
+		j(n), B((e, r) => {
 			X(n, "data-notification-category", (H(t), U(() => H(t).category))), J(s, (H(t), U(() => H(t).category === "services" ? "Services" : "Connections"))), J(d, (H(t), U(() => H(t).unread === "0" ? "Read" : `${H(t).unread} unread ${H(t).unread === "1" ? "change" : "changes"}`))), J(p, (H(t), U(() => H(t).latest.label))), X(h, "datetime", e), J(g, r), _.disabled = (W(i()), W(a()), H(t), U(() => !i() || a() !== "idle" || H(t).unread === "0")), J(v, `Mark ${H(t), U(() => H(t).category === "services" ? "services" : "connections") ?? ""} read`);
 		}, [() => (H(t), U(() => (/* @__PURE__ */ new Date(Number(H(t).latest.occurred_at) * 1e3)).toISOString())), () => (H(t), U(() => u(H(t).latest.occurred_at)))]), G("click", _, () => c()(H(t).category, H(t).revision)), q(e, n);
-	}), A(S), A(d), z(() => {
+	}), j(S), j(d), B(() => {
 		p.disabled = !i() || a() === "saving", h.disabled = !i(), J(_, o() || "Read markers are saved to your account.");
-	}), G("click", p, () => s()()), bi(h, () => H(l), (e) => F(l, e)), q(e, d), Ge();
+	}), G("click", p, () => s()()), bi(h, () => H(l), (e) => I(l, e)), q(e, d), We();
 }
 wr(["click"]);
 // src/Guide.svelte
-var Po = /* @__PURE__ */ K("<li> </li>"), Fo = /* @__PURE__ */ K("<button class=\"button secondary\">Open Connections</button>"), Io = /* @__PURE__ */ K("<button class=\"button secondary\">Open Media</button>"), Lo = /* @__PURE__ */ K("<p class=\"field-help\">Media enrollment and observations require owner access.</p>"), Ro = /* @__PURE__ */ K("<button class=\"button secondary\">Open Queues</button>"), zo = /* @__PURE__ */ K("<p class=\"field-help\">Queue enrollment and observations require owner access.</p>"), Bo = /* @__PURE__ */ K("<p class=\"field-help\">Setup will be available when this integration is implemented and qualified.</p>"), Vo = /* @__PURE__ */ K("<article class=\"card integration-card\"><div class=\"guide-card-heading\"><h2> </h2><span class=\"integration-status\"> </span></div> <p> </p> <h3>What it offers</h3><ul></ul> <h3>Setup requirements</h3><ul></ul> <!></article>"), Ho = /* @__PURE__ */ K("<section class=\"card guide-intro\"><p class=\"eyebrow\">OPTIONAL CONNECTIONS</p><h2>Integration catalog</h2><p>Come back here to see what is available and what is planned. Each connection needs deliberate setup and its own access permissions.</p><p class=\"field-help\">Available means the Reborn feature exists. Connections shows Crafty enrollment. Media provides Jellyfin and Seerr observations; Queues provides Sonarr, Radarr and qBittorrent observations. Both are owner-only; credentials and real provider acceptance are separate.</p></section> <div class=\"catalog-list\"></div>", 1), Uo = /* @__PURE__ */ K("<h4>Recorded progress</h4><ul></ul>", 1), Wo = /* @__PURE__ */ K("<section><div class=\"guide-card-heading\"><h3> </h3><span class=\"quiet-label\"> </span></div> <!> <h4>Work still ahead</h4><ul></ul></section>"), Go = /* @__PURE__ */ K("<article class=\"card roadmap-note\" aria-label=\"Project roadmap note\"><p class=\"eyebrow\">A NOTE FOR THE ROAD AHEAD</p><h2>Keida Reborn roadmap</h2> <p> </p> <p class=\"field-help\">Work-list snapshot dated <time> </time>. This note ships with the site; it does not update itself from GitHub. Your private workspace note is separate.</p> <h3>Next priorities</h3><ol class=\"roadmap-priorities\"></ol> <div class=\"roadmap-milestones\"></div> <p><a rel=\"noreferrer\">Open the current roadmap and acceptance tracker <span aria-hidden=\"true\">↗</span></a></p></article>"), Ko = /* @__PURE__ */ K("<section class=\"card guide-intro\"><h2> </h2><p>The guide is available after your account access is checked.</p><button class=\"button secondary\"> </button></section>"), qo = /* @__PURE__ */ K("<div class=\"guide-card\"><p class=\"workspace-status\" role=\"status\"> </p> <!></div>");
-function Jo(e, t) {
-	We(t, !1);
-	let n = Z(t, "mode", 8, "catalog"), r = Z(t, "state", 8), i = Z(t, "authorized", 8, !1), a = Z(t, "retry", 8), o = Z(t, "connections", 8), s = Z(t, "media", 8), c = Z(t, "queues", 8), l = Z(t, "owner", 8, !1);
+var Vo = /* @__PURE__ */ K("<li> </li>"), Ho = /* @__PURE__ */ K("<button class=\"button secondary\">Open Connections</button>"), Uo = /* @__PURE__ */ K("<button class=\"button secondary\">Open Media</button>"), Wo = /* @__PURE__ */ K("<p class=\"field-help\">Media enrollment and observations require owner access.</p>"), Go = /* @__PURE__ */ K("<button class=\"button secondary\">Open Queues</button>"), Ko = /* @__PURE__ */ K("<p class=\"field-help\">Queue enrollment and observations require owner access.</p>"), qo = /* @__PURE__ */ K("<button class=\"button secondary\">Open Identity</button><p class=\"field-help\">Identity linking is available with deliberate owner setup. Discord sign-in, friends, roles and bots remain planned.</p>", 1), Jo = /* @__PURE__ */ K("<p class=\"field-help\">Setup will be available when this integration is implemented and qualified.</p>"), Yo = /* @__PURE__ */ K("<article class=\"card integration-card\"><div class=\"guide-card-heading\"><h2> </h2><span class=\"integration-status\"> </span></div> <p> </p> <h3>What it offers</h3><ul></ul> <h3>Setup requirements</h3><ul></ul> <!></article>"), Xo = /* @__PURE__ */ K("<section class=\"card guide-intro\"><p class=\"eyebrow\">OPTIONAL CONNECTIONS</p><h2>Integration catalog</h2><p>Come back here to see what is available and what is planned. Each connection needs deliberate setup and its own access permissions.</p><p class=\"field-help\">Available means the Reborn feature exists. Connections shows Crafty enrollment. Media provides Jellyfin and Seerr observations; Queues provides Sonarr, Radarr and qBittorrent observations. Media and Queues are owner-only. Identity offers deliberate Discord identity linking; wider Discord features remain planned. Credentials and real provider acceptance are separate.</p></section> <div class=\"catalog-list\"></div>", 1), Zo = /* @__PURE__ */ K("<h4>Recorded progress</h4><ul></ul>", 1), Qo = /* @__PURE__ */ K("<section><div class=\"guide-card-heading\"><h3> </h3><span class=\"quiet-label\"> </span></div> <!> <h4>Work still ahead</h4><ul></ul></section>"), $o = /* @__PURE__ */ K("<article class=\"card roadmap-note\" aria-label=\"Project roadmap note\"><p class=\"eyebrow\">A NOTE FOR THE ROAD AHEAD</p><h2>Keida Reborn roadmap</h2> <p> </p> <p class=\"field-help\">Work-list snapshot dated <time> </time>. This note ships with the site; it does not update itself from GitHub. Your private workspace note is separate.</p> <h3>Next priorities</h3><ol class=\"roadmap-priorities\"></ol> <div class=\"roadmap-milestones\"></div> <p><a rel=\"noreferrer\">Open the current roadmap and acceptance tracker <span aria-hidden=\"true\">↗</span></a></p></article>"), es = /* @__PURE__ */ K("<section class=\"card guide-intro\"><h2> </h2><p>The guide is available after your account access is checked.</p><button class=\"button secondary\"> </button></section>"), ts = /* @__PURE__ */ K("<div class=\"guide-card\"><p class=\"workspace-status\" role=\"status\"> </p> <!></div>");
+function ns(e, t) {
+	Ue(t, !1);
+	let n = Z(t, "mode", 8, "catalog"), r = Z(t, "state", 8), i = Z(t, "authorized", 8, !1), a = Z(t, "retry", 8), o = Z(t, "connections", 8), s = Z(t, "media", 8), c = Z(t, "queues", 8), l = Z(t, "identity", 8), u = Z(t, "owner", 8, !1);
 	Ti();
-	var u = qo(), d = I(u), f = L(d, !0), p = R(d, 2), m = (e) => {
-		var t = Nr(), i = ln(t), a = (e) => {
-			var t = Ho(), n = R(ln(t), 2);
+	var d = ts(), f = L(d), p = R(f, !0), m = z(f, 2), h = (e) => {
+		var t = Nr(), i = cn(t), a = (e) => {
+			var t = Xo(), n = z(cn(t), 2);
 			qr(n, 5, () => (W(r()), U(() => r().value.catalog)), (e) => e.id, (e, t) => {
-				var n = Vo(), r = I(n), i = I(r), a = L(i, !0), u = R(i), d = L(u, !0);
-				A(r);
-				var f = R(r, 2), p = L(f, !0), m = R(f, 3);
-				qr(m, 5, () => (H(t), U(() => H(t).capabilities)), Ur, (e, t) => {
-					var n = Po(), r = L(n, !0);
-					z(() => J(r, H(t))), q(e, n);
-				}), A(m);
-				var h = R(m, 3);
-				qr(h, 5, () => (H(t), U(() => H(t).requirements)), Ur, (e, t) => {
-					var n = Po(), r = L(n, !0);
-					z(() => J(r, H(t))), q(e, n);
-				}), A(h);
-				var g = R(h, 2), _ = (e) => {
-					var n = Nr(), r = ln(n), i = (e) => {
-						var t = Fo();
+				var n = Yo(), r = L(n), i = L(r), a = R(i, !0), d = z(i), f = R(d, !0);
+				j(r);
+				var p = z(r, 2), m = R(p, !0), h = z(p, 3);
+				qr(h, 5, () => (H(t), U(() => H(t).capabilities)), Ur, (e, t) => {
+					var n = Vo(), r = R(n, !0);
+					B(() => J(r, H(t))), q(e, n);
+				}), j(h);
+				var g = z(h, 3);
+				qr(g, 5, () => (H(t), U(() => H(t).requirements)), Ur, (e, t) => {
+					var n = Vo(), r = R(n, !0);
+					B(() => J(r, H(t))), q(e, n);
+				}), j(g);
+				var _ = z(g, 2), v = (e) => {
+					var n = Nr(), r = cn(n), i = (e) => {
+						var t = Ho();
 						G("click", t, function(...e) {
 							o()?.apply(this, e);
 						}), q(e, t);
 					}, a = (e) => {
-						var t = Nr(), n = ln(t), r = (e) => {
-							var t = Io();
+						var t = Nr(), n = cn(t), r = (e) => {
+							var t = Uo();
 							G("click", t, function(...e) {
 								s()?.apply(this, e);
 							}), q(e, t);
 						}, i = (e) => {
-							q(e, Lo());
+							q(e, Wo());
 						};
 						Y(n, (e) => {
-							l() ? e(r) : e(i, -1);
+							u() ? e(r) : e(i, -1);
 						}), q(e, t);
-					}, u = (e) => {
-						var t = Ro();
+					}, l = (e) => {
+						var t = Go();
 						G("click", t, function(...e) {
 							c()?.apply(this, e);
 						}), q(e, t);
 					}, d = (e) => {
-						q(e, zo());
+						q(e, Ko());
 					};
 					Y(r, (e) => {
-						H(t), U(() => H(t).id === "crafty") ? e(i) : (H(t), U(() => H(t).id === "jellyfin" || H(t).id === "seerr") ? e(a, 1) : l() ? e(u, 2) : e(d, -1));
+						H(t), U(() => H(t).id === "crafty") ? e(i) : (H(t), U(() => H(t).id === "jellyfin" || H(t).id === "seerr") ? e(a, 1) : u() ? e(l, 2) : e(d, -1));
 					}), q(e, n);
-				}, v = (e) => {
-					q(e, Bo());
+				}, y = (e) => {
+					var t = qo(), n = cn(t);
+					xe(), G("click", n, function(...e) {
+						l()?.apply(this, e);
+					}), q(e, t);
+				}, b = (e) => {
+					q(e, Jo());
 				};
-				Y(g, (e) => {
-					H(t), U(() => H(t).status === "available") ? e(_) : e(v, -1);
-				}), A(n), z(() => {
-					X(n, "data-integration-id", (H(t), U(() => H(t).id))), J(a, (H(t), U(() => H(t).name))), X(u, "data-status", (H(t), U(() => H(t).status))), J(d, (H(t), U(() => H(t).status === "available" ? "Available" : "Planned"))), J(p, (H(t), U(() => H(t).summary)));
+				Y(_, (e) => {
+					H(t), U(() => H(t).status === "available") ? e(v) : (H(t), U(() => H(t).id === "discord") ? e(y, 1) : e(b, -1));
+				}), j(n), B(() => {
+					X(n, "data-integration-id", (H(t), U(() => H(t).id))), J(a, (H(t), U(() => H(t).name))), X(d, "data-status", (H(t), U(() => H(t).status))), J(f, (H(t), U(() => H(t).status === "available" ? "Available" : "Planned"))), J(m, (H(t), U(() => H(t).summary)));
 				}), q(e, n);
-			}), A(n), q(e, t);
-		}, u = (e) => {
-			var t = Go(), n = R(I(t), 3), i = L(n, !0), a = R(n, 2), o = R(I(a)), s = L(o, !0);
-			Se(), A(a);
-			var c = R(a, 3);
+			}), j(n), q(e, t);
+		}, d = (e) => {
+			var t = $o(), n = z(L(t), 3), i = R(n, !0), a = z(n, 2), o = z(L(a)), s = R(o, !0);
+			xe(), j(a);
+			var c = z(a, 3);
 			qr(c, 5, () => (W(r()), U(() => r().value.roadmap.priorities)), Ur, (e, t) => {
-				var n = Po(), r = L(n, !0);
-				z(() => J(r, H(t))), q(e, n);
-			}), A(c);
-			var l = R(c, 2);
+				var n = Vo(), r = R(n, !0);
+				B(() => J(r, H(t))), q(e, n);
+			}), j(c);
+			var l = z(c, 2);
 			qr(l, 5, () => (W(r()), U(() => r().value.roadmap.milestones)), (e) => e.id, (e, t) => {
-				var n = Wo(), r = I(n), i = I(r), a = L(i), o = L(R(i), !0);
-				A(r);
-				var s = R(r, 2), c = (e) => {
-					var n = Uo(), r = R(ln(n));
+				var n = Qo(), r = L(n), i = L(r), a = R(i), o = R(z(i), !0);
+				j(r);
+				var s = z(r, 2), c = (e) => {
+					var n = Zo(), r = z(cn(n));
 					qr(r, 5, () => (H(t), U(() => H(t).delivered)), Ur, (e, t) => {
-						var n = Po(), r = L(n, !0);
-						z(() => J(r, H(t))), q(e, n);
-					}), A(r), q(e, n);
+						var n = Vo(), r = R(n, !0);
+						B(() => J(r, H(t))), q(e, n);
+					}), j(r), q(e, n);
 				};
 				Y(s, (e) => {
 					H(t), U(() => H(t).delivered.length) && e(c);
 				});
-				var l = R(s, 3);
+				var l = z(s, 3);
 				qr(l, 5, () => (H(t), U(() => H(t).remaining)), Ur, (e, t) => {
-					var n = Po(), r = L(n, !0);
-					z(() => J(r, H(t))), q(e, n);
-				}), A(l), A(n), z(() => {
+					var n = Vo(), r = R(n, !0);
+					B(() => J(r, H(t))), q(e, n);
+				}), j(l), j(n), B(() => {
 					X(n, "data-milestone-id", (H(t), U(() => H(t).id))), X(n, "aria-label", (H(t), U(() => `${H(t).id}: ${H(t).title}`))), J(a, `${H(t), U(() => H(t).id) ?? ""} · ${H(t), U(() => H(t).title) ?? ""}`), J(o, (H(t), U(() => H(t).status)));
 				}), q(e, n);
-			}), A(l);
-			var u = L(R(l, 2));
-			A(t), z(() => {
+			}), j(l);
+			var u = R(z(l, 2));
+			j(t), B(() => {
 				J(i, (W(r()), U(() => r().value.roadmap.intro))), X(o, "datetime", (W(r()), U(() => r().value.roadmap.as_of))), J(s, (W(r()), U(() => r().value.roadmap.as_of))), X(u, "href", (W(r()), U(() => r().value.roadmap.tracker_url)));
 			}), q(e, t);
 		};
 		Y(i, (e) => {
-			n() === "catalog" ? e(a) : e(u, -1);
+			n() === "catalog" ? e(a) : e(d, -1);
 		}), q(e, t);
-	}, h = (e) => {
-		var t = Ko(), i = I(t), o = L(i, !0), s = R(i, 2), c = L(s, !0);
-		A(t), z(() => {
+	}, g = (e) => {
+		var t = es(), i = L(t), o = R(i, !0), s = z(i, 2), c = R(s, !0);
+		j(t), B(() => {
 			J(o, n() === "roadmap" ? "Roadmap note" : "Integration catalog"), J(c, (W(r()), U(() => r().phase === "error" ? "Retry workspace guide" : "Check workspace guide")));
 		}), G("click", s, () => void a()()), q(e, t);
 	};
-	Y(p, (e) => {
-		W(i()), W(r()), U(() => i() && r().phase === "ready" && r().value) ? e(m) : (W(i()), W(r()), U(() => i() && r().phase !== "loading") && e(h, 1));
-	}), A(u), z(() => J(f, (W(r()), U(() => r().message)))), q(e, u), Ge();
+	Y(m, (e) => {
+		W(i()), W(r()), U(() => i() && r().phase === "ready" && r().value) ? e(h) : (W(i()), W(r()), U(() => i() && r().phase !== "loading") && e(g, 1));
+	}), j(d), B(() => J(p, (W(r()), U(() => r().message)))), q(e, d), We();
 }
 wr(["click"]);
 // src/Media.svelte
-var Yo = /* @__PURE__ */ K("<section class=\"card small-card media-owner-only\"><h2>Owner access required</h2><p>An owner can enroll and view media connections. Provider-account sharing has not been configured for members.</p></section>"), Xo = /* @__PURE__ */ K("<div class=\"media-playback\" data-media-playback=\"\"><h3>Recent server playback</h3><p> </p><p class=\"field-help\">Across the Jellyfin server, not limited to the selected library: sessions active within 120 seconds with a reported playing item. Counts do not show users, devices or watch titles.</p></div>"), Zo = /* @__PURE__ */ K("<small>Some details unavailable</small>"), Qo = /* @__PURE__ */ K("<tr data-media-item=\"\"><td> <!></td><td> </td><td> </td></tr>"), $o = /* @__PURE__ */ K("<div class=\"media-table-scroll\"><table class=\"media-table\"><caption> </caption><thead><tr><th scope=\"col\">Title</th><th scope=\"col\">Type</th><th scope=\"col\"> </th></tr></thead><tbody></tbody></table></div>"), es = /* @__PURE__ */ K("<p class=\"media-empty\"> </p>"), ts = /* @__PURE__ */ K("<p class=\"field-help\">No usable rows were reported for this sample. This does not establish an empty library or request list.</p>"), ns = /* @__PURE__ */ K("<p class=\"notice\">More rows exist beyond this bounded view.</p>"), rs = /* @__PURE__ */ K("<dl class=\"media-sample\"><dt>Collected</dt><dd> </dd><dt>Freshness</dt><dd> </dd><dt>Sample</dt><dd> </dd></dl> <!> <!> <p class=\"field-help\"> </p> <!> <div class=\"button-row media-pagination\"><button class=\"text-button media-previous\"> </button><span class=\"quiet-label\"> </span><button class=\"text-button media-next\"> </button></div>", 1), is = /* @__PURE__ */ K("<p class=\"field-help\">Choose one Jellyfin library by its ID. This limits the rows requested here; the underlying API key may still access all libraries and sessions.</p>"), as = /* @__PURE__ */ K("<label for=\"jellyfin-library\">Jellyfin library ID</label><input id=\"jellyfin-library\" name=\"library-id\" required=\"\" maxlength=\"36\"/><p class=\"field-help\">Use the library’s lowercase 32-digit ID or UUID, without an address or API key.</p>", 1), os = /* @__PURE__ */ K("<button class=\"text-button media-remove\"> </button>"), ss = /* @__PURE__ */ K("<section class=\"card media-provider\"><div class=\"guide-card-heading\"><h2> </h2><span class=\"quiet-label\">Owner-only observations</span></div> <p class=\"workspace-status\" role=\"status\" data-media-status=\"\"> </p> <div class=\"button-row media-actions\"><button class=\"button secondary media-check-state\"> </button><button class=\"button secondary media-check-observations\"> </button></div> <!> <details class=\"media-enrollment\"><summary> </summary><p>Use a key created deliberately for Reborn. It is encrypted on the server and will not be shown again.</p><p class=\"notice\"> </p> <!> <form autocomplete=\"off\"><label> </label><input name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\"/> <label>Dedicated API key</label><input name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <!> <label>Private CA certificate, if needed</label><textarea name=\"ca-pem\" rows=\"3\" maxlength=\"8192\"></textarea><p class=\"field-help\">Leave blank for publicly trusted HTTPS. Normal hostname and trust checks always apply.</p> <label class=\"media-ack\"><input name=\"acknowledge\" type=\"checkbox\" required=\"\"/>I understand this key may grant broad access, and I choose owner-only media observations.</label> <button class=\"button primary media-save\" type=\"submit\"> </button></form></details> <!></section>"), cs = /* @__PURE__ */ K("<div class=\"media-providers\"></div>"), ls = /* @__PURE__ */ K("<div class=\"media-view\"><section class=\"card media-intro\"><p class=\"eyebrow\">MEDIA, WITH DELIBERATE ACCESS</p><h2>Media observations</h2><p>Check a selected Jellyfin library, counts of recent playback and Seerr request status. These connections send observation requests only.</p><p class=\"field-help\">Media is owner-only. Hub member accounts are not linked to provider accounts, and this view does not share their playback or request identities.</p></section> <!></div>");
-function us(e, t) {
-	We(t, !1);
-	let n = Z(t, "owner", 8, !1), r = Z(t, "active", 8, !1), i = Z(t, "state", 8), a = Z(t, "check", 8), o = Z(t, "load", 8), s = Z(t, "save", 8), c = ["jellyfin", "seerr"], l = (e) => e === "jellyfin" ? "Jellyfin" : "Seerr", u = /* @__PURE__ */ P({}), d = (e) => e === null ? "Not collected" : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleString(), f = (e) => r() && n() && i()[e].phase === "ready" && i()[e].save === "idle" && !!i()[e].status;
+var rs = /* @__PURE__ */ K("<section class=\"card small-card media-owner-only\"><h2>Owner access required</h2><p>An owner can enroll and view media connections. Provider-account sharing has not been configured for members.</p></section>"), is = /* @__PURE__ */ K("<div class=\"media-playback\" data-media-playback=\"\"><h3>Recent server playback</h3><p> </p><p class=\"field-help\">Across the Jellyfin server, not limited to the selected library: sessions active within 120 seconds with a reported playing item. Counts do not show users, devices or watch titles.</p></div>"), as = /* @__PURE__ */ K("<small>Some details unavailable</small>"), os = /* @__PURE__ */ K("<tr data-media-item=\"\"><td> <!></td><td> </td><td> </td></tr>"), ss = /* @__PURE__ */ K("<div class=\"media-table-scroll\"><table class=\"media-table\"><caption> </caption><thead><tr><th scope=\"col\">Title</th><th scope=\"col\">Type</th><th scope=\"col\"> </th></tr></thead><tbody></tbody></table></div>"), cs = /* @__PURE__ */ K("<p class=\"media-empty\"> </p>"), ls = /* @__PURE__ */ K("<p class=\"field-help\">No usable rows were reported for this sample. This does not establish an empty library or request list.</p>"), us = /* @__PURE__ */ K("<p class=\"notice\">More rows exist beyond this bounded view.</p>"), ds = /* @__PURE__ */ K("<dl class=\"media-sample\"><dt>Collected</dt><dd> </dd><dt>Freshness</dt><dd> </dd><dt>Sample</dt><dd> </dd></dl> <!> <!> <p class=\"field-help\"> </p> <!> <div class=\"button-row media-pagination\"><button class=\"text-button media-previous\"> </button><span class=\"quiet-label\"> </span><button class=\"text-button media-next\"> </button></div>", 1), fs = /* @__PURE__ */ K("<p class=\"field-help\">Choose one Jellyfin library by its ID. This limits the rows requested here; the underlying API key may still access all libraries and sessions.</p>"), ps = /* @__PURE__ */ K("<label for=\"jellyfin-library\">Jellyfin library ID</label><input id=\"jellyfin-library\" name=\"library-id\" required=\"\" maxlength=\"36\"/><p class=\"field-help\">Use the library’s lowercase 32-digit ID or UUID, without an address or API key.</p>", 1), ms = /* @__PURE__ */ K("<button class=\"text-button media-remove\"> </button>"), hs = /* @__PURE__ */ K("<section class=\"card media-provider\"><div class=\"guide-card-heading\"><h2> </h2><span class=\"quiet-label\">Owner-only observations</span></div> <p class=\"workspace-status\" role=\"status\" data-media-status=\"\"> </p> <div class=\"button-row media-actions\"><button class=\"button secondary media-check-state\"> </button><button class=\"button secondary media-check-observations\"> </button></div> <!> <details class=\"media-enrollment\"><summary> </summary><p>Use a key created deliberately for Reborn. It is encrypted on the server and will not be shown again.</p><p class=\"notice\"> </p> <!> <form autocomplete=\"off\"><label> </label><input name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\"/> <label>Dedicated API key</label><input name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <!> <label>Private CA certificate, if needed</label><textarea name=\"ca-pem\" rows=\"3\" maxlength=\"8192\"></textarea><p class=\"field-help\">Leave blank for publicly trusted HTTPS. Normal hostname and trust checks always apply.</p> <label class=\"media-ack\"><input name=\"acknowledge\" type=\"checkbox\" required=\"\"/>I understand this key may grant broad access, and I choose owner-only media observations.</label> <button class=\"button primary media-save\" type=\"submit\"> </button></form></details> <!></section>"), gs = /* @__PURE__ */ K("<div class=\"media-providers\"></div>"), _s = /* @__PURE__ */ K("<div class=\"media-view\"><section class=\"card media-intro\"><p class=\"eyebrow\">MEDIA, WITH DELIBERATE ACCESS</p><h2>Media observations</h2><p>Check a selected Jellyfin library, counts of recent playback and Seerr request status. These connections send observation requests only.</p><p class=\"field-help\">Media is owner-only. Hub member accounts are not linked to provider accounts, and this view does not share their playback or request identities.</p></section> <!></div>");
+function vs(e, t) {
+	Ue(t, !1);
+	let n = Z(t, "owner", 8, !1), r = Z(t, "active", 8, !1), i = Z(t, "state", 8), a = Z(t, "check", 8), o = Z(t, "load", 8), s = Z(t, "save", 8), c = ["jellyfin", "seerr"], l = (e) => e === "jellyfin" ? "Jellyfin" : "Seerr", u = /* @__PURE__ */ F({}), d = (e) => e === null ? "Not collected" : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleString(), f = (e) => r() && n() && i()[e].phase === "ready" && i()[e].save === "idle" && !!i()[e].status;
 	function p() {
 		for (let e of c) H(u)[e]?.reset();
 	}
@@ -4753,104 +5030,104 @@ function us(e, t) {
 		};
 		H(u)[e]?.reset(), await s()(e, n.revision, a);
 	}
-	En(() => (W(r()), W(n())), () => {
+	Tn(() => (W(r()), W(n())), () => {
 		r() && n() || p();
-	}), Dn(), Ti();
-	var h = ls(), g = R(I(h), 2), _ = (e) => {
-		q(e, Yo());
+	}), En(), Ti();
+	var h = _s(), g = z(L(h), 2), _ = (e) => {
+		q(e, rs());
 	}, v = (e) => {
-		var t = cs();
+		var t = gs();
 		qr(t, 5, () => c, (e) => e, (e, t) => {
-			let s = /* @__PURE__ */ M(() => (W(i()), H(t), U(() => i()[H(t)]))), c = /* @__PURE__ */ M(() => (W(H(s)), U(() => H(s).observation))), f = /* @__PURE__ */ M(() => (W(r()), W(H(s)), U(() => !r() || H(s).save === "saving"))), p = /* @__PURE__ */ M(() => (W(r()), W(n()), W(H(s)), U(() => r() && n() && H(s).phase === "ready" && H(s).save === "idle" && !!H(s).status)));
-			var h = ss(), g = I(h), _ = L(I(g), !0);
-			Se(), A(g);
-			var v = R(g, 2), y = L(v, !0), b = R(v, 2), x = I(b), S = L(x), C = R(x), w = L(C);
-			A(b);
-			var ee = R(b, 2), te = (e) => {
-				var n = rs(), r = ln(n), i = R(I(r)), a = L(i, !0), s = R(i, 2), u = L(s, !0), p = L(R(s, 2), !0);
-				A(r);
-				var m = R(r, 2), h = (e) => {
-					var t = Xo(), n = L(R(I(t)), !0);
-					Se(), A(t), z(() => J(n, (W(H(c)), U(() => H(c).playback && H(c).playback.playing !== null && H(c).playback.paused !== null ? `${H(c).playback.playing} playing · ${H(c).playback.paused} paused` : "Playback counts unavailable")))), q(e, t);
+			let s = /* @__PURE__ */ N(() => (W(i()), H(t), U(() => i()[H(t)]))), c = /* @__PURE__ */ N(() => (W(H(s)), U(() => H(s).observation))), f = /* @__PURE__ */ N(() => (W(r()), W(H(s)), U(() => !r() || H(s).save === "saving"))), p = /* @__PURE__ */ N(() => (W(r()), W(n()), W(H(s)), U(() => r() && n() && H(s).phase === "ready" && H(s).save === "idle" && !!H(s).status)));
+			var h = hs(), g = L(h), _ = R(L(g), !0);
+			xe(), j(g);
+			var v = z(g, 2), y = R(v, !0), b = z(v, 2), x = L(b), S = R(x), C = z(x), w = R(C);
+			j(b);
+			var T = z(b, 2), ee = (e) => {
+				var n = ds(), r = cn(n), i = z(L(r)), a = R(i, !0), s = z(i, 2), u = R(s, !0), p = R(z(s, 2), !0);
+				j(r);
+				var m = z(r, 2), h = (e) => {
+					var t = is(), n = R(z(L(t)), !0);
+					xe(), j(t), B(() => J(n, (W(H(c)), U(() => H(c).playback && H(c).playback.playing !== null && H(c).playback.paused !== null ? `${H(c).playback.playing} playing · ${H(c).playback.paused} paused` : "Playback counts unavailable")))), q(e, t);
 				};
 				Y(m, (e) => {
 					H(t) === "jellyfin" && e(h);
 				});
-				var g = R(m, 2), _ = (e) => {
-					var n = $o(), r = I(n), i = I(r), a = L(i, !0), o = R(i), s = I(o), l = L(R(I(s), 2), !0);
-					A(s), A(o);
-					var u = R(o);
+				var g = z(m, 2), _ = (e) => {
+					var n = ss(), r = L(n), i = L(r), a = R(i, !0), o = z(i), s = L(o), l = R(z(L(s), 2), !0);
+					j(s), j(o);
+					var u = z(o);
 					qr(u, 5, () => (W(H(c)), U(() => H(c).items)), (e) => e.id, (e, n) => {
-						var r = Qo(), i = I(r), a = I(i, !0), o = R(a), s = (e) => {
-							q(e, Zo());
+						var r = os(), i = L(r), a = L(i, !0), o = z(a), s = (e) => {
+							q(e, as());
 						};
 						Y(o, (e) => {
 							H(n), U(() => H(n).detail_error) && e(s);
-						}), A(i);
-						var c = R(i), l = L(c, !0), u = L(R(c), !0);
-						A(r), z((e) => {
+						}), j(i);
+						var c = z(i), l = R(c, !0), u = R(z(c), !0);
+						j(r), B((e) => {
 							J(a, (H(n), U(() => H(n).title ?? "Title unavailable"))), J(l, (H(n), U(() => H(n).kind === "movie" ? "Movie" : "Series"))), J(u, e);
 						}, [() => (H(t), H(n), U(() => H(t) === "jellyfin" ? H(n).year ?? "Not reported" : H(n).request_status === "unknown" ? "Unknown" : H(n).request_status ? H(n).request_status[0].toUpperCase() + H(n).request_status.slice(1) : "Not reported"))]), q(e, r);
-					}), A(u), A(r), A(n), z(() => {
+					}), j(u), j(r), j(n), B(() => {
 						J(a, H(t) === "jellyfin" ? "Selected library rows" : "Recent request rows"), J(l, H(t) === "jellyfin" ? "Year" : "Request status"), X(u, "data-media-rows", H(t));
 					}), q(e, n);
 				}, v = (e) => {
-					var n = es(), r = L(n, !0);
-					z(() => J(r, H(t) === "jellyfin" ? "No movie or series rows were reported in this library." : "No requests were reported.")), q(e, n);
+					var n = cs(), r = R(n, !0);
+					B(() => J(r, H(t) === "jellyfin" ? "No movie or series rows were reported in this library." : "No requests were reported.")), q(e, n);
 				}, y = (e) => {
-					q(e, ts());
+					q(e, ls());
 				};
 				Y(g, (e) => {
 					W(H(c)), U(() => H(c).items.length) ? e(_) : (W(H(c)), U(() => H(c).complete && H(c).error === null && H(c).total === 0) ? e(v, 1) : (W(H(c)), U(() => H(c).error !== "checking") && e(y, 2)));
 				});
-				var b = R(g, 2), x = L(b), S = R(b, 2), C = (e) => {
-					q(e, ns());
+				var b = z(g, 2), x = R(b), S = z(b, 2), C = (e) => {
+					q(e, us());
 				};
 				Y(S, (e) => {
 					W(H(c)), U(() => H(c).truncated) && e(C);
 				});
-				var w = R(S, 2), ee = I(w), te = L(ee), ne = R(ee), re = L(ne), ie = R(ne), T = L(ie);
-				A(w), z((e, t, n) => {
-					J(a, e), J(u, (W(H(c)), U(() => H(c).freshness === "fresh" ? "Recent collection" : H(c).freshness === "stale" ? "Stale collection" : "Collection age unknown"))), J(p, (W(H(c)), U(() => H(c).complete ? "Complete for these bounded queries" : "Incomplete or still checking"))), J(x, `${W(H(c)), U(() => H(c).total === null ? "Provider total unavailable." : `${H(c).total} rows reported by the provider.`) ?? ""} Up to 12 rows per page and the first 60 rows only. Pages can change as the provider changes.`), ee.disabled = (W(H(f)), W(H(c)), U(() => H(f) || H(c).offset === 0)), J(te, `Previous ${t ?? ""} page`), J(re, `Page ${W(H(c)), U(() => H(c).offset / 12 + 1) ?? ""}`), ie.disabled = (W(H(f)), W(H(c)), U(() => H(f) || H(c).next_offset === null)), J(T, `Next ${n ?? ""} page`);
+				var w = z(S, 2), T = L(w), ee = R(T), te = z(T), ne = R(te), re = z(te), ie = R(re);
+				j(w), B((e, t, n) => {
+					J(a, e), J(u, (W(H(c)), U(() => H(c).freshness === "fresh" ? "Recent collection" : H(c).freshness === "stale" ? "Stale collection" : "Collection age unknown"))), J(p, (W(H(c)), U(() => H(c).complete ? "Complete for these bounded queries" : "Incomplete or still checking"))), J(x, `${W(H(c)), U(() => H(c).total === null ? "Provider total unavailable." : `${H(c).total} rows reported by the provider.`) ?? ""} Up to 12 rows per page and the first 60 rows only. Pages can change as the provider changes.`), T.disabled = (W(H(f)), W(H(c)), U(() => H(f) || H(c).offset === 0)), J(ee, `Previous ${t ?? ""} page`), J(ne, `Page ${W(H(c)), U(() => H(c).offset / 12 + 1) ?? ""}`), re.disabled = (W(H(f)), W(H(c)), U(() => H(f) || H(c).next_offset === null)), J(ie, `Next ${n ?? ""} page`);
 				}, [
 					() => (W(H(c)), U(() => d(H(c).checked_at))),
 					() => (H(t), U(() => l(H(t)))),
 					() => (H(t), U(() => l(H(t))))
-				]), G("click", ee, () => void o()(H(t), H(c).offset - 12)), G("click", ie, () => H(c).next_offset !== null && void o()(H(t), H(c).next_offset)), q(e, n);
-			}, ne = (e) => {
-				var n = es(), r = L(n);
-				z((e) => J(r, `No ${e ?? ""} connection enrolled.`), [() => (H(t), U(() => l(H(t))))]), q(e, n);
+				]), G("click", T, () => void o()(H(t), H(c).offset - 12)), G("click", re, () => H(c).next_offset !== null && void o()(H(t), H(c).next_offset)), q(e, n);
+			}, te = (e) => {
+				var n = cs(), r = R(n);
+				B((e) => J(r, `No ${e ?? ""} connection enrolled.`), [() => (H(t), U(() => l(H(t))))]), q(e, n);
 			};
-			Y(ee, (e) => {
-				W(H(c)), U(() => H(c)?.configured) ? e(te) : (W(H(s)), U(() => H(s).status && !H(s).status.configured) && e(ne, 1));
+			Y(T, (e) => {
+				W(H(c)), U(() => H(c)?.configured) ? e(ee) : (W(H(s)), U(() => H(s).status && !H(s).status.configured) && e(te, 1));
 			});
-			var re = R(ee, 2), ie = I(re), T = L(ie), ae = R(ie, 2), E = L(ae), oe = R(ae, 2), se = (e) => {
-				q(e, is());
+			var ne = z(T, 2), re = L(ne), ie = R(re), ae = z(re, 2), oe = R(ae), se = z(ae, 2), E = (e) => {
+				q(e, fs());
 			};
-			Y(oe, (e) => {
-				H(t) === "jellyfin" && e(se);
+			Y(se, (e) => {
+				H(t) === "jellyfin" && e(E);
 			});
-			var ce = R(oe, 2), le = I(ce), D = L(le), ue = R(le), de = R(ue, 2), fe = R(de), pe = R(fe, 2), me = (e) => {
-				var t = as(), n = R(ln(t));
-				X(n, "pattern", "[a-f0-9]{32}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"), Se(), z(() => n.disabled = !H(p)), q(e, t);
+			var ce = z(se, 2), D = L(ce), le = R(D), ue = z(D), de = z(ue, 2), fe = z(de), O = z(fe, 2), pe = (e) => {
+				var t = ps(), n = z(cn(t));
+				X(n, "pattern", "[a-f0-9]{32}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"), xe(), B(() => n.disabled = !H(p)), q(e, t);
 			};
-			Y(pe, (e) => {
-				H(t) === "jellyfin" && e(me);
+			Y(O, (e) => {
+				H(t) === "jellyfin" && e(pe);
 			});
-			var he = R(pe, 2), ge = R(he), _e = R(ge, 3), ve = I(_e);
-			Se(), A(_e);
-			var O = R(_e, 2), ye = L(O);
-			A(ce), wi(ce, (e, t) => Ut(u, H(u)[t] = e), (e) => H(u)?.[e], () => [H(t)]), A(re);
-			var k = R(re, 2), be = (e) => {
-				var n = os(), r = L(n);
-				z((e) => {
+			var me = z(O, 2), he = z(me), ge = z(he, 3), _e = L(ge);
+			xe(), j(ge);
+			var k = z(ge, 2), ve = R(k);
+			j(ce), wi(ce, (e, t) => Ht(u, H(u)[t] = e), (e) => H(u)?.[e], () => [H(t)]), j(ne);
+			var A = z(ne, 2), ye = (e) => {
+				var n = ms(), r = R(n);
+				B((e) => {
 					n.disabled = !H(p), J(r, `Remove ${e ?? ""} connection`);
 				}, [() => (H(t), U(() => l(H(t))))]), G("click", n, () => void m(H(t), !0)), q(e, n);
 			};
-			Y(k, (e) => {
-				W(H(s)), U(() => H(s).status?.configured) && e(be);
-			}), A(h), z((e, n, r, i, a, o, l, u, d, m) => {
-				X(h, "data-media-provider", H(t)), X(h, "data-media-revision", (W(H(s)), U(() => H(s).status?.revision ?? ""))), X(h, "data-media-configured", e), X(h, "data-media-error", (W(H(c)), U(() => H(c)?.error ?? ""))), X(h, "data-media-complete", n), X(h, "data-media-offset", (W(H(c)), U(() => H(c)?.offset ?? 0))), X(h, "data-media-save", (W(H(s)), U(() => H(s).save))), X(h, "aria-label", r), J(_, i), J(y, (W(H(s)), U(() => H(s).message || "Check the connection state to begin."))), x.disabled = H(f), J(S, `Check ${a ?? ""} connection state`), C.disabled = (W(H(f)), W(H(s)), U(() => H(f) || H(s).phase === "loading" || !H(s).status?.configured)), J(w, `Check ${o ?? ""} observations`), J(T, `Enroll dedicated ${l ?? ""} access`), J(E, `A ${u ?? ""} API key can grant administrator access. Reborn sends observation requests only; this does not restrict what the key itself can do.`), X(le, "for", `${H(t)}-endpoint`), J(D, `${d ?? ""} HTTPS address`), X(ue, "id", `${H(t)}-endpoint`), X(ue, "placeholder", `https://${H(t)}.example/`), ue.disabled = !H(p), X(de, "for", `${H(t)}-token`), X(fe, "id", `${H(t)}-token`), fe.disabled = !H(p), X(he, "for", `${H(t)}-ca`), X(ge, "id", `${H(t)}-ca`), ge.disabled = !H(p), X(_e, "for", `${H(t)}-ack`), X(ve, "id", `${H(t)}-ack`), ve.disabled = !H(p), O.disabled = !H(p), J(ye, `Save ${m ?? ""} connection`);
+			Y(A, (e) => {
+				W(H(s)), U(() => H(s).status?.configured) && e(ye);
+			}), j(h), B((e, n, r, i, a, o, l, u, d, m) => {
+				X(h, "data-media-provider", H(t)), X(h, "data-media-revision", (W(H(s)), U(() => H(s).status?.revision ?? ""))), X(h, "data-media-configured", e), X(h, "data-media-error", (W(H(c)), U(() => H(c)?.error ?? ""))), X(h, "data-media-complete", n), X(h, "data-media-offset", (W(H(c)), U(() => H(c)?.offset ?? 0))), X(h, "data-media-save", (W(H(s)), U(() => H(s).save))), X(h, "aria-label", r), J(_, i), J(y, (W(H(s)), U(() => H(s).message || "Check the connection state to begin."))), x.disabled = H(f), J(S, `Check ${a ?? ""} connection state`), C.disabled = (W(H(f)), W(H(s)), U(() => H(f) || H(s).phase === "loading" || !H(s).status?.configured)), J(w, `Check ${o ?? ""} observations`), J(ie, `Enroll dedicated ${l ?? ""} access`), J(oe, `A ${u ?? ""} API key can grant administrator access. Reborn sends observation requests only; this does not restrict what the key itself can do.`), X(D, "for", `${H(t)}-endpoint`), J(le, `${d ?? ""} HTTPS address`), X(ue, "id", `${H(t)}-endpoint`), X(ue, "placeholder", `https://${H(t)}.example/`), ue.disabled = !H(p), X(de, "for", `${H(t)}-token`), X(fe, "id", `${H(t)}-token`), fe.disabled = !H(p), X(me, "for", `${H(t)}-ca`), X(he, "id", `${H(t)}-ca`), he.disabled = !H(p), X(ge, "for", `${H(t)}-ack`), X(_e, "id", `${H(t)}-ack`), _e.disabled = !H(p), k.disabled = !H(p), J(ve, `Save ${m ?? ""} connection`);
 			}, [
 				() => (W(H(s)), U(() => String(H(s).status?.configured ?? !1))),
 				() => (W(H(c)), U(() => String(H(c)?.complete ?? !1))),
@@ -4865,22 +5142,22 @@ function us(e, t) {
 			]), G("click", x, () => void a()(H(t))), G("click", C, () => void o()(H(t), H(c)?.offset ?? 0)), Cr("submit", ce, (e) => {
 				e.preventDefault(), m(H(t));
 			}), q(e, h);
-		}), A(t), q(e, t);
+		}), j(t), q(e, t);
 	};
 	Y(g, (e) => {
 		n() ? e(v, -1) : e(_);
-	}), A(h), q(e, h), Ge();
+	}), j(h), q(e, h), We();
 }
 wr(["click"]);
 // src/Queues.svelte
-var ds = /* @__PURE__ */ K("<section class=\"card small-card queue-owner-only\"><h2>Owner access required</h2><p>An owner can enroll and view queue connections. Provider-account sharing has not been configured for members.</p></section>"), fs = /* @__PURE__ */ K("<p class=\"field-help\">Transfers include downloading, uploading, stopped, checking and other reported states. Progress estimates current wanted/selected bytes; it does not measure checking, import or playback completion.</p>"), ps = /* @__PURE__ */ K("<p class=\"field-help\">The provider queue includes pending and delayed releases. Its count does not establish the number of active downloads or downloader health. Progress estimates downloaded bytes and does not establish import or playback completion.</p>"), ms = /* @__PURE__ */ K("<th scope=\"col\">Import state</th>"), hs = /* @__PURE__ */ K("<th scope=\"col\">Download rate</th><th scope=\"col\">Upload rate</th>", 1), gs = /* @__PURE__ */ K("<td> </td>"), _s = /* @__PURE__ */ K("<td> </td><td> </td>", 1), vs = /* @__PURE__ */ K("<tr data-queue-item=\"\"><td> <small> </small></td><td> </td><!><td> </td><td> </td><!></tr>"), ys = /* @__PURE__ */ K("<div class=\"queue-table-scroll\" tabindex=\"0\" role=\"region\"><table class=\"queue-table\"><caption> </caption><thead><tr><th scope=\"col\">Title</th><th scope=\"col\">State</th><!><th scope=\"col\">Progress estimate</th><th scope=\"col\">Size</th><!></tr></thead><tbody></tbody></table></div>"), bs = /* @__PURE__ */ K("<p class=\"queue-empty\"> </p>"), xs = /* @__PURE__ */ K("<p class=\"field-help\">No usable rows were reported for this sample. This does not establish an empty provider queue.</p>"), Ss = /* @__PURE__ */ K("<p class=\"notice\">More items exist beyond this bounded view.</p>"), Cs = /* @__PURE__ */ K("<button class=\"button secondary queue-first-page\"> </button>"), ws = /* @__PURE__ */ K("<dl class=\"queue-sample\"><dt>Collected</dt><dd> </dd><dt>Freshness</dt><dd> </dd><dt>Sample</dt><dd> </dd></dl> <!> <!> <p class=\"field-help\"> </p> <!> <!> <div class=\"button-row queue-pagination\"><button class=\"text-button queue-previous\"> </button><span class=\"quiet-label\"> </span><button class=\"text-button queue-next\"> </button></div>", 1), Ts = /* @__PURE__ */ K("<button class=\"text-button queue-remove\"> </button>"), Es = /* @__PURE__ */ K("<section class=\"card queue-provider\"><div class=\"guide-card-heading\"><h2> </h2><span class=\"quiet-label\">Owner-only observations</span></div> <p class=\"workspace-status\" role=\"status\" data-queue-status=\"\"> </p> <div class=\"button-row queue-actions\"><button class=\"button secondary queue-check-state\"> </button><button class=\"button secondary queue-check-observations\"> </button></div> <!> <details class=\"queue-enrollment\"><summary> </summary><p>Use access deliberately enrolled for Reborn. The key is encrypted on the server and will not be shown again.</p><p class=\"notice\"> </p><p class=\"field-help\"> </p> <form autocomplete=\"off\"><label> </label><input name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\"/> <label>API key</label><input name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <label>Private CA certificate, if needed</label><textarea name=\"ca-pem\" rows=\"3\" maxlength=\"8192\"></textarea><p class=\"field-help\">Leave blank for publicly trusted HTTPS. Normal hostname and trust checks always apply.</p> <label class=\"queue-ack\"><input name=\"acknowledge\" type=\"checkbox\" required=\"\"/>I understand this key may grant broad management access, and I choose owner-only queue observations.</label> <button class=\"button primary queue-save\" type=\"submit\"> </button></form></details> <!></section>"), Ds = /* @__PURE__ */ K("<div class=\"queue-providers\"></div>"), Os = /* @__PURE__ */ K("<div class=\"queues-view\"><section class=\"card queue-intro\"><p class=\"eyebrow\">QUEUE OBSERVATIONS</p><h2>See what’s in motion</h2><p>Check Sonarr and Radarr queue items, including pending releases, and qBittorrent transfers. Each provider is checked only when requested.</p><p class=\"field-help\">This view is owner-only. Member accounts have no provider identity mapping or accepted sharing policy.</p></section> <!></div>");
-function ks(e, t) {
-	We(t, !1);
+var ys = /* @__PURE__ */ K("<section class=\"card small-card queue-owner-only\"><h2>Owner access required</h2><p>An owner can enroll and view queue connections. Provider-account sharing has not been configured for members.</p></section>"), bs = /* @__PURE__ */ K("<p class=\"field-help\">Transfers include downloading, uploading, stopped, checking and other reported states. Progress estimates current wanted/selected bytes; it does not measure checking, import or playback completion.</p>"), xs = /* @__PURE__ */ K("<p class=\"field-help\">The provider queue includes pending and delayed releases. Its count does not establish the number of active downloads or downloader health. Progress estimates downloaded bytes and does not establish import or playback completion.</p>"), Ss = /* @__PURE__ */ K("<th scope=\"col\">Import state</th>"), Cs = /* @__PURE__ */ K("<th scope=\"col\">Download rate</th><th scope=\"col\">Upload rate</th>", 1), ws = /* @__PURE__ */ K("<td> </td>"), Ts = /* @__PURE__ */ K("<td> </td><td> </td>", 1), Es = /* @__PURE__ */ K("<tr data-queue-item=\"\"><td> <small> </small></td><td> </td><!><td> </td><td> </td><!></tr>"), Ds = /* @__PURE__ */ K("<div class=\"queue-table-scroll\" tabindex=\"0\" role=\"region\"><table class=\"queue-table\"><caption> </caption><thead><tr><th scope=\"col\">Title</th><th scope=\"col\">State</th><!><th scope=\"col\">Progress estimate</th><th scope=\"col\">Size</th><!></tr></thead><tbody></tbody></table></div>"), Os = /* @__PURE__ */ K("<p class=\"queue-empty\"> </p>"), ks = /* @__PURE__ */ K("<p class=\"field-help\">No usable rows were reported for this sample. This does not establish an empty provider queue.</p>"), As = /* @__PURE__ */ K("<p class=\"notice\">More items exist beyond this bounded view.</p>"), js = /* @__PURE__ */ K("<button class=\"button secondary queue-first-page\"> </button>"), Ms = /* @__PURE__ */ K("<dl class=\"queue-sample\"><dt>Collected</dt><dd> </dd><dt>Freshness</dt><dd> </dd><dt>Sample</dt><dd> </dd></dl> <!> <!> <p class=\"field-help\"> </p> <!> <!> <div class=\"button-row queue-pagination\"><button class=\"text-button queue-previous\"> </button><span class=\"quiet-label\"> </span><button class=\"text-button queue-next\"> </button></div>", 1), Ns = /* @__PURE__ */ K("<button class=\"text-button queue-remove\"> </button>"), Ps = /* @__PURE__ */ K("<section class=\"card queue-provider\"><div class=\"guide-card-heading\"><h2> </h2><span class=\"quiet-label\">Owner-only observations</span></div> <p class=\"workspace-status\" role=\"status\" data-queue-status=\"\"> </p> <div class=\"button-row queue-actions\"><button class=\"button secondary queue-check-state\"> </button><button class=\"button secondary queue-check-observations\"> </button></div> <!> <details class=\"queue-enrollment\"><summary> </summary><p>Use access deliberately enrolled for Reborn. The key is encrypted on the server and will not be shown again.</p><p class=\"notice\"> </p><p class=\"field-help\"> </p> <form autocomplete=\"off\"><label> </label><input name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\"/> <label>API key</label><input name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <label>Private CA certificate, if needed</label><textarea name=\"ca-pem\" rows=\"3\" maxlength=\"8192\"></textarea><p class=\"field-help\">Leave blank for publicly trusted HTTPS. Normal hostname and trust checks always apply.</p> <label class=\"queue-ack\"><input name=\"acknowledge\" type=\"checkbox\" required=\"\"/>I understand this key may grant broad management access, and I choose owner-only queue observations.</label> <button class=\"button primary queue-save\" type=\"submit\"> </button></form></details> <!></section>"), Fs = /* @__PURE__ */ K("<div class=\"queue-providers\"></div>"), Is = /* @__PURE__ */ K("<div class=\"queues-view\"><section class=\"card queue-intro\"><p class=\"eyebrow\">QUEUE OBSERVATIONS</p><h2>See what’s in motion</h2><p>Check Sonarr and Radarr queue items, including pending releases, and qBittorrent transfers. Each provider is checked only when requested.</p><p class=\"field-help\">This view is owner-only. Member accounts have no provider identity mapping or accepted sharing policy.</p></section> <!></div>");
+function Ls(e, t) {
+	Ue(t, !1);
 	let n = Z(t, "owner", 8, !1), r = Z(t, "active", 8, !1), i = Z(t, "state", 8), a = Z(t, "check", 8), o = Z(t, "load", 8), s = Z(t, "save", 8), c = [
 		"sonarr",
 		"radarr",
 		"qbittorrent"
-	], l = (e) => e === "sonarr" ? "Sonarr" : e === "radarr" ? "Radarr" : "qBittorrent", u = (e) => e === "sonarr" ? "Sonarr 4 · API v3" : e === "radarr" ? "Radarr 6 · API v3" : "qBittorrent 5.2–5.3 · Bearer API key", d = (e) => e === null ? "Not collected" : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleString(), f = (e, t) => e === null ? "Not reported" : `${new Intl.NumberFormat().format(e)} ${t}`, p = (e) => e === null ? "Not reported" : `${(e / 100).toFixed(2)}%`, m = /* @__PURE__ */ P({}), h = {}, g;
+	], l = (e) => e === "sonarr" ? "Sonarr" : e === "radarr" ? "Radarr" : "qBittorrent", u = (e) => e === "sonarr" ? "Sonarr 4 · API v3" : e === "radarr" ? "Radarr 6 · API v3" : "qBittorrent 5.2–5.3 · Bearer API key", d = (e) => e === null ? "Not collected" : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleString(), f = (e, t) => e === null ? "Not reported" : `${new Intl.NumberFormat().format(e)} ${t}`, p = (e) => e === null ? "Not reported" : `${(e / 100).toFixed(2)}%`, m = /* @__PURE__ */ F({}), h = {}, g;
 	function _() {
 		g = void 0;
 	}
@@ -4940,122 +5217,122 @@ function ks(e, t) {
 		};
 		H(m)[e]?.reset(), await s()(e, o.revision, l);
 	}
-	En(() => (W(i()), W(r()), W(n())), () => {
+	Tn(() => (W(i()), W(r()), W(n())), () => {
 		b(i(), r(), n());
-	}), Dn(), Ti();
-	var C = Os(), w = R(I(C), 2), ee = (e) => {
-		q(e, ds());
-	}, te = (e) => {
-		var t = Ds();
+	}), En(), Ti();
+	var C = Is(), w = z(L(C), 2), T = (e) => {
+		q(e, ys());
+	}, ee = (e) => {
+		var t = Fs();
 		qr(t, 5, () => c, (e) => e, (e, t) => {
-			let a = /* @__PURE__ */ M(() => (W(i()), H(t), U(() => i()[H(t)]))), s = /* @__PURE__ */ M(() => (W(H(a)), U(() => H(a).observation))), c = /* @__PURE__ */ M(() => (W(r()), W(H(a)), U(() => !r() || H(a).save === "saving"))), h = /* @__PURE__ */ M(() => (W(H(a)), W(H(s)), U(() => H(a).phase === "loading" || H(s)?.error === "checking"))), g = /* @__PURE__ */ M(() => (W(r()), W(n()), W(H(a)), U(() => r() && n() && H(a).phase === "ready" && H(a).save === "idle" && !!H(a).status)));
-			var _ = Es(), y = I(_), b = L(I(y));
-			Se(), A(y);
-			var C = R(y, 2), w = L(C, !0), ee = R(C, 2), te = I(ee), ne = L(te), re = R(te), ie = L(re);
-			A(ee);
-			var T = R(ee, 2), ae = (e) => {
-				var n = ws(), r = ln(n), i = R(I(r)), u = L(i, !0), m = R(i, 2), g = L(m, !0), _ = L(R(m, 2), !0);
-				A(r);
-				var v = R(r, 2), y = (e) => {
-					q(e, fs());
+			let a = /* @__PURE__ */ N(() => (W(i()), H(t), U(() => i()[H(t)]))), s = /* @__PURE__ */ N(() => (W(H(a)), U(() => H(a).observation))), c = /* @__PURE__ */ N(() => (W(r()), W(H(a)), U(() => !r() || H(a).save === "saving"))), h = /* @__PURE__ */ N(() => (W(H(a)), W(H(s)), U(() => H(a).phase === "loading" || H(s)?.error === "checking"))), g = /* @__PURE__ */ N(() => (W(r()), W(n()), W(H(a)), U(() => r() && n() && H(a).phase === "ready" && H(a).save === "idle" && !!H(a).status)));
+			var _ = Ps(), y = L(_), b = R(L(y));
+			xe(), j(y);
+			var C = z(y, 2), w = R(C, !0), T = z(C, 2), ee = L(T), te = R(ee), ne = z(ee), re = R(ne);
+			j(T);
+			var ie = z(T, 2), ae = (e) => {
+				var n = Ms(), r = cn(n), i = z(L(r)), u = R(i, !0), m = z(i, 2), g = R(m, !0), _ = R(z(m, 2), !0);
+				j(r);
+				var v = z(r, 2), y = (e) => {
+					q(e, bs());
 				}, b = (e) => {
-					q(e, ps());
+					q(e, xs());
 				};
 				Y(v, (e) => {
 					H(t) === "qbittorrent" ? e(y) : e(b, -1);
 				});
-				var x = R(v, 2), S = (e) => {
-					var n = ys(), r = I(n), i = I(r), a = L(i, !0), o = R(i), c = I(o), u = R(I(c), 2), d = (e) => {
-						q(e, ms());
+				var x = z(v, 2), S = (e) => {
+					var n = Ds(), r = L(n), i = L(r), a = R(i, !0), o = z(i), c = L(o), u = z(L(c), 2), d = (e) => {
+						q(e, Ss());
 					};
 					Y(u, (e) => {
 						H(t) !== "qbittorrent" && e(d);
 					});
-					var m = R(u, 3), h = (e) => {
-						var t = hs();
-						Se(), q(e, t);
+					var m = z(u, 3), h = (e) => {
+						var t = Cs();
+						xe(), q(e, t);
 					};
 					Y(m, (e) => {
 						H(t) === "qbittorrent" && e(h);
-					}), A(c), A(o);
-					var g = R(o);
+					}), j(c), j(o);
+					var g = z(o);
 					qr(g, 5, () => (W(H(s)), U(() => H(s).items)), (e) => e.id, (e, n) => {
-						var r = vs(), i = I(r), a = I(i, !0), o = L(R(a), !0);
-						A(i);
-						var s = R(i), c = L(s, !0), l = R(s), u = (e) => {
-							var t = gs(), r = L(t, !0);
-							z(() => J(r, (H(n), U(() => H(n).import_state === null ? "Not reported" : H(n).import_state === "unknown" ? "Unknown" : H(n).import_state)))), q(e, t);
+						var r = Es(), i = L(r), a = L(i, !0), o = R(z(a), !0);
+						j(i);
+						var s = z(i), c = R(s, !0), l = z(s), u = (e) => {
+							var t = ws(), r = R(t, !0);
+							B(() => J(r, (H(n), U(() => H(n).import_state === null ? "Not reported" : H(n).import_state === "unknown" ? "Unknown" : H(n).import_state)))), q(e, t);
 						};
 						Y(l, (e) => {
 							H(t) !== "qbittorrent" && e(u);
 						});
-						var d = R(l), m = L(d, !0), h = R(d), g = L(h, !0), _ = R(h), v = (e) => {
-							var t = _s(), r = ln(t), i = L(r, !0), a = L(R(r), !0);
-							z((e, t) => {
+						var d = z(l), m = R(d, !0), h = z(d), g = R(h, !0), _ = z(h), v = (e) => {
+							var t = Ts(), r = cn(t), i = R(r, !0), a = R(z(r), !0);
+							B((e, t) => {
 								J(i, e), J(a, t);
 							}, [() => (H(n), U(() => f(H(n).download_bytes_per_second, "B/s"))), () => (H(n), U(() => f(H(n).upload_bytes_per_second, "B/s")))]), q(e, t);
 						};
 						Y(_, (e) => {
 							H(t) === "qbittorrent" && e(v);
-						}), A(r), z((e, t) => {
+						}), j(r), B((e, t) => {
 							J(a, (H(n), U(() => H(n).title ?? "Title unavailable"))), J(o, (H(n), U(() => H(n).warning === !0 ? "Provider warning reported" : H(n).warning === null ? "Warning state not reported" : ""))), J(c, (H(n), U(() => H(n).status === "unknown" ? "Unknown" : H(n).status))), J(m, e), J(g, t);
 						}, [() => (H(n), U(() => p(H(n).progress_basis_points))), () => (H(n), U(() => f(H(n).size_bytes, "B")))]), q(e, r);
-					}), A(g), A(r), A(n), z((e) => {
+					}), j(g), j(r), j(n), B((e) => {
 						X(n, "aria-label", e), J(a, H(t) === "qbittorrent" ? "All-state Transfers" : "Queue and pending items"), X(g, "data-queue-rows", H(t));
 					}, [() => (H(t), U(() => `${l(H(t))} ${H(t) === "qbittorrent" ? "transfers" : "queue items"}`))]), q(e, n);
 				}, C = (e) => {
-					var n = bs(), r = L(n, !0);
-					z(() => J(r, H(t) === "qbittorrent" ? "No transfers were reported on this page." : "No queue or pending items were reported on this page.")), q(e, n);
+					var n = Os(), r = R(n, !0);
+					B(() => J(r, H(t) === "qbittorrent" ? "No transfers were reported on this page." : "No queue or pending items were reported on this page.")), q(e, n);
 				}, w = (e) => {
-					q(e, xs());
+					q(e, ks());
 				};
 				Y(x, (e) => {
 					W(H(s)), U(() => H(s).items.length) ? e(S) : (W(H(s)), U(() => H(s).complete && H(s).error === null) ? e(C, 1) : (W(H(s)), U(() => H(s).error !== "checking" && H(s).error !== "page_moved") && e(w, 2)));
 				});
-				var ee = R(x, 2), te = L(ee), ne = R(ee, 2), re = (e) => {
-					q(e, Ss());
+				var T = z(x, 2), ee = R(T), te = z(T, 2), ne = (e) => {
+					q(e, As());
 				};
-				Y(ne, (e) => {
-					W(H(s)), U(() => H(s).truncated) && e(re);
+				Y(te, (e) => {
+					W(H(s)), U(() => H(s).truncated) && e(ne);
 				});
-				var ie = R(ne, 2), T = (e) => {
-					var n = Cs(), r = L(n);
-					z((e) => {
+				var re = z(te, 2), ie = (e) => {
+					var n = js(), r = R(n);
+					B((e) => {
 						n.disabled = H(c) || H(h), J(r, `Reload first ${e ?? ""} page`);
 					}, [() => (H(t), U(() => l(H(t))))]), G("click", n, () => void o()(H(t), 0)), q(e, n);
 				};
-				Y(ie, (e) => {
-					W(H(s)), U(() => H(s).error === "page_moved") && e(T);
+				Y(re, (e) => {
+					W(H(s)), U(() => H(s).error === "page_moved") && e(ie);
 				});
-				var ae = R(ie, 2), E = I(ae), oe = L(E), se = R(E), ce = L(se), le = R(se), D = L(le);
-				A(ae), z((e, n, r) => {
-					J(u, e), J(g, (W(H(s)), U(() => H(s).freshness === "fresh" ? "Recent collection" : H(s).freshness === "stale" ? "Stale collection" : "Collection age unknown"))), J(_, (W(H(s)), U(() => H(s).complete ? "Complete for this bounded query" : "Incomplete or still checking"))), J(te, `${W(H(s)), H(t), U(() => H(s).total === null ? H(t) === "qbittorrent" ? "Provider total is not supplied." : "Provider total unavailable." : `${H(s).total} queue and pending items reported by the provider.`) ?? ""} Up to 12 rows per page and the first 60 rows only. Live pages can move as the provider changes.`), E.disabled = (W(H(c)), W(H(h)), W(H(a)), W(H(s)), U(() => H(c) || H(h) || H(a).offset === 0 || H(s).error === "page_moved")), J(oe, `Previous ${n ?? ""} page`), J(ce, `Page ${W(H(a)), U(() => H(a).offset / 12 + 1) ?? ""}`), le.disabled = (W(H(c)), W(H(h)), W(H(s)), U(() => H(c) || H(h) || H(s).next_offset === null)), J(D, `Next ${r ?? ""} page`);
+				var ae = z(re, 2), oe = L(ae), se = R(oe), E = z(oe), ce = R(E), D = z(E), le = R(D);
+				j(ae), B((e, n, r) => {
+					J(u, e), J(g, (W(H(s)), U(() => H(s).freshness === "fresh" ? "Recent collection" : H(s).freshness === "stale" ? "Stale collection" : "Collection age unknown"))), J(_, (W(H(s)), U(() => H(s).complete ? "Complete for this bounded query" : "Incomplete or still checking"))), J(ee, `${W(H(s)), H(t), U(() => H(s).total === null ? H(t) === "qbittorrent" ? "Provider total is not supplied." : "Provider total unavailable." : `${H(s).total} queue and pending items reported by the provider.`) ?? ""} Up to 12 rows per page and the first 60 rows only. Live pages can move as the provider changes.`), oe.disabled = (W(H(c)), W(H(h)), W(H(a)), W(H(s)), U(() => H(c) || H(h) || H(a).offset === 0 || H(s).error === "page_moved")), J(se, `Previous ${n ?? ""} page`), J(ce, `Page ${W(H(a)), U(() => H(a).offset / 12 + 1) ?? ""}`), D.disabled = (W(H(c)), W(H(h)), W(H(s)), U(() => H(c) || H(h) || H(s).next_offset === null)), J(le, `Next ${r ?? ""} page`);
 				}, [
 					() => (W(H(s)), U(() => d(H(s).checked_at))),
 					() => (H(t), U(() => l(H(t)))),
 					() => (H(t), U(() => l(H(t))))
-				]), G("click", E, () => void o()(H(t), H(a).offset - 12)), G("click", le, () => H(s).next_offset !== null && void o()(H(t), H(s).next_offset)), q(e, n);
-			}, E = (e) => {
-				var n = bs(), r = L(n);
-				z((e) => J(r, `No ${e ?? ""} connection enrolled.`), [() => (H(t), U(() => l(H(t))))]), q(e, n);
+				]), G("click", oe, () => void o()(H(t), H(a).offset - 12)), G("click", D, () => H(s).next_offset !== null && void o()(H(t), H(s).next_offset)), q(e, n);
+			}, oe = (e) => {
+				var n = Os(), r = R(n);
+				B((e) => J(r, `No ${e ?? ""} connection enrolled.`), [() => (H(t), U(() => l(H(t))))]), q(e, n);
 			};
-			Y(T, (e) => {
-				W(H(s)), U(() => H(s)?.configured) ? e(ae) : (W(H(a)), U(() => H(a).status && !H(a).status.configured) && e(E, 1));
+			Y(ie, (e) => {
+				W(H(s)), U(() => H(s)?.configured) ? e(ae) : (W(H(a)), U(() => H(a).status && !H(a).status.configured) && e(oe, 1));
 			});
-			var oe = R(T, 2), se = I(oe), ce = L(se), le = R(se, 2), D = L(le), ue = R(le), de = L(ue), fe = R(ue, 2), pe = I(fe), me = L(pe), he = R(pe), ge = R(he, 2), _e = R(ge), ve = R(_e, 2), O = R(ve), ye = R(O, 3), k = I(ye);
-			Se(), A(ye);
-			var be = R(ye, 2), xe = L(be);
-			A(fe), wi(fe, (e, t) => Ut(m, H(m)[t] = e), (e) => H(m)?.[e], () => [H(t)]), A(oe);
-			var Ce = R(oe, 2), we = (e) => {
-				var n = Ts(), r = L(n);
-				z((e) => {
+			var se = z(ie, 2), E = L(se), ce = R(E), D = z(E, 2), le = R(D), ue = z(D), de = R(ue), fe = z(ue, 2), O = L(fe), pe = R(O), me = z(O), he = z(me, 2), ge = z(he), _e = z(ge, 2), k = z(_e), ve = z(k, 3), A = L(ve);
+			xe(), j(ve);
+			var ye = z(ve, 2), be = R(ye);
+			j(fe), wi(fe, (e, t) => Ht(m, H(m)[t] = e), (e) => H(m)?.[e], () => [H(t)]), j(se);
+			var Se = z(se, 2), Ce = (e) => {
+				var n = Ns(), r = R(n);
+				B((e) => {
 					n.disabled = !H(g), J(r, `Remove ${e ?? ""} connection`);
 				}, [() => (H(t), U(() => l(H(t))))]), G("click", n, () => void S(H(t), !0)), q(e, n);
 			};
-			Y(Ce, (e) => {
-				W(H(a)), U(() => H(a).status?.configured) && e(we);
-			}), A(_), z((e, n, r, i, o, l, u, d, f, p, m, v) => {
-				X(_, "data-queue-provider", H(t)), X(_, "data-queue-phase", (W(H(a)), U(() => H(a).phase))), X(_, "data-queue-revision", (W(H(a)), U(() => H(a).status?.revision ?? ""))), X(_, "data-queue-configured", e), X(_, "data-queue-error", (W(H(s)), U(() => H(s)?.error ?? ""))), X(_, "data-queue-complete", n), X(_, "data-queue-offset", (W(H(a)), U(() => H(a).offset))), X(_, "data-queue-save", (W(H(a)), U(() => H(a).save))), X(_, "data-queue-freshness", (W(H(s)), U(() => H(s)?.freshness ?? "unknown"))), X(_, "data-queue-total", (W(H(s)), U(() => H(s)?.total ?? ""))), X(_, "data-queue-truncated", r), X(_, "aria-label", i), J(b, `${o ?? ""}${H(t) === "qbittorrent" ? " Transfers" : " queue"}`), J(w, (W(H(a)), U(() => H(a).message || "Check the connection state to begin."))), te.disabled = H(c), J(ne, `Check ${l ?? ""} connection state`), re.disabled = (W(H(c)), W(H(h)), W(H(a)), U(() => H(c) || H(h) || !H(a).status?.configured)), J(ie, `Check ${u ?? ""} observations`), J(ce, `Enroll ${d ?? ""} access`), J(D, `A global ${f ?? ""} API key may grant broad management authority. Reborn sends observation requests only; this does not restrict what the key itself can do.`), J(de, `Supported profile: ${p ?? ""}. Use a root-mounted HTTPS address. Subpath installations and username/password login are not supported here.`), X(pe, "for", `queue-${H(t)}-endpoint`), J(me, `${m ?? ""} HTTPS address`), X(he, "id", `queue-${H(t)}-endpoint`), X(he, "placeholder", `https://${H(t)}.example/`), he.disabled = !H(g), X(ge, "for", `queue-${H(t)}-token`), X(_e, "id", `queue-${H(t)}-token`), _e.disabled = !H(g), X(ve, "for", `queue-${H(t)}-ca`), X(O, "id", `queue-${H(t)}-ca`), O.disabled = !H(g), X(ye, "for", `queue-${H(t)}-ack`), X(k, "id", `queue-${H(t)}-ack`), k.disabled = !H(g), be.disabled = !H(g), J(xe, `Save ${v ?? ""} connection`);
+			Y(Se, (e) => {
+				W(H(a)), U(() => H(a).status?.configured) && e(Ce);
+			}), j(_), B((e, n, r, i, o, l, u, d, f, p, m, v) => {
+				X(_, "data-queue-provider", H(t)), X(_, "data-queue-phase", (W(H(a)), U(() => H(a).phase))), X(_, "data-queue-revision", (W(H(a)), U(() => H(a).status?.revision ?? ""))), X(_, "data-queue-configured", e), X(_, "data-queue-error", (W(H(s)), U(() => H(s)?.error ?? ""))), X(_, "data-queue-complete", n), X(_, "data-queue-offset", (W(H(a)), U(() => H(a).offset))), X(_, "data-queue-save", (W(H(a)), U(() => H(a).save))), X(_, "data-queue-freshness", (W(H(s)), U(() => H(s)?.freshness ?? "unknown"))), X(_, "data-queue-total", (W(H(s)), U(() => H(s)?.total ?? ""))), X(_, "data-queue-truncated", r), X(_, "aria-label", i), J(b, `${o ?? ""}${H(t) === "qbittorrent" ? " Transfers" : " queue"}`), J(w, (W(H(a)), U(() => H(a).message || "Check the connection state to begin."))), ee.disabled = H(c), J(te, `Check ${l ?? ""} connection state`), ne.disabled = (W(H(c)), W(H(h)), W(H(a)), U(() => H(c) || H(h) || !H(a).status?.configured)), J(re, `Check ${u ?? ""} observations`), J(ce, `Enroll ${d ?? ""} access`), J(le, `A global ${f ?? ""} API key may grant broad management authority. Reborn sends observation requests only; this does not restrict what the key itself can do.`), J(de, `Supported profile: ${p ?? ""}. Use a root-mounted HTTPS address. Subpath installations and username/password login are not supported here.`), X(O, "for", `queue-${H(t)}-endpoint`), J(pe, `${m ?? ""} HTTPS address`), X(me, "id", `queue-${H(t)}-endpoint`), X(me, "placeholder", `https://${H(t)}.example/`), me.disabled = !H(g), X(he, "for", `queue-${H(t)}-token`), X(ge, "id", `queue-${H(t)}-token`), ge.disabled = !H(g), X(_e, "for", `queue-${H(t)}-ca`), X(k, "id", `queue-${H(t)}-ca`), k.disabled = !H(g), X(ve, "for", `queue-${H(t)}-ack`), X(A, "id", `queue-${H(t)}-ack`), A.disabled = !H(g), ye.disabled = !H(g), J(be, `Save ${v ?? ""} connection`);
 			}, [
 				() => (W(H(a)), U(() => String(H(a).status?.configured ?? !1))),
 				() => (W(H(s)), U(() => String(H(s)?.complete ?? !1))),
@@ -5069,122 +5346,270 @@ function ks(e, t) {
 				() => (H(t), U(() => u(H(t)))),
 				() => (H(t), U(() => l(H(t)))),
 				() => (H(t), U(() => l(H(t))))
-			]), G("click", te, () => void x(H(t))), G("click", re, (e) => v(H(t), H(a).offset, e)), Cr("submit", fe, (e) => {
+			]), G("click", ee, () => void x(H(t))), G("click", ne, (e) => v(H(t), H(a).offset, e)), Cr("submit", fe, (e) => {
 				e.preventDefault(), S(H(t));
 			}), q(e, _);
-		}), A(t), q(e, t);
+		}), j(t), q(e, t);
 	};
 	Y(w, (e) => {
-		n() ? e(te, -1) : e(ee);
-	}), A(C), q(e, C), Ge();
+		n() ? e(ee, -1) : e(T);
+	}), j(C), q(e, C), We();
+}
+wr(["click"]);
+// src/Identity.svelte
+var Rs = /* @__PURE__ */ K("<div class=\"identity-saved\" data-discord-linked=\"\"><h3>Linked Discord identity</h3> <dl class=\"identity-details\"><dt>Display name at verification</dt><dd> </dd><dt>Discord ID</dt><dd class=\"identity-id\"> </dd><dt>Verified</dt><dd> </dd></dl> <p class=\"field-help\">The immutable Discord ID identifies this link. Display names can change.</p> <button class=\"text-button discord-unlink\">Unlink Discord identity locally</button> <p class=\"field-help\">Local unlink removes this account’s saved identity link. It does not contact Discord or change your local sign-in.</p></div>"), zs = /* @__PURE__ */ K("<form method=\"post\" action=\"/account/discord/start\" class=\"identity-start-form\"><input type=\"hidden\" name=\"product\" value=\"keida-hub-reborn\"/> <input type=\"hidden\" name=\"contract\" value=\"reborn-discord-link-v1\"/> <input type=\"hidden\" name=\"csrf_token\"/> <input type=\"hidden\" name=\"base_revision\"/> <input type=\"hidden\" name=\"base_flow_generation\"/> <input type=\"hidden\" name=\"base_application_revision\"/> <button class=\"button primary discord-start\" type=\"submit\"> </button></form> <p class=\"field-help\">Continue through the Reborn handoff page to Discord, then return to this browser to review the result. Starting a new link cancels an older unfinished attempt.</p>", 1), Bs = /* @__PURE__ */ K("<p class=\"notice\">Discord linking is waiting for dedicated application setup by an owner. Existing links can still be unlinked locally.</p>"), Vs = /* @__PURE__ */ K("<p class=\"identity-empty\">No Discord identity linked.</p> <!>", 1), Hs = /* @__PURE__ */ K("<section class=\"identity-review\" aria-label=\"Review returned Discord identity\"><h3>Discord returned</h3><p>Review fetches your Discord identity once. You will choose separately whether to save the link.</p><button class=\"button primary discord-review\">Review Discord identity</button></section>"), Us = /* @__PURE__ */ K("<section class=\"identity-review\" data-discord-candidate=\"\" aria-label=\"Confirm Discord identity\"><h3>Confirm this identity</h3><dl class=\"identity-details\"><dt>Display name</dt><dd> </dd><dt>Discord ID</dt><dd class=\"identity-id\"> </dd></dl><p>This identity has been verified for this attempt. Choose Confirm to save it to your current Reborn account.</p><button class=\"button primary discord-confirm\">Confirm Discord identity link</button></section>"), Ws = /* @__PURE__ */ K("<p class=\"field-help\">Discord acknowledged revoking this verification grant. This revokes tokens for the whole application authorization.</p>"), Gs = /* @__PURE__ */ K("<p class=\"notice\">Discord grant revocation could not be confirmed. Reborn discarded the verification tokens. You can remove the application authorization in Discord’s Authorized Apps settings.</p>"), Ks = /* @__PURE__ */ K("<button class=\"text-button discord-cancel\">Cancel unfinished Discord link</button>"), qs = /* @__PURE__ */ K("<button class=\"text-button discord-remove-application\">Remove Discord application access</button>"), Js = /* @__PURE__ */ K("<details class=\"identity-enrollment\"><summary>Set up Discord application access</summary><p>Enroll a dedicated Discord application for Reborn. The secret is encrypted on the server and will not be shown again.</p><p>Register this exact redirect URI in the application’s OAuth settings:</p><p class=\"identity-callback\"><code> </code></p><p class=\"field-help\">Only the identify permission is requested. Before real use, review callback query handling in access logs at every proxy and application layer. OAuth codes and state arrive in the callback URL.</p> <form autocomplete=\"off\"><label for=\"discord-client-id\">Discord application ID</label><input id=\"discord-client-id\" name=\"client_id\" type=\"text\" inputmode=\"numeric\" maxlength=\"20\" required=\"\" autocomplete=\"off\"/> <label for=\"discord-client-secret\">Discord application secret</label><input id=\"discord-client-secret\" name=\"client_secret\" type=\"password\" minlength=\"1\" maxlength=\"256\" pattern=\"[!-~]+\" required=\"\" autocomplete=\"off\"/> <label class=\"identity-ack\" for=\"discord-logging-ack\"><input id=\"discord-logging-ack\" name=\"callback_logging_reviewed\" type=\"checkbox\" required=\"\"/>I reviewed callback query logging at every layer before enabling this application.</label> <button class=\"button primary discord-save-application\" type=\"submit\">Save Discord application</button></form> <!> <p class=\"field-help\">Replacing or removing application access cancels unfinished links. Accepted identity links remain saved and can be unlinked locally.</p></details>"), Ys = /* @__PURE__ */ K("<!> <!> <!> <!> <!> <!>", 1), Xs = /* @__PURE__ */ K("<div class=\"identity-view\"><section class=\"card identity-intro\"><p class=\"eyebrow\">YOUR DISCORD IDENTITY</p><h2>Choose a deliberate connection</h2><p>Link a verified Discord identity to this Reborn account. You review the identity and confirm it before a link is saved.</p><p class=\"field-help\">Your local sign-in and recovery stay available. A saved link records past identity verification; Discord sign-in, friends, server roles and bot setup are still planned.</p></section> <section class=\"card identity-card\" data-discord-identity=\"\" aria-label=\"Discord identity connection\"><p class=\"workspace-status\" role=\"status\" data-discord-status=\"\"> </p> <button class=\"button secondary discord-check\">Check Discord identity status</button> <!></section></div>");
+function Zs(e, t) {
+	Ue(t, !1);
+	let n = /* @__PURE__ */ F(), r = /* @__PURE__ */ F(), i = Z(t, "binding", 8), a = Z(t, "owner", 8, !1), o = Z(t, "active", 8, !1), s = Z(t, "state", 8), c = Z(t, "check", 8), l = Z(t, "act", 8), u = Z(t, "saveApplication", 8), d = /* @__PURE__ */ F(), f = "", p = /* @__PURE__ */ F(!1), m = (e) => (/* @__PURE__ */ new Date(Number(BigInt(e)) * 1e3)).toLocaleString("en-US", {
+		timeZone: "America/Chicago",
+		timeZoneName: "short"
+	});
+	function h(e, t, n) {
+		let r = t && n && e.value ? `${e.value.application.revision}:${e.value.application.configured}` : "";
+		t && n && r === f && e.save === "idle" || H(d)?.reset(), t || I(p, !1), f = r;
+	}
+	Li(() => H(d)?.reset());
+	async function g() {
+		H(d)?.reset(), I(p, !1), await c()();
+	}
+	async function _(e = !1) {
+		let t = s().value;
+		if (!a() || !H(n) || !t) return;
+		let r = H(d) ? new FormData(H(d)) : void 0, i = e ? null : {
+			client_id: String(r?.get("client_id") ?? ""),
+			client_secret: String(r?.get("client_secret") ?? ""),
+			callback_logging_reviewed: r?.get("callback_logging_reviewed") === "on"
+		};
+		H(d)?.reset(), r?.delete("client_secret");
+		try {
+			await u()(t.application.revision, i);
+		} finally {
+			i && (i.client_secret = "");
+		}
+	}
+	Tn(() => (W(s()), W(o()), W(a())), () => {
+		h(s(), o(), a());
+	}), Tn(() => (W(o()), W(s()), H(p)), () => {
+		I(n, o() && s().phase === "ready" && s().save === "idle" && !!s().value && !H(p));
+	}), Tn(() => W(s()), () => {
+		I(r, !!s().value && !["none", "cancelled"].includes(s().value.attempt.phase));
+	}), En(), Ti();
+	var v = Xs(), y = z(L(v), 2), b = L(y), x = R(b, !0), S = z(b, 2), C = z(S, 2), w = (e) => {
+		let t = /* @__PURE__ */ N(() => (W(s()), U(() => s().value)));
+		var o = Ys(), c = cn(o), u = (e) => {
+			var r = Rs(), i = z(L(r), 2), a = z(L(i)), o = R(a, !0), s = z(a, 2), c = R(s, !0), u = R(z(s, 2), !0);
+			j(i);
+			var d = z(i, 4);
+			xe(2), j(r), B((e) => {
+				J(o, (W(H(t)), U(() => H(t).link.identity.display_name))), J(c, (W(H(t)), U(() => H(t).link.identity.id))), J(u, e), d.disabled = !H(n);
+			}, [() => (W(H(t)), U(() => m(H(t).link.identity.verified_at)))]), G("click", d, () => void l()("unlink")), q(e, r);
+		}, f = (e) => {
+			var a = Vs(), o = z(cn(a), 2), s = (e) => {
+				var a = zs(), o = cn(a), s = z(z(L(o), 2), 2);
+				pi(s);
+				var c = z(s, 2);
+				pi(c);
+				var l = z(c, 2);
+				pi(l);
+				var u = z(l, 2);
+				pi(u);
+				var f = z(u, 2), m = R(f, !0);
+				j(o), xe(2), B((e) => {
+					mi(s, i()), mi(c, (W(H(t)), U(() => H(t).link.revision))), mi(l, (W(H(t)), U(() => H(t).link.flow_generation))), mi(u, (W(H(t)), U(() => H(t).application.revision))), f.disabled = e, J(m, H(r) ? "Start a new Discord link" : "Start Discord identity link");
+				}, [() => (H(n), W(H(t)), U(() => !H(n) || [
+					"ready_to_review",
+					"reviewing",
+					"review_ready"
+				].includes(H(t).attempt.phase)))]), Cr("submit", o, () => {
+					I(p, !0), H(d)?.reset();
+				}), q(e, a);
+			}, c = (e) => {
+				q(e, Bs());
+			};
+			Y(o, (e) => {
+				W(H(t)), U(() => H(t).application.configured) ? e(s) : e(c, -1);
+			}), q(e, a);
+		};
+		Y(c, (e) => {
+			W(H(t)), U(() => H(t).link.identity) ? e(u) : e(f, -1);
+		});
+		var h = z(c, 2), g = (e) => {
+			var t = Hs(), r = z(L(t), 2);
+			j(t), B(() => r.disabled = !H(n)), G("click", r, () => void l()("review")), q(e, t);
+		};
+		Y(h, (e) => {
+			W(H(t)), U(() => H(t).attempt.phase === "ready_to_review") && e(g);
+		});
+		var v = z(h, 2), y = (e) => {
+			var r = Us(), i = z(L(r)), a = z(L(i)), o = R(a, !0), s = R(z(a, 2), !0);
+			j(i);
+			var c = z(i, 2);
+			j(r), B(() => {
+				J(o, (W(H(t)), U(() => H(t).attempt.candidate.display_name))), J(s, (W(H(t)), U(() => H(t).attempt.candidate.id))), c.disabled = !H(n);
+			}), G("click", c, () => void l()("confirm")), q(e, r);
+		};
+		Y(v, (e) => {
+			W(H(t)), U(() => H(t).attempt.phase === "review_ready" && H(t).attempt.candidate) && e(y);
+		});
+		var b = z(v, 2), x = (e) => {
+			q(e, Ws());
+		}, S = (e) => {
+			q(e, Gs());
+		};
+		Y(b, (e) => {
+			W(H(t)), U(() => H(t).attempt.cleanup === "acknowledged") ? e(x) : (W(H(t)), U(() => H(t).attempt.cleanup === "unconfirmed") && e(S, 1));
+		});
+		var C = z(b, 2), w = (e) => {
+			var r = Ks();
+			B(() => r.disabled = (H(n), W(H(t)), U(() => !H(n) || H(t).attempt.phase === "reviewing"))), G("click", r, () => void l()("cancel")), q(e, r);
+		};
+		Y(C, (e) => {
+			H(r) && e(w);
+		});
+		var T = z(C, 2), ee = (e) => {
+			var r = Js(), i = z(L(r), 3), a = R(L(i), !0);
+			j(i);
+			var o = z(i, 3), s = z(L(o));
+			X(s, "pattern", "[1-9][0-9]{0,19}");
+			var c = z(s, 3), l = z(c, 2), u = L(l);
+			xe(), j(l);
+			var f = z(l, 2);
+			j(o), wi(o, (e) => I(d, e), () => H(d));
+			var p = z(o, 2), m = (e) => {
+				var t = qs();
+				B(() => t.disabled = !H(n)), G("click", t, () => void _(!0)), q(e, t);
+			};
+			Y(p, (e) => {
+				W(H(t)), U(() => H(t).application.configured) && e(m);
+			}), xe(2), j(r), B(() => {
+				J(a, (W(H(t)), U(() => H(t).application.callback_uri))), s.disabled = !H(n), c.disabled = !H(n), u.disabled = !H(n), f.disabled = !H(n);
+			}), Cr("submit", o, (e) => {
+				e.preventDefault(), _();
+			}), q(e, r);
+		};
+		Y(T, (e) => {
+			a() && e(ee);
+		}), q(e, o);
+	};
+	Y(C, (e) => {
+		W(o()), W(s()), U(() => o() && s().phase === "ready" && s().value) && e(w);
+	}), j(y), j(v), B((e) => {
+		X(y, "data-phase", (W(s()), U(() => s().value?.attempt.phase ?? s().phase))), X(y, "data-configured", e), X(y, "data-link-revision", (W(s()), U(() => s().value?.link.revision ?? ""))), X(y, "data-flow-generation", (W(s()), U(() => s().value?.link.flow_generation ?? ""))), X(y, "data-app-revision", (W(s()), U(() => s().value?.application.revision ?? ""))), X(y, "data-save", (W(s()), U(() => s().save))), J(x, (W(s()), U(() => s().message || "Check your current Discord link to begin."))), S.disabled = (W(o()), W(s()), U(() => !o() || s().save === "saving" || s().phase === "loading"));
+	}, [() => (W(s()), U(() => String(s().value?.application.configured ?? !1)))]), G("click", S, () => void g()), q(e, v), We();
 }
 wr(["click"]);
 // src/App.svelte
-var As = /* @__PURE__ */ K("<span class=\"notification-badge\"> </span>"), js = /* @__PURE__ */ K("<a rel=\"noreferrer\"> </a>"), Ms = /* @__PURE__ */ K("<section class=\"recovery card\"><p class=\"eyebrow\">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class=\"button-row\"><a class=\"button primary\" href=\"/workspace\">Open workspace again</a><a class=\"button secondary\" href=\"/account\">Your account</a></div></section>"), Ns = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">▤</span><h2>Your workspace note</h2><p> </p><button class=\"text-button\">Keep writing <span aria-hidden=\"true\">→</span></button>", 1), Ps = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">◇</span><h2>Connections</h2><p> </p><button class=\"text-button\">View connections <span aria-hidden=\"true\">→</span></button>", 1), Fs = /* @__PURE__ */ K("<section><!></section>"), Is = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Draft recovery\"><h2>A draft is waiting</h2><p>This browser session has an unfinished note for this account. Review it before saving.</p><div class=\"button-row\"><button class=\"button secondary\">Recover draft</button><button class=\"text-button\">Discard draft</button></div></section>"), Ls = /* @__PURE__ */ K("<p class=\"field-help\">Browser storage is unavailable. Draft recovery is limited to this open page.</p>"), Rs = /* @__PURE__ */ K("<p class=\"notice\">Shorten this note to 4096 bytes before saving or leaving this page.</p>"), zs = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Save conflict\"><h2>There’s a newer saved note</h2><p>Your draft is still in the editor. Compare it with the saved version, then choose what to keep.</p><pre> </pre><div class=\"button-row\"><button class=\"button secondary\">Keep my draft</button><button class=\"text-button\">Use saved note</button></div></section>"), Bs = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain save\"><h2>Check before saving again</h2><p>The previous save may have completed. Your draft has not been sent again.</p><button class=\"button secondary\">Check saved note</button></section>"), Vs = /* @__PURE__ */ K("<a class=\"skip-link\" href=\"#workspace-content\">Skip to content</a> <div class=\"workspace-shell\"><aside class=\"sidebar\" aria-label=\"Workspace sidebar\"><a class=\"brand\" href=\"/workspace\"><span class=\"brand-mark\" aria-hidden=\"true\">K</span><span>Keida <small>REBORN</small></span></a> <p class=\"nav-label\">YOUR SPACE</p> <nav class=\"main-nav\" aria-label=\"Workspace views\"><button><span aria-hidden=\"true\">⌂</span>Home</button> <button><span aria-hidden=\"true\">▤</span>Workspace note<span aria-hidden=\"true\"></span></button> <button><span aria-hidden=\"true\">◇</span>Connections</button> <button><span aria-hidden=\"true\">▦</span>Services</button> <button><span aria-hidden=\"true\">◷</span>Activity</button> <button><span aria-hidden=\"true\">♧</span>Notifications<!></button> <button><span aria-hidden=\"true\">⊞</span>Integrations</button> <button><span aria-hidden=\"true\">≡</span>Roadmap</button> <button><span aria-hidden=\"true\">▻</span>Media</button> <button><span aria-hidden=\"true\">⇄</span>Queues</button></nav> <div class=\"sidebar-bottom\"><a href=\"/account\" class=\"account-link\"><span class=\"avatar\" aria-hidden=\"true\">K</span><span><strong> </strong><small> </small></span></a> <form method=\"post\" action=\"/account/sign-out\"><input type=\"hidden\" name=\"product\" value=\"keida-hub-reborn\"/> <input type=\"hidden\" name=\"contract\" value=\"reborn-account-v1\"/> <input type=\"hidden\" name=\"csrf_token\"/> <button type=\"submit\" class=\"sign-out\">Sign out <span aria-hidden=\"true\">↗</span></button></form> <details class=\"version\"><summary> <span>Build details</span></summary> <dl><dt>Source</dt><dd><!></dd><dt>Tree</dt><dd> </dd><dt>Channel</dt><dd> </dd><dt>Workspace contract</dt><dd>reborn-workspace-v1</dd></dl></details></div></aside> <main id=\"workspace-content\" class=\"workspace-content\"><header class=\"page-header\"><div><p class=\"eyebrow\">YOUR OWN CORNER OF KEIDA</p><h1 tabindex=\"-1\"> </h1></div><span class=\"connection-state\"><span aria-hidden=\"true\">●</span> </span></header> <p class=\"workspace-status\" role=\"status\"> </p> <!> <section class=\"home-view\"><div class=\"welcome-card card\"><div><p class=\"eyebrow\">MAKE YOURSELF AT HOME</p><h2>A useful place<br/>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><div class=\"button-row\"><button class=\"button primary\">Open your note <span aria-hidden=\"true\">↗</span></button><button class=\"text-button\">Read the Roadmap note</button></div></div><div class=\"orb\" aria-hidden=\"true\"><div>K</div></div></div> <div class=\"home-layout-heading\"><p class=\"layout-status\" role=\"status\"> </p><button class=\"button secondary customize-home\">Customize Home</button></div> <div><!></div> <div></div></section> <section class=\"note-view\" aria-label=\"Workspace note\"><div class=\"note-heading\"><p>A private note, available each time you sign in.</p><span class=\"quiet-label\"> </span></div> <!> <form class=\"note-card card\"><label for=\"workspace-note\">Workspace note</label> <textarea id=\"workspace-note\" name=\"workspace-note\" maxlength=\"4096\" spellcheck=\"true\" aria-describedby=\"note-help note-size\" placeholder=\"What would you like to come back to?\"></textarea> <p id=\"note-help\" class=\"field-help\">For ordinary notes. Keep passwords, API keys and other secrets out of this space.</p> <div class=\"note-footer\"><span id=\"note-size\"> </span><button class=\"button primary\" type=\"submit\"> </button></div></form> <!> <!> <!> <!></section> <section aria-label=\"Connections\"><!></section> <section aria-label=\"Activity\"><!></section> <section aria-label=\"Notifications\"><!></section> <section><!></section> <section aria-label=\"Media\"><!></section> <section aria-label=\"Queues\"><!></section> <footer class=\"content-footer\"><span>Keida Reborn</span><a href=\"/account\">Account &amp; recovery</a></footer></main></div>", 1);
-function Hs(e, t) {
-	We(t, !1);
-	let n = () => Ni(u, "$model", r), [r, i] = Pi(), a = /* @__PURE__ */ P(), o = /* @__PURE__ */ P(), s = /* @__PURE__ */ P(), c = Z(t, "binding", 8), l = Aa(c()), u = l.model, d = /* @__PURE__ */ P("home"), f = /* @__PURE__ */ P(), p = /* @__PURE__ */ P(), m = /* @__PURE__ */ P(Wi()), h, g = document.querySelector("meta[name=\"reborn-version\"]")?.content ?? "development", _ = document.querySelector("meta[name=\"reborn-commit\"]")?.content ?? "unqualified", v = document.querySelector("meta[name=\"reborn-tree\"]")?.content ?? "unqualified", y = document.querySelector("meta[name=\"reborn-channel\"]")?.content ?? "development";
+var Qs = /* @__PURE__ */ K("<span class=\"notification-badge\"> </span>"), $s = /* @__PURE__ */ K("<a rel=\"noreferrer\"> </a>"), ec = /* @__PURE__ */ K("<section class=\"recovery card\"><p class=\"eyebrow\">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class=\"button-row\"><a class=\"button primary\" href=\"/workspace\">Open workspace again</a><a class=\"button secondary\" href=\"/account\">Your account</a></div></section>"), tc = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">▤</span><h2>Your workspace note</h2><p> </p><button class=\"text-button\">Keep writing <span aria-hidden=\"true\">→</span></button>", 1), nc = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">◇</span><h2>Connections</h2><p> </p><button class=\"text-button\">View connections <span aria-hidden=\"true\">→</span></button>", 1), rc = /* @__PURE__ */ K("<section><!></section>"), ic = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Draft recovery\"><h2>A draft is waiting</h2><p>This browser session has an unfinished note for this account. Review it before saving.</p><div class=\"button-row\"><button class=\"button secondary\">Recover draft</button><button class=\"text-button\">Discard draft</button></div></section>"), ac = /* @__PURE__ */ K("<p class=\"field-help\">Browser storage is unavailable. Draft recovery is limited to this open page.</p>"), oc = /* @__PURE__ */ K("<p class=\"notice\">Shorten this note to 4096 bytes before saving or leaving this page.</p>"), sc = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Save conflict\"><h2>There’s a newer saved note</h2><p>Your draft is still in the editor. Compare it with the saved version, then choose what to keep.</p><pre> </pre><div class=\"button-row\"><button class=\"button secondary\">Keep my draft</button><button class=\"text-button\">Use saved note</button></div></section>"), cc = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain save\"><h2>Check before saving again</h2><p>The previous save may have completed. Your draft has not been sent again.</p><button class=\"button secondary\">Check saved note</button></section>"), lc = /* @__PURE__ */ K("<a class=\"skip-link\" href=\"#workspace-content\">Skip to content</a> <div class=\"workspace-shell\"><aside class=\"sidebar\" aria-label=\"Workspace sidebar\"><a class=\"brand\" href=\"/workspace\"><span class=\"brand-mark\" aria-hidden=\"true\">K</span><span>Keida <small>REBORN</small></span></a> <p class=\"nav-label\">YOUR SPACE</p> <nav class=\"main-nav\" aria-label=\"Workspace views\"><button><span aria-hidden=\"true\">⌂</span>Home</button> <button><span aria-hidden=\"true\">▤</span>Workspace note<span aria-hidden=\"true\"></span></button> <button><span aria-hidden=\"true\">◇</span>Connections</button> <button><span aria-hidden=\"true\">▦</span>Services</button> <button><span aria-hidden=\"true\">◷</span>Activity</button> <button><span aria-hidden=\"true\">♧</span>Notifications<!></button> <button><span aria-hidden=\"true\">⊞</span>Integrations</button> <button><span aria-hidden=\"true\">≡</span>Roadmap</button> <button><span aria-hidden=\"true\">▻</span>Media</button> <button><span aria-hidden=\"true\">⇄</span>Queues</button> <button><span aria-hidden=\"true\">◎</span>Identity</button></nav> <div class=\"sidebar-bottom\"><a href=\"/account\" class=\"account-link\"><span class=\"avatar\" aria-hidden=\"true\">K</span><span><strong> </strong><small> </small></span></a> <form method=\"post\" action=\"/account/sign-out\"><input type=\"hidden\" name=\"product\" value=\"keida-hub-reborn\"/> <input type=\"hidden\" name=\"contract\" value=\"reborn-account-v1\"/> <input type=\"hidden\" name=\"csrf_token\"/> <button type=\"submit\" class=\"sign-out\">Sign out <span aria-hidden=\"true\">↗</span></button></form> <details class=\"version\"><summary> <span>Build details</span></summary> <dl><dt>Source</dt><dd><!></dd><dt>Tree</dt><dd> </dd><dt>Channel</dt><dd> </dd><dt>Workspace contract</dt><dd>reborn-workspace-v1</dd></dl></details></div></aside> <main id=\"workspace-content\" class=\"workspace-content\"><header class=\"page-header\"><div><p class=\"eyebrow\">YOUR OWN CORNER OF KEIDA</p><h1 tabindex=\"-1\"> </h1></div><span class=\"connection-state\"><span aria-hidden=\"true\">●</span> </span></header> <p class=\"workspace-status\" role=\"status\"> </p> <!> <section class=\"home-view\"><div class=\"welcome-card card\"><div><p class=\"eyebrow\">MAKE YOURSELF AT HOME</p><h2>A useful place<br/>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><div class=\"button-row\"><button class=\"button primary\">Open your note <span aria-hidden=\"true\">↗</span></button><button class=\"text-button\">Read the Roadmap note</button></div></div><div class=\"orb\" aria-hidden=\"true\"><div>K</div></div></div> <div class=\"home-layout-heading\"><p class=\"layout-status\" role=\"status\"> </p><button class=\"button secondary customize-home\">Customize Home</button></div> <div><!></div> <div></div></section> <section class=\"note-view\" aria-label=\"Workspace note\"><div class=\"note-heading\"><p>A private note, available each time you sign in.</p><span class=\"quiet-label\"> </span></div> <!> <form class=\"note-card card\"><label for=\"workspace-note\">Workspace note</label> <textarea id=\"workspace-note\" name=\"workspace-note\" maxlength=\"4096\" spellcheck=\"true\" aria-describedby=\"note-help note-size\" placeholder=\"What would you like to come back to?\"></textarea> <p id=\"note-help\" class=\"field-help\">For ordinary notes. Keep passwords, API keys and other secrets out of this space.</p> <div class=\"note-footer\"><span id=\"note-size\"> </span><button class=\"button primary\" type=\"submit\"> </button></div></form> <!> <!> <!> <!></section> <section aria-label=\"Connections\"><!></section> <section aria-label=\"Activity\"><!></section> <section aria-label=\"Notifications\"><!></section> <section><!></section> <section aria-label=\"Media\"><!></section> <section aria-label=\"Queues\"><!></section> <section aria-label=\"Identity\"><!></section> <footer class=\"content-footer\"><span>Keida Reborn</span><a href=\"/account\">Account &amp; recovery</a></footer></main></div>", 1);
+function uc(e, t) {
+	Ue(t, !1);
+	let n = () => Ni(u, "$model", r), [r, i] = Pi(), a = /* @__PURE__ */ F(), o = /* @__PURE__ */ F(), s = /* @__PURE__ */ F(), c = Z(t, "binding", 8), l = La(c()), u = l.model, d = /* @__PURE__ */ F(window.location.hash === "#identity" ? "identity" : "home"), f = /* @__PURE__ */ F(), p = /* @__PURE__ */ F(), m = /* @__PURE__ */ F(Wi()), h, g = document.querySelector("meta[name=\"reborn-version\"]")?.content ?? "development", _ = document.querySelector("meta[name=\"reborn-commit\"]")?.content ?? "unqualified", v = document.querySelector("meta[name=\"reborn-tree\"]")?.content ?? "unqualified", y = document.querySelector("meta[name=\"reborn-channel\"]")?.content ?? "development";
 	function b(e) {
-		let t = H(d) === "media" && e !== "media" || H(d) === "queues" && e !== "queues";
-		H(d) === "media" && e !== "media" && l.closeMedia(), H(d) === "queues" && e !== "queues" && l.closeQueues(), t ? jt(() => {
-			F(d, e);
-		}) : F(d, e), H(f)?.focus(), e === "activity" && l.activity(), e === "notifications" && l.check(), (e === "integrations" || e === "roadmap") && l.loadGuide(), e === "media" && l.openMedia(), e === "queues" && l.openQueues();
+		let t = H(d) === "media" && e !== "media" || H(d) === "queues" && e !== "queues" || H(d) === "identity" && e !== "identity";
+		H(d) === "media" && e !== "media" && l.closeMedia(), H(d) === "queues" && e !== "queues" && l.closeQueues(), H(d) === "identity" && e !== "identity" && l.closeIdentity(), t ? At(() => {
+			I(d, e);
+		}) : I(d, e), H(f)?.focus(), e === "activity" && l.activity(), e === "notifications" && l.check(), (e === "integrations" || e === "roadmap") && l.loadGuide(), e === "media" && l.openMedia(), e === "queues" && l.openQueues();
 	}
-	let x = () => n().snapshot ? `${n().snapshot.account.id}:${n().snapshot.session_generation}:${n().snapshot.account.role}` : "";
+	let x = /* @__PURE__ */ F(!1), S = () => n().snapshot ? `${n().snapshot.account.id}:${n().snapshot.session_generation}:${n().snapshot.account.role}` : "";
 	Ri(() => {
 		let e = document.activeElement;
 		h = H(d) === "home" && n().phase === "ready" && e instanceof HTMLElement && H(p)?.contains(e) ? {
 			element: e,
-			scope: x()
+			scope: S()
 		} : void 0;
 	}), zi(() => {
 		let e = h;
-		h = void 0, e && H(d) === "home" && n().phase === "ready" && e.scope === x() && e.element.isConnected && H(p)?.contains(e.element) && document.activeElement === document.body && document.visibilityState === "visible" && document.hasFocus() && e.element.getClientRects().length > 0 && e.element.focus({ preventScroll: !0 });
-	}), Ii(l.start), En(() => (n(), Wi), () => {
-		F(a, n().layoutDraft?.panels ?? n().snapshot?.layout.panels ?? Wi());
-	}), En(() => (n(), H(d), H(a)), () => {
-		n().phase === "ready" ? H(d) !== "directory" && F(m, H(a)) : F(m, Wi());
-	}), En(() => n(), () => {
-		F(o, new TextEncoder().encode(n().draft).length);
-	}), En(() => (n(), H(o)), () => {
-		F(s, n().phase === "ready" && n().dirty && H(o) <= 4096 && !["saving", "checking-conflict"].includes(n().layoutSave) && n().notificationSave !== "saving" && ![
+		h = void 0, e && H(d) === "home" && n().phase === "ready" && e.scope === S() && e.element.isConnected && H(p)?.contains(e.element) && document.activeElement === document.body && document.visibilityState === "visible" && document.hasFocus() && e.element.getClientRects().length > 0 && e.element.focus({ preventScroll: !0 });
+	}), Ii(l.start), Tn(() => (n(), Wi), () => {
+		I(a, n().layoutDraft?.panels ?? n().snapshot?.layout.panels ?? Wi());
+	}), Tn(() => (n(), H(d), H(a)), () => {
+		n().phase === "ready" ? H(d) !== "directory" && I(m, H(a)) : I(m, Wi());
+	}), Tn(() => n(), () => {
+		I(o, new TextEncoder().encode(n().draft).length);
+	}), Tn(() => (n(), H(o)), () => {
+		I(s, n().phase === "ready" && n().dirty && H(o) <= 4096 && !["saving", "checking-conflict"].includes(n().layoutSave) && n().notificationSave !== "saving" && ![
 			"saving",
 			"checking-conflict",
 			"conflict",
 			"uncertain"
 		].includes(n().save));
-	}), Dn(), Ti();
-	var S = Vs(), C = R(ln(S), 2), w = I(C), ee = R(I(w), 4), te = I(ee);
+	}), Tn(() => (H(d), n()), () => {
+		(H(d) !== "identity" || n().phase !== "ready") && I(x, !1);
+	}), Tn(() => (H(d), n(), H(x)), () => {
+		H(d) === "identity" && n().phase === "ready" && !H(x) && (I(x, !0), l.openIdentity());
+	}), En(), Ti();
+	var C = lc(), w = z(cn(C), 2), T = L(w), ee = z(L(T), 4), te = L(ee);
 	let ne;
-	var re = R(te, 2);
+	var re = z(te, 2);
 	let ie;
-	var T = R(I(re), 2);
-	let ae;
-	A(re);
-	var E = R(re, 2);
+	var ae = z(L(re), 2);
 	let oe;
-	var se = R(E, 2);
-	let ce;
-	var le = R(se, 2);
+	j(re);
+	var se = z(re, 2);
+	let E;
+	var ce = z(se, 2);
 	let D;
-	var ue = R(le, 2);
-	let de;
-	var fe = R(I(ue), 2), pe = (e) => {
-		var t = As(), r = L(t, !0);
-		z(() => {
+	var le = z(ce, 2);
+	let ue;
+	var de = z(le, 2);
+	let fe;
+	var O = z(L(de), 2), pe = (e) => {
+		var t = Qs(), r = R(t, !0);
+		B(() => {
 			X(t, "aria-label", (n(), U(() => `${n().snapshot.notifications.unread_groups} unread groups`))), J(r, (n(), U(() => n().snapshot.notifications.unread_groups)));
 		}), q(e, t);
 	};
-	Y(fe, (e) => {
+	Y(O, (e) => {
 		n(), U(() => n().snapshot?.notifications.unread_groups) && e(pe);
-	}), A(ue);
-	var me = R(ue, 2);
+	}), j(de);
+	var me = z(de, 2);
 	let he;
-	var ge = R(me, 2);
+	var ge = z(me, 2);
 	let _e;
-	var ve = R(ge, 2);
-	let O;
-	var ye = R(ve, 2);
-	let k;
-	A(ee);
-	var be = R(ee, 2), xe = I(be), Ce = R(I(xe)), we = I(Ce), Te = L(we, !0), Ee = L(R(we), !0);
-	A(Ce), A(xe);
-	var De = R(xe, 2), Oe = R(R(I(De), 2), 2);
-	pi(Oe), Se(2), A(De);
-	var ke = R(De, 2), Ae = I(ke), je = I(Ae, !0);
-	Se(), A(Ae);
-	var Me = R(Ae, 2), Ne = R(I(Me)), Pe = I(Ne), Fe = (e) => {
-		var t = js(), n = L(t, !0);
-		z(() => {
+	var k = z(ge, 2);
+	let ve;
+	var A = z(k, 2);
+	let ye;
+	var be = z(A, 2);
+	let Se;
+	j(ee);
+	var Ce = z(ee, 2), we = L(Ce), Te = z(L(we)), Ee = L(Te), De = R(Ee, !0), Oe = R(z(Ee), !0);
+	j(Te), j(we);
+	var ke = z(we, 2), Ae = z(z(L(ke), 2), 2);
+	pi(Ae), xe(2), j(ke);
+	var je = z(ke, 2), Me = L(je), Ne = L(Me, !0);
+	xe(), j(Me);
+	var Pe = z(Me, 2), Fe = z(L(Pe)), Ie = L(Fe), Le = (e) => {
+		var t = $s(), n = R(t, !0);
+		B(() => {
 			X(t, "href", `https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/commit/${_}`), J(n, _);
 		}), q(e, t);
-	}, Ie = /* @__PURE__ */ mt(() => U(() => /^[a-f0-9]{40}$/.test(_))), Le = (e) => {
+	}, Re = /* @__PURE__ */ pt(() => U(() => /^[a-f0-9]{40}$/.test(_))), ze = (e) => {
 		var t = Mr();
-		z(() => J(t, _)), q(e, t);
+		B(() => J(t, _)), q(e, t);
 	};
-	Y(Pe, (e) => {
-		H(Ie) ? e(Fe) : e(Le, -1);
-	}), A(Ne);
-	var Re = R(Ne, 2), ze = L(Re, !0), Be = L(R(Re, 2), !0);
-	Se(2), A(Me), A(ke), A(be), A(w);
-	var Ve = R(w, 2), He = I(Ve), j = I(He), Ue = R(I(j)), Ke = L(Ue, !0);
-	wi(Ue, (e) => F(f, e), () => H(f)), A(j);
-	var qe = R(j), Je = R(I(qe), 1, !0);
-	A(qe), A(He);
-	var Ye = R(He, 2), Xe = L(Ye, !0), Ze = R(Ye, 2), Qe = (e) => {
-		q(e, Ms());
+	Y(Ie, (e) => {
+		H(Re) ? e(Le) : e(ze, -1);
+	}), j(Fe);
+	var Be = z(Fe, 2), Ve = R(Be, !0), M = R(z(Be, 2), !0);
+	xe(2), j(Pe), j(je), j(Ce), j(T);
+	var He = z(T, 2), Ge = L(He), Ke = L(Ge), qe = z(L(Ke)), Je = R(qe, !0);
+	wi(qe, (e) => I(f, e), () => H(f)), j(Ke);
+	var Ye = z(Ke), Xe = z(L(Ye), 1, !0);
+	j(Ye), j(Ge);
+	var Ze = z(Ge, 2), Qe = R(Ze, !0), $e = z(Ze, 2), et = (e) => {
+		q(e, ec());
 	};
-	Y(Ze, (e) => {
-		n(), U(() => n().phase !== "ready") && e(Qe);
+	Y($e, (e) => {
+		n(), U(() => n().phase !== "ready") && e(et);
 	});
-	var $e = R(Ze, 2), et = I($e), tt = I(et), rt = R(I(tt), 3), it = I(rt), at = R(it);
-	A(rt), A(tt), Se(), A(et);
-	var ot = R(et, 2), st = I(ot), ct = L(st, !0), lt = R(st);
-	A(ot);
-	var ut = R(ot, 2), dt = I(ut);
+	var nt = z($e, 2), rt = L(nt), it = L(rt), at = z(L(it), 3), ot = L(at), st = z(ot);
+	j(at), j(it), xe(), j(rt);
+	var ct = z(rt, 2), lt = L(ct), ut = R(lt, !0), dt = z(lt);
+	j(ct);
+	var ft = z(ct, 2), mt = L(ft);
 	{
-		let e = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.layout))), t = /* @__PURE__ */ M(() => (n(), U(() => n().phase === "ready")));
-		Ia(dt, {
+		let e = /* @__PURE__ */ N(() => (n(), U(() => n().snapshot?.layout))), t = /* @__PURE__ */ N(() => (n(), U(() => n().phase === "ready")));
+		Ua(mt, {
 			get draft() {
 				return n(), U(() => n().layoutDraft);
 			},
@@ -5220,22 +5645,22 @@ function Hs(e, t) {
 			}
 		});
 	}
-	A(ut);
-	var ft = R(ut, 2);
-	let pt;
-	qr(ft, 5, () => H(m), (e) => e.id, (e, t) => {
-		var r = Fs();
+	j(ft);
+	var ht = z(ft, 2);
+	let gt;
+	qr(ht, 5, () => H(m), (e) => e.id, (e, t) => {
+		var r = rc();
 		let i;
-		var a = I(r), o = (e) => {
-			var t = Ns(), r = R(ln(t), 2), i = L(r, !0), a = R(r);
-			z(() => J(i, (n(), U(() => n().dirty ? "You have an unsaved draft open." : n().snapshot?.note.revision === "0" ? "A blank page for whatever comes next." : "Your saved note is ready when you are.")))), G("click", a, () => b("note")), q(e, t);
+		var a = L(r), o = (e) => {
+			var t = tc(), r = z(cn(t), 2), i = R(r, !0), a = z(r);
+			B(() => J(i, (n(), U(() => n().dirty ? "You have an unsaved draft open." : n().snapshot?.note.revision === "0" ? "A blank page for whatever comes next." : "Your saved note is ready when you are.")))), G("click", a, () => b("note")), q(e, t);
 		}, s = (e) => {
-			var t = Ps(), r = R(ln(t), 2), i = L(r, !0), a = R(r);
-			z(() => J(i, (n(), U(() => n().snapshot?.crafty?.configured ? "Your enrolled Crafty observations are available in Connections." : "Enroll dedicated Crafty access to see your selected servers.")))), G("click", a, () => b("connections")), q(e, t);
+			var t = nc(), r = z(cn(t), 2), i = R(r, !0), a = z(r);
+			B(() => J(i, (n(), U(() => n().snapshot?.crafty?.configured ? "Your enrolled Crafty observations are available in Connections." : "Enroll dedicated Crafty access to see your selected servers.")))), G("click", a, () => b("connections")), q(e, t);
 		}, c = (e) => {
 			{
-				let t = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.directory))), r = /* @__PURE__ */ M(() => (n(), U(() => n().phase === "ready"))), i = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.account.role === "owner"))), a = /* @__PURE__ */ M(() => H(d) === "home");
-				xo(e, {
+				let t = /* @__PURE__ */ N(() => (n(), U(() => n().snapshot?.directory))), r = /* @__PURE__ */ N(() => (n(), U(() => n().phase === "ready"))), i = /* @__PURE__ */ N(() => (n(), U(() => n().snapshot?.account.role === "owner"))), a = /* @__PURE__ */ N(() => H(d) === "home");
+				Oo(e, {
 					get directory() {
 						return H(t);
 					},
@@ -5269,63 +5694,63 @@ function Hs(e, t) {
 		};
 		Y(a, (e) => {
 			H(t), U(() => H(t).id === "note") ? e(o) : (H(t), U(() => H(t).id === "connections") ? e(s, 1) : e(c, -1));
-		}), A(r), z(() => {
+		}), j(r), B(() => {
 			X(r, "data-home-panel", (H(t), U(() => H(t).id))), X(r, "hidden", (n(), H(t), H(d), U(() => n().phase !== "ready" || (H(t).id === "pins" ? H(d) === "home" && !H(t).visible : H(d) !== "home" || !H(t).visible)))), X(r, "aria-label", (H(t), U(() => H(t).id === "pins" ? "Services" : H(t).id === "note" ? "Workspace note shortcut" : "Connections shortcut"))), i = ti(r, 1, "", null, i, {
 				card: H(t).id !== "pins",
 				"small-card": H(t).id !== "pins",
 				"pins-panel": H(t).id === "pins"
 			});
 		}), q(e, r);
-	}), A(ft), wi(ft, (e) => F(p, e), () => H(p)), A($e);
-	var ht = R($e, 2), gt = I(ht), _t = L(R(I(gt)), !0);
-	A(gt);
-	var vt = R(gt, 2), yt = (e) => {
-		var t = Is(), n = R(I(t), 2), r = I(n), i = R(r);
-		A(n), A(t), G("click", r, function(...e) {
+	}), j(ht), wi(ht, (e) => I(p, e), () => H(p)), j(nt);
+	var _t = z(nt, 2), vt = L(_t), yt = R(z(L(vt)), !0);
+	j(vt);
+	var P = z(vt, 2), bt = (e) => {
+		var t = ic(), n = z(L(t), 2), r = L(n), i = z(r);
+		j(n), j(t), G("click", r, function(...e) {
 			l.recover?.apply(this, e);
 		}), G("click", i, () => l.resolve(!0)), q(e, t);
 	};
-	Y(vt, (e) => {
-		n(), U(() => n().recovery) && e(yt);
+	Y(P, (e) => {
+		n(), U(() => n().recovery) && e(bt);
 	});
-	var bt = R(vt, 2), N = R(I(bt), 2);
-	nt(N);
-	var xt = R(N, 4), St = I(xt);
-	let Ct;
-	var wt = L(St), Tt = R(St), Et = L(Tt, !0);
-	A(xt), A(bt);
-	var Dt = R(bt, 2), Ot = (e) => {
-		q(e, Ls());
-	};
-	Y(Dt, (e) => {
-		n(), U(() => n().storageLimited) && e(Ot);
-	});
-	var kt = R(Dt, 2), At = (e) => {
-		q(e, Rs());
+	var xt = z(P, 2), St = z(L(xt), 2);
+	tt(St);
+	var Ct = z(St, 4), wt = L(Ct);
+	let Tt;
+	var Et = R(wt), Dt = z(wt), Ot = R(Dt, !0);
+	j(Ct), j(xt);
+	var kt = z(xt, 2), jt = (e) => {
+		q(e, ac());
 	};
 	Y(kt, (e) => {
-		H(o) > 4096 && e(At);
+		n(), U(() => n().storageLimited) && e(jt);
 	});
-	var Mt = R(kt, 2), Nt = (e) => {
-		var t = zs(), r = R(I(t), 2), i = L(r, !0), a = R(r), o = I(a), s = R(o);
-		A(a), A(t), z(() => J(i, (n(), U(() => n().snapshot?.note.body)))), G("click", o, () => l.resolve(!1)), G("click", s, () => l.resolve(!0)), q(e, t);
+	var Mt = z(kt, 2), Nt = (e) => {
+		q(e, oc());
 	};
 	Y(Mt, (e) => {
-		n(), U(() => n().save === "conflict") && e(Nt);
+		H(o) > 4096 && e(Nt);
 	});
-	var Pt = R(Mt, 2), Ft = (e) => {
-		var t = Bs(), n = R(I(t), 2);
-		A(t), G("click", n, () => l.check()), q(e, t);
+	var Pt = z(Mt, 2), Ft = (e) => {
+		var t = sc(), r = z(L(t), 2), i = R(r, !0), a = z(r), o = L(a), s = z(o);
+		j(a), j(t), B(() => J(i, (n(), U(() => n().snapshot?.note.body)))), G("click", o, () => l.resolve(!1)), G("click", s, () => l.resolve(!0)), q(e, t);
 	};
 	Y(Pt, (e) => {
-		n(), U(() => n().save === "uncertain") && e(Ft);
-	}), A(ht);
-	var It = R(ht, 2), Lt = I(It);
+		n(), U(() => n().save === "conflict") && e(Ft);
+	});
+	var It = z(Pt, 2), Lt = (e) => {
+		var t = cc(), n = z(L(t), 2);
+		j(t), G("click", n, () => l.check()), q(e, t);
+	};
+	Y(It, (e) => {
+		n(), U(() => n().save === "uncertain") && e(Lt);
+	}), j(_t);
+	var Rt = z(_t, 2), zt = L(Rt);
 	{
-		let e = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.crafty))), t = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.account.role === "owner"))), r = /* @__PURE__ */ M(() => (H(d), n(), U(() => H(d) === "connections" && n().phase === "ready")));
-		ro(Lt, {
+		let e = /* @__PURE__ */ N(() => (n(), U(() => n().snapshot?.crafty))), t = /* @__PURE__ */ N(() => (n(), U(() => n().snapshot?.account.role === "owner"))), r = /* @__PURE__ */ N(() => (H(d), n(), U(() => H(d) === "connections" && n().phase === "ready")));
+		uo(zt, {
 			history: () => {
-				F(d, "activity"), H(f)?.focus(), l.activity("connections", "");
+				I(d, "activity"), H(f)?.focus(), l.activity("connections", "");
 			},
 			get binding() {
 				return c();
@@ -5350,11 +5775,11 @@ function Hs(e, t) {
 			}
 		});
 	}
-	A(It);
-	var Rt = R(It, 2), zt = I(Rt);
+	j(Rt);
+	var Bt = z(Rt, 2), Vt = L(Bt);
 	{
-		let e = /* @__PURE__ */ M(() => (n(), U(() => n().phase === "ready")));
-		Oo(zt, {
+		let e = /* @__PURE__ */ N(() => (n(), U(() => n().phase === "ready")));
+		Fo(Vt, {
 			get state() {
 				return n(), U(() => n().activity);
 			},
@@ -5366,11 +5791,11 @@ function Hs(e, t) {
 			}
 		});
 	}
-	A(Rt);
-	var Bt = R(Rt, 2), Vt = I(Bt);
+	j(Bt);
+	var Ht = z(Bt, 2), Ut = L(Ht);
 	{
-		let e = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.notifications))), t = /* @__PURE__ */ M(() => (n(), U(() => n().phase === "ready")));
-		No(Vt, {
+		let e = /* @__PURE__ */ N(() => (n(), U(() => n().snapshot?.notifications))), t = /* @__PURE__ */ N(() => (n(), U(() => n().phase === "ready")));
+		Bo(Ut, {
 			get value() {
 				return H(e);
 			},
@@ -5391,11 +5816,11 @@ function Hs(e, t) {
 			}
 		});
 	}
-	A(Bt);
-	var Ht = R(Bt, 2), Ut = I(Ht);
+	j(Ht);
+	var Wt = z(Ht, 2), Gt = L(Wt);
 	{
-		let e = /* @__PURE__ */ M(() => H(d) === "roadmap" ? "roadmap" : "catalog"), t = /* @__PURE__ */ M(() => (n(), U(() => n().phase === "ready"))), r = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.account.role === "owner")));
-		Jo(Ut, {
+		let e = /* @__PURE__ */ N(() => H(d) === "roadmap" ? "roadmap" : "catalog"), t = /* @__PURE__ */ N(() => (n(), U(() => n().phase === "ready"))), r = /* @__PURE__ */ N(() => (n(), U(() => n().snapshot?.account.role === "owner")));
+		ns(Gt, {
 			get mode() {
 				return H(e);
 			},
@@ -5409,16 +5834,17 @@ function Hs(e, t) {
 			connections: () => b("connections"),
 			media: () => b("media"),
 			queues: () => b("queues"),
+			identity: () => b("identity"),
 			get owner() {
 				return H(r);
 			}
 		});
 	}
-	A(Ht);
-	var Wt = R(Ht, 2), Gt = I(Wt);
+	j(Wt);
+	var Kt = z(Wt, 2), qt = L(Kt);
 	{
-		let e = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.account.role === "owner"))), t = /* @__PURE__ */ M(() => (H(d), n(), U(() => H(d) === "media" && n().phase === "ready")));
-		us(Gt, {
+		let e = /* @__PURE__ */ N(() => (n(), U(() => n().snapshot?.account.role === "owner"))), t = /* @__PURE__ */ N(() => (H(d), n(), U(() => H(d) === "media" && n().phase === "ready")));
+		vs(qt, {
 			get state() {
 				return n(), U(() => n().media);
 			},
@@ -5439,11 +5865,11 @@ function Hs(e, t) {
 			}
 		});
 	}
-	A(Wt);
-	var Kt = R(Wt, 2), qt = I(Kt);
+	j(Kt);
+	var Jt = z(Kt, 2), Yt = L(Jt);
 	{
-		let e = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.account.role === "owner"))), t = /* @__PURE__ */ M(() => (H(d), n(), U(() => H(d) === "queues" && n().phase === "ready")));
-		ks(qt, {
+		let e = /* @__PURE__ */ N(() => (n(), U(() => n().snapshot?.account.role === "owner"))), t = /* @__PURE__ */ N(() => (H(d), n(), U(() => H(d) === "queues" && n().phase === "ready")));
+		Ls(Yt, {
 			get state() {
 				return n(), U(() => n().queues);
 			},
@@ -5464,26 +5890,54 @@ function Hs(e, t) {
 			}
 		});
 	}
-	A(Kt), Se(2), A(Ve), A(C), z(() => {
-		X(te, "aria-current", H(d) === "home" ? "page" : void 0), ne = ti(te, 1, "", null, ne, { active: H(d) === "home" }), X(re, "aria-current", H(d) === "note" ? "page" : void 0), ie = ti(re, 1, "", null, ie, { active: H(d) === "note" }), ae = ti(T, 1, "draft-dot", null, ae, { visible: n().dirty }), X(E, "aria-current", H(d) === "connections" ? "page" : void 0), oe = ti(E, 1, "", null, oe, { active: H(d) === "connections" }), X(se, "aria-current", H(d) === "directory" ? "page" : void 0), ce = ti(se, 1, "", null, ce, { active: H(d) === "directory" }), X(le, "aria-current", H(d) === "activity" ? "page" : void 0), D = ti(le, 1, "", null, D, { active: H(d) === "activity" }), X(ue, "aria-current", H(d) === "notifications" ? "page" : void 0), de = ti(ue, 1, "", null, de, { active: H(d) === "notifications" }), X(me, "aria-current", H(d) === "integrations" ? "page" : void 0), he = ti(me, 1, "", null, he, { active: H(d) === "integrations" }), X(ge, "aria-current", H(d) === "roadmap" ? "page" : void 0), _e = ti(ge, 1, "", null, _e, { active: H(d) === "roadmap" }), X(ve, "aria-current", H(d) === "media" ? "page" : void 0), O = ti(ve, 1, "", null, O, { active: H(d) === "media" }), X(ye, "aria-current", H(d) === "queues" ? "page" : void 0), k = ti(ye, 1, "", null, k, { active: H(d) === "queues" }), J(Te, (n(), U(() => n().snapshot?.account.username ?? "Your account"))), J(Ee, (n(), U(() => n().snapshot?.account.role === "owner" ? "Owner" : n().snapshot?.account.role === "member" ? "Member" : "Check account access"))), mi(Oe, c()), J(je, g), J(ze, v), J(Be, y), J(Ke, H(d) === "home" ? "Welcome home." : H(d) === "note" ? "A little space to think." : H(d) === "connections" ? "Your servers, at a glance." : H(d) === "directory" ? "Everything within reach." : H(d) === "activity" ? "Pick up the thread." : H(d) === "notifications" ? "Catch up at your pace." : H(d) === "integrations" ? "Make the right connections." : H(d) === "media" ? "A window into your media." : H(d) === "queues" ? "See what’s in motion." : "See what comes next."), J(Je, (n(), U(() => n().phase === "ready" ? "Session checked" : n().phase === "checking" ? "Checking access" : "Access paused"))), J(Xe, (n(), U(() => n().message))), X($e, "hidden", (H(d), n(), U(() => H(d) !== "home" && H(d) !== "directory" || n().phase !== "ready"))), X($e, "aria-label", H(d) === "directory" ? "Service directory view" : "Home"), X(et, "hidden", H(d) !== "home"), X(ot, "hidden", H(d) !== "home"), J(ct, (n(), U(() => n().layoutMessage || "Your panels, in your own order."))), lt.disabled = (n(), U(() => !!n().layoutDraft || n().phase !== "ready" || n().layoutSave === "saving")), X(ut, "hidden", H(d) !== "home"), pt = ti(ft, 1, "home-grid", null, pt, { "services-view": H(d) === "directory" }), X(ht, "hidden", (H(d), n(), U(() => H(d) !== "note" || n().phase !== "ready"))), J(_t, (n(), U(() => n().dirty ? "Unsaved changes" : "Up to date"))), mi(N, (n(), U(() => n().draft))), N.disabled = (n(), U(() => n().phase !== "ready")), Ct = ti(St, 1, "", null, Ct, { "over-limit": H(o) > 4096 }), J(wt, `${H(o) ?? ""} / 4096 bytes`), Tt.disabled = !H(s), J(Et, (n(), U(() => n().save === "saving" ? "Saving…" : "Save note"))), X(It, "hidden", (H(d), n(), U(() => H(d) !== "connections" || n().phase !== "ready"))), X(Rt, "hidden", (H(d), n(), U(() => H(d) !== "activity" || n().phase !== "ready"))), X(Bt, "hidden", (H(d), n(), U(() => H(d) !== "notifications" || n().phase !== "ready"))), X(Ht, "hidden", (H(d), n(), U(() => H(d) !== "integrations" && H(d) !== "roadmap" || n().phase !== "ready"))), X(Ht, "aria-label", H(d) === "roadmap" ? "Roadmap note" : "Integration catalog"), X(Wt, "hidden", (H(d), n(), U(() => H(d) !== "media" || n().phase !== "ready"))), X(Kt, "hidden", (H(d), n(), U(() => H(d) !== "queues" || n().phase !== "ready")));
-	}), G("click", te, () => b("home")), G("click", re, () => b("note")), G("click", E, () => b("connections")), G("click", se, () => b("directory")), G("click", le, () => b("activity")), G("click", ue, () => b("notifications")), G("click", me, () => b("integrations")), G("click", ge, () => b("roadmap")), G("click", ve, () => b("media")), G("click", ye, () => b("queues")), Cr("submit", De, () => l.signOut()), G("click", it, () => b("note")), G("click", at, () => b("roadmap")), G("click", lt, function(...e) {
+	j(Jt);
+	var Xt = z(Jt, 2), Zt = L(Xt);
+	{
+		let e = /* @__PURE__ */ N(() => (n(), U(() => n().snapshot?.account.role === "owner"))), t = /* @__PURE__ */ N(() => (H(d), n(), U(() => H(d) === "identity" && n().phase === "ready")));
+		Zs(Zt, {
+			get binding() {
+				return c();
+			},
+			get state() {
+				return n(), U(() => n().identity);
+			},
+			get owner() {
+				return H(e);
+			},
+			get active() {
+				return H(t);
+			},
+			get check() {
+				return U(() => l.checkIdentity);
+			},
+			get act() {
+				return U(() => l.identityAction);
+			},
+			get saveApplication() {
+				return U(() => l.saveDiscordApplication);
+			}
+		});
+	}
+	j(Xt), xe(2), j(He), j(w), B(() => {
+		X(te, "aria-current", H(d) === "home" ? "page" : void 0), ne = ti(te, 1, "", null, ne, { active: H(d) === "home" }), X(re, "aria-current", H(d) === "note" ? "page" : void 0), ie = ti(re, 1, "", null, ie, { active: H(d) === "note" }), oe = ti(ae, 1, "draft-dot", null, oe, { visible: n().dirty }), X(se, "aria-current", H(d) === "connections" ? "page" : void 0), E = ti(se, 1, "", null, E, { active: H(d) === "connections" }), X(ce, "aria-current", H(d) === "directory" ? "page" : void 0), D = ti(ce, 1, "", null, D, { active: H(d) === "directory" }), X(le, "aria-current", H(d) === "activity" ? "page" : void 0), ue = ti(le, 1, "", null, ue, { active: H(d) === "activity" }), X(de, "aria-current", H(d) === "notifications" ? "page" : void 0), fe = ti(de, 1, "", null, fe, { active: H(d) === "notifications" }), X(me, "aria-current", H(d) === "integrations" ? "page" : void 0), he = ti(me, 1, "", null, he, { active: H(d) === "integrations" }), X(ge, "aria-current", H(d) === "roadmap" ? "page" : void 0), _e = ti(ge, 1, "", null, _e, { active: H(d) === "roadmap" }), X(k, "aria-current", H(d) === "media" ? "page" : void 0), ve = ti(k, 1, "", null, ve, { active: H(d) === "media" }), X(A, "aria-current", H(d) === "queues" ? "page" : void 0), ye = ti(A, 1, "", null, ye, { active: H(d) === "queues" }), X(be, "aria-current", H(d) === "identity" ? "page" : void 0), Se = ti(be, 1, "", null, Se, { active: H(d) === "identity" }), J(De, (n(), U(() => n().snapshot?.account.username ?? "Your account"))), J(Oe, (n(), U(() => n().snapshot?.account.role === "owner" ? "Owner" : n().snapshot?.account.role === "member" ? "Member" : "Check account access"))), mi(Ae, c()), J(Ne, g), J(Ve, v), J(M, y), J(Je, H(d) === "home" ? "Welcome home." : H(d) === "note" ? "A little space to think." : H(d) === "connections" ? "Your servers, at a glance." : H(d) === "directory" ? "Everything within reach." : H(d) === "activity" ? "Pick up the thread." : H(d) === "notifications" ? "Catch up at your pace." : H(d) === "integrations" ? "Make the right connections." : H(d) === "media" ? "A window into your media." : H(d) === "queues" ? "See what’s in motion." : H(d) === "identity" ? "An identity you choose." : "See what comes next."), J(Xe, (n(), U(() => n().phase === "ready" ? "Session checked" : n().phase === "checking" ? "Checking access" : "Access paused"))), J(Qe, (n(), U(() => n().message))), X(nt, "hidden", (H(d), n(), U(() => H(d) !== "home" && H(d) !== "directory" || n().phase !== "ready"))), X(nt, "aria-label", H(d) === "directory" ? "Service directory view" : "Home"), X(rt, "hidden", H(d) !== "home"), X(ct, "hidden", H(d) !== "home"), J(ut, (n(), U(() => n().layoutMessage || "Your panels, in your own order."))), dt.disabled = (n(), U(() => !!n().layoutDraft || n().phase !== "ready" || n().layoutSave === "saving")), X(ft, "hidden", H(d) !== "home"), gt = ti(ht, 1, "home-grid", null, gt, { "services-view": H(d) === "directory" }), X(_t, "hidden", (H(d), n(), U(() => H(d) !== "note" || n().phase !== "ready"))), J(yt, (n(), U(() => n().dirty ? "Unsaved changes" : "Up to date"))), mi(St, (n(), U(() => n().draft))), St.disabled = (n(), U(() => n().phase !== "ready")), Tt = ti(wt, 1, "", null, Tt, { "over-limit": H(o) > 4096 }), J(Et, `${H(o) ?? ""} / 4096 bytes`), Dt.disabled = !H(s), J(Ot, (n(), U(() => n().save === "saving" ? "Saving…" : "Save note"))), X(Rt, "hidden", (H(d), n(), U(() => H(d) !== "connections" || n().phase !== "ready"))), X(Bt, "hidden", (H(d), n(), U(() => H(d) !== "activity" || n().phase !== "ready"))), X(Ht, "hidden", (H(d), n(), U(() => H(d) !== "notifications" || n().phase !== "ready"))), X(Wt, "hidden", (H(d), n(), U(() => H(d) !== "integrations" && H(d) !== "roadmap" || n().phase !== "ready"))), X(Wt, "aria-label", H(d) === "roadmap" ? "Roadmap note" : "Integration catalog"), X(Kt, "hidden", (H(d), n(), U(() => H(d) !== "media" || n().phase !== "ready"))), X(Jt, "hidden", (H(d), n(), U(() => H(d) !== "queues" || n().phase !== "ready"))), X(Xt, "hidden", (H(d), n(), U(() => H(d) !== "identity" || n().phase !== "ready")));
+	}), G("click", te, () => b("home")), G("click", re, () => b("note")), G("click", se, () => b("connections")), G("click", ce, () => b("directory")), G("click", le, () => b("activity")), G("click", de, () => b("notifications")), G("click", me, () => b("integrations")), G("click", ge, () => b("roadmap")), G("click", k, () => b("media")), G("click", A, () => b("queues")), G("click", be, () => b("identity")), Cr("submit", ke, () => l.signOut()), G("click", ot, () => b("note")), G("click", st, () => b("roadmap")), G("click", dt, function(...e) {
 		l.beginLayout?.apply(this, e);
-	}), Cr("submit", bt, (e) => {
+	}), Cr("submit", xt, (e) => {
 		e.preventDefault(), l.save();
-	}), G("input", N, (e) => l.edit(e.currentTarget.value)), q(e, S), Ge(), i();
+	}), G("input", St, (e) => l.edit(e.currentTarget.value)), q(e, C), We(), i();
 }
 wr(["click", "input"]);
 // src/main.ts
-var Us = document.getElementById("workspace-root"), Ws = document.querySelector("meta[name=\"reborn-session-binding\"]")?.content, Gs = document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content;
-if (Us && Ws && /^[a-f0-9]{64}$/.test(Ws) && Gs === "reborn-workspace-v1") {
-	let e = Array.from(Us.childNodes);
-	Us.replaceChildren();
+var dc = document.getElementById("workspace-root"), fc = document.querySelector("meta[name=\"reborn-session-binding\"]")?.content, pc = document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content;
+if (dc && fc && /^[a-f0-9]{64}$/.test(fc) && pc === "reborn-workspace-v1") {
+	let e = Array.from(dc.childNodes);
+	dc.replaceChildren();
 	try {
-		Rr(Hs, {
-			target: Us,
-			props: { binding: Ws }
+		Rr(uc, {
+			target: dc,
+			props: { binding: fc }
 		});
 	} catch {
-		Us.replaceChildren(...e);
+		dc.replaceChildren(...e);
 	}
 }

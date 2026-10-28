@@ -6,6 +6,7 @@ use sqlx::{PgPool, Postgres, Transaction};
 pub(super) mod activity;
 pub(super) mod connections;
 pub(super) mod directory;
+pub(super) mod discord;
 pub(super) mod layout;
 pub(super) mod media;
 pub(super) mod notifications;

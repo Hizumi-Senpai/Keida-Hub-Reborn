@@ -18,9 +18,10 @@ Personal Home arrangement is installed as0.1.11 (issue16).
 The [integration catalog, retained sampled provider history and Roadmap note](docs/M2_CATALOG.md)
 are installed as0.1.12 (issue18).
 [Owner-only Jellyfin/Seerr observations](docs/M3_MEDIA.md) are installed as0.1.13
-(issue20). The current independent slice is
-[owner-only Sonarr/Radarr/qBittorrent queue observations](docs/M3_QUEUES.md),
-tracked in issue22.
+(issue20). [Owner-only Sonarr/Radarr/qBittorrent queue observations](docs/M3_QUEUES.md)
+are installed as0.1.14 (issue22). Documentation-only source0.1.15 records the
+self-hosted Commander policy; live14 remains. The current independent slice is
+[Discord identity linking/status/local unlink](docs/M4_IDENTITY.md), issue25.
 Existing accepted functionality in
 another application is a behavior reference, not a completed Reborn milestone.
 

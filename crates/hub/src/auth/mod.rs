@@ -4,6 +4,8 @@ mod activity;
 mod connections;
 pub mod crypto;
 mod directory;
+mod discord;
+mod discord_flow;
 mod guide;
 mod layout;
 mod media;
@@ -44,6 +46,12 @@ pub fn artifact_assets() -> Vec<String> {
 pub fn account_timeout() -> Response {
     account_pages::timeout()
 }
+pub fn discord_timeout() -> Response {
+    discord::timeout()
+}
+pub fn discord_document(response: Response) -> Response {
+    discord::document_headers(response)
+}
 const SESSION: &str = "__Host-keida-reborn-session";
 const FORM: &str = "__Host-keida-reborn-form";
 
@@ -56,10 +64,17 @@ pub struct Service {
     observer: Arc<crate::providers::crafty::Observer>,
     media_observer: Arc<crate::providers::media::Observer>,
     queue_observer: Arc<crate::providers::queues::Observer>,
+    discord_client: Arc<crate::providers::discord::Client>,
+    discord_flows: Arc<discord_flow::Flows>,
 }
 
 impl Service {
-    pub fn load(pool: PgPool, origin: String, key_path: &FsPath) -> Result<Self, CryptoError> {
+    pub fn load(
+        pool: PgPool,
+        origin: String,
+        key_path: &FsPath,
+        client: crate::providers::discord::Client,
+    ) -> Result<Self, CryptoError> {
         let secrets = Secrets::from_file(key_path)?;
         let key_id = Arc::new(secrets.fingerprint());
         Ok(Self {
@@ -70,6 +85,8 @@ impl Service {
             observer: Arc::new(crate::providers::crafty::Observer::new()),
             media_observer: Arc::new(crate::providers::media::Observer::new()),
             queue_observer: Arc::new(crate::providers::queues::Observer::new()),
+            discord_client: Arc::new(client),
+            discord_flows: Arc::new(discord_flow::Flows::new()),
         })
     }
 
@@ -121,6 +138,7 @@ pub fn router(service: Service) -> Router {
         .merge(media::router(service.clone()))
         .merge(queues::router(service.clone()))
         .merge(observations::router(service.clone()))
+        .merge(discord::router(service.clone()))
         .merge(workspace::router(service))
 }
 
