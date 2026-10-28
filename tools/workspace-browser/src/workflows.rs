@@ -1107,9 +1107,15 @@ pub async fn run() -> Check<()> {
     owner_queue_observations().await?;
     discord::run().await?;
     sessions::run().await?;
+    println!(
+        "Rust workspace browser acceptance: 15 retained workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+    );
+    Ok(())
+}
+pub async fn run_refresh() -> Check<()> {
     refresh::run().await?;
     println!(
-        "Rust workspace browser acceptance: 16 workflows passed; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
+        "Rust workspace refresh browser acceptance: 1 workflow passed; actual60-second hidden deadline; Chromium/ChromeDriver156.0.8078.4; real HTTPS/PostgreSQL; no skipped prerequisite"
     );
     Ok(())
 }

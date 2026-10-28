@@ -2410,8 +2410,10 @@ function Yi() {
 }
 var Xi = (e, t) => Object.keys(e).every((n) => e[n] === t[n]), Zi = (e, t) => Gi(e.account) && e.account.id === t.account.id && e.account.username === t.account.username && e.account.role === t.account.role && e.session_generation === t.session_generation, Qi = class extends Error {
 	kind;
-	constructor(e) {
-		super(e), this.kind = e;
+	running;
+	detail;
+	constructor(e, t, n) {
+		super(e), this.kind = e, this.running = t, this.detail = n;
 	}
 };
 function $i(e, t) {
@@ -2427,10 +2429,11 @@ function $i(e, t) {
 	function m() {
 		++i, a?.abort(), a = void 0, o && clearTimeout(o), o = void 0, f?.(), f = void 0, u = void 0, c = !1;
 	}
-	function h(e) {
+	function h(e, n, r) {
 		p({
 			phase: e,
-			message: e === "sign-in-required" ? "Your sign-in changed or ended. Use a fresh sign-in to continue." : "This page cannot continue with the server now answering. Open a fresh document when you are ready."
+			...n ? { running: n } : {},
+			message: r ?? (e === "sign-in-required" ? "Your sign-in changed or ended. Use a fresh sign-in to continue." : "This page cannot continue with the server now answering. Open a fresh document when you are ready.")
 		}), t.blocked(e === "sign-in-required" ? "Your sign-in changed or ended. Open a fresh workspace after signing in." : "The server is incompatible with this loaded page. Open a fresh document.");
 	}
 	async function g(t, n, r) {
@@ -2481,14 +2484,15 @@ function $i(e, t) {
 		let i = await g("/api/health", e, t);
 		if (i.status !== 200 || !Gi(i.value) || i.value.status !== "ok") throw Error("Unavailable health");
 		let a = Ji(i.value.identity);
-		if (!n || n.product !== Vi || a.product !== Vi || n.contract !== "reborn-auth-v1" || a.contract !== n.contract || document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content !== Hi) throw new Qi("incompatible");
+		if (!n || n.product !== Vi || a.product !== Vi || n.contract !== "reborn-auth-v1" || a.contract !== n.contract || document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content !== Hi) throw new Qi("incompatible", a);
 		let o = await g("/api/workspace/access", e, t);
-		if (o.status === 401 || o.status === 403) throw new Qi("sign-in-required");
-		if (o.status === 426) throw new Qi("incompatible");
+		if (o.status === 401 || o.status === 403) throw new Qi("sign-in-required", a);
+		if (o.status === 404 || o.status === 405) throw new Qi("incompatible", a, "The running server does not support this page’s refresh checks. Use your Account link to open a fresh document when ready.");
+		if (o.status === 426) throw new Qi("incompatible", a);
 		if (o.status !== 200 || !Gi(o.value)) throw Error("Unavailable access");
 		let s = o.value;
-		if (s.product !== Vi || s.contract !== Hi || s.schema !== 1) throw new Qi("incompatible");
-		if (!Zi(s, r)) throw new Qi("sign-in-required");
+		if (s.product !== Vi || s.contract !== Hi || s.schema !== 1) throw new Qi("incompatible", a);
+		if (!Zi(s, r)) throw new Qi("sign-in-required", a);
 		if (!Xi(a, Ji(s.identity))) throw Error("Server changed between probes");
 		return a;
 	}
@@ -2508,7 +2512,7 @@ function $i(e, t) {
 			});
 		} catch (e) {
 			if (s || o.signal.aborted || i !== c) return;
-			e instanceof Qi ? h(e.kind) : p({
+			e instanceof Qi ? h(e.kind, e.running, e.detail) : p({
 				phase: "unavailable",
 				message: "The server version could not be checked. This page has not refreshed."
 			});
@@ -2569,7 +2573,7 @@ function $i(e, t) {
 				} catch (e) {
 					if (s || i !== r || n.signal.aborted) break;
 					if (e instanceof Qi) {
-						h(e.kind);
+						h(e.kind, e.running, e.detail);
 						return;
 					}
 				}
@@ -6040,7 +6044,7 @@ function xc(e, t) {
 }
 wr(["click"]);
 // src/RefreshNotice.svelte
-var Sc = /* @__PURE__ */ K("<dt>Loaded page</dt><dd> <span class=\"field-help\"> </span></dd>", 1), Cc = /* @__PURE__ */ K("<dt>Running server</dt><dd> <span class=\"field-help\"> </span></dd>", 1), wc = /* @__PURE__ */ K("<dl class=\"refresh-builds\"><!> <!></dl>"), Tc = /* @__PURE__ */ K("<p data-refresh-drafts=\"\">There is unfinished work in your note, arrangement or a form. You can stay and finish it, or deliberately discard it.</p>"), Ec = /* @__PURE__ */ K("<p data-refresh-busy=\"\">A change is pending or its result needs checking. Finish it or check the saved state before refreshing. It will not be sent again.</p>"), Dc = /* @__PURE__ */ K("<button class=\"button secondary refresh-cancel\">Cancel refresh checks</button>"), Oc = /* @__PURE__ */ K("<button class=\"button primary refresh-navigate\"> </button>"), kc = /* @__PURE__ */ K("<button class=\"button primary refresh-prepare\">Check access for refresh</button>"), Ac = /* @__PURE__ */ K("<p class=\"field-help\">Private content is hidden. <a href=\"/account\">Open your account</a> to choose a fresh document. Review any unfinished work before leaving.</p>"), jc = /* @__PURE__ */ K("<p>Save or finish work in this page before refreshing. Unsaved forms do not move to the next document.</p> <!> <!> <div class=\"button-row\"><!> <button class=\"text-button refresh-stay\">Stay on this page</button></div> <!>", 1), Mc = /* @__PURE__ */ K("<button class=\"button secondary refresh-review\">Review refresh</button>"), Nc = /* @__PURE__ */ K("<section class=\"refresh-notice notice\" aria-label=\"Workspace refresh\"><p class=\"eyebrow\">YOUR PAGE, YOUR CHOICE</p> <h2>Refresh when you are ready.</h2> <p role=\"status\" data-refresh-status=\"\"> </p> <!> <!></section>");
+var Sc = /* @__PURE__ */ K("<dt>Loaded page</dt><dd> <span class=\"field-help\"> </span></dd>", 1), Cc = /* @__PURE__ */ K("<dt>Running server</dt><dd> <span class=\"field-help\"> <!></span></dd>", 1), wc = /* @__PURE__ */ K("<dl class=\"refresh-builds\"><!> <!></dl>"), Tc = /* @__PURE__ */ K("<p data-refresh-drafts=\"\">There is unfinished work in your note, arrangement or a form. You can stay and finish it, or deliberately discard it.</p>"), Ec = /* @__PURE__ */ K("<p data-refresh-busy=\"\">A change is pending or its result needs checking. Finish it or check the saved state before refreshing. It will not be sent again.</p>"), Dc = /* @__PURE__ */ K("<button class=\"button secondary refresh-cancel\">Cancel refresh checks</button>"), Oc = /* @__PURE__ */ K("<button class=\"button primary refresh-navigate\"> </button>"), kc = /* @__PURE__ */ K("<button class=\"button primary refresh-prepare\">Check access for refresh</button>"), Ac = /* @__PURE__ */ K("<p class=\"field-help\">Private content is hidden. <a href=\"/account\">Open your account</a> to choose a fresh document. Review any unfinished work before leaving.</p>"), jc = /* @__PURE__ */ K("<p>Save or finish work in this page before refreshing. Unsaved forms do not move to the next document.</p> <!> <!> <div class=\"button-row\"><!> <button class=\"text-button refresh-stay\">Stay on this page</button></div> <!>", 1), Mc = /* @__PURE__ */ K("<button class=\"button secondary refresh-review\">Review refresh</button>"), Nc = /* @__PURE__ */ K("<section class=\"refresh-notice notice\" aria-label=\"Workspace refresh\"><p class=\"eyebrow\">YOUR PAGE, YOUR CHOICE</p> <h2>Refresh when you are ready.</h2> <p role=\"status\" data-refresh-status=\"\"> </p> <!> <!></section>");
 function Pc(e, t) {
 	Ue(t, !1);
 	let n = () => Ni(c, "$updates", r), [r, i] = Pi(), a = Z(t, "control", 8), o = Z(t, "inspect", 8), s = Z(t, "workspaceModel", 8), c = a().model, l = /* @__PURE__ */ F({
@@ -6071,9 +6075,14 @@ function Pc(e, t) {
 				n(), U(() => n().loaded) && e(i);
 			});
 			var a = z(r, 2), o = (e) => {
-				var t = Cc(), r = z(cn(t)), i = L(r), a = R(z(i), !0);
-				j(r), B((e) => {
-					J(i, `${n(), U(() => n().running.version) ?? ""} `), J(a, e);
+				var t = Cc(), r = z(cn(t)), i = L(r), a = z(i), o = L(a, !0), s = z(o), c = (e) => {
+					var t = Mr();
+					B(() => J(t, `· ${n(), U(() => n().running.product) ?? ""}`)), q(e, t);
+				};
+				Y(s, (e) => {
+					n(), U(() => n().running.product !== n().loaded?.product) && e(c);
+				}), j(a), j(r), B((e) => {
+					J(i, `${n(), U(() => n().running.version) ?? ""} `), J(o, e);
 				}, [() => (n(), U(() => n().running.commit.slice(0, 12)))]), q(e, t);
 			};
 			Y(a, (e) => {

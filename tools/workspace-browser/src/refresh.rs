@@ -164,6 +164,7 @@ pub async fn run() -> Check<()> {
         (RefreshMode::AccessDenied, "sign-in-required"),
         (RefreshMode::OtherProduct, "incompatible"),
         (RefreshMode::Unsupported, "incompatible"),
+        (RefreshMode::Legacy17, "incompatible"),
     ] {
         f.refresh_mode(mode);
         review(&b).await?;

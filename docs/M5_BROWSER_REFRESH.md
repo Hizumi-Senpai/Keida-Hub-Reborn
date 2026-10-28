@@ -28,3 +28,19 @@ Meaningful Rust HTTP contracts cover read-only admission, private/no-store envel
 
 Retain all22 baseline workspace assets byte-for-byte and add the new pair (24 unique); retain all prior guide profiles and native account assets. No dependency/lockfile or production runtime change. Exact head/main required gates and all retained workflows/recovery flags remain. Qualify packaged schema13 recovery and current schema13 compatible upgrade/rollback with newer data preserved. Manual Reborn-only publication/installation uses new sealed audited source/held locks and fresh ownership; useful prior17 plus matched schema13 recovery retained only after exact18 qualification. No unknown mutation retry or historical script replay.
 
+
+## Baseline17 rollback clarification
+
+Baseline17 predates the access probe. A404/405 is unsupported refresh checking,
+not compatible-ready or a transient outage to retry for a minute. Show the public
+running identity, clear private state and offer the existing explicit native
+Account/fresh-document path. Do not fetch notes/provider data as a substitute,
+replay credentials or reload automatically. A fresh17 document and its existing
+same-account/generation note recovery remain available. Current-data17/18 and
+newer-write compatibility still need their own rehearsal.
+
+The retained15 browser workflows keep their existing240-second invocation.
+The new refresh workflow runs separately with an explicit120-second invocation,
+including its actual60-second hidden-tab test. Both invocations are mandatory
+in each existing native and packaged-image CI step:16 total workflows per mode.
+No retained timeout, assertion, required step or45-minute job budget is weakened.

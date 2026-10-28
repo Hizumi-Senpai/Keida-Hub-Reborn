@@ -130,6 +130,7 @@ pub enum RefreshMode {
     AccessDenied,
     AccountChanged,
     IdentityRace,
+    Legacy17,
 }
 struct Proxy {
     upstream: String,
@@ -179,6 +180,9 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
         }
         if path == "/api/workspace/access" && refresh_mode == RefreshMode::AccessDenied as u64 {
             return StatusCode::UNAUTHORIZED.into_response();
+        }
+        if path == "/api/workspace/access" && refresh_mode == RefreshMode::Legacy17 as u64 {
+            return StatusCode::NOT_FOUND.into_response();
         }
     }
     let access_path = path == "/api/workspace/access";
@@ -275,9 +279,12 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
                 let identity = &mut value["identity"];
                 if refresh_mode == RefreshMode::Upgrade as u64
                     || refresh_mode == RefreshMode::Rollback as u64
+                    || refresh_mode == RefreshMode::Legacy17 as u64
                 {
                     let n = if refresh_mode == RefreshMode::Upgrade as u64 {
                         999
+                    } else if refresh_mode == RefreshMode::Legacy17 as u64 {
+                        17
                     } else {
                         16
                     };

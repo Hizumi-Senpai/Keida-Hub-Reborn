@@ -9,7 +9,26 @@ fn check(ok: bool, message: &'static str) -> Check<()> {
 #[tokio::main]
 async fn main() -> std::process::ExitCode {
     let _ = tokio_rustls::rustls::crypto::ring::default_provider().install_default();
-    match tokio::time::timeout(std::time::Duration::from_secs(240), workflows::run()).await {
+    let arguments: Vec<_> = std::env::args().skip(1).collect();
+    let refresh = match arguments.as_slice() {
+        [] => false,
+        [argument] if argument == "--refresh" => true,
+        _ => {
+            eprintln!("usage: reborn-workspace-browser [--refresh]");
+            return std::process::ExitCode::from(2);
+        }
+    };
+    // Retain the original fifteen-workflow 240s admission unchanged. The new
+    // real one-minute test has its own explicit 120s admission and CI caller.
+    let budget = if refresh { 120 } else { 240 };
+    let run = async {
+        if refresh {
+            workflows::run_refresh().await
+        } else {
+            workflows::run().await
+        }
+    };
+    match tokio::time::timeout(std::time::Duration::from_secs(budget), run).await {
         Ok(Ok(())) => std::process::ExitCode::SUCCESS,
         Ok(Err(message)) => {
             eprintln!("Rust workspace browser failure: {message}");

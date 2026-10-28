@@ -23,7 +23,7 @@
     {#if $updates.loaded || $updates.running}
       <dl class="refresh-builds">
         {#if $updates.loaded}<dt>Loaded page</dt><dd>{$updates.loaded.version} <span class="field-help">{$updates.loaded.commit.slice(0, 12)}</span></dd>{/if}
-        {#if $updates.running}<dt>Running server</dt><dd>{$updates.running.version} <span class="field-help">{$updates.running.commit.slice(0, 12)}</span></dd>{/if}
+        {#if $updates.running}<dt>Running server</dt><dd>{$updates.running.version} <span class="field-help">{$updates.running.commit.slice(0, 12)}{#if $updates.running.product !== $updates.loaded?.product} · {$updates.running.product}{/if}</span></dd>{/if}
       </dl>
     {/if}
     {#if $updates.review}

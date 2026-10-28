@@ -36,7 +36,7 @@ function loadedBuild(): Build | undefined {
 const same = (a: Build, b: Build): boolean => Object.keys(a).every(key => a[key as keyof Build] === b[key as keyof Build]);
 const sameScope = (v: Record<string, unknown>, s: AccessScope): boolean => object(v.account) && v.account.id === s.account.id
   && v.account.username === s.account.username && v.account.role === s.account.role && v.session_generation === s.session_generation;
-class Outcome extends Error { constructor(readonly kind: 'sign-in-required' | 'incompatible') { super(kind); } }
+class Outcome extends Error { constructor(readonly kind: 'sign-in-required' | 'incompatible', readonly running?: Build, readonly detail?: string) { super(kind); } }
 
 // One read-only owner. Normal discovery is called by the workspace's existing
 // scheduler. Only an explicit reconnect owns a bounded retry/deadline sequence.
@@ -49,8 +49,8 @@ export function refresh(binding: string, host: Host) {
   let wake: (() => void) | undefined;
   const set = (next: Partial<RefreshState>) => model.update(s => ({ ...s, ...next }));
   function abort(): void { ++serial; active?.abort(); active = undefined; if (deadline) clearTimeout(deadline); deadline = undefined; wake?.(); wake = undefined; expire = undefined; reconnecting = false; }
-  function terminal(kind: 'sign-in-required' | 'incompatible'): void {
-    set({ phase: kind, message: kind === 'sign-in-required' ? 'Your sign-in changed or ended. Use a fresh sign-in to continue.' : 'This page cannot continue with the server now answering. Open a fresh document when you are ready.' });
+  function terminal(kind: 'sign-in-required' | 'incompatible', running?: Build, detail?: string): void {
+    set({ phase: kind, ...(running ? { running } : {}), message: detail ?? (kind === 'sign-in-required' ? 'Your sign-in changed or ended. Use a fresh sign-in to continue.' : 'This page cannot continue with the server now answering. Open a fresh document when you are ready.') });
     host.blocked(kind === 'sign-in-required' ? 'Your sign-in changed or ended. Open a fresh workspace after signing in.' : 'The server is incompatible with this loaded page. Open a fresh document.');
   }
   async function json(path: string, signal: AbortSignal, until: number): Promise<{ status: number; value?: unknown }> {
@@ -81,14 +81,15 @@ export function refresh(binding: string, host: Host) {
     if (health.status !== 200 || !object(health.value) || health.value.status !== 'ok') throw new Error('Unavailable health');
     const running = build(health.value.identity);
     if (!loaded || loaded.product !== PRODUCT || running.product !== PRODUCT || loaded.contract !== 'reborn-auth-v1' || running.contract !== loaded.contract
-        || document.querySelector<HTMLMetaElement>('meta[name="reborn-workspace-contract"]')?.content !== CONTRACT) throw new Outcome('incompatible');
+        || document.querySelector<HTMLMetaElement>('meta[name="reborn-workspace-contract"]')?.content !== CONTRACT) throw new Outcome('incompatible', running);
     const access = await json('/api/workspace/access', signal, until);
-    if (access.status === 401 || access.status === 403) throw new Outcome('sign-in-required');
-    if (access.status === 426) throw new Outcome('incompatible');
+    if (access.status === 401 || access.status === 403) throw new Outcome('sign-in-required', running);
+    if (access.status === 404 || access.status === 405) throw new Outcome('incompatible', running, 'The running server does not support this page’s refresh checks. Use your Account link to open a fresh document when ready.');
+    if (access.status === 426) throw new Outcome('incompatible', running);
     if (access.status !== 200 || !object(access.value)) throw new Error('Unavailable access');
     const v = access.value;
-    if (v.product !== PRODUCT || v.contract !== CONTRACT || v.schema !== 1) throw new Outcome('incompatible');
-    if (!sameScope(v, scope)) throw new Outcome('sign-in-required');
+    if (v.product !== PRODUCT || v.contract !== CONTRACT || v.schema !== 1) throw new Outcome('incompatible', running);
+    if (!sameScope(v, scope)) throw new Outcome('sign-in-required', running);
     if (!same(running, build(v.identity))) throw new Error('Server changed between probes');
     return running;
   }
@@ -104,7 +105,7 @@ export function refresh(binding: string, host: Host) {
       set({ running, phase: same(loaded!, running) ? 'current' : 'changed', message: same(loaded!, running) ? 'This page matches the running server.' : 'The running server changed. Review your work before refreshing.' });
     } catch (e) {
       if (disposed || controller.signal.aborted || serial !== current) return;
-      if (e instanceof Outcome) terminal(e.kind);
+      if (e instanceof Outcome) terminal(e.kind, e.running, e.detail);
       else set({ phase: 'unavailable', message: 'The server version could not be checked. This page has not refreshed.' });
     } finally { if (active === controller) active = undefined; }
   }
@@ -130,7 +131,7 @@ export function refresh(binding: string, host: Host) {
             if (disposed || serial !== current || controller.signal.aborted || performance.now() >= until) break;
             if (document.visibilityState !== 'visible') throw new Error('Workspace hidden');
             readyAt = performance.now(); set({ running, phase: 'compatible-ready', message: 'The server and your account are ready. Review unfinished work, then choose whether to refresh.' }); return;
-          } catch (e) { if (disposed || serial !== current || controller.signal.aborted) break; if (e instanceof Outcome) { terminal(e.kind); return; } }
+          } catch (e) { if (disposed || serial !== current || controller.signal.aborted) break; if (e instanceof Outcome) { terminal(e.kind, e.running, e.detail); return; } }
         }
         if (performance.now() >= until) break;
         await new Promise<void>(resolve => { const timer = setTimeout(() => { wake = undefined; resolve(); }, Math.min(delay, until - performance.now())); wake = () => { clearTimeout(timer); resolve(); }; });
