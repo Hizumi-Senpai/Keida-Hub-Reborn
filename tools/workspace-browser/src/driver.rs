@@ -121,7 +121,7 @@ impl Browser {
             args.push(format!("--proxy-server=http://{proxy}"));
             args.push("--disable-quic".to_owned());
             args.push("--proxy-bypass-list=localhost;127.0.0.1;[::1]".to_owned());
-            args.push(format!("--host-resolver-rules=MAP discord.com:443 {address},MAP * ~NOTFOUND,EXCLUDE localhost"));
+            args.push(format!("--host-resolver-rules=MAP discord.com:443 {address},MAP * ~NOTFOUND,EXCLUDE localhost,EXCLUDE 127.0.0.1"));
         } else {
             args.push("--no-proxy-server".to_owned());
         }

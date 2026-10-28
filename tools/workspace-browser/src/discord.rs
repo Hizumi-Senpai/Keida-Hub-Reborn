@@ -5,9 +5,14 @@ use reborn_crafty_fixture::discord as d;
 use serde_json::json;
 
 async fn identity(f: &Fixture, b: &Browser) -> Check<()> {
-    b.navigate(&format!("{}/workspace#identity", f.origin))
-        .await?;
-    b.wait("const s=document.querySelector('[data-discord-identity]');return location.hash==='#identity' && !!s && /^(0|[1-9][0-9]*)$/.test(s.dataset.linkRevision) && s.dataset.save==='idle' && !s.querySelector('.discord-check').disabled;",json!([])).await
+    // A fragment navigation within an already loaded workspace does not mount
+    // another Svelte app. Exercise the actual eleventh view control instead.
+    if b.evaluate("return location.pathname==='/workspace' && !!document.querySelector('.main-nav button:nth-child(11)');",json!([])).await? != true {
+        workspace(f, b).await?;
+    }
+    b.wait("return !!document.querySelector('#workspace-note') && !document.querySelector('#workspace-note').disabled;",json!([])).await?;
+    b.click(".main-nav button:nth-child(11)").await?;
+    b.wait("const s=document.querySelector('[data-discord-identity]'),n=document.querySelector('.main-nav button:nth-child(11)'),c=s?.querySelector('.discord-check');return !!s && n?.getAttribute('aria-current')==='page' && !s.closest('[hidden]') && s.getClientRects().length>0 && /^(0|[1-9][0-9]*)$/.test(s.dataset.linkRevision) && s.dataset.save==='idle' && !!c && !c.disabled;",json!([])).await
 }
 async fn consent(b: &Browser) -> Check<()> {
     b.click(".discord-start").await?;
