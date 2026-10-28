@@ -555,8 +555,6 @@ async fn acting_session_expiry_while_waiting_for_target_lock_rolls_back_targeted
     let target = server.login("keida_owner", OWNER_PASSWORD).await;
     let id = current_id(&list(&server, &target).await);
     let mut observer = fixture.connect().await;
-    let expires: i64 = sqlx::query_scalar("UPDATE sessions SET created_at=0,expires_at=floor(extract(epoch FROM clock_timestamp()))::bigint+2 WHERE verifier=$1 RETURNING expires_at")
-        .bind(verifier(&actor)).fetch_one(&mut observer).await.unwrap();
     let mut connection = fixture.connect().await;
     let mut tx = connection.begin().await.unwrap();
     let _: String = sqlx::query_scalar(
@@ -566,6 +564,27 @@ async fn acting_session_expiry_while_waiting_for_target_lock_rolls_back_targeted
     .fetch_one(&mut *tx)
     .await
     .unwrap();
+    // Align the real database clock before choosing a one-second expiry. A
+    // floor(now)+2 expiry can wait almost two seconds, exceeding production's
+    // unchanged 1.5s lock timeout and testing that timeout instead of expiry.
+    let align_deadline = Instant::now() + Duration::from_secs(2);
+    loop {
+        let millis: i64 =
+            sqlx::query_scalar("SELECT floor(extract(epoch FROM clock_timestamp())*1000)::bigint")
+                .fetch_one(&mut observer)
+                .await
+                .unwrap();
+        if millis % 1000 <= 100 {
+            break;
+        }
+        assert!(
+            Instant::now() < align_deadline,
+            "fixture clock alignment deadline"
+        );
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    }
+    let expires: i64 = sqlx::query_scalar("UPDATE sessions SET created_at=0,expires_at=floor(extract(epoch FROM clock_timestamp()))::bigint+1 WHERE verifier=$1 RETURNING expires_at")
+        .bind(verifier(&actor)).fetch_one(&mut observer).await.unwrap();
     let request = workspace_request(&server, &actor, Method::POST, REVOKE)
         .json(&json!({"session_id":id}))
         .build()

@@ -94,7 +94,7 @@ export function refresh(binding: string, host: Host) {
   }
   async function discover(): Promise<void> {
     const scope = host.scope(); if (disposed || active || !scope || document.visibilityState !== 'visible') return;
-    if (get(model).review && ['compatible-ready', 'could-not-reconnect', 'cancelled', 'sign-in-required', 'incompatible'].includes(get(model).phase)) return;
+    if (get(model).review) return;
     const controller = new AbortController(), current = ++serial; active = controller;
     const before = get(model); if (before.phase === 'compatible-ready') return void (active = undefined);
     set({ phase: 'checking' });
@@ -148,6 +148,6 @@ export function refresh(binding: string, host: Host) {
   }
   return { model, discover, reconnect, navigate, cancel, pause,
     resume: () => { if (reconnecting) { if (performance.now() >= attemptUntil) expire?.(); else wake?.(); } },
-    review: () => set({ review: true }), stay: () => { if (reconnecting) cancel(); else if (get(model).phase === 'compatible-ready') set({ phase: 'idle' }); set({ review: false }); },
+    review: () => { if (!reconnecting) abort(); set({ review: true }); }, stay: () => { if (reconnecting) cancel(); else if (get(model).phase === 'compatible-ready') set({ phase: 'idle' }); set({ review: false }); },
     dispose: () => { disposed = true; abort(); } };
 }

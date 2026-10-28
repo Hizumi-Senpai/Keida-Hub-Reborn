@@ -2494,13 +2494,7 @@ function $i(e, t) {
 	}
 	async function v() {
 		let e = t.scope();
-		if (s || a || !e || document.visibilityState !== "visible" || Ai(r).review && [
-			"compatible-ready",
-			"could-not-reconnect",
-			"cancelled",
-			"sign-in-required",
-			"incompatible"
-		].includes(Ai(r).phase)) return;
+		if (s || a || !e || document.visibilityState !== "visible" || Ai(r).review) return;
 		let o = new AbortController(), c = ++i;
 		if (a = o, Ai(r).phase === "compatible-ready") return void (a = void 0);
 		p({ phase: "checking" });
@@ -2610,7 +2604,9 @@ function $i(e, t) {
 		resume: () => {
 			c && (performance.now() >= d ? u?.() : f?.());
 		},
-		review: () => p({ review: !0 }),
+		review: () => {
+			c || m(), p({ review: !0 });
+		},
 		stay: () => {
 			c ? y() : Ai(r).phase === "compatible-ready" && p({ phase: "idle" }), p({ review: !1 });
 		},

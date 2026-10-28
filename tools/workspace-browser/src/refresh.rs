@@ -123,8 +123,8 @@ pub async fn run() -> Check<()> {
     )?;
 
     step("refresh phase05 cancel prevents a late health reply from replacing state");
-    let held = f.hold("/api/health");
     review(&b).await?;
+    let held = f.hold("/api/health");
     b.click(".refresh-prepare").await?;
     tokio::time::timeout(Duration::from_secs(3), held.entered.notified())
         .await
@@ -231,6 +231,12 @@ pub async fn run() -> Check<()> {
         f.writes() == before,
         "fresh document navigation replays no mutation",
     )?;
+    step("refresh phase11 actual application revocation refuses the old browser bearer");
+    review(&b).await?;
+    f.revoke_all(&b).await?;
+    b.click(".refresh-prepare").await?;
+    phase(&b, "sign-in-required").await?;
+    check(b.evaluate("return document.querySelector('#workspace-note')?.value==='' && !document.querySelector('.refresh-navigate') && !document.body.textContent.includes(arguments[0]);",json!(["Committed during refresh review"])).await?==true,"real revoked authority clears private content and cannot prepare refresh")?;
     b.close().await?;
     drop(b);
     f.close().await?;

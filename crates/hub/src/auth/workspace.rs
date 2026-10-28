@@ -109,7 +109,8 @@ async fn access(State(service): State<Service>, headers: HeaderMap) -> Response 
         )
     }
     .await;
-    result.unwrap_or_else(private_error)
+    // A read-only access check must never mutate the browser's auth cookies.
+    result.unwrap_or_else(IntoResponse::into_response)
 }
 async fn asset(Path(file): Path<String>) -> Response {
     let path = format!("/assets/workspace/{file}");
