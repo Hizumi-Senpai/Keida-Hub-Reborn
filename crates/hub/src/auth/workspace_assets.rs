@@ -22,6 +22,8 @@ const MEDIA_SCRIPT: &[u8] = include_bytes!("../../static/workspace-compat/0.1.13
 const MEDIA_STYLE: &[u8] = include_bytes!("../../static/workspace-compat/0.1.13.css");
 const QUEUES_SCRIPT: &[u8] = include_bytes!("../../static/workspace-compat/0.1.14.js");
 const QUEUES_STYLE: &[u8] = include_bytes!("../../static/workspace-compat/0.1.14.css");
+const IDENTITY_SCRIPT: &[u8] = include_bytes!("../../static/workspace-compat/0.1.16.js");
+const IDENTITY_STYLE: &[u8] = include_bytes!("../../static/workspace-compat/0.1.16.css");
 fn url(bytes: &[u8], extension: &str) -> String {
     let digest: String = Sha256::digest(bytes)
         .iter()
@@ -78,6 +80,10 @@ pub fn find(path: &str) -> Option<(&'static str, &'static [u8])> {
         Some(("text/javascript; charset=utf-8", QUEUES_SCRIPT))
     } else if path == url(QUEUES_STYLE, "css") {
         Some(("text/css; charset=utf-8", QUEUES_STYLE))
+    } else if path == url(IDENTITY_SCRIPT, "js") {
+        Some(("text/javascript; charset=utf-8", IDENTITY_SCRIPT))
+    } else if path == url(IDENTITY_STYLE, "css") {
+        Some(("text/css; charset=utf-8", IDENTITY_STYLE))
     } else {
         None
     }
@@ -104,5 +110,7 @@ pub fn manifest() -> Vec<String> {
         url(MEDIA_STYLE, "css"),
         url(QUEUES_SCRIPT, "js"),
         url(QUEUES_STYLE, "css"),
+        url(IDENTITY_SCRIPT, "js"),
+        url(IDENTITY_STYLE, "css"),
     ]
 }

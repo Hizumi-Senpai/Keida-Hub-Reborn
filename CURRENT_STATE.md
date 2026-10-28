@@ -1,70 +1,68 @@
 # Reborn current state
 
-Updated2026-10-27 America/Chicago. Accepted source, qualified artifact, installed
-service, loaded browser and real-provider acceptance remain separate. Exact
-[issue1 receipts](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1) take
-precedence over historical bootstrap examples.
+Updated2026-10-28 America/Chicago. Accepted source, qualified artifact, installed
+service, loaded browser and actual owner/provider acceptance remain separate.
+[Issue1 receipts](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1) and
+fresh actual host discovery take precedence over historical bootstrap examples.
 
-## Verified baseline at slice start
+## Installed baseline
 
-Live is **Reborn0.1.14/schema11** at https://rewrite.keida.me, source
-`26fee1ad902a933ef1dfd934a5415cde92885388`, tree
-`6a5f9c4c3a79e0237ca2c182fad9edc664e15301`, image
-`sha256:a0da70b51b3616a56d74ecaec73b203a114f2d614a777b8c60a8fc913c69b497`.
-[Exact source/artifact/current-data/install receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6458999115).
-Head/main each passed24steps:123Rust tests,64genuine checkedSQLx records,
-13native+13exact-image HTTPS browser workflows and11account outcomes including
-actual ten-minute expiry. Current-data10→11 and final fenced recovery preserved
-15prior domain relations, four sequence states/is_called and migrations1–10.
-
-Accepted source **0.1.15** `e501a725cccffcb59a4da965d8fbfc28fdfe68ab`, tree
-`10c0f9edb746909c6241ac0bef5c621c157bcb21`, is documentation-only self-hosted
-Commander policy (PR24), with green head/main24stepCI. It was not ledger-published
-or installed. Live14 remains unchanged. Fresh self-hosted preflight at
-2026-10-28T03:59:34Z confirmed exact14healthy/schema11 and Original200.
+**Reborn0.1.16/schema12** at https://rewrite.keida.me is recorded by the
+[exact source/artifact/current-data/final-fenced install/retention receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6462653936).
+Source `bb1094922baa9197297bc749a31aa1d942801ba1`, tree
+`ace0e5d6e0535caa4211b875075258726feba39f`; image
+`sha256:e479ffeb86944a5f8669b1dfc29a5334ff8e3fb09b4b3fc53699f2caa2c2803a`.
+Head/main each passed24steps:169Rust/69genuineSQLx/14native+14exact-image HTTPS
+workflows/11account-lifecycle outcomes including actual ten-minute form expiry.
+Current11→12 and final fenced matched11 recovery preserved16prior relations,
+four sequence value/is_called pairs and whole ledger1–11 plus key/configuration.
+The terminal16 receipt retains useful14/matched11 recovery and all20assets.
 
 Private notes, Crafty observations, directory/search/pins, Activity, notifications,
-Home arrangement, catalog/Roadmap/history, owner-only Media and Queues are installed.
-All six provider configurations were absent at14terminal receipt. Actual refreshed
-owner workflows and deliberate provider/TLS/privacy/join/freshness acceptance remain
-open; M0/M1/full M2/M3 are not complete.
+Home arrangement, catalog/Roadmap/history, owner-only Media/Queues and bounded
+Discord identity review/confirm/status/local unlink are installed. All six
+providers plus the Discord application were unconfigured at the terminal receipt.
+Real dedicated Discord registration/private enrollment/callback-query privacy and
+owner linking acceptance, existing provider/TLS/privacy/freshness and refreshed
+desktop/mobile daily workflows remain open. Full M0–M4 are not complete.
 
-## Current source slice
+## Current independent source slice
 
-[Discord identity link/status/local unlink](docs/M4_IDENTITY.md),
-[issue25](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/25), was frozen
-before application edits. Existing local accounts keep local sign-in/recovery;
-S256/state, a Strict-cookie same-origin bridge and separate explicit candidate
-confirmation protect deliberate linking. No Discord sign-in, account merging,
-guild authority, bots or inherited credentials. Application starts unconfigured;
-real registration/enrollment, callback query-log privacy and owner acceptance are
-separate named dependencies.
+[Personal active-session review and targeted sign-out](docs/M4_SESSIONS.md),
+[issue27](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/27), was frozen
+before code. Expected source0.1.17/schema13 adds independent non-bearer UUID
+selectors to existing session rows and narrows runtime session-column grants.
+An existing account can review its complete active list (hard cap32), see
+creation/expiry/This-session metadata and sign out one other owned session.
+Current/all native sign-out remains available. No role/password/generation,
+account activation, Discord link, provider or game authority changes.
 
-Expected next application source0.1.16/schema12 adds encrypted fixed application
-configuration and retained per-account identity tombstones. Bounded RAM attempts
-are lost on restart; codes/tokens are never restored or automatically replayed.
-The eleventh Identity view preserves the workspace scheduler, private account
-lifecycle and existing drafts. Exact legacy/media-v1/queues-v1 guides and all
-prior immutable assets including14 are retained; new guide opt-in isidentity-v1.
+The sessions view is lifecycle-cleared private workspace data, entered from the
+Account area; native Account HTML stays free of private account/session rows.
+All eleven primary navigation positions, one scheduler, prior guide profiles,
+native account assets and all20 baseline workspace assets are retained. The new
+pair produces22unique workspace assets. No dependency version is changed.
 
-Qualification/install remains pending until exact receipt: actual SQLx generation,
-head/mainCI, native/image browser, current11→12 and final fenced matched recovery
-must preserve16prior domain relations, four sequence states/is_called and ledger1–11.
-Old14 must refuse12. Compatible recovery uses current data, never automatic old
-backup restore. Accepted application source is not a claim of real Discord use.
+Source, exact-head/main CI, actual SQLx metadata, native/image browser acceptance,
+packaged13 session/newer-write recovery and actual-current12→13/final fenced
+matched12 recovery remain separate gates until exact receipts. Cross-schema
+fingerprints preserve18prior relations/foursequences/whole ledger1–12 and only
+exclude the new public_ref from legacy-session comparison; full13 restore must
+preserve it. Old16 must refuse13. Retain useful16/matched12 after replacement,
+never silently restore older data over newer writes.
 
 ## Ownership and limits
 
-CORE alone integrates/merges/deploys/checkpoints. Helpers have explicit local file
-scopes and no GitHub/host authority. Refresh main protection/ownership before
-integration. Use only self-hosted Keida Remote Commander for remote operations;
-refresh relay IDs and host/account, sealed immutable audited execution and locks.
-No hosted Commander fallback without explicit owner request.
+CORE alone integrates/merges/publishes/deploys/checkpoints. Helpers have explicit
+local file scopes and no host/GitHub authority. Refresh actual protection, host
+identities, process births, mounts/networks, operation locks and bridge ownership;
+scheduled/external host changes cannot be treated as an unchanged old snapshot.
+Use only self-hosted Keida Remote Commander with complete immutable/hash-verified
+new execution audits, held descriptors and locks. No hosted fallback or replay.
 
-Reborn owns its PostgreSQL/key/config/network. Fixture and restored clusters are
-isolated. Preserve external work, live14 and prior13 recovery until next qualified
-retention decision. Original, Rewrite, proxy/tunnel, games, all real providers and
-active update writers keep their state and responsibilities. No password reads,
-secret requests in chat, credential replay or promotions. Host-updater activation
-and game transfer retain separate review/authorization. Actual Safari/iPhone,
-performance, normal-use and real-provider acceptance require their own evidence.
+Preserve independent Original/Rewrite installations, external assignments and
+unpublished work. No real-owner password/header/login replay, reset/promotion,
+secret request in chat or copied provider credentials. No protected proxy/tunnel,
+game or active updater restart. Full host-updater activation and game transfer
+retain separate review/authorization. Actual Safari/iPhone, performance, normal
+use and real-provider acceptance require their own evidence.

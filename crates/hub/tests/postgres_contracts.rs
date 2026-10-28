@@ -1,5 +1,7 @@
 #[path = "postgres_contracts/discord.rs"]
 mod discord;
+#[path = "postgres_contracts/sessions.rs"]
+mod sessions;
 use reqwest::{Client, StatusCode, Url};
 use serde_json::Value;
 use sqlx::{Connection, Executor, PgConnection, Row};
@@ -274,21 +276,21 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
     assert_eq!(metadata.len(), 1);
     assert!(metadata[0].get::<bool, _>("singleton"));
     assert_eq!(metadata[0].get::<String, _>("product"), "keida-hub-reborn");
-    assert_eq!(metadata[0].get::<i32, _>("schema_version"), 12);
+    assert_eq!(metadata[0].get::<i32, _>("schema_version"), 13);
     for statement in [
         "UPDATE reborn_schema SET singleton = FALSE",
         "UPDATE reborn_schema SET product = 'keida-hub-rewrite'",
-        "UPDATE reborn_schema SET schema_version = 13",
+        "UPDATE reborn_schema SET schema_version = 14",
     ] {
         assert_constraint(&mut connection, statement, "23514").await;
     }
-    assert_constraint(&mut connection, "INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',12)", "23505").await;
+    assert_constraint(&mut connection, "INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',13)", "23505").await;
 
     let ledger_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM _sqlx_migrations")
         .fetch_one(&mut connection)
         .await
         .expect("migration ledger count");
-    assert_eq!(ledger_count, 12);
+    assert_eq!(ledger_count, 13);
     assert_migrated(completed(database.migrate()).await);
     assert_eq!(
         sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM _sqlx_migrations")
@@ -299,7 +301,7 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
     );
 
     // Restore fixture bytes after each fault; acceptance requires rejecting the fault, not trusting a copied result.
-    for version in [1_i64, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] {
+    for version in [1_i64, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] {
         let checksum: Vec<u8> =
             sqlx::query_scalar("SELECT checksum FROM _sqlx_migrations WHERE version = $1")
                 .bind(version)
@@ -349,7 +351,7 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
         .await
         .expect("remove singleton fixture row");
     server.readiness(false).await;
-    connection.execute("INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',12)").await.expect("restore singleton fixture row");
+    connection.execute("INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',13)").await.expect("restore singleton fixture row");
     server.readiness(true).await;
 }
 
@@ -362,10 +364,10 @@ async fn concurrent_migration_commands_leave_all_complete_migrations_and_valid_m
     assert_migrated(first);
     assert_migrated(second);
     let mut connection = database.connect().await;
-    let row = sqlx::query("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE success AND version IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)) AS completed FROM _sqlx_migrations")
+    let row = sqlx::query("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE success AND version IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13)) AS completed FROM _sqlx_migrations")
         .fetch_one(&mut connection).await.expect("inspect concurrent ledger");
-    assert_eq!(row.get::<i64, _>("total"), 12);
-    assert_eq!(row.get::<i64, _>("completed"), 12);
+    assert_eq!(row.get::<i64, _>("total"), 13);
+    assert_eq!(row.get::<i64, _>("completed"), 13);
     let server = Server::start(&database).await;
     server.readiness(true).await;
 }
@@ -436,13 +438,13 @@ async fn actual_schema_one_upgrades_through_auth_to_workspace_without_losing_exi
             .await
             .expect("inspect upgraded metadata");
     assert_eq!(after.get::<String, _>("product"), "keida-hub-reborn");
-    assert_eq!(after.get::<i32, _>("schema_version"), 12);
+    assert_eq!(after.get::<i32, _>("schema_version"), 13);
     let ledger =
         sqlx::query("SELECT version, checksum, success FROM _sqlx_migrations ORDER BY version")
             .fetch_all(&mut connection)
             .await
             .expect("inspect upgraded ledger");
-    assert_eq!(ledger.len(), 12);
+    assert_eq!(ledger.len(), 13);
     assert_eq!(ledger[0].get::<i64, _>("version"), 1);
     assert_eq!(ledger[1].get::<i64, _>("version"), 2);
     assert_eq!(ledger[2].get::<i64, _>("version"), 3);
@@ -534,7 +536,7 @@ async fn schema_two_upgrade_preserves_real_account_session_and_accepted_migratio
             .fetch_one(&mut connection)
             .await
             .expect("current schema"),
-        12
+        13
     );
 }
 
@@ -682,9 +684,9 @@ async fn schema_five_upgrade_keeps_directory_pins_and_all_prior_data_without_bac
     db.execute("INSERT INTO directory_pins SELECT id,4,ARRAY[1]::bigint[] FROM users")
         .await
         .unwrap();
-    let before: Value = sqlx::query_scalar("SELECT jsonb_build_object('users',(SELECT jsonb_agg(u) FROM users u),'notes',(SELECT jsonb_agg(n) FROM workspace_notes n),'sessions',(SELECT jsonb_agg(s) FROM sessions s),'connection',(SELECT jsonb_agg(c) FROM crafty_connection c),'services',(SELECT jsonb_agg(d) FROM directory_services d),'pins',(SELECT jsonb_agg(p) FROM directory_pins p))").fetch_one(&mut db).await.unwrap();
+    let before: Value = sqlx::query_scalar("SELECT jsonb_build_object('users',(SELECT jsonb_agg(u) FROM users u),'notes',(SELECT jsonb_agg(n) FROM workspace_notes n),'sessions',(SELECT jsonb_agg(to_jsonb(s)-'public_ref') FROM sessions s),'connection',(SELECT jsonb_agg(c) FROM crafty_connection c),'services',(SELECT jsonb_agg(d) FROM directory_services d),'pins',(SELECT jsonb_agg(p) FROM directory_pins p))").fetch_one(&mut db).await.unwrap();
     assert_migrated(completed(database.migrate()).await);
-    let after: Value = sqlx::query_scalar("SELECT jsonb_build_object('users',(SELECT jsonb_agg(u) FROM users u),'notes',(SELECT jsonb_agg(n) FROM workspace_notes n),'sessions',(SELECT jsonb_agg(s) FROM sessions s),'connection',(SELECT jsonb_agg(c) FROM crafty_connection c),'services',(SELECT jsonb_agg(d) FROM directory_services d),'pins',(SELECT jsonb_agg(p) FROM directory_pins p))").fetch_one(&mut db).await.unwrap();
+    let after: Value = sqlx::query_scalar("SELECT jsonb_build_object('users',(SELECT jsonb_agg(u) FROM users u),'notes',(SELECT jsonb_agg(n) FROM workspace_notes n),'sessions',(SELECT jsonb_agg(to_jsonb(s)-'public_ref') FROM sessions s),'connection',(SELECT jsonb_agg(c) FROM crafty_connection c),'services',(SELECT jsonb_agg(d) FROM directory_services d),'pins',(SELECT jsonb_agg(p) FROM directory_pins p))").fetch_one(&mut db).await.unwrap();
     assert_eq!(before, after);
     assert_eq!(
         sqlx::query_scalar::<_, i64>("SELECT count(*) FROM activity_events")
@@ -790,7 +792,7 @@ async fn schema_seven_upgrade_retains_notification_reads_and_all_existing_state_
         .unwrap();
     db.execute("INSERT INTO activity_events (account_id,kind,revision,occurred_at) SELECT id,'note_saved',23,100 FROM users").await.unwrap();
     db.execute("INSERT INTO notification_groups SELECT id,'services',5,3,'service_updated',8,101 FROM users").await.unwrap();
-    let fingerprint = "SELECT jsonb_build_object('users',(SELECT jsonb_agg(u) FROM users u),'sessions',(SELECT jsonb_agg(s) FROM sessions s),'auth',(SELECT jsonb_agg(a) FROM auth_state a),'throttles',(SELECT jsonb_agg(t ORDER BY scope) FROM auth_throttles t),'notes',(SELECT jsonb_agg(n) FROM workspace_notes n),'connection',(SELECT jsonb_agg(c) FROM crafty_connection c),'directory_state',(SELECT jsonb_agg(d) FROM directory_state d),'services',(SELECT jsonb_agg(d) FROM directory_services d),'pins',(SELECT jsonb_agg(p) FROM directory_pins p),'activity',(SELECT jsonb_agg(a) FROM activity_events a),'notifications',(SELECT jsonb_agg(g) FROM notification_groups g),'user_seq',(SELECT last_value FROM users_id_seq),'service_seq',(SELECT last_value FROM directory_services_id_seq),'activity_seq',(SELECT last_value FROM activity_events_id_seq))";
+    let fingerprint = "SELECT jsonb_build_object('users',(SELECT jsonb_agg(u) FROM users u),'sessions',(SELECT jsonb_agg(to_jsonb(s)-'public_ref') FROM sessions s),'auth',(SELECT jsonb_agg(a) FROM auth_state a),'throttles',(SELECT jsonb_agg(t ORDER BY scope) FROM auth_throttles t),'notes',(SELECT jsonb_agg(n) FROM workspace_notes n),'connection',(SELECT jsonb_agg(c) FROM crafty_connection c),'directory_state',(SELECT jsonb_agg(d) FROM directory_state d),'services',(SELECT jsonb_agg(d) FROM directory_services d),'pins',(SELECT jsonb_agg(p) FROM directory_pins p),'activity',(SELECT jsonb_agg(a) FROM activity_events a),'notifications',(SELECT jsonb_agg(g) FROM notification_groups g),'user_seq',(SELECT last_value FROM users_id_seq),'service_seq',(SELECT last_value FROM directory_services_id_seq),'activity_seq',(SELECT last_value FROM activity_events_id_seq))";
     let before: Value = sqlx::query_scalar(fingerprint)
         .fetch_one(&mut db)
         .await
@@ -875,7 +877,7 @@ async fn schema_eight_upgrade_preserves_all_prior_relations_sequences_and_immuta
     ] {
         db.execute(statement).await.unwrap();
     }
-    let fingerprint = "SELECT jsonb_build_object('users',(SELECT jsonb_agg(u ORDER BY id) FROM users u),'sessions',(SELECT jsonb_agg(s ORDER BY verifier) FROM sessions s),'auth',(SELECT jsonb_agg(a) FROM auth_state a),'throttles',(SELECT jsonb_agg(t ORDER BY scope) FROM auth_throttles t),'notes',(SELECT jsonb_agg(n ORDER BY account_id) FROM workspace_notes n),'connection',(SELECT jsonb_agg(c) FROM crafty_connection c),'directory_state',(SELECT jsonb_agg(d) FROM directory_state d),'services',(SELECT jsonb_agg(d ORDER BY id) FROM directory_services d),'pins',(SELECT jsonb_agg(p ORDER BY account_id) FROM directory_pins p),'activity',(SELECT jsonb_agg(a ORDER BY id) FROM activity_events a),'notifications',(SELECT jsonb_agg(g ORDER BY account_id,category) FROM notification_groups g),'layouts',(SELECT jsonb_agg(l ORDER BY account_id) FROM dashboard_layouts l),'user_seq',(SELECT jsonb_build_object('value',last_value,'called',is_called) FROM users_id_seq),'service_seq',(SELECT jsonb_build_object('value',last_value,'called',is_called) FROM directory_services_id_seq),'activity_seq',(SELECT jsonb_build_object('value',last_value,'called',is_called) FROM activity_events_id_seq))";
+    let fingerprint = "SELECT jsonb_build_object('users',(SELECT jsonb_agg(u ORDER BY id) FROM users u),'sessions',(SELECT jsonb_agg(to_jsonb(s)-'public_ref' ORDER BY verifier) FROM sessions s),'auth',(SELECT jsonb_agg(a) FROM auth_state a),'throttles',(SELECT jsonb_agg(t ORDER BY scope) FROM auth_throttles t),'notes',(SELECT jsonb_agg(n ORDER BY account_id) FROM workspace_notes n),'connection',(SELECT jsonb_agg(c) FROM crafty_connection c),'directory_state',(SELECT jsonb_agg(d) FROM directory_state d),'services',(SELECT jsonb_agg(d ORDER BY id) FROM directory_services d),'pins',(SELECT jsonb_agg(p ORDER BY account_id) FROM directory_pins p),'activity',(SELECT jsonb_agg(a ORDER BY id) FROM activity_events a),'notifications',(SELECT jsonb_agg(g ORDER BY account_id,category) FROM notification_groups g),'layouts',(SELECT jsonb_agg(l ORDER BY account_id) FROM dashboard_layouts l),'user_seq',(SELECT jsonb_build_object('value',last_value,'called',is_called) FROM users_id_seq),'service_seq',(SELECT jsonb_build_object('value',last_value,'called',is_called) FROM directory_services_id_seq),'activity_seq',(SELECT jsonb_build_object('value',last_value,'called',is_called) FROM activity_events_id_seq))";
     let before: Value = sqlx::query_scalar(fingerprint)
         .fetch_one(&mut db)
         .await
@@ -1141,8 +1143,15 @@ async fn schema_nine_upgrade_preserves_fourteen_relations_four_sequences_and_all
             "provider_observations",
             "provider_server_observations",
         ] {
+            // Compare all accepted legacy fields; schema13's new random
+            // selector is checked independently for uniqueness and stability.
+            let projection = if table == "sessions" {
+                "to_jsonb(t)-'public_ref'"
+            } else {
+                "to_jsonb(t)"
+            };
             let sql = format!(
-                "SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]'::jsonb) FROM {table} t"
+                "SELECT coalesce(jsonb_agg({projection} ORDER BY ({projection})::text),'[]'::jsonb) FROM {table} t"
             );
             result.push(
                 sqlx::query_scalar(sqlx::AssertSqlSafe(sql.as_str()))
@@ -1383,8 +1392,15 @@ async fn schema_ten_upgrade_preserves_fifteen_relations_four_sequences_and_ten_m
             "provider_server_observations",
             "media_connections",
         ] {
+            // Compare all accepted legacy fields; schema13's new random
+            // selector is checked independently for uniqueness and stability.
+            let projection = if table == "sessions" {
+                "to_jsonb(t)-'public_ref'"
+            } else {
+                "to_jsonb(t)"
+            };
             let statement = format!(
-                "SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]'::jsonb) FROM {table} t"
+                "SELECT coalesce(jsonb_agg({projection} ORDER BY ({projection})::text),'[]'::jsonb) FROM {table} t"
             );
             values.push(
                 sqlx::query_scalar(sqlx::AssertSqlSafe(statement.as_str()))
@@ -1429,7 +1445,7 @@ async fn schema_ten_upgrade_preserves_fifteen_relations_four_sequences_and_ten_m
             .fetch_one(&mut db)
             .await
             .unwrap(),
-        12
+        13
     );
     let after: Vec<(i64, Vec<u8>, bool)> = sqlx::query_as(
         "SELECT version,checksum,success FROM _sqlx_migrations WHERE version<=10 ORDER BY version",

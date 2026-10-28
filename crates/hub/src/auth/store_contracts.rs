@@ -1,6 +1,7 @@
 //! Independent post-verification phase contracts using the real PostgreSQL store.
 //! Fixed PHC strings are already-hashed fixture inputs, not password-test substitutes.
 mod discord;
+mod sessions;
 
 use super::store;
 use sqlx::{Connection, PgConnection, PgPool, postgres::PgPoolOptions};

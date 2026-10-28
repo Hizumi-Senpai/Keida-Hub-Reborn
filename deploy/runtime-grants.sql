@@ -3,10 +3,17 @@
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 GRANT USAGE ON SCHEMA public TO reborn_app;
 GRANT SELECT ON reborn_schema, _sqlx_migrations TO reborn_app;
-GRANT SELECT, INSERT, UPDATE, DELETE ON users, sessions, auth_state,
+GRANT SELECT, INSERT, UPDATE, DELETE ON users, auth_state,
     auth_throttles, workspace_notes, crafty_connection,
     directory_state, directory_services, directory_pins TO reborn_app;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO reborn_app;
+-- Retire the older table-wide session grants before admitting the private
+-- selector. Runtime creates only legacy authority fields and can revoke a row,
+-- never insert/update its UUID, move accounts or rewrite bearer/expiry state.
+REVOKE INSERT, UPDATE ON sessions FROM reborn_app;
+GRANT SELECT, DELETE ON sessions TO reborn_app;
+GRANT INSERT (verifier, account_id, generation, created_at, expires_at) ON sessions TO reborn_app;
+GRANT UPDATE (revoked) ON sessions TO reborn_app;
 -- Events are append-only for the ordinary runtime role.
 GRANT SELECT, INSERT ON activity_events TO reborn_app;
 -- Read watermarks can advance; the runtime cannot erase delivery groups.

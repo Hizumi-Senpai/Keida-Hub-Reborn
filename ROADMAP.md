@@ -20,8 +20,10 @@ are installed as0.1.12 (issue18).
 [Owner-only Jellyfin/Seerr observations](docs/M3_MEDIA.md) are installed as0.1.13
 (issue20). [Owner-only Sonarr/Radarr/qBittorrent queue observations](docs/M3_QUEUES.md)
 are installed as0.1.14 (issue22). Documentation-only source0.1.15 records the
-self-hosted Commander policy; live14 remains. The current independent slice is
-[Discord identity linking/status/local unlink](docs/M4_IDENTITY.md), issue25.
+self-hosted Commander policy. [Discord identity linking/status/local unlink](docs/M4_IDENTITY.md)
+is installed as0.1.16/schema12 (issue25), with real Discord setup/privacy and
+owner acceptance pending. The next independent slice is
+[personal session review/targeted sign-out](docs/M4_SESSIONS.md), issue27.
 Existing accepted functionality in
 another application is a behavior reference, not a completed Reborn milestone.
 

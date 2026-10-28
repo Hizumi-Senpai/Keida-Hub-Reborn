@@ -47,7 +47,7 @@ impl Manifest {
             || self.ordinal == 0
             || self.channel != "accepted"
             || self.contract != "reborn-workspace-v1"
-            || !(4..=12).contains(&self.database_schema)
+            || !(4..=13).contains(&self.database_schema)
             || !digest(&self.commit, 40)
             || !digest(&self.tree, 40)
             || !digest(&self.binary_sha256, 64)
@@ -59,7 +59,7 @@ impl Manifest {
             || !digest(&self.qualification_execution_sha256, 64)
             || self.ci_run == 0
             || self.assets.is_empty()
-            || self.assets.len() > 20
+            || self.assets.len() > 22
             || self.assets.iter().any(|v| !digest(v, 64))
         {
             return Err("invalid release manifest");
@@ -432,6 +432,23 @@ mod tests {
             assets: vec!["f".repeat(64)],
         };
         (Temp(root), archive, manifest)
+    }
+    #[test]
+    fn schema13_manifest_retains_historical_release_admission_and_bounds_assets() {
+        let (_root, _archive, mut manifest) = fixture();
+        manifest.ordinal = 17;
+        manifest.version = "0.1.17".into();
+        manifest.database_schema = 13;
+        manifest.assets = (0..22).map(|value| format!("{value:064x}")).collect();
+        assert!(manifest.validate().is_ok());
+        manifest.assets.push("1".repeat(64));
+        assert!(manifest.validate().is_err());
+        manifest.assets.pop();
+        manifest.database_schema = 14;
+        assert!(manifest.validate().is_err());
+        manifest.database_schema = 12;
+        manifest.assets.truncate(20);
+        assert!(manifest.validate().is_ok());
     }
     #[test]
     fn create_once_retries_conflicts_and_actual_archive_tamper() {

@@ -51,6 +51,10 @@ export type DiscordValue = {
 export type IdentityState = { phase: 'idle' | 'loading' | 'ready' | 'error'; value?: DiscordValue; save: 'idle' | 'saving' | 'conflict' | 'uncertain'; message: string };
 export type IdentityAction = 'review' | 'confirm' | 'cancel' | 'unlink';
 const emptyIdentity = (): IdentityState => ({ phase: 'idle', save: 'idle', message: '' });
+export type SignInSession = { id: string; created_at: string; expires_at: string; current: boolean };
+export type SessionList = { checked_at: string; sessions: SignInSession[] };
+export type SessionsState = { phase: 'idle' | 'loading' | 'ready' | 'error'; value?: SessionList; save: 'idle' | 'saving' | 'conflict' | 'uncertain'; message: string };
+const emptySessions = (): SessionsState => ({ phase: 'idle', save: 'idle', message: '' });
 export type Model = {
   phase: 'checking' | 'ready' | 'paused' | 'blocked'; message: string;
   snapshot?: Snapshot; draft: string; base: string; dirty: boolean;
@@ -60,9 +64,9 @@ export type Model = {
   directorySave: 'idle' | 'saving' | 'conflict' | 'uncertain'; directoryMessage: string;
   layoutDraft?: { base: string; panels: HomePanel[] };
   layoutSave: 'idle' | 'saving' | 'checking-conflict' | 'conflict' | 'uncertain'; layoutMessage: string;
-  guide: GuideState; observations: ObservationState; media: Record<MediaProvider, MediaState>; queues: Record<QueueProvider, QueueState>; identity: IdentityState;
+  guide: GuideState; observations: ObservationState; media: Record<MediaProvider, MediaState>; queues: Record<QueueProvider, QueueState>; identity: IdentityState; sessions: SessionsState;
 };
-const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '', layoutSave: 'idle', layoutMessage: '', guide: emptyGuide(), observations: emptyObservations(), media: emptyMedia(), queues: emptyQueues(), identity: emptyIdentity() });
+const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '', layoutSave: 'idle', layoutMessage: '', guide: emptyGuide(), observations: emptyObservations(), media: emptyMedia(), queues: emptyQueues(), identity: emptyIdentity(), sessions: emptySessions() });
 const record = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const decimal = (v: unknown, positive = false): v is string => typeof v === 'string' && /^(0|[1-9][0-9]{0,18})$/.test(v) && BigInt(v) <= MAX_REVISION && (!positive || v !== '0');
 const text = (v: unknown): v is string => typeof v === 'string' && !v.includes('\0') && new TextEncoder().encode(v).length <= 4096;
@@ -153,6 +157,18 @@ const identityMessage = (value: DiscordValue): string => value.attempt.phase ===
   : ['failed', 'restart_required'].includes(value.attempt.phase) ? 'The unfinished link could not be completed. Start a new link when ready.'
   : value.attempt.phase === 'cancelled' ? 'The unfinished link was cancelled.'
   : value.link.identity ? 'Your saved Discord identity is shown below.' : value.application.configured ? 'No Discord identity is linked. You can start a link when ready.' : 'Discord linking is waiting for owner setup.';
+const sessionId = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(v);
+function sessionList(v: Record<string, unknown>): SessionList {
+  if (!timestamp(v.checked_at) || !Array.isArray(v.sessions) || v.sessions.length < 1 || v.sessions.length > 32
+      || v.sessions.some((r: unknown) => !record(r) || !sessionId(r.id) || !timestamp(r.created_at) || !timestamp(r.expires_at) || typeof r.current !== 'boolean'
+        || BigInt(r.expires_at) <= BigInt(v.checked_at as string) || BigInt(r.expires_at) <= BigInt(r.created_at))
+      || new Set(v.sessions.map(r => r.id)).size !== v.sessions.length || v.sessions.filter(r => r.current === true).length !== 1
+      || v.sessions.some((r, index, rows) => index > 0 && (BigInt(r.created_at) > BigInt(rows[index - 1].created_at)
+        || (r.created_at === rows[index - 1].created_at && r.id >= rows[index - 1].id)))) throw new Error('Invalid session list');
+  // Project the declared non-bearer selectors and times only. No unexpected
+  // provider, credential or device metadata becomes retained browser state.
+  return { checked_at: v.checked_at, sessions: v.sessions.map(r => ({ id: r.id as string, created_at: r.created_at as string, expires_at: r.expires_at as string, current: r.current as boolean })) };
+}
 const samePanels = (a: HomePanel[], b: HomePanel[]): boolean => a.length === b.length && a.every((p, i) => p.id === b[i].id && p.visible === b[i].visible);
 function snapshot(value: unknown): Snapshot {
   if (!record(value) || value.product !== PRODUCT || value.contract !== CONTRACT || value.schema !== 1
@@ -292,6 +308,10 @@ export function workspace(binding: string) {
   const mediaSaving: Partial<Record<MediaProvider, AbortController>> = {};
   const mediaSerial: Record<MediaProvider, number> = { jellyfin: 0, seerr: 0 };
   const mediaStatusSerial: Record<MediaProvider, number> = { jellyfin: 0, seerr: 0 };
+  let sessionsActive = false;
+  let sessionsReading: AbortController | undefined;
+  let sessionsSaving: AbortController | undefined;
+  let sessionsSerial = 0;
   let identityActive = false;
   let identityReading: AbortController | undefined;
   let identitySaving: AbortController | undefined;
@@ -323,7 +343,8 @@ export function workspace(binding: string) {
     catch { model.update((m) => ({ ...m, storageLimited: true })); }
   }
   function cancel(): void {
-    ++epoch; mediaActive = false; queuesActive = false; identityActive = false;
+    ++epoch; mediaActive = false; queuesActive = false; identityActive = false; sessionsActive = false;
+    ++sessionsSerial; sessionsReading?.abort(); sessionsSaving?.abort(); sessionsReading = undefined; sessionsSaving = undefined;
     ++identitySerial; identityReading?.abort(); identitySaving?.abort(); identityReading = undefined; identitySaving = undefined;
     for (const provider of mediaProviders) {
       ++mediaSerial[provider]; ++mediaStatusSerial[provider];
@@ -1058,6 +1079,61 @@ export function workspace(binding: string) {
       if (!disposed && identityActive && current === epoch && currentScope(captured) && identitySaving === controller) setIdentity({ phase: 'error', save: 'uncertain', message: 'The application save may have completed. Check status before entering credentials again.' });
     } finally { if (application) application.client_secret = ''; if (identitySaving === controller) identitySaving = undefined; }
   }
+  function setSessions(value: SessionsState): void { flushSync(() => model.update(m => ({ ...m, sessions: value }))); }
+  function closeSessions(): void {
+    sessionsActive = false; ++sessionsSerial; sessionsReading?.abort(); sessionsReading = undefined;
+    const pending = !!sessionsSaving; sessionsSaving?.abort(); sessionsSaving = undefined;
+    setSessions({ ...emptySessions(), save: pending ? 'uncertain' : state().sessions.save,
+      message: pending ? 'The sign-out may have completed. Check your active sessions before another action.' : '' });
+  }
+  function acceptSessions(value: unknown, captured: Snapshot, prior?: SessionList): SessionList {
+    if (!scoped(value, captured)) { invalidate('Your account scope changed. Open a fresh workspace.', true); throw new Error('Session scope changed'); }
+    const next = sessionList(value);
+    if (prior && (BigInt(next.checked_at) < BigInt(prior.checked_at)
+        || next.sessions.find(r => r.current)!.id !== prior.sessions.find(r => r.current)!.id)) throw new Error('Older or different acting session list');
+    return next;
+  }
+  async function checkSessions(): Promise<void> {
+    const captured = identitySnapshot(); if (!captured || sessionsSaving) return;
+    sessionsActive = true; sessionsReading?.abort();
+    const controller = new AbortController(); sessionsReading = controller;
+    const serial = ++sessionsSerial, current = epoch, prior = state().sessions.value;
+    setSessions({ ...state().sessions, phase: 'loading', value: undefined, message: 'Checking your active sign-in sessions…' });
+    try {
+      const response = await request('/api/workspace/sessions', controller);
+      if (disposed || !sessionsActive || controller.signal.aborted || serial !== sessionsSerial || current !== epoch || !currentScope(captured)) return;
+      if (document.visibilityState !== 'visible') { invalidate('Workspace hidden. Checking access on return.'); return; }
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      if (response.status !== 200) throw new Error('Session list unavailable');
+      const value = acceptSessions(response.value, captured, prior);
+      setSessions({ phase: 'ready', value, save: 'idle', message: 'Your active sign-in sessions were checked. Later sign-ins, expiry or sign-outs can change this list.' });
+    } catch {
+      if (!disposed && sessionsActive && serial === sessionsSerial && current === epoch && currentScope(captured)) setSessions({ phase: 'error', save: state().sessions.save, message: 'Your active sessions could not be checked. This does not mean no sessions exist. Check again before choosing a session to sign out.' });
+    } finally { if (sessionsReading === controller) sessionsReading = undefined; }
+  }
+  async function openSessions(): Promise<void> { if (!identitySnapshot()) return; sessionsActive = true; await checkSessions(); }
+  async function revokeSession(id: string): Promise<void> {
+    const captured = identitySnapshot(), prior = state().sessions, value = prior.value;
+    if (!captured || !sessionsActive || sessionsSaving || prior.phase !== 'ready' || prior.save !== 'idle' || !value || !sessionId(id)
+        || !value.sessions.some(row => row.id === id && !row.current)) return;
+    sessionsReading?.abort(); sessionsReading = undefined; ++sessionsSerial;
+    const controller = new AbortController(); sessionsSaving = controller; const current = epoch;
+    setSessions({ phase: 'loading', save: 'saving', message: 'Signing out the selected other session…' });
+    try {
+      const response = await request('/api/workspace/sessions/revoke', controller, { session_id: id }, 'POST');
+      if (disposed || !sessionsActive || controller.signal.aborted || current !== epoch || !currentScope(captured) || sessionsSaving !== controller) return;
+      if (document.visibilityState !== 'visible') { invalidate('Workspace hidden. Checking access on return.'); return; }
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      if (response.status === 409) { setSessions({ phase: 'error', save: 'conflict', message: 'That session is no longer available for targeted sign-out. Check your active sessions before making another choice.' }); return; }
+      if ([400, 413, 429].includes(response.status)) { setSessions({ phase: 'error', save: 'idle', message: 'The sign-out was not accepted. Check your active sessions before another action.' }); return; }
+      if (response.status !== 200 || !record(response.value) || response.value.result !== 'signed_out') throw new Error('Uncertain targeted sign-out');
+      const next = acceptSessions(response.value, captured, value);
+      if (next.sessions.some(r => r.id === id)) throw new Error('Target remains in sign-out receipt');
+      setSessions({ phase: 'ready', value: next, save: 'idle', message: 'The selected session is signed out. This session and unrelated sign-ins remain available.' });
+    } catch {
+      if (!disposed && sessionsActive && current === epoch && currentScope(captured) && sessionsSaving === controller) setSessions({ phase: 'error', save: 'uncertain', message: 'The sign-out may have completed. Check your active sessions before another action. It has not been sent again.' });
+    } finally { if (sessionsSaving === controller) sessionsSaving = undefined; }
+  }
   function signOut(): void {
     removeDraft(); invalidate('Signing out…', true);
     try { channel?.postMessage({ kind: 'auth-changed' }); } catch { /* No optional feature blocks native submission. */ }
@@ -1083,5 +1159,5 @@ export function workspace(binding: string) {
       document.removeEventListener('visibilitychange', visibility);
     };
   }
-  return { model, start, edit, recover, resolve, save, signOut, check: () => read(true), editService, pins, activity, markNotification, beginLayout, moveLayout, toggleLayout, resetLayout, cancelLayout, resolveLayout, saveLayout, checkLayout: () => read(true), loadGuide, observations, openMedia, closeMedia, checkMedia, loadMedia, saveMedia, openQueues, closeQueues, checkQueues, loadQueues, saveQueues, openIdentity, closeIdentity, checkIdentity, identityAction, saveDiscordApplication };
+  return { model, start, edit, recover, resolve, save, signOut, check: () => read(true), editService, pins, activity, markNotification, beginLayout, moveLayout, toggleLayout, resetLayout, cancelLayout, resolveLayout, saveLayout, checkLayout: () => read(true), loadGuide, observations, openMedia, closeMedia, checkMedia, loadMedia, saveMedia, openQueues, closeQueues, checkQueues, loadQueues, saveQueues, openIdentity, closeIdentity, checkIdentity, identityAction, saveDiscordApplication, openSessions, closeSessions, checkSessions, revokeSession };
 }
