@@ -806,3 +806,25 @@ textarea::placeholder {
 .queue-ack { display: flex; align-items: flex-start; gap: .65rem; line-height: 1.5; margin: .7rem 0; }
 .queue-ack input { flex: 0 0 auto; margin-top: .25rem; }
 @media(max-width:600px) { .queue-sample { grid-template-columns: 1fr; gap: .15rem; } .queue-sample dd { margin-bottom: .55rem; } .queue-actions .button { width: 100%; } .queue-table th,.queue-table td { padding: .6rem .35rem; } .queue-enrollment .button { width: 100%; } }
+
+.identity-view { display: grid; gap: 1.25rem; max-width: 58rem; }
+.identity-intro p, .identity-card p { max-width: 65ch; }
+.identity-card { min-width: 0; }
+.identity-details { display: grid; grid-template-columns: minmax(8rem, 1fr) minmax(0, 2fr); gap: .65rem 1rem; }
+.identity-details dt { color: var(--muted); }
+.identity-details dd { margin: 0; overflow-wrap: anywhere; }
+.identity-id { font-variant-numeric: tabular-nums; }
+.identity-review, .identity-saved { margin-block: 1.5rem; padding-block: .3rem; }
+.identity-review { border-block: 1px solid var(--line); }
+.identity-callback { overflow-wrap: anywhere; }
+.identity-enrollment { margin-top: 1.5rem; border-top: 1px solid var(--line); padding-top: 1.25rem; }
+.identity-enrollment summary { cursor: pointer; font-weight: 650; }
+.identity-enrollment form { display: grid; gap: .65rem; margin-block: 1rem; }
+.identity-enrollment input { min-width: 0; width: 100%; }
+.identity-enrollment input:not([type=checkbox]) { min-height: 2.8rem; padding: .7rem; border: 1px solid var(--line); border-radius: .5rem; background: #101619; color: #e7eeee; }
+.identity-enrollment input:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.identity-enrollment .button { justify-self: start; }
+.identity-enrollment .identity-ack { display: flex; align-items: flex-start; gap: .65rem; line-height: 1.5; margin-block: .5rem; }
+.identity-enrollment .identity-ack input { width: auto; flex: 0 0 auto; margin-top: .35rem; }
+.identity-start-form { margin-block: 1.25rem .65rem; }
+@media (max-width: 520px) { .identity-details { grid-template-columns: 1fr; gap: .35rem; } .identity-details dd { margin-bottom: .7rem; } .identity-card .button { max-width: 100%; white-space: normal; } }

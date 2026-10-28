@@ -4,6 +4,7 @@ use reqwest::{Client, Method};
 use serde_json::{Value, json};
 use std::os::unix::process::CommandExt;
 use std::{
+    net::SocketAddr,
     path::Path,
     process::{Child, Command, Stdio},
     time::Duration,
@@ -53,6 +54,7 @@ impl Browser {
         profile: &Path,
         driver: &Path,
         chromium: &Path,
+        discord: Option<(SocketAddr, SocketAddr)>,
     ) -> Check<Self> {
         let listener =
             std::net::TcpListener::bind("127.0.0.1:0").map_err(|_| "browser port allocation")?;
@@ -108,10 +110,25 @@ impl Browser {
             )?;
             tokio::time::sleep(Duration::from_millis(40)).await;
         }
+        let mut args = vec![
+            "--headless=new".to_owned(),
+            "--no-sandbox".to_owned(),
+            "--disable-background-networking".to_owned(),
+            "--disable-dev-shm-usage".to_owned(),
+            format!("--user-data-dir={}", profile.display()),
+        ];
+        if let Some((address, proxy)) = discord {
+            args.push(format!("--proxy-server=http://{proxy}"));
+            args.push("--disable-quic".to_owned());
+            args.push("--proxy-bypass-list=localhost;127.0.0.1;[::1]".to_owned());
+            args.push(format!("--host-resolver-rules=MAP discord.com:443 {address},MAP * ~NOTFOUND,EXCLUDE localhost,EXCLUDE 127.0.0.1"));
+        } else {
+            args.push("--no-proxy-server".to_owned());
+        }
         let result=browser.raw(Method::POST,"/session",Some(json!({"capabilities":{"alwaysMatch":{
             "browserName":"chrome","acceptInsecureCerts":false,
             "timeouts":{"implicit":0,"pageLoad":12000,"script":10000},
-            "goog:chromeOptions":{"binary":chromium,"args":["--headless=new","--no-sandbox","--disable-background-networking","--disable-dev-shm-usage",format!("--user-data-dir={}",profile.display())],"prefs":{"credentials_enable_service":false,"profile.password_manager_enabled":false}}
+            "goog:chromeOptions":{"binary":chromium,"args":args,"prefs":{"credentials_enable_service":false,"profile.password_manager_enabled":false}}
         }}}))).await?;
         let value = &result["value"];
         check(

@@ -17,9 +17,12 @@ pages, one persistent Svelte workspace with private revisioned notes, and dedica
 encrypted GET-only Crafty enrollment/observations. The service directory/search/categories and personal pins are installed. Retained private Activity and connection-enrollment history are installed. Grouped notifications/read state and personal Home arrangement are installed. The current
 daily-use catalog, sampled Crafty history and Roadmap note are installed.
 [Owner-only Jellyfin/Seerr observations](docs/M3_MEDIA.md) are installed as0.1.13
-([issue20](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/20)). The next
-slice is [owner-only queue/transfer observations](docs/M3_QUEUES.md), tracked in
-[issue22](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/22). Source, packaged
+([issue20](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/20)).
+[Owner-only queue/transfer observations](docs/M3_QUEUES.md) are installed as0.1.14
+([issue22](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/22)). Source0.1.15
+records the self-hosted Commander policy without changing live14. The current slice
+is [Discord identity linking/status/local unlink](docs/M4_IDENTITY.md),
+[issue25](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/25). Source, packaged
 verification, installation and live acceptance are recorded separately.
 
 ## Start here

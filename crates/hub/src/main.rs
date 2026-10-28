@@ -46,7 +46,7 @@ async fn run() -> Result<(), String> {
     if command == "artifact-info" && args.len() == 2 {
         println!(
             "{}",
-            serde_json::json!({"identity":identity::compiled(),"workspace_contract":"reborn-workspace-v1","database_schema":11,"assets":auth::artifact_assets()})
+            serde_json::json!({"identity":identity::compiled(),"workspace_contract":"reborn-workspace-v1","database_schema":12,"assets":auth::artifact_assets()})
         );
         return Ok(());
     }
@@ -64,6 +64,10 @@ async fn run() -> Result<(), String> {
     }
     let config =
         config::Config::load().map_err(|field| format!("configuration rejected: {field}"))?;
+    // Validate fixture transport even when no auth key or Discord enrollment is
+    // present. A production origin must never silently accept test overrides.
+    let discord_client = providers::discord::Client::load(&config.origin)
+        .map_err(|_| "configuration rejected: Discord transport")?;
     if command == "healthcheck" {
         let client = reqwest::Client::builder()
             .no_proxy()
@@ -95,12 +99,13 @@ async fn run() -> Result<(), String> {
         pool.close().await;
         return Ok(());
     }
-    let auth = config
-        .key_file
-        .as_deref()
-        .map(|path| auth::Service::load(pool.clone(), config.origin.clone(), path))
-        .transpose()
-        .map_err(|_| "configuration rejected: REBORN_INSTANCE_KEY_FILE")?;
+    let auth = match config.key_file.as_deref() {
+        Some(path) => Some(
+            auth::Service::load(pool.clone(), config.origin.clone(), path, discord_client)
+                .map_err(|_| "configuration rejected: REBORN_INSTANCE_KEY_FILE")?,
+        ),
+        None => None,
+    };
     if command == "prepare-owner" {
         if !database::ready(&pool).await {
             return Err("schema unavailable".into());
@@ -189,6 +194,7 @@ async fn readiness(State(state): State<AppState>) -> (StatusCode, Json<Readiness
 }
 
 async fn headers(request: axum::extract::Request, next: middleware::Next) -> Response {
+    let discord_document = request.uri().path().starts_with("/account/discord/");
     let account_document = matches!(
         request.uri().path(),
         "/workspace"
@@ -200,6 +206,7 @@ async fn headers(request: axum::extract::Request, next: middleware::Next) -> Res
     );
     let mut response = match tokio::time::timeout(Duration::from_secs(4), next.run(request)).await {
         Ok(response) => response,
+        Err(_) if discord_document => auth::discord_timeout(),
         Err(_) if account_document => auth::account_timeout(),
         Err(_) => (
             StatusCode::REQUEST_TIMEOUT,
@@ -207,6 +214,9 @@ async fn headers(request: axum::extract::Request, next: middleware::Next) -> Res
         )
             .into_response(),
     };
+    if discord_document {
+        response = auth::discord_document(response);
+    }
     let headers = response.headers_mut();
     headers
         .entry(header::CACHE_CONTROL)

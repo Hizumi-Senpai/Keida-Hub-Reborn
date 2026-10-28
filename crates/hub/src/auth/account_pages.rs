@@ -191,7 +191,7 @@ type Fields = BTreeMap<String, String>;
 fn bad_form() -> ApiError {
     ApiError(StatusCode::BAD_REQUEST, "invalid_request")
 }
-fn decode(input: &[u8]) -> Result<String, ApiError> {
+pub(super) fn decode(input: &[u8]) -> Result<String, ApiError> {
     fn hex(b: u8) -> Option<u8> {
         match b {
             b'0'..=b'9' => Some(b - b'0'),
@@ -223,7 +223,7 @@ fn decode(input: &[u8]) -> Result<String, ApiError> {
     }
     String::from_utf8(result).map_err(|_| bad_form())
 }
-fn fields(
+pub(super) fn fields(
     headers: &HeaderMap,
     body: Result<Bytes, BytesRejection>,
     allowed: &[&str],

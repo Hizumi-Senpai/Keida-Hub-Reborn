@@ -29,3 +29,15 @@ GRANT UPDATE (revision, sealed) ON media_connections TO reborn_app;
 -- revision/sealed columns, never create, erase or rename queue provider rows.
 GRANT SELECT ON queue_connections TO reborn_app;
 GRANT UPDATE (revision, sealed) ON queue_connections TO reborn_app;
+
+-- Only the migration owner creates the fixed Discord application row. The
+-- runtime can change its encrypted value/revision, never insert or delete it.
+GRANT SELECT ON discord_application TO reborn_app;
+GRANT UPDATE (revision, sealed) ON discord_application TO reborn_app;
+
+-- Link rows are retained tombstones. Runtime can create its initial account row
+-- and update link state, but cannot move it between accounts or erase history.
+GRANT SELECT ON discord_links TO reborn_app;
+GRANT INSERT (account_id) ON discord_links TO reborn_app;
+GRANT UPDATE (revision, flow_generation, discord_id, display_name, verified_at)
+    ON discord_links TO reborn_app;

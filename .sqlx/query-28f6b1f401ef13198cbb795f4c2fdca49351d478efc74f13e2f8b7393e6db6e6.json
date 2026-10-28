@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE discord_links SET revision = $1, flow_generation = $2, discord_id = $3, display_name = $4, verified_at = $5 WHERE account_id = $6",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Text",
+        "Text",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "28f6b1f401ef13198cbb795f4c2fdca49351d478efc74f13e2f8b7393e6db6e6"
+}

@@ -13,18 +13,19 @@ async fn read(State(service): State<Service>, headers: HeaderMap) -> Response {
         // Retained clients accept their exact catalog capability snapshots.
         // Queue entries require an explicit new-client opt-in.
         let mut capabilities = headers.get_all("x-reborn-guide").iter();
-        let (media, queues) = match (capabilities.next(), capabilities.next()) {
-            (None, None) => (false, false),
-            (Some(value), None) if value == "media-v1" => (true, false),
-            (Some(value), None) if value == "queues-v1" => (true, true),
+        let (media, queues, identity) = match (capabilities.next(), capabilities.next()) {
+            (None, None) => (false, false, false),
+            (Some(value), None) if value == "media-v1" => (true, false, false),
+            (Some(value), None) if value == "queues-v1" => (true, true, false),
+            (Some(value), None) if value == "identity-v1" => (true, true, true),
             _ => return Err(ApiError(StatusCode::UPGRADE_REQUIRED, "upgrade_required")),
         };
         let current = store::guide_session(&service.pool, &service.key_id, &p.hash).await?;
         Ok::<_, ApiError>(Json(json!({
             "product":"keida-hub-reborn", "contract":"reborn-workspace-v1", "schema":1,
             "account":account(current.account), "session_generation":current.generation.to_string(),
-            "catalog":if queues {queue_catalog()} else {catalog(media)},
-            "roadmap":if queues {queue_roadmap()} else {roadmap(media)}
+            "catalog":if identity {identity_catalog()} else if queues {queue_catalog()} else {catalog(media)},
+            "roadmap":if identity {identity_roadmap()} else if queues {queue_roadmap()} else {roadmap(media)}
         })).into_response())
     }
     .await;
@@ -154,5 +155,26 @@ fn queue_roadmap() -> Value {
     out["milestones"][3] = json!({"id":"M3","title":"Media and downloads","status":"In progress; real provider acceptance pending",
         "delivered":["Owner-only encrypted Jellyfin and Seerr enrollment, bounded library/request pages and counts-only recent playback.","Owner-only encrypted Sonarr/Radarr queue and qBittorrent transfer enrollment, bounded live pages, separate import state and reported byte progress in this build."],
         "remaining":["Deliberate real provider access, supported-version/TLS/privacy review and actual library/request/queue/transfer freshness acceptance.","Separately design and accept every request, approval or download management action."]});
+    out
+}
+
+// Only explicitly upgraded clients receive the bounded identity workflow.
+fn identity_catalog() -> Value {
+    let mut out = queue_catalog();
+    out[6] = json!({"id":"discord","name":"Discord","status":"planned",
+        "summary":"Deliberate Discord identity linking is available; friends, guild policy and bot workflows remain planned.",
+        "requirements":["An owner registers a dedicated Discord application, confirms callback query-log privacy and deliberately enrolls its credentials.","Each local account reviews and explicitly confirms its own verified immutable identity; real Discord acceptance is separate."],
+        "capabilities":["Open Identity to link, inspect or locally unlink an identity while keeping local sign-in and recovery.","No Discord sign-in, account merging, role authority or bot is enabled. A saved link records past verification, not continuing membership or authorization."]});
+    out
+}
+
+fn identity_roadmap() -> Value {
+    let mut out = queue_roadmap();
+    out["priorities"].as_array_mut().expect("static priorities").push(json!(
+        "Use Identity to deliberately review and confirm a Discord identity after dedicated application enrollment and callback privacy review; complete real Discord and owner acceptance."
+    ));
+    out["milestones"][4] = json!({"id":"M4","title":"Friends, identity and Discord","status":"In progress; real Discord acceptance pending",
+        "delivered":["Identity linking with S256/state, separate local confirmation, immutable Discord IDs and local unlink while preserving local sign-in and recovery."],
+        "remaining":["Dedicated real application registration/enrollment, callback query-log privacy review, owner browser acceptance and recovery/session acceptance.","Friends, guild policy, Discord sign-in and deliberately enrolled bot workflows need separate design and acceptance."]});
     out
 }

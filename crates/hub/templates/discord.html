@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="reborn-product" content="{{ identity.product }}">
+  <meta name="reborn-version" content="{{ identity.version }}">
+  <meta name="reborn-commit" content="{{ identity.commit }}">
+  <meta name="reborn-tree" content="{{ identity.tree }}">
+  <title>{{ title }} · Keida Reborn</title>
+</head>
+<body>
+  <main>
+    <h1>{{ title }}</h1>
+    <p>{{ message }}</p>
+    {% match authorize_url %}
+    {% when Some with (url) %}
+    <p><a id="discord-authorize" class="discord-authorize" href="{{ url }}" rel="noreferrer">Continue to Discord</a></p>
+    {% when None %}
+    {% endmatch %}
+    <p><a href="/workspace#identity">Return to Identity</a></p>
+  </main>
+  <footer>Keida Reborn {{ identity.version }} · {{ identity.commit }}</footer>
+</body>
+</html>

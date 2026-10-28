@@ -9,11 +9,12 @@
   import Guide from './Guide.svelte';
   import Media from './Media.svelte';
   import Queues from './Queues.svelte';
+  import Identity from './Identity.svelte';
   export let binding: string;
   const controller = workspace(binding);
   const model = controller.model;
-  type View = 'home' | 'note' | 'connections' | 'directory' | 'activity' | 'notifications' | 'integrations' | 'roadmap' | 'media' | 'queues';
-  let view: View = 'home';
+  type View = 'home' | 'note' | 'connections' | 'directory' | 'activity' | 'notifications' | 'integrations' | 'roadmap' | 'media' | 'queues' | 'identity';
+  let view: View = window.location.hash === '#identity' ? 'identity' : 'home';
   let heading: HTMLHeadingElement;
   let panelGrid: HTMLDivElement;
   let panels: HomePanel[] = defaultPanels();
@@ -30,7 +31,10 @@
   $: bytes = new TextEncoder().encode($model.draft).length;
   $: canSave = $model.phase === 'ready' && $model.dirty && bytes <= 4096
     && !['saving', 'checking-conflict'].includes($model.layoutSave) && $model.notificationSave !== 'saving' && !['saving', 'checking-conflict', 'conflict', 'uncertain'].includes($model.save);
-  function navigate(next: View): void { const closing = view === 'media' && next !== 'media' || view === 'queues' && next !== 'queues'; if (view === 'media' && next !== 'media') controller.closeMedia(); if (view === 'queues' && next !== 'queues') controller.closeQueues(); if (closing) flushSync(() => { view = next; }); else view = next; heading?.focus(); if (next === 'activity') void controller.activity(); if (next === 'notifications') void controller.check(); if (next === 'integrations' || next === 'roadmap') void controller.loadGuide(); if (next === 'media') void controller.openMedia(); if (next === 'queues') void controller.openQueues(); }
+  function navigate(next: View): void { const closing = view === 'media' && next !== 'media' || view === 'queues' && next !== 'queues' || view === 'identity' && next !== 'identity'; if (view === 'media' && next !== 'media') controller.closeMedia(); if (view === 'queues' && next !== 'queues') controller.closeQueues(); if (view === 'identity' && next !== 'identity') controller.closeIdentity(); if (closing) flushSync(() => { view = next; }); else view = next; heading?.focus(); if (next === 'activity') void controller.activity(); if (next === 'notifications') void controller.check(); if (next === 'integrations' || next === 'roadmap') void controller.loadGuide(); if (next === 'media') void controller.openMedia(); if (next === 'queues') void controller.openQueues(); }
+  let identityOpened = false;
+  $: if (view !== 'identity' || $model.phase !== 'ready') identityOpened = false;
+  $: if (view === 'identity' && $model.phase === 'ready' && !identityOpened) { identityOpened = true; void controller.openIdentity(); }
   const focusScope = () => $model.snapshot ? `${$model.snapshot.account.id}:${$model.snapshot.session_generation}:${$model.snapshot.account.role}` : '';
   beforeUpdate(() => {
     const element = document.activeElement;
@@ -64,6 +68,7 @@
       <button class:active={view === 'roadmap'} aria-current={view === 'roadmap' ? 'page' : undefined} onclick={() => navigate('roadmap')}><span aria-hidden="true">≡</span>Roadmap</button>
       <button class:active={view === 'media'} aria-current={view === 'media' ? 'page' : undefined} onclick={() => navigate('media')}><span aria-hidden="true">▻</span>Media</button>
       <button class:active={view === 'queues'} aria-current={view === 'queues' ? 'page' : undefined} onclick={() => navigate('queues')}><span aria-hidden="true">⇄</span>Queues</button>
+      <button class:active={view === 'identity'} aria-current={view === 'identity' ? 'page' : undefined} onclick={() => navigate('identity')}><span aria-hidden="true">◎</span>Identity</button>
     </nav>
     <div class="sidebar-bottom">
       <a href="/account" class="account-link"><span class="avatar" aria-hidden="true">K</span><span><strong>{$model.snapshot?.account.username ?? 'Your account'}</strong><small>{$model.snapshot?.account.role === 'owner' ? 'Owner' : $model.snapshot?.account.role === 'member' ? 'Member' : 'Check account access'}</small></span></a>
@@ -79,7 +84,7 @@
     </div>
   </aside>
   <main id="workspace-content" class="workspace-content">
-    <header class="page-header"><div><p class="eyebrow">YOUR OWN CORNER OF KEIDA</p><h1 tabindex="-1" bind:this={heading}>{view === 'home' ? 'Welcome home.' : view === 'note' ? 'A little space to think.' : view === 'connections' ? 'Your servers, at a glance.' : view === 'directory' ? 'Everything within reach.' : view === 'activity' ? 'Pick up the thread.' : view === 'notifications' ? 'Catch up at your pace.' : view === 'integrations' ? 'Make the right connections.' : view === 'media' ? 'A window into your media.' : view === 'queues' ? 'See what’s in motion.' : 'See what comes next.'}</h1></div><span class="connection-state"><span aria-hidden="true">●</span>{$model.phase === 'ready' ? 'Session checked' : $model.phase === 'checking' ? 'Checking access' : 'Access paused'}</span></header>
+    <header class="page-header"><div><p class="eyebrow">YOUR OWN CORNER OF KEIDA</p><h1 tabindex="-1" bind:this={heading}>{view === 'home' ? 'Welcome home.' : view === 'note' ? 'A little space to think.' : view === 'connections' ? 'Your servers, at a glance.' : view === 'directory' ? 'Everything within reach.' : view === 'activity' ? 'Pick up the thread.' : view === 'notifications' ? 'Catch up at your pace.' : view === 'integrations' ? 'Make the right connections.' : view === 'media' ? 'A window into your media.' : view === 'queues' ? 'See what’s in motion.' : view === 'identity' ? 'An identity you choose.' : 'See what comes next.'}</h1></div><span class="connection-state"><span aria-hidden="true">●</span>{$model.phase === 'ready' ? 'Session checked' : $model.phase === 'checking' ? 'Checking access' : 'Access paused'}</span></header>
     <p class="workspace-status" role="status">{$model.message}</p>
     {#if $model.phase !== 'ready'}
       <section class="recovery card"><p class="eyebrow">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class="button-row"><a class="button primary" href="/workspace">Open workspace again</a><a class="button secondary" href="/account">Your account</a></div></section>
@@ -120,9 +125,10 @@
     <section hidden={view !== 'connections' || $model.phase !== 'ready'} aria-label="Connections"><Connections history={() => { view = 'activity'; heading?.focus(); void controller.activity('connections', ''); }} {binding} overview={$model.snapshot?.crafty} owner={$model.snapshot?.account.role === 'owner'} active={view === 'connections' && $model.phase === 'ready'} refresh={controller.check} observationState={$model.observations} loadObservations={controller.observations} /></section>
     <section hidden={view !== 'activity' || $model.phase !== 'ready'} aria-label="Activity"><Activity state={$model.activity} authorized={$model.phase === 'ready'} load={controller.activity} /></section>
     <section hidden={view !== 'notifications' || $model.phase !== 'ready'} aria-label="Notifications"><Notifications value={$model.snapshot?.notifications} authorized={$model.phase === 'ready'} state={$model.notificationSave} message={$model.notificationMessage} check={controller.check} mark={controller.markNotification} /></section>
-    <section hidden={(view !== 'integrations' && view !== 'roadmap') || $model.phase !== 'ready'} aria-label={view === 'roadmap' ? 'Roadmap note' : 'Integration catalog'}><Guide mode={view === 'roadmap' ? 'roadmap' : 'catalog'} state={$model.guide} authorized={$model.phase === 'ready'} retry={() => controller.loadGuide(true)} connections={() => navigate('connections')} media={() => navigate('media')} queues={() => navigate('queues')} owner={$model.snapshot?.account.role === 'owner'} /></section>
+    <section hidden={(view !== 'integrations' && view !== 'roadmap') || $model.phase !== 'ready'} aria-label={view === 'roadmap' ? 'Roadmap note' : 'Integration catalog'}><Guide mode={view === 'roadmap' ? 'roadmap' : 'catalog'} state={$model.guide} authorized={$model.phase === 'ready'} retry={() => controller.loadGuide(true)} connections={() => navigate('connections')} media={() => navigate('media')} queues={() => navigate('queues')} identity={() => navigate('identity')} owner={$model.snapshot?.account.role === 'owner'} /></section>
     <section hidden={view !== 'media' || $model.phase !== 'ready'} aria-label="Media"><Media state={$model.media} owner={$model.snapshot?.account.role === 'owner'} active={view === 'media' && $model.phase === 'ready'} check={controller.checkMedia} load={controller.loadMedia} save={controller.saveMedia} /></section>
     <section hidden={view !== 'queues' || $model.phase !== 'ready'} aria-label="Queues"><Queues state={$model.queues} owner={$model.snapshot?.account.role === 'owner'} active={view === 'queues' && $model.phase === 'ready'} check={controller.checkQueues} load={controller.loadQueues} save={controller.saveQueues} /></section>
+    <section hidden={view !== 'identity' || $model.phase !== 'ready'} aria-label="Identity"><Identity {binding} state={$model.identity} owner={$model.snapshot?.account.role === 'owner'} active={view === 'identity' && $model.phase === 'ready'} check={controller.checkIdentity} act={controller.identityAction} saveApplication={controller.saveDiscordApplication} /></section>
     <footer class="content-footer"><span>Keida Reborn</span><a href="/account">Account &amp; recovery</a></footer>
   </main>
 </div>

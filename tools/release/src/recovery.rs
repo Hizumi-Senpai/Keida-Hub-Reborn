@@ -1,4 +1,6 @@
 //! Isolated packaged install/restore/failed-candidate rehearsal; never live data.
+#[path = "discord_recovery.rs"]
+mod discord_recovery;
 use crate::{Result, directory, hash, hex};
 use reqwest::{Client, Response};
 use serde_json::{Value, json};
@@ -11,7 +13,7 @@ use std::{
     time::Duration,
 };
 const PG: &str = "postgres:16.15-bookworm@sha256:d81f7b51697014367236d07ec58b54153fc28f828b72bf247fe5c7487520bcb0";
-const ORIGIN: &str = "https://recovery.reborn.example";
+const ORIGIN: &str = "https://recovery.reborn.test";
 fn docker(args: &[&str]) -> Result<Vec<u8>> {
     let o = Command::new("docker")
         .args(args)
@@ -986,6 +988,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
             )?;
         }
     }
+    let discord_fixture = reborn_crafty_fixture::discord::Discord::start().await?;
     let first = format!("reborn-recovery-first-{nonce}");
     scope.containers.push(first.clone());
     let first_port = port()?;
@@ -997,6 +1000,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         &app_root.join("database.url"),
         &user,
     );
+    discord_recovery::transport(&mut args, &app_root, &discord_fixture)?;
     args.insert(1, "-d".into());
     invoke(args, &["serve"])?;
     let origin = format!("http://127.0.0.1:{first_port}");
@@ -1433,6 +1437,42 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     {
         return Err("configured member history differs or history performed provider IO");
     }
+    let discord_owner = discord_recovery::Context {
+        client: &client,
+        origin: &origin,
+        session: &session,
+        binding,
+        account: &claimed["account"],
+    };
+    let discord_initial = discord_owner.status().await?;
+    if discord_initial["application"]["configured"] != false
+        || !discord_initial["link"]["identity"].is_null()
+    {
+        return Err("Discord recovery fresh configuration was not empty");
+    }
+    let discord_enrolled = discord_owner.application(&discord_initial, true).await?;
+    let pending_owner = discord_owner
+        .begin(&discord_enrolled, &discord_fixture)
+        .await?;
+    let discord_linked = discord_owner
+        .complete(pending_owner, &discord_fixture)
+        .await?;
+    let discord_member = discord_recovery::Context {
+        client: &client,
+        origin: &origin,
+        session: &member_session,
+        binding: member_binding,
+        account: &member_login["account"],
+    };
+    let member_discord_initial = discord_member.status().await?;
+    if !member_discord_initial["link"]["identity"].is_null() {
+        return Err("Discord recovery disclosed the owner link to a member");
+    }
+    let discord_unfinished = discord_member
+        .begin(&member_discord_initial, &discord_fixture)
+        .await?;
+    discord_recovery::no_transient_dump(&pg, "first")?;
+    discord_recovery::protocol(&discord_fixture)?;
     docker(&["stop", "--time", "5", &first])?;
     let dump = scope.root.join("database.dump");
     let dump_file = std::fs::OpenOptions::new()
@@ -1523,6 +1563,12 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         "DELETE FROM media_connections WHERE provider='jellyfin'",
         "INSERT INTO media_connections (provider,revision,sealed) VALUES ('jellyfin',0,NULL)",
         "UPDATE media_connections SET provider=provider WHERE provider='jellyfin'",
+        "ALTER TABLE discord_application ADD COLUMN runtime_must_not_ddl integer",
+        "DELETE FROM discord_application",
+        "INSERT INTO discord_application (singleton,revision,sealed) VALUES (TRUE,0,NULL)",
+        "UPDATE discord_application SET singleton=singleton",
+        "DELETE FROM discord_links",
+        "UPDATE discord_links SET account_id=account_id",
         "ALTER TABLE queue_connections ADD COLUMN runtime_must_not_ddl integer",
         "DELETE FROM queue_connections WHERE provider='sonarr'",
         "INSERT INTO queue_connections (provider,revision,sealed) VALUES ('sonarr',0,NULL)",
@@ -1560,6 +1606,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         &restored_root.join("database.url"),
         &user,
     );
+    discord_recovery::transport(&mut args, &restored_root, &discord_fixture)?;
     args.insert(1, "-d".into());
     invoke(args, &["serve"])?;
     let origin = format!("http://127.0.0.1:{restored_port}");
@@ -1600,6 +1647,63 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     {
         return Err("matched auth/note/secret restore rejected");
     }
+    let discord_owner = discord_recovery::Context {
+        client: &client,
+        origin: &origin,
+        session: &session,
+        binding,
+        account: &claimed["account"],
+    };
+    let restored_discord = discord_owner.status().await?;
+    if restored_discord["application"] != discord_linked["application"]
+        || restored_discord["link"] != discord_linked["link"]
+        || !restored_discord["attempt"]["candidate"].is_null()
+    {
+        return Err("Discord matched application/link restore differs");
+    }
+    let discord_member = discord_recovery::Context {
+        client: &client,
+        origin: &origin,
+        session: &member_session,
+        binding: member_binding,
+        account: &member_login["account"],
+    };
+    discord_member
+        .reject_after_restart(&discord_unfinished, &discord_fixture)
+        .await?;
+    // A restored envelope must actually decrypt: restart-bound metadata alone
+    // cannot prove the dedicated application secret remains usable.
+    let unlinked_discord = discord_owner.action("unlink", &restored_discord).await?;
+    if !unlinked_discord["link"]["identity"].is_null() {
+        return Err("Discord newer local unlink was not accepted");
+    }
+    let restored_pending = discord_owner
+        .begin(&unlinked_discord, &discord_fixture)
+        .await?;
+    let restored_reverified = discord_owner
+        .complete(restored_pending, &discord_fixture)
+        .await?;
+    let newer_unlinked = discord_owner.action("unlink", &restored_reverified).await?;
+    let removed_discord = discord_owner.application(&newer_unlinked, false).await?;
+    let replaced_discord = discord_owner.application(&removed_discord, true).await?;
+    let pending_newer_discord = discord_owner
+        .begin(&replaced_discord, &discord_fixture)
+        .await?;
+    let newer_discord = discord_owner
+        .complete(pending_newer_discord, &discord_fixture)
+        .await?;
+    if newer_discord["application"]["revision"] != "3"
+        || newer_discord["link"]["revision"] != "5"
+        || newer_discord["link"]["identity"]["id"] != reborn_crafty_fixture::discord::ID
+    {
+        return Err("Discord newer unlink/relink or application writes differ");
+    }
+    let member_discord_now = discord_member.status().await?;
+    let discord_newer_unfinished = discord_member
+        .begin(&member_discord_now, &discord_fixture)
+        .await?;
+    discord_recovery::no_transient_dump(&restore_pg, "restored")?;
+    discord_recovery::protocol(&discord_fixture)?;
     // The new process has no media cache. Real HTTPS observations therefore
     // exercise both restored envelopes with the matched key and provider domain.
     let requests_before_media_restore = media_provider.requests().len();
@@ -2099,7 +2203,34 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     if hash(&dump)? != dump_sha {
         return Err("newer queue recovery changed the old matched backup");
     }
-    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":11,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"restored_notifications_and_read_state":true,"restored_personal_layout_and_newer_edits":true,"restored_provider_observations_and_newer_samples":true,"restored_media_connections_and_observations":true,"restored_queue_connections_and_observations":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
+    let final_discord = discord_owner.status().await?;
+    if final_discord["application"] != newer_discord["application"]
+        || final_discord["link"] != newer_discord["link"]
+        || !final_discord["attempt"]["candidate"].is_null()
+    {
+        return Err("failed candidate/restart lost newer Discord configuration or identity writes");
+    }
+    discord_member
+        .reject_after_restart(&discord_newer_unfinished, &discord_fixture)
+        .await?;
+    // Exercise the newer decrypted application again after process restart,
+    // retaining the current data throughout rather than replaying an old dump.
+    let final_unlinked = discord_owner.action("unlink", &final_discord).await?;
+    let final_pending = discord_owner
+        .begin(&final_unlinked, &discord_fixture)
+        .await?;
+    let final_reverified = discord_owner
+        .complete(final_pending, &discord_fixture)
+        .await?;
+    if final_reverified["application"] != newer_discord["application"]
+        || final_reverified["link"]["revision"] != "7"
+        || final_reverified["link"]["identity"]["id"] != reborn_crafty_fixture::discord::ID
+    {
+        return Err("Discord restarted newer application could not verify current identity");
+    }
+    discord_recovery::no_transient_dump(&restore_pg, "restored")?;
+    discord_recovery::protocol(&discord_fixture)?;
+    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":12,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"restored_notifications_and_read_state":true,"restored_personal_layout_and_newer_edits":true,"restored_provider_observations_and_newer_samples":true,"restored_media_connections_and_observations":true,"restored_queue_connections_and_observations":true,"restored_discord_application_and_links":true,"restored_discord_newer_identity_writes":true,"discarded_unfinished_discord_attempts_on_restart":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
     crate::write(
         &out.join("recovery-proof.json"),
         &serde_json::to_vec(&report).map_err(|_| "recovery proof encoding failed")?,

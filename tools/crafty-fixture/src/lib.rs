@@ -1,4 +1,5 @@
 //! Shared HTTPS plumbing/data only. Each caller owns independent expectations.
+pub mod discord;
 pub mod media;
 pub mod queues;
 use axum::{

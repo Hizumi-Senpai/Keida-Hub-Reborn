@@ -13,6 +13,8 @@ use std::{
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
+#[path = "support/discord_contracts.rs"]
+mod discord_contracts;
 #[path = "support/media_contracts.rs"]
 mod media_contracts;
 #[path = "support/queues_contracts.rs"]
