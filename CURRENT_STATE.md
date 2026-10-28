@@ -1,58 +1,66 @@
 # Reborn current state
 
-Updated2026-10-28 America/Chicago. Source, artifact, installation, loaded browser
-and actual owner/provider acceptance remain separate. Issue1 receipts and fresh
-host discovery take precedence over historical examples.
+Updated October 28, 2026, America/Chicago, for the requested successor handoff.
+This documentation branch is unmerged; accepted main and running release remain
+0.1.18. Fresh issue1 receipts and host discovery govern later operations.
 
-## Installed baseline
+## Installed and qualified
 
-**Reborn0.1.17/schema13** at https://rewrite.keida.me is recorded by the
-[exact source/artifact/current-data/final-fenced install/retention receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6466893195).
-Source `cc258e0376cef8e4eb88281efcc61c69fa11be2b`, tree
-`272bf938db2308d2ad269a501fc14e5f80e30690`; image
-`sha256:cabfa37f35e55af08cf3b32f3bb07fbbc5cc92e65b64c414068b4cb9320996a6`.
-Head/main each passed24steps:188Rust/72genuineSQLx/15native+15exact-image HTTPS
-workflows/11account-lifecycle outcomes including actual ten-minute form expiry.
-Final fenced12→13 recovery preserved18prior relations, four sequence value/
-is_called pairs and whole ledger1–12 plus matched key/configuration. Useful
-prior16 and its matched final12 recovery remain retained; all22assets qualified.
+**Reborn0.1.18/schema13** is live at https://rewrite.keida.me. [Exact deployment,
+recovery and retention receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6482571904).
+Accepted source `697699187aca6780d8ba7b199dc2ba90b033bd67`, tree
+`bef1ea4021485466a22fedf4afc6559f3fb7e5bf`; image
+`sha256:74231723bfcb2bd52363d848a53c3d62cf6c70e90cc7a590fb75b7ca9a655f0d`.
+HeadCI72/mainCI73 each passed all24 steps:192 Rust tests,72 unchanged SQLx records,
+15 retained +1 refresh browser workflow both natively and in the exact image,
+packaged13 recovery and11 account/lifecycle outcomes with real ten-minute expiry.
+
+M5.1 server-change discovery and Account-area **Review refresh** is installed.
+Actual hidden60-second reconnect, cancellation, upgrade/rollback/source identity,
+draft/secret flags, uncertain-write blocking, privacy and deliberate fixed GET
+were qualified. All22 baseline assets plus the new pair are retained (24 total).
+Migrations, runtime grants, dependencies and lockfiles did not change.
+
+Current13 compatibility and the final stopped-writer backup were restored under
+both17/18, comparing all18 prior domain relations, full sessions, ledger1–13 and
+four sequence value/is_called pairs. Newer isolated writes survived rollback.
+No production migration or old-dump restore occurred. Useful stopped17 and its
+matched final13 recovery are retained. Exact obsolete16, earlier14 and owned
+temporary containers/network are already retired; never repeat that cleanup.
 
 Private notes/Crafty observations, directory/search/pins, Activity/notifications,
-Home arrangement, catalog/Roadmap/history, owner-only Media/Queues, bounded
-Discord linking and own-account personal session review/targeted sign-out are
-installed. All six providers and the Discord application were unconfigured at
-the terminal17 receipt. Dedicated provider/TLS/privacy/freshness, actual owner
-sessions/daily desktop/mobile and real Discord registration/private enrollment/
-callback-query privacy/linking acceptance remain open. Full M0–M4 are incomplete.
+Home arrangement, catalog/Roadmap/history, Media/Queues, bounded Discord linking
+and personal sessions remain installed. Real owner desktop/mobile/natural-use,
+provider/TLS/privacy/freshness and dedicated Discord/callback acceptance stay open.
+At17:50:40CDT the same healthy18 was ready, PG start unchanged,17 stopped and all
+six providers plus Discord application enrollment stillfalse. Full milestones
+are not completed by fixture or runtime evidence. The Roadmap note is a dated
+build snapshot, not a live deployment/acceptance feed.
 
-## Current independent source slice
+## Next concrete task
 
-[Server-change discovery and deliberate draft-safe browser refresh](docs/M5_BROWSER_REFRESH.md),
-[issue29](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/29), was frozen
-before code. Expected source0.1.18 keeps schema13 and the same72 checked queries.
-A small authenticated read-only access probe supports loaded/responding-server
-comparison, upgrades and rollback notices, unfinished-work review, cancellation
-and a monotonic bounded reconnect before an explicit fixed-path GET refresh.
-No automatic reload, credential persistence/replay, host updater or provider/
-game effects. Existing11 navigation entries and all22 baseline assets remain;
-the new pair yields24unique assets. No dependency/lockfile changes.
+Prepare and freeze a new **M5 host-updater contract and concrete bootstrap review**
+in an issue, using existing Rust release tools and actual immutable/manual18
+evidence. Refresh tools, GitHub and complete host/updater ownership first. Review
+source/binary/digest, paths/privileges, single-owner request/status/lock/dedup and
+uncertain states, artifact trust, exact targets, current-data recovery, uninstall
+and failure behavior. Complete authorized preparation before asking for separately
+required activation approval. No daemon/scheduler/second writer is authorized by
+this handoff. Missing real credentials do not block independent preparation.
 
-Exact head/main CI, real native/image browser checks including actual60seconds,
-packaged13 recovery and current-data compatible13 upgrade/rollback remain gates
-until exact receipts. Prior17 must preserve newer13 data; no older dump restore.
-Only after18 qualifies may useful17 plus matched13 recovery replace retained16.
+## Ownership and continuity
 
-## Ownership and limits
+One successor CORE integrates, merges, deploys and writes shared checkpoints after
+the previous CORE's final handoff response. Use only the self-hosted Keida Remote
+Commander, with refreshed relay-local identity and new complete immutable audited
+source, held descriptors and separate operation locks. No historical replay,
+credential/header/login reuse, account reset/promotion, production fixture user,
+protected service restart or broad cleanup. Original/Rewrite and external work
+retain their owners; game-control and updater activation gates remain separate.
 
-One CORE owns integration/merges/publication/manual install/shared checkpoints.
-Refresh host identities, process births, mounts/networks, operation locks and
-bridge ownership before actions. A later externally observed Crafty restart
-requires its own fresh baseline; do not claim old protected starts remained
-unchanged. Use only self-hosted Keida Remote Commander with complete immutable
-hash-verified new audits, held descriptors/locks and no historical replay.
-
-Preserve Original/Rewrite and external/unpublished work. No real-owner password/
-header/login replay, reset/promotion, secret request in chat or inherited provider
-credentials. No protected proxy/tunnel/game/updater restart. Host-updater activation,
-game transfer and primary hostname changes retain separate gates. No Safari/
-iPhone, Windows, natural-use or performance claim follows from Linux fixtures.
+Read [the full successor handoff](docs/HANDOFF.md). Its six-file documentation
+branch has no new accepted release identity and should join the next normal PR.
+All13 tracker bodies and the Original379 shared checkpoint already record18;
+their historical text/open checkboxes remain preserved. Detailed hashes, exact
+host/cache/audit paths, retained17/final13 proof and no-replay facts are in the
+handoff and issue1 receipt. No application/deployment command remains running.

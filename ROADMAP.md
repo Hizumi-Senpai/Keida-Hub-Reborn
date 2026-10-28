@@ -23,8 +23,13 @@ are installed as0.1.14 (issue22). Documentation-only source0.1.15 records the
 self-hosted Commander policy. [Discord identity linking/status/local unlink](docs/M4_IDENTITY.md)
 is installed as0.1.16/schema12 (issue25), with real Discord setup/privacy and
 owner acceptance pending. [Personal session review/targeted sign-out](docs/M4_SESSIONS.md)
-is installed as0.1.17/schema13 (issue27). The next independent slice is
-[server-change discovery and draft-safe refresh](docs/M5_BROWSER_REFRESH.md), issue29.
+was introduced in0.1.17/schema13 (issue27). [Server-change discovery and
+draft-safe refresh](docs/M5_BROWSER_REFRESH.md), issue29, is installed and
+runtime/recovery/retention-qualified in **0.1.18/schema13** under the
+[exact18 receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6482571904).
+Real owner/provider acceptance remains open. The next independent M5 task is to
+freeze the host-updater contract and prepare its concrete bootstrap review;
+installation/activation needs separate authorization. See [successor handoff](docs/HANDOFF.md).
 Existing accepted functionality in
 another application is a behavior reference, not a completed Reborn milestone.
 
