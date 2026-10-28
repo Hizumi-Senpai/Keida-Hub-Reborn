@@ -18,6 +18,8 @@ const LAYOUT_SCRIPT: &[u8] = include_bytes!("../../static/workspace-compat/0.1.1
 const LAYOUT_STYLE: &[u8] = include_bytes!("../../static/workspace-compat/0.1.11.css");
 const CATALOG_SCRIPT: &[u8] = include_bytes!("../../static/workspace-compat/0.1.12.js");
 const CATALOG_STYLE: &[u8] = include_bytes!("../../static/workspace-compat/0.1.12.css");
+const MEDIA_SCRIPT: &[u8] = include_bytes!("../../static/workspace-compat/0.1.13.js");
+const MEDIA_STYLE: &[u8] = include_bytes!("../../static/workspace-compat/0.1.13.css");
 fn url(bytes: &[u8], extension: &str) -> String {
     let digest: String = Sha256::digest(bytes)
         .iter()
@@ -66,6 +68,10 @@ pub fn find(path: &str) -> Option<(&'static str, &'static [u8])> {
         Some(("text/javascript; charset=utf-8", CATALOG_SCRIPT))
     } else if path == url(CATALOG_STYLE, "css") {
         Some(("text/css; charset=utf-8", CATALOG_STYLE))
+    } else if path == url(MEDIA_SCRIPT, "js") {
+        Some(("text/javascript; charset=utf-8", MEDIA_SCRIPT))
+    } else if path == url(MEDIA_STYLE, "css") {
+        Some(("text/css; charset=utf-8", MEDIA_STYLE))
     } else {
         None
     }
@@ -88,5 +94,7 @@ pub fn manifest() -> Vec<String> {
         url(LAYOUT_STYLE, "css"),
         url(CATALOG_SCRIPT, "js"),
         url(CATALOG_STYLE, "css"),
+        url(MEDIA_SCRIPT, "js"),
+        url(MEDIA_STYLE, "css"),
     ]
 }

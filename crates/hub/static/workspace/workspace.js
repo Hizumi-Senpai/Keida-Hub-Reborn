@@ -17,7 +17,7 @@ function m() {
 		reject: t
 	};
 }
-var h = 1024, g = 2048, _ = 4096, v = 8192, y = 16384, b = 32768, x = 1 << 25, S = 65536, C = 1 << 19, w = 1 << 20, T = 1 << 25, E = 1 << 21, ee = 1 << 22, te = 1 << 23, ne = Symbol("$state"), re = Symbol("component"), D = Symbol("legacy props"), ie = Symbol(""), ae = Symbol("attributes"), oe = Symbol("class"), se = Symbol("style"), ce = Symbol("text"), le = Symbol("form reset"), ue = new class extends Error {
+var h = 1024, g = 2048, _ = 4096, v = 8192, y = 16384, b = 32768, x = 1 << 25, S = 65536, C = 1 << 19, w = 1 << 20, ee = 1 << 25, te = 1 << 21, ne = 1 << 22, re = 1 << 23, ie = Symbol("$state"), T = Symbol("component"), ae = Symbol("legacy props"), E = Symbol(""), oe = Symbol("attributes"), se = Symbol("class"), ce = Symbol("style"), le = Symbol("text"), D = Symbol("form reset"), ue = new class extends Error {
 	name = "StaleReactionError";
 	message = "The reaction that called `getAbortSignal()` was re-run or destroyed";
 }(), de = !!globalThis.document?.contentType && /* @__PURE__ */ globalThis.document.contentType.includes("xml"), fe = {}, pe = Symbol("uninitialized"), me = "http://www.w3.org/1999/xhtml";
@@ -160,7 +160,7 @@ function Ge(e) {
 	return e !== void 0 && (t.x = e), t.i = !0, j = t.p, Ke(e);
 }
 function Ke(e = {}) {
-	return i(e, re, { value: !0 }), e;
+	return i(e, T, { value: !0 }), e;
 }
 function qe() {
 	return !Ve || j !== null && j.l === null;
@@ -203,7 +203,7 @@ var rt = !1;
 function it() {
 	rt || (rt = !0, document.addEventListener("reset", (e) => {
 		Promise.resolve().then(() => {
-			if (!e.defaultPrevented) for (let t of e.target.elements) t[le]?.();
+			if (!e.defaultPrevented) for (let t of e.target.elements) t[D]?.();
 		});
 	}, { capture: !0 }));
 }
@@ -219,8 +219,8 @@ function at(e) {
 }
 function ot(e, t, n, r = n) {
 	e.addEventListener(t, () => at(n));
-	let i = e[le];
-	e[le] = i ? () => {
+	let i = e[D];
+	e[D] = i ? () => {
 		i(), r(!0);
 	} : () => r(!0), it();
 }
@@ -313,7 +313,7 @@ function pt(e, t, n) {
 			s.add(n), c.async_deriveds.set(t, n);
 		}
 		let u = (e, t = void 0) => {
-			l?.(), s.delete(n), t !== ft && (c.activate(), t ? (a.f |= te, Kt(a, t)) : (a.f & 8388608 && (a.f ^= te), Kt(a, e)), c.deactivate());
+			l?.(), s.delete(n), t !== ft && (c.activate(), t ? (a.f |= re, Kt(a, t)) : (a.f & 8388608 && (a.f ^= re), Kt(a, e)), c.deactivate());
 		};
 		n.promise.then(u, (e) => u(null, e || "unknown"));
 	}), bn(() => {
@@ -754,7 +754,7 @@ function Xt(e, t, n) {
 	}
 }
 function Zt(t) {
-	if (typeof t != "object" || !t || ne in t || re in t) return t;
+	if (typeof t != "object" || !t || ie in t || T in t) return t;
 	let n = l(t);
 	if (n !== s && n !== c) return t;
 	var r = /* @__PURE__ */ new Map(), i = e(t), o = /* @__PURE__ */ Ht(0), u = null, d = rr, f = (e) => {
@@ -784,7 +784,7 @@ function Zt(t) {
 			return !0;
 		},
 		get(e, n, i) {
-			if (n === ne) return t;
+			if (n === ie) return t;
 			var o = r.get(n), s = n in e;
 			if (o === void 0 && (!s || a(e, n)?.writable) && (o = f(() => /* @__PURE__ */ Ht(Zt(s ? e[n] : pe), u)), r.set(n, o)), o !== void 0) {
 				var c = H(o);
@@ -809,7 +809,7 @@ function Zt(t) {
 			return n;
 		},
 		has(e, t) {
-			if (t === ne) return !0;
+			if (t === ie) return !0;
 			var n = r.get(t), i = n !== void 0 && n.v !== pe || Reflect.has(e, t);
 			return (n !== void 0 || V !== null && (!i || a(e, t)?.writable)) && (n === void 0 && (n = f(() => /* @__PURE__ */ Ht(i ? Zt(e[t]) : pe, u)), r.set(t, n)), H(n) === pe) ? !1 : i;
 		},
@@ -851,7 +851,7 @@ function Zt(t) {
 }
 function Qt(e) {
 	try {
-		if (typeof e == "object" && e && ne in e) return e[ne];
+		if (typeof e == "object" && e && ie in e) return e[ie];
 	} catch {}
 	return e;
 }
@@ -863,7 +863,7 @@ function an() {
 	if (en === void 0) {
 		en = window, tn = /Firefox/.test(navigator.userAgent);
 		var e = Element.prototype, t = Node.prototype, n = Text.prototype;
-		nn = a(t, "firstChild").get, rn = a(t, "nextSibling").get, u(e) && (e[oe] = void 0, e[ae] = null, e[se] = void 0, e.__e = void 0), u(n) && (n[ce] = void 0);
+		nn = a(t, "firstChild").get, rn = a(t, "nextSibling").get, u(e) && (e[se] = void 0, e[oe] = null, e[ce] = void 0, e.__e = void 0), u(n) && (n[le] = void 0);
 	}
 }
 function on(e = "") {
@@ -935,7 +935,7 @@ function pn(e) {
 }
 function mn(e) {
 	var t = V;
-	if (t === null) return B.f |= te, e;
+	if (t === null) return B.f |= re, e;
 	if (!(t.f & 32768) && !(t.f & 4)) throw e;
 	hn(e, t);
 }
@@ -1063,7 +1063,7 @@ function Dn() {
 	});
 }
 function On(e) {
-	return vn(ee | C, e);
+	return vn(ne | C, e);
 }
 function kn(e, t = 0) {
 	return vn(8 | t, e);
@@ -1230,7 +1230,7 @@ function cr(e) {
 		e.ac.abort(ue);
 	}), e.ac = null);
 	try {
-		e.f |= E;
+		e.f |= te;
 		var u = e.fn, d = u();
 		e.f |= b;
 		var f = lr(e);
@@ -1240,11 +1240,11 @@ function cr(e) {
 			if (t !== null) for (let e of t) e.rv = nr;
 			$n !== null && (r === null ? r = $n : r.push(...$n));
 		}
-		return e.f & 8388608 && (e.f ^= te), d;
+		return e.f & 8388608 && (e.f ^= re), d;
 	} catch (t) {
 		return lr(e), mn(t);
 	} finally {
-		e.f ^= E, Zn = t, Qn = n, $n = r, B = i, Yn = a, Ue(o), Kn = s, rr = c;
+		e.f ^= te, Zn = t, Qn = n, $n = r, B = i, Yn = a, Ue(o), Kn = s, rr = c;
 	}
 }
 function lr(e) {
@@ -1342,10 +1342,10 @@ function U(e) {
 }
 function W(e) {
 	if (!(typeof e != "object" || !e || e instanceof EventTarget)) {
-		if (ne in e) gr(e);
+		if (ie in e) gr(e);
 		else if (!Array.isArray(e)) for (let t in e) {
 			let n = e[t];
-			typeof n == "object" && n && ne in n && gr(n);
+			typeof n == "object" && n && ie in n && gr(n);
 		}
 	}
 }
@@ -1696,7 +1696,7 @@ var Lr = class {
 };
 function J(e, t) {
 	var n = t == null ? "" : typeof t == "object" ? `${t}` : t;
-	n !== (e[ce] ??= e.nodeValue) && (e[ce] = n, e.nodeValue = `${n}`);
+	n !== (e[le] ??= e.nodeValue) && (e[le] = n, e.nodeValue = `${n}`);
 }
 function Rr(e, t) {
 	return Br(e, t);
@@ -1858,7 +1858,7 @@ function Gr(e, t, n = !0) {
 	}
 	for (var i = 0; i < t.length; i++) {
 		var a = t[i];
-		r?.has(a) ? (a.f |= T, Hn(a, document.createDocumentFragment())) : Fn(t[i], n);
+		r?.has(a) ? (a.f |= ee, Hn(a, document.createDocumentFragment())) : Fn(t[i], n);
 	}
 }
 var Kr;
@@ -1877,7 +1877,7 @@ function qr(t, n, i, a, o, s = null) {
 		if (!(_.effect.f & 16384)) {
 			_.pending.delete(e);
 			var t = H(f);
-			_.fallback = d, Yr(_, t, c, n, a), d !== null && (t.length === 0 ? d.f & 33554432 ? (d.f ^= T, Zr(d, null, c)) : Bn(d) : Rn(d, () => {
+			_.fallback = d, Yr(_, t, c, n, a), d !== null && (t.length === 0 ? d.f & 33554432 ? (d.f ^= ee, Zr(d, null, c)) : Bn(d) : Rn(d, () => {
 				d = null;
 			}));
 		}
@@ -1893,9 +1893,9 @@ function qr(t, n, i, a, o, s = null) {
 			for (var u = /* @__PURE__ */ new Set(), _ = N, v = dn(), y = 0; y < t; y += 1) {
 				O && k.nodeType === 8 && k.data === "]" && (c = k, r = !0, ye(!1));
 				var b = e[y], x = a(b, y), S = m ? null : l.get(x);
-				S ? (S.v && Kt(S.v, b), S.i && Kt(S.i, y), v && _.unskip_effect(S.e)) : (S = Xr(l, m ? c : Kr ??= on(), b, x, y, o, n, i), m || (S.e.f |= T), l.set(x, S)), u.add(x);
+				S ? (S.v && Kt(S.v, b), S.i && Kt(S.i, y), v && _.unskip_effect(S.e)) : (S = Xr(l, m ? c : Kr ??= on(), b, x, y, o, n, i), m || (S.e.f |= ee), l.set(x, S)), u.add(x);
 			}
-			if (t === 0 && s && !d && (m ? d = jn(() => s(c)) : (d = jn(() => s(Kr ??= on())), d.f |= T)), t > u.size && Ae("", "", ""), O && t > 0 && be(Ce()), !m) {
+			if (t === 0 && s && !d && (m ? d = jn(() => s(c)) : (d = jn(() => s(Kr ??= on())), d.f |= ee)), t > u.size && Ae("", "", ""), O && t > 0 && be(Ce()), !m) {
 				if (p.set(_, u), v) {
 					for (let [e, t] of l) u.has(e) || _.skip_effect(t.e);
 					_.oncommit(h), _.ondiscard(g);
@@ -1921,7 +1921,7 @@ function Yr(e, t, n, i, a) {
 	for (v = 0; v < s; v += 1) {
 		if (h = t[v], g = a(h, v), _ = c.get(g).e, e.outrogroups !== null) for (let t of e.outrogroups) t.pending.delete(_), t.done.delete(_);
 		if (_.f & 8192 && (Bn(_), o && (_.nodes?.a?.unfix(), (f ??= /* @__PURE__ */ new Set()).delete(_))), _.f & 33554432) {
-			if (_.f ^= T, _ === l) Zr(_, null, n);
+			if (_.f ^= ee, _ === l) Zr(_, null, n);
 			else {
 				var y = d ? d.next : l;
 				_ === e.effect.last && (e.effect.last = _.prev), _.prev && (_.prev.next = _.next), _.next && (_.next.prev = _.prev), Qr(e, d, _), Qr(e, _, y), Zr(_, y, n), d = _, p = [], m = [], l = Jr(d.next);
@@ -1953,14 +1953,14 @@ function Yr(e, t, n, i, a) {
 		var w = [];
 		if (u !== void 0) for (_ of u) _.f & 8192 || w.push(_);
 		for (; l !== null;) !(l.f & 8192) && l !== e.fallback && w.push(l), l = Jr(l.next);
-		var E = w.length;
-		if (E > 0) {
-			var ee = i & 4 && s === 0 ? n : null;
+		var te = w.length;
+		if (te > 0) {
+			var ne = i & 4 && s === 0 ? n : null;
 			if (o) {
-				for (v = 0; v < E; v += 1) w[v].nodes?.a?.measure();
-				for (v = 0; v < E; v += 1) w[v].nodes?.a?.fix();
+				for (v = 0; v < te; v += 1) w[v].nodes?.a?.measure();
+				for (v = 0; v < te; v += 1) w[v].nodes?.a?.fix();
 			}
-			Wr(e, w, ee);
+			Wr(e, w, ne);
 		}
 	}
 	o && Xe(() => {
@@ -2002,10 +2002,10 @@ function ei(e, t, n) {
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/class.js
 function ti(e, t, n, r, i, a) {
-	var o = e[oe];
+	var o = e[se];
 	if (O || o !== n || o === void 0) {
 		var s = ei(n, r, a);
-		O && s === e.getAttribute("class") || (s == null ? e.removeAttribute("class") : t ? e.className = s : e.setAttribute("class", s)), e[oe] = n;
+		O && s === e.getAttribute("class") || (s == null ? e.removeAttribute("class") : t ? e.className = s : e.setAttribute("class", s)), e[se] = n;
 	} else if (a && i !== a) for (var c in a) {
 		var l = !!a[c];
 		(i == null || l !== !!i[c]) && e.classList.toggle(c, l);
@@ -2109,7 +2109,7 @@ function pi(e) {
 				}
 			}
 		};
-		e[le] = n, Xe(n), it();
+		e[D] = n, Xe(n), it();
 	}
 }
 function mi(e, t) {
@@ -2122,10 +2122,10 @@ function hi(e, t) {
 }
 function X(e, t, n, r) {
 	var i = gi(e);
-	O && (i[t] = e.getAttribute(t), t === "src" || t === "srcset" || t === "href" && e.nodeName === di) || i[t] !== (i[t] = n) && (t === "loading" && (e[ie] = n), n == null ? e.removeAttribute(t) : typeof n != "string" && vi(e).has(t) ? e[t] = n : e.setAttribute(t, n));
+	O && (i[t] = e.getAttribute(t), t === "src" || t === "srcset" || t === "href" && e.nodeName === di) || i[t] !== (i[t] = n) && (t === "loading" && (e[E] = n), n == null ? e.removeAttribute(t) : typeof n != "string" && vi(e).has(t) ? e[t] = n : e.setAttribute(t, n));
 }
 function gi(e) {
-	return e[ae] ??= {
+	return e[oe] ??= {
 		[li]: e.nodeName.includes("-"),
 		[ui]: e.namespaceURI === me
 	};
@@ -2178,7 +2178,7 @@ function Si(e) {
 }
 // ../node_modules/svelte/src/internal/client/dom/elements/bindings/this.js
 function Ci(e, t) {
-	return e === t || e?.[ne] === t;
+	return e === t || e?.[ie] === t;
 }
 function wi(e = Ke(), t, n, r) {
 	var i = j.r, a = V;
@@ -2312,7 +2312,7 @@ function Z(e, t, n, r) {
 	var i = !Ve || !!(n & 2), o = !!(n & 8), s = !!(n & 16), c = r, l = !0, u = void 0, d = () => s && i ? (u ??= /* @__PURE__ */ dt(r), H(u)) : (l && (l = !1, c = s ? U(r) : r), c);
 	let f;
 	if (o) {
-		var p = ne in e || D in e;
+		var p = ie in e || ae in e;
 		f = a(e, t)?.set ?? (p && t in e ? (n) => e[t] = n : void 0);
 	}
 	var m, h = !1;
@@ -2410,7 +2410,24 @@ var Vi = "keida-hub-reborn", Hi = "reborn-workspace-v1", Ui = 922337203685477580
 		save: "idle",
 		message: ""
 	}
-}), Zi = (e, t) => ({
+}), Zi = [
+	"sonarr",
+	"radarr",
+	"qbittorrent"
+], Qi = {
+	sonarr: "sonarr-v3",
+	radarr: "radarr-v3",
+	qbittorrent: "qbittorrent-v2-key"
+}, $i = () => ({
+	phase: "idle",
+	offset: 0,
+	save: "idle",
+	message: ""
+}), ea = () => ({
+	sonarr: $i(),
+	radarr: $i(),
+	qbittorrent: $i()
+}), ta = (e, t) => ({
 	phase: e,
 	message: t,
 	draft: "",
@@ -2427,8 +2444,9 @@ var Vi = "keida-hub-reborn", Hi = "reborn-workspace-v1", Ui = 922337203685477580
 	layoutMessage: "",
 	guide: qi(),
 	observations: Ji(),
-	media: Xi()
-}), Q = (e) => typeof e == "object" && !!e && !Array.isArray(e), $ = (e, t = !1) => typeof e == "string" && /^(0|[1-9][0-9]{0,18})$/.test(e) && BigInt(e) <= Ui && (!t || e !== "0"), Qi = (e) => typeof e == "string" && !e.includes("\0") && new TextEncoder().encode(e).length <= 4096, $i = (e, t, n = !1) => typeof e == "string" && (!n || e.trim().length > 0) && new TextEncoder().encode(e).length <= t && !/[\u0000-\u001f\u007f]/u.test(e), ea = (e, t, n) => Array.isArray(e) && e.length <= t && e.every((e) => $i(e, n, !0)), ta = (e) => $(e) && BigInt(e) <= 253402300799n, na = [
+	media: Xi(),
+	queues: ea()
+}), Q = (e) => typeof e == "object" && !!e && !Array.isArray(e), $ = (e, t = !1) => typeof e == "string" && /^(0|[1-9][0-9]{0,18})$/.test(e) && BigInt(e) <= Ui && (!t || e !== "0"), na = (e) => typeof e == "string" && !e.includes("\0") && new TextEncoder().encode(e).length <= 4096, ra = (e, t, n = !1) => typeof e == "string" && (!n || e.trim().length > 0) && new TextEncoder().encode(e).length <= t && !/[\u0000-\u001f\u007f]/u.test(e), ia = (e, t, n) => Array.isArray(e) && e.length <= t && e.every((e) => ra(e, n, !0)), aa = (e) => $(e) && BigInt(e) <= 253402300799n, oa = [
 	"unavailable",
 	"invalid_configuration",
 	"timeout",
@@ -2438,8 +2456,8 @@ var Vi = "keida-hub-reborn", Hi = "reborn-workspace-v1", Ui = 922337203685477580
 	"oversized",
 	"malformed",
 	"not_discovered"
-], ra = (e) => e === null || typeof e == "string" && na.includes(e), ia = (e) => e === null || typeof e == "number" && Number.isSafeInteger(e) && e >= 0 && e <= 1e6;
-function aa(e) {
+], sa = (e) => e === null || typeof e == "string" && oa.includes(e), ca = (e) => e === null || typeof e == "number" && Number.isSafeInteger(e) && e >= 0 && e <= 1e6;
+function la(e) {
 	if (typeof e != "string" || new TextEncoder().encode(e).length > 1024 || !/^https:\/\/[^/]/.test(e) || /[\s\u0000-\u001f\u007f\\]/u.test(e)) return !1;
 	try {
 		let t = new URL(e);
@@ -2448,7 +2466,7 @@ function aa(e) {
 		return !1;
 	}
 }
-function oa(e) {
+function ua(e) {
 	if (!Q(e) || !Array.isArray(e.groups) || e.groups.length > 2 || !Number.isInteger(e.unread_groups) || new Set(e.groups.map((e) => Q(e) ? e.category : null)).size !== e.groups.length || e.groups.some((e) => !Q(e) || !["services", "connections"].includes(String(e.category)) || !$(e.revision, !0) || !$(e.read_through) || !$(e.unread) || BigInt(e.read_through) > BigInt(e.revision) || BigInt(e.unread) !== BigInt(e.revision) - BigInt(e.read_through) || !Q(e.latest) || !$(e.latest.source_revision, !0) || !$(e.latest.occurred_at) || BigInt(e.latest.occurred_at) > 253402300799n || typeof e.latest.label != "string" || !/^[A-Za-z ]{1,64}$/.test(e.latest.label) || !(e.category === "services" ? [
 		"service_added",
 		"service_updated",
@@ -2456,7 +2474,7 @@ function oa(e) {
 	] : ["connection_saved", "connection_removed"]).includes(String(e.latest.kind))) || e.unread_groups !== e.groups.filter((e) => e.unread !== "0").length) throw Error("Invalid notification response");
 	return e;
 }
-function sa(e) {
+function da(e) {
 	if (!Q(e) || !$(e.revision) || !Array.isArray(e.panels) || e.panels.length !== 3 || e.panels.some((e) => !Q(e) || ![
 		"note",
 		"connections",
@@ -2464,7 +2482,7 @@ function sa(e) {
 	].includes(String(e.id)) || typeof e.visible != "boolean") || new Set(e.panels.map((e) => e.id)).size !== 3 || !e.panels.some((e) => e.visible)) throw Error("Invalid layout response");
 	return e;
 }
-function ca(e) {
+function fa(e) {
 	let t = [
 		"crafty",
 		"jellyfin",
@@ -2474,26 +2492,29 @@ function ca(e) {
 		"qbittorrent",
 		"discord"
 	], n = e.catalog, r = e.roadmap;
-	if (!Array.isArray(n) || n.length !== t.length || new Set(n.map((e) => Q(e) ? e.id : null)).size !== t.length || n.some((e) => !Q(e) || !t.includes(String(e.id)) || !$i(e.name, 80, !0) || e.status !== ([
+	if (!Array.isArray(n) || n.length !== t.length || new Set(n.map((e) => Q(e) ? e.id : null)).size !== t.length || n.some((e) => !Q(e) || !t.includes(String(e.id)) || !ra(e.name, 80, !0) || e.status !== ([
 		"crafty",
 		"jellyfin",
-		"seerr"
-	].includes(String(e.id)) ? "available" : "planned") || !$i(e.summary, 512, !0) || !ea(e.requirements, 8, 512) || !ea(e.capabilities, 8, 512)) || !Q(r) || typeof r.as_of != "string" || !/^\d{4}-\d{2}-\d{2}$/.test(r.as_of) || !$i(r.intro, 1024, !0) || !ea(r.priorities, 8, 512) || r.tracker_url !== "https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/2" || !Array.isArray(r.milestones) || r.milestones.length !== 9 || r.milestones.some((e, t) => !Q(e) || e.id !== `M${t}` || !$i(e.title, 120, !0) || !$i(e.status, 160, !0) || !ea(e.delivered, 8, 512) || !ea(e.remaining, 8, 512))) throw Error("Invalid workspace guide");
+		"seerr",
+		"sonarr",
+		"radarr",
+		"qbittorrent"
+	].includes(String(e.id)) ? "available" : "planned") || !ra(e.summary, 512, !0) || !ia(e.requirements, 8, 512) || !ia(e.capabilities, 8, 512)) || !Q(r) || typeof r.as_of != "string" || !/^\d{4}-\d{2}-\d{2}$/.test(r.as_of) || !ra(r.intro, 1024, !0) || !ia(r.priorities, 8, 512) || r.tracker_url !== "https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/2" || !Array.isArray(r.milestones) || r.milestones.length !== 9 || r.milestones.some((e, t) => !Q(e) || e.id !== `M${t}` || !ra(e.title, 120, !0) || !ra(e.status, 160, !0) || !ia(e.delivered, 8, 512) || !ia(e.remaining, 8, 512))) throw Error("Invalid workspace guide");
 	return {
 		catalog: n,
 		roadmap: r
 	};
 }
-function la(e, t, n) {
-	if (!$(e.current_revision) || !$(e.through) || e.next_before !== null && !$(e.next_before, !0) || n && (e.current_revision !== t.revision || e.through !== t.through) || !Array.isArray(e.entries) || e.entries.length > 25 || e.entries.some((r) => !Q(r) || !$(r.id, !0) || !$(r.revision, !0) || !ta(r.checked_at) || !ra(r.error) || typeof r.complete != "boolean" || !Array.isArray(r.servers) || r.servers.length > 8 || BigInt(r.id) > BigInt(e.through) || n && BigInt(r.id) >= BigInt(t.next) || r.servers.some((e) => !Q(e) || !$i(e.name, 80, !0) || ![
+function pa(e, t, n) {
+	if (!$(e.current_revision) || !$(e.through) || e.next_before !== null && !$(e.next_before, !0) || n && (e.current_revision !== t.revision || e.through !== t.through) || !Array.isArray(e.entries) || e.entries.length > 25 || e.entries.some((r) => !Q(r) || !$(r.id, !0) || !$(r.revision, !0) || !aa(r.checked_at) || !sa(r.error) || typeof r.complete != "boolean" || !Array.isArray(r.servers) || r.servers.length > 8 || BigInt(r.id) > BigInt(e.through) || n && BigInt(r.id) >= BigInt(t.next) || r.servers.some((e) => !Q(e) || !ra(e.name, 80, !0) || ![
 		"running",
 		"stopped",
 		"unknown"
-	].includes(String(e.state)) || !ia(e.players) || !ia(e.capacity) || e.collected_at !== null && !ta(e.collected_at) || e.provider_at !== null && !ta(e.provider_at) || ![
+	].includes(String(e.state)) || !ca(e.players) || !ca(e.capacity) || e.collected_at !== null && !aa(e.collected_at) || e.provider_at !== null && !aa(e.provider_at) || ![
 		"fresh",
 		"stale",
 		"unknown"
-	].includes(String(e.freshness)) || !ra(e.error))) || e.entries.some((t, n) => n > 0 && BigInt(t.id) >= BigInt(e.entries[n - 1].id)) || e.next_before !== null && (e.entries.length !== 25 || e.next_before !== e.entries.at(-1)?.id)) throw Error("Invalid observation history");
+	].includes(String(e.freshness)) || !sa(e.error))) || e.entries.some((t, n) => n > 0 && BigInt(t.id) >= BigInt(e.entries[n - 1].id)) || e.next_before !== null && (e.entries.length !== 25 || e.next_before !== e.entries.at(-1)?.id)) throw Error("Invalid observation history");
 	return {
 		phase: "ready",
 		entries: e.entries,
@@ -2503,11 +2524,11 @@ function la(e, t, n) {
 		message: "Retained provider observations checked."
 	};
 }
-var ua = (e, t) => e.length === t.length && e.every((e, n) => e.id === t[n].id && e.visible === t[n].visible);
-function da(e) {
-	if (!Q(e) || e.product !== Vi || e.contract !== Hi || e.schema !== 1 || !Q(e.account) || !$(e.account.id, !0) || typeof e.account.username != "string" || !/^[a-z0-9_-]{3,32}$/.test(e.account.username) || e.account.role !== "owner" && e.account.role !== "member" || !$(e.session_generation) || !Q(e.note) || !Qi(e.note.body) || !$(e.note.revision)) throw Error("Invalid workspace response");
+var ma = (e, t) => e.length === t.length && e.every((e, n) => e.id === t[n].id && e.visible === t[n].visible);
+function ha(e) {
+	if (!Q(e) || e.product !== Vi || e.contract !== Hi || e.schema !== 1 || !Q(e.account) || !$(e.account.id, !0) || typeof e.account.username != "string" || !/^[a-z0-9_-]{3,32}$/.test(e.account.username) || e.account.role !== "owner" && e.account.role !== "member" || !$(e.session_generation) || !Q(e.note) || !na(e.note.body) || !$(e.note.revision)) throw Error("Invalid workspace response");
 	let t = e.directory, n = (e, t, n = !1) => typeof e == "string" && (!n || e.length > 0) && new TextEncoder().encode(e).length <= t && !/[\u0000-\u001f\u007f]/u.test(e);
-	if (!Q(t) || !$(t.revision) || !$(t.pins_revision) || !Array.isArray(t.services) || t.services.length > 100 || t.services.some((e) => !Q(e) || !$(e.id, !0) || !n(e.name, 80, !0) || !n(e.category, 40, !0) || !n(e.description, 240) || !aa(e.url)) || new Set(t.services.map((e) => e.id)).size !== t.services.length || !Array.isArray(t.pins) || t.pins.length > 24 || new Set(t.pins).size !== t.pins.length || t.pins.some((e) => !$(e, !0) || !t.services.some((t) => t.id === e))) throw Error("Invalid directory response");
+	if (!Q(t) || !$(t.revision) || !$(t.pins_revision) || !Array.isArray(t.services) || t.services.length > 100 || t.services.some((e) => !Q(e) || !$(e.id, !0) || !n(e.name, 80, !0) || !n(e.category, 40, !0) || !n(e.description, 240) || !la(e.url)) || new Set(t.services.map((e) => e.id)).size !== t.services.length || !Array.isArray(t.pins) || t.pins.length > 24 || new Set(t.pins).size !== t.pins.length || t.pins.some((e) => !$(e, !0) || !t.services.some((t) => t.id === e))) throw Error("Invalid directory response");
 	if (e.crafty != null) {
 		let t = e.crafty, n = (e) => e === null || typeof e == "number" && Number.isSafeInteger(e) && e >= 0, r = (e) => e === null || typeof e == "string" && /^[a-z_]{1,40}$/.test(e);
 		if (!Q(t) || !$(t.revision) || typeof t.configured != "boolean" || !n(t.checked_at) || !r(t.error) || t.history_error !== void 0 && t.history_error !== null && t.history_error !== "unavailable" || !Array.isArray(t.servers) || t.servers.length > 8 || t.servers.some((e) => !Q(e) || typeof e.name != "string" || e.name.length > 80 || typeof e.join != "string" || e.join.length > 253 || ![
@@ -2520,18 +2541,18 @@ function da(e) {
 			"unknown"
 		].includes(String(e.freshness)) || !n(e.players) || !n(e.capacity) || !n(e.collected_at) || !n(e.provider_at) || !r(e.error))) throw Error("Invalid connection response");
 	}
-	return oa(e.notifications), sa(e.layout), e;
+	return ua(e.notifications), da(e.layout), e;
 }
-function fa(e) {
+function ga(e) {
 	if (!(!e || e.length > 25e3)) try {
 		let t = JSON.parse(e);
-		if (Q(t) && t.schema === 1 && Qi(t.body) && $(t.base)) return {
+		if (Q(t) && t.schema === 1 && na(t.body) && $(t.base)) return {
 			body: t.body,
 			base: t.base
 		};
 	} catch {}
 }
-var pa = (e) => e === null || typeof e == "string" && [
+var _a = (e) => e === null || typeof e == "string" && [
 	"checking",
 	"unavailable",
 	"invalid_configuration",
@@ -2541,29 +2562,29 @@ var pa = (e) => e === null || typeof e == "string" && [
 	"provider_error",
 	"oversized",
 	"malformed"
-].includes(e), ma = (e, t, n = 0) => typeof e == "number" && Number.isSafeInteger(e) && e >= n && e <= t, ha = (e) => ma(e, 48) && e % 12 == 0;
-function ga(e, t = Math.floor(Date.now() / 1e3)) {
+].includes(e), va = (e, t, n = 0) => typeof e == "number" && Number.isSafeInteger(e) && e >= n && e <= t, ya = (e) => va(e, 48) && e % 12 == 0;
+function ba(e, t = Math.floor(Date.now() / 1e3)) {
 	let n = e.checked_at, r = !Number.isFinite(t) || t < 0 || n === null || n > t + 5 ? "unknown" : e.freshness === "fresh" && t - n > 90 ? "stale" : e.freshness;
 	return r === e.freshness ? e : {
 		...e,
 		freshness: r
 	};
 }
-function _a(e, t, n) {
-	if (!Q(e) || !$(e.revision) || typeof e.configured != "boolean" || !(e.checked_at === null || ma(e.checked_at, 253402300799)) || ![
+function xa(e, t, n) {
+	if (!Q(e) || !$(e.revision) || typeof e.configured != "boolean" || !(e.checked_at === null || va(e.checked_at, 253402300799)) || ![
 		"fresh",
 		"stale",
 		"unknown"
-	].includes(String(e.freshness)) || !pa(e.error) || typeof e.complete != "boolean" || e.offset !== n || !ha(e.offset) || !(e.next_offset === null || ha(e.next_offset) && e.next_offset === n + 12) || !(e.total === null || ma(e.total, 1e9)) || typeof e.truncated != "boolean" || !Array.isArray(e.items) || e.items.length > 12 || new Set(e.items.map((e) => Q(e) ? e.id : null)).size !== e.items.length || e.items.some((e) => !Q(e) || typeof e.id != "string" || !/^[a-f0-9]{64}$/.test(e.id) || !(e.title === null || $i(e.title, 240, !0)) || !["movie", "series"].includes(String(e.kind)) || !(e.year === null || ma(e.year, 9999, 1)) || !pa(e.detail_error) || (t === "jellyfin" ? e.request_status !== null : ![
+	].includes(String(e.freshness)) || !_a(e.error) || typeof e.complete != "boolean" || e.offset !== n || !ya(e.offset) || !(e.next_offset === null || ya(e.next_offset) && e.next_offset === n + 12) || !(e.total === null || va(e.total, 1e9)) || typeof e.truncated != "boolean" || !Array.isArray(e.items) || e.items.length > 12 || new Set(e.items.map((e) => Q(e) ? e.id : null)).size !== e.items.length || e.items.some((e) => !Q(e) || typeof e.id != "string" || !/^[a-f0-9]{64}$/.test(e.id) || !(e.title === null || ra(e.title, 240, !0)) || !["movie", "series"].includes(String(e.kind)) || !(e.year === null || va(e.year, 9999, 1)) || !_a(e.detail_error) || (t === "jellyfin" ? e.request_status !== null : ![
 		"pending",
 		"approved",
 		"declined",
 		"failed",
 		"completed",
 		"unknown"
-	].includes(String(e.request_status)))) || (t === "seerr" ? e.playback !== null : !(e.playback === null || Q(e.playback) && (e.playback.playing === null || ma(e.playback.playing, 256)) && (e.playback.paused === null || ma(e.playback.paused, 256)) && pa(e.playback.error))) || !e.configured && (e.items.length !== 0 || e.complete || e.checked_at !== null || e.next_offset !== null)) throw Error("Invalid media response");
+	].includes(String(e.request_status)))) || (t === "seerr" ? e.playback !== null : !(e.playback === null || Q(e.playback) && (e.playback.playing === null || va(e.playback.playing, 256)) && (e.playback.paused === null || va(e.playback.paused, 256)) && _a(e.playback.error))) || !e.configured && (e.items.length !== 0 || e.complete || e.checked_at !== null || e.next_offset !== null)) throw Error("Invalid media response");
 	let r = e;
-	return ga({
+	return ba({
 		revision: r.revision,
 		configured: r.configured,
 		checked_at: r.checked_at,
@@ -2589,36 +2610,140 @@ function _a(e, t, n) {
 		}
 	});
 }
-function va(e) {
-	let t = ki(Zi("checking", "Checking your workspace…")), n = 0, r, i, a, o, s, c, l, u, d, f = 0, p = 0, m = 0, h = !1, g = {}, _ = {}, v = {}, y = {
+var Sa = [
+	"checking",
+	"timeout",
+	"transport",
+	"denied",
+	"rate_limited",
+	"provider_error",
+	"oversized",
+	"malformed",
+	"unsupported_profile",
+	"page_moved",
+	"unavailable"
+], Ca = [
+	"unknown",
+	"queued",
+	"paused",
+	"downloading",
+	"completed",
+	"failed",
+	"warning",
+	"delay",
+	"downloadClientUnavailable",
+	"fallback"
+], wa = [
+	"downloading",
+	"importBlocked",
+	"importPending",
+	"importing",
+	"imported",
+	"failedPending",
+	"failed",
+	"ignored",
+	"unknown"
+], Ta = [
+	"error",
+	"missingFiles",
+	"uploading",
+	"stoppedUP",
+	"queuedUP",
+	"stalledUP",
+	"checkingUP",
+	"forcedUP",
+	"downloading",
+	"metaDL",
+	"forcedMetaDL",
+	"stoppedDL",
+	"queuedDL",
+	"stalledDL",
+	"checkingDL",
+	"forcedDL",
+	"checkingResumeData",
+	"moving",
+	"unknown"
+], Ea = (e) => e === null || typeof e == "string" && Sa.includes(e), Da = (e) => e === null || va(e, 2 ** 53 - 1);
+function Oa(e, t = Math.floor(Date.now() / 1e3)) {
+	let n = e.checked_at, r = !Number.isFinite(t) || t < 0 || n === null || n > t ? "unknown" : e.freshness === "fresh" && t - n > 90 ? "stale" : e.freshness;
+	return r === e.freshness ? e : {
+		...e,
+		freshness: r
+	};
+}
+function ka(e, t, n) {
+	let r = t === "qbittorrent";
+	if (!Q(e) || !$(e.revision) || typeof e.configured != "boolean" || e.profile !== Qi[t] || !(e.checked_at === null || va(e.checked_at, 253402300799)) || ![
+		"fresh",
+		"stale",
+		"unknown"
+	].includes(String(e.freshness)) || !Ea(e.error) || typeof e.complete != "boolean" || e.offset !== n || !ya(e.offset) || !(e.next_offset === null || ya(e.next_offset) && e.next_offset === n + 12) || !(e.total === null || va(e.total, 1e9)) || r && e.total !== null || typeof e.truncated != "boolean" || !Array.isArray(e.items) || e.items.length > 12 || new Set(e.items.map((e) => Q(e) ? e.id : null)).size !== e.items.length || e.items.some((e) => !Q(e) || typeof e.id != "string" || !/^[a-f0-9]{64}$/.test(e.id) || !(e.title === null || ra(e.title, 240, !0)) || typeof e.status != "string" || !(r ? Ta : Ca).includes(e.status) || !(e.import_state === null || !r && typeof e.import_state == "string" && wa.includes(e.import_state)) || e.warning !== null && typeof e.warning != "boolean" || !(e.progress_basis_points === null || va(e.progress_basis_points, 1e4)) || !Da(e.size_bytes) || !Da(e.download_bytes_per_second) || !Da(e.upload_bytes_per_second) || !r && (e.download_bytes_per_second !== null || e.upload_bytes_per_second !== null)) || !e.configured && (e.items.length !== 0 || e.complete || e.checked_at !== null || e.next_offset !== null || e.total !== null || e.error !== null || e.freshness !== "unknown" || e.truncated) || e.error !== null && e.complete || e.error !== null && e.error !== "checking" && (e.items.length !== 0 || e.next_offset !== null || e.total !== null) || e.error === "page_moved" && (e.items.length !== 0 || e.next_offset !== null || e.total !== null) || e.next_offset !== null && e.items.length !== 12 || e.complete && e.items.some((e) => e.title === null || e.status === "unknown" || e.warning === null || !r && (e.import_state === null || e.import_state === "unknown"))) throw Error("Invalid queue response");
+	if (e.configured && e.error === null && !r && (e.total === null || e.items.length !== Math.min(12, Math.max(0, e.total - n)) || e.next_offset !== (n + 12 <= 48 && n + e.items.length < e.total ? n + 12 : null) || e.truncated !== e.total > 60)) throw Error("Invalid queue page");
+	if (r && e.truncated && (n !== 48 || e.items.length !== 12 || e.next_offset !== null)) throw Error("Invalid transfer window");
+	let i = e;
+	return Oa({
+		revision: i.revision,
+		configured: i.configured,
+		profile: i.profile,
+		checked_at: i.checked_at,
+		freshness: i.freshness,
+		error: i.error,
+		complete: i.complete,
+		offset: i.offset,
+		next_offset: i.next_offset,
+		total: i.total,
+		truncated: i.truncated,
+		items: i.items.map(({ id: e, title: t, status: n, import_state: r, warning: i, progress_basis_points: a, size_bytes: o, download_bytes_per_second: s, upload_bytes_per_second: c }) => ({
+			id: e,
+			title: t,
+			status: n,
+			import_state: r,
+			warning: i,
+			progress_basis_points: a,
+			size_bytes: o,
+			download_bytes_per_second: s,
+			upload_bytes_per_second: c
+		}))
+	});
+}
+function Aa(e) {
+	let t = ki(ta("checking", "Checking your workspace…")), n = 0, r, i, a, o, s, c, l, u, d, f = 0, p = 0, m = 0, h = !1, g = {}, _ = {}, v = {}, y = {
 		jellyfin: 0,
 		seerr: 0
 	}, b = {
 		jellyfin: 0,
 		seerr: 0
-	}, x, S, C, w = !1, T = !1, E = () => Ai(t), ee = (e) => `${Vi}.workspace.v1:${e.account.id}:${e.session_generation}`;
-	function te() {
-		if (S = void 0, x) try {
-			sessionStorage.removeItem(x);
+	}, x = !1, S = {}, C = {}, w = {}, ee = {
+		sonarr: 0,
+		radarr: 0,
+		qbittorrent: 0
+	}, te = {
+		sonarr: 0,
+		radarr: 0,
+		qbittorrent: 0
+	}, ne, re, ie, T = !1, ae = !1, E = () => Ai(t), oe = (e) => `${Vi}.workspace.v1:${e.account.id}:${e.session_generation}`;
+	function se() {
+		if (re = void 0, ne) try {
+			sessionStorage.removeItem(ne);
 		} catch {}
 	}
-	function ne() {
+	function ce() {
 		let e = E();
-		if (!x || !e.snapshot) return;
+		if (!ne || !e.snapshot) return;
 		if (!e.dirty) {
-			te();
+			se();
 			return;
 		}
 		let n = {
 			body: e.draft,
 			base: e.base
 		};
-		S = {
-			key: x,
+		re = {
+			key: ne,
 			draft: n
 		};
 		try {
-			sessionStorage.setItem(x, JSON.stringify({
+			sessionStorage.setItem(ne, JSON.stringify({
 				schema: 1,
 				...n
 			}));
@@ -2629,20 +2754,21 @@ function va(e) {
 			}));
 		}
 	}
-	function re() {
-		++n, h = !1;
+	function le() {
+		++n, h = !1, x = !1;
 		for (let e of Yi) ++y[e], ++b[e], g[e]?.abort(), _[e]?.abort(), v[e]?.abort(), delete g[e], delete _[e], delete v[e];
+		for (let e of Zi) ++ee[e], ++te[e], S[e]?.abort(), C[e]?.abort(), w[e]?.abort(), delete S[e], delete C[e], delete w[e];
 		r && clearTimeout(r), r = void 0, i?.abort(), a?.abort(), i = void 0, a = void 0, o?.abort(), o = void 0, ++f, s?.abort(), s = void 0, ++p, c?.abort(), c = void 0, ++m, l?.abort(), l = void 0, u?.abort(), u = void 0, d?.abort(), d = void 0;
 	}
 	function D(e, n = !1) {
-		re(), T ||= n, jt(() => t.set(Zi(n ? "blocked" : "paused", e)));
+		le(), ae ||= n, jt(() => t.set(ta(n ? "blocked" : "paused", e)));
 	}
-	function ie() {
-		r && clearTimeout(r), !w && !T && E().phase === "ready" && E().notificationSave !== "uncertain" && E().layoutSave !== "uncertain" && document.visibilityState === "visible" && (r = setTimeout(() => {
-			r = void 0, Oe(), de();
+	function ue() {
+		r && clearTimeout(r), !T && !ae && E().phase === "ready" && E().notificationSave !== "uncertain" && E().layoutSave !== "uncertain" && document.visibilityState === "visible" && (r = setTimeout(() => {
+			r = void 0, Pe(), j(), _e();
 		}, 15e3));
 	}
-	async function ae(t, n, r) {
+	async function de(t, n, r) {
 		let i = performance.now(), a = setTimeout(() => n.abort(), 4e3);
 		try {
 			let a = await fetch(t, {
@@ -2655,7 +2781,7 @@ function va(e) {
 					"X-Reborn-Product": Vi,
 					"X-Reborn-Contract": Hi,
 					"X-CSRF-Token": e,
-					...t === "/api/workspace/guide" ? { "X-Reborn-Guide": "media-v1" } : {},
+					...t === "/api/workspace/guide" ? { "X-Reborn-Guide": "queues-v1" } : {},
 					...r ? { "Content-Type": "application/json" } : {}
 				},
 				body: r ? JSON.stringify(r) : void 0
@@ -2669,21 +2795,21 @@ function va(e) {
 			clearTimeout(a);
 		}
 	}
-	function oe(e) {
+	function fe(e) {
 		return e === 401 || e === 403 ? "Your sign-in changed or ended. Open a fresh workspace after signing in." : e === 426 ? "This workspace needs a fresh document. Open workspace again." : "Your workspace could not be checked. Open workspace again when access is available.";
 	}
-	function se(e) {
+	function pe(e) {
 		let t = E().snapshot;
 		return !t || e.account.id === t.account.id && e.session_generation === t.session_generation && e.account.role === t.account.role;
 	}
-	function ce(e, t) {
+	function me(e, t) {
 		return Q(e) && e.product === Vi && e.contract === Hi && e.schema === 1 && Q(e.account) && e.account.id === t.account.id && e.account.username === t.account.username && e.account.role === t.account.role && e.session_generation === t.session_generation;
 	}
-	function le(e) {
+	function he(e) {
 		let t = E();
 		return t.phase === "ready" && !!t.snapshot && e.account.id === t.snapshot.account.id && e.account.username === t.snapshot.account.username && e.account.role === t.snapshot.account.role && e.session_generation === t.snapshot.session_generation;
 	}
-	function ue(e, t, n = !1) {
+	function ge(e, t, n = !1) {
 		let r = e.snapshot?.crafty, i = t ? r && (BigInt(t.revision) < BigInt(r.revision) || n && t.revision === r.revision) ? r : t : r ?? t;
 		return r?.revision === i?.revision ? {
 			crafty: i,
@@ -2698,30 +2824,30 @@ function va(e) {
 			changed: !0
 		});
 	}
-	async function de(e = !1) {
-		if (w || T || i || a || o || u || d || !e && E().layoutSave === "uncertain" || document.visibilityState !== "visible") return;
+	async function _e(e = !1) {
+		if (T || ae || i || a || o || u || d || !e && E().layoutSave === "uncertain" || document.visibilityState !== "visible") return;
 		let r = new AbortController();
 		i = r;
 		let s = n;
 		try {
-			let i = await ae("/api/workspace/snapshot", r);
-			if (w || r.signal.aborted || s !== n) return;
+			let i = await de("/api/workspace/snapshot", r);
+			if (T || r.signal.aborted || s !== n) return;
 			if (document.visibilityState !== "visible") {
 				D("Workspace hidden. Checking access on return.");
 				return;
 			}
 			if (i.status !== 200) {
-				D(oe(i.status), !0);
+				D(fe(i.status), !0);
 				return;
 			}
-			let a = da(i.value);
-			if (!se(a)) {
+			let a = ha(i.value);
+			if (!pe(a)) {
 				D("Your account scope changed. Open a fresh workspace.", !0);
 				return;
 			}
 			let o = E();
-			if (x = ee(a), o.phase === "ready") {
-				let n = ue(o, a.crafty), r = o.dirty && a.note.revision !== o.base, i = !!o.layoutDraft && ua(o.layoutDraft.panels, a.layout.panels) && e && ["uncertain", "checking-conflict"].includes(o.layoutSave), s = !!o.layoutDraft && !i && o.layoutDraft.base !== a.layout.revision, c = {
+			if (ne = oe(a), o.phase === "ready") {
+				let n = ge(o, a.crafty), r = o.dirty && a.note.revision !== o.base, i = !!o.layoutDraft && ma(o.layoutDraft.panels, a.layout.panels) && e && ["uncertain", "checking-conflict"].includes(o.layoutSave), s = !!o.layoutDraft && !i && o.layoutDraft.base !== a.layout.revision, c = {
 					...o,
 					snapshot: {
 						...a,
@@ -2746,16 +2872,16 @@ function va(e) {
 					base: a.note.revision,
 					save: "saved",
 					message: "The current note is saved."
-				})), te());
+				})), se());
 			} else {
-				let e = S?.key === x ? S.draft : void 0, n = !1;
+				let e = re?.key === ne ? re.draft : void 0, n = !1;
 				try {
-					e ??= fa(sessionStorage.getItem(x));
+					e ??= ga(sessionStorage.getItem(ne));
 				} catch {
 					n = !0;
 				}
-				e?.body === a.note.body && (te(), e = void 0), t.set({
-					...Zi("ready", "Workspace checked."),
+				e?.body === a.note.body && (se(), e = void 0), t.set({
+					...ta("ready", "Workspace checked."),
 					snapshot: a,
 					draft: a.note.body,
 					base: a.note.revision,
@@ -2765,16 +2891,20 @@ function va(e) {
 			}
 			if (h && E().snapshot?.account.role === "owner") for (let e of Yi) {
 				let t = E().media[e].observation;
-				t?.error === "checking" && !g[e] && !v[e] && Fe(e, t.offset);
+				t?.error === "checking" && !g[e] && !v[e] && Ve(e, t.offset);
 			}
-			ie();
+			if (x && E().snapshot?.account.role === "owner") for (let e of Zi) {
+				let t = E().queues[e].observation;
+				t?.error !== "checking" || S[e] || w[e] || C[e] || Je(e, t.offset);
+			}
+			ue();
 		} catch {
-			i === r && s === n && !w && D("Your workspace could not be checked. Open workspace again to retry deliberately.", !0);
+			i === r && s === n && !T && D("Your workspace could not be checked. Open workspace again to retry deliberately.", !0);
 		} finally {
 			i === r && (i = void 0);
 		}
 	}
-	function fe(e) {
+	function ve(e) {
 		let n = E();
 		if (n.phase === "ready" && n.snapshot) {
 			if (t.set({
@@ -2782,13 +2912,13 @@ function va(e) {
 				draft: e,
 				dirty: e !== n.snapshot.note.body,
 				save: n.save === "saved" ? "idle" : n.save
-			}), Qi(e)) ne();
-			else if (S = void 0, x) try {
-				sessionStorage.removeItem(x);
+			}), na(e)) ce();
+			else if (re = void 0, ne) try {
+				sessionStorage.removeItem(ne);
 			} catch {}
 		}
 	}
-	function pe() {
+	function O() {
 		let e = E();
 		e.recovery && e.snapshot && e.phase === "ready" && (t.set({
 			...e,
@@ -2798,9 +2928,9 @@ function va(e) {
 			recovery: void 0,
 			save: e.recovery.base === e.snapshot.note.revision ? "idle" : "conflict",
 			message: "Draft recovered. Review it before saving."
-		}), ne());
+		}), ce());
 	}
-	function me(e) {
+	function ye(e) {
 		let n = E();
 		n.snapshot && n.phase === "ready" && (t.set({
 			...n,
@@ -2810,11 +2940,11 @@ function va(e) {
 			recovery: void 0,
 			save: "idle",
 			message: e ? "Loaded the saved note." : "Draft kept against the latest saved revision. Review, then save deliberately."
-		}), ne());
+		}), ce());
 	}
-	async function he() {
+	async function k() {
 		let e = E();
-		if (e.phase !== "ready" || !e.dirty || !Qi(e.draft) || [
+		if (e.phase !== "ready" || !e.dirty || !na(e.draft) || [
 			"conflict",
 			"checking-conflict",
 			"uncertain"
@@ -2832,11 +2962,11 @@ function va(e) {
 			message: "Saving your note…"
 		}));
 		try {
-			let e = await ae("/api/workspace/note", o, {
+			let e = await de("/api/workspace/note", o, {
 				body: c.body,
 				base_revision: c.base
 			});
-			if (w || o.signal.aborted || s !== n) return;
+			if (T || o.signal.aborted || s !== n) return;
 			if (document.visibilityState !== "visible") {
 				D("Workspace hidden. Checking access on return.");
 				return;
@@ -2846,7 +2976,7 @@ function va(e) {
 				403,
 				426
 			].includes(e.status)) {
-				D(oe(e.status), !0);
+				D(fe(e.status), !0);
 				return;
 			}
 			if (e.status === 409) t.update((e) => ({
@@ -2855,9 +2985,9 @@ function va(e) {
 				message: "Another save won. Checking the latest saved note before comparing. Your draft is unchanged."
 			}));
 			else if (e.status === 200) {
-				let n = da(e.value);
-				if (!se(n) || n.note.body !== c.body || BigInt(n.note.revision) !== BigInt(c.base) + 1n) throw Error("Unqualified save result");
-				let r = E(), i = ue(r, n.crafty, !0), a = {
+				let n = ha(e.value);
+				if (!pe(n) || n.note.body !== c.body || BigInt(n.note.revision) !== BigInt(c.base) + 1n) throw Error("Unqualified save result");
+				let r = E(), i = ge(r, n.crafty, !0), a = {
 					...r,
 					snapshot: {
 						...n,
@@ -2872,19 +3002,19 @@ function va(e) {
 					save: "saved",
 					message: r.draft === n.note.body ? "Saved to your account." : "Submitted version saved. Your newer edits are still unsaved."
 				};
-				i.changed ? jt(() => t.set(a)) : t.set(a), ne();
+				i.changed ? jt(() => t.set(a)) : t.set(a), ce();
 			} else throw Error("Save outcome unavailable");
 		} catch {
-			a === o && s === n && !w && t.update((e) => ({
+			a === o && s === n && !T && t.update((e) => ({
 				...e,
 				save: "uncertain",
 				message: "Save outcome is uncertain. Check the saved note before trying again."
 			}));
 		} finally {
-			a === o && (a = void 0), s === n && !w && (E().save === "checking-conflict" ? await de() : ie());
+			a === o && (a = void 0), s === n && !T && (E().save === "checking-conflict" ? await _e() : ue());
 		}
 	}
-	async function ge(e, r) {
+	async function be(e, r) {
 		let a = E();
 		if (a.phase !== "ready" || !a.snapshot || o || u || d || a.layoutSave === "checking-conflict" || a.directorySave === "uncertain") return !1;
 		i?.abort(), i = void 0;
@@ -2897,17 +3027,17 @@ function va(e) {
 			directoryMessage: "Saving your change…"
 		}));
 		try {
-			let i = await ae(e, s, r);
-			if (w || s.signal.aborted || c !== n) return !1;
+			let i = await de(e, s, r);
+			if (T || s.signal.aborted || c !== n) return !1;
 			if (document.visibilityState !== "visible") return D("Workspace hidden. Checking access on return."), !1;
 			if ([
 				401,
 				403,
 				426
-			].includes(i.status)) return D(oe(i.status), !0), !1;
+			].includes(i.status)) return D(fe(i.status), !0), !1;
 			if (i.status === 200) {
-				let e = da(i.value);
-				return se(e) ? (t.update((t) => ({
+				let e = ha(i.value);
+				return pe(e) ? (t.update((t) => ({
 					...t,
 					snapshot: t.snapshot ? {
 						...t.snapshot,
@@ -2930,32 +3060,32 @@ function va(e) {
 			})), !1;
 			throw Error("Uncertain directory outcome");
 		} catch {
-			return o === s && c === n && !w && t.update((e) => ({
+			return o === s && c === n && !T && t.update((e) => ({
 				...e,
 				directorySave: "uncertain",
 				directoryMessage: "The save may have completed. Check saved services before making another change."
 			})), !1;
 		} finally {
-			o === s && (o = void 0), c === n && !w && ie();
+			o === s && (o = void 0), c === n && !T && ue();
 		}
 	}
-	function _e(e, t) {
-		return ge("/api/owner/directory", {
+	function xe(e, t) {
+		return be("/api/owner/directory", {
 			base_revision: e,
 			change: t
 		});
 	}
-	function ve(e) {
+	function A(e) {
 		let t = E().snapshot?.directory;
-		return t ? ge("/api/workspace/pins", {
+		return t ? be("/api/workspace/pins", {
 			base_directory_revision: t.revision,
 			base_revision: t.pins_revision,
 			ids: e
 		}) : Promise.resolve(!1);
 	}
-	async function O(e, s) {
+	async function Se(e, s) {
 		let c = E();
-		if (w || T || c.phase !== "ready" || !c.snapshot || u || a || o || d || c.layoutSave === "checking-conflict" || c.notificationSave !== "idle" || !["services", "connections"].includes(e) || !$(s, !0)) return;
+		if (T || ae || c.phase !== "ready" || !c.snapshot || u || a || o || d || c.layoutSave === "checking-conflict" || c.notificationSave !== "idle" || !["services", "connections"].includes(e) || !$(s, !0)) return;
 		i?.abort(), i = void 0, r && clearTimeout(r), r = void 0;
 		let l = new AbortController();
 		u = l;
@@ -2966,11 +3096,11 @@ function va(e) {
 			notificationMessage: "Saving your read marker…"
 		}));
 		try {
-			let r = await ae("/api/workspace/notifications/read", l, {
+			let r = await de("/api/workspace/notifications/read", l, {
 				category: e,
 				through: s
 			});
-			if (w || l.signal.aborted || f !== n) return;
+			if (T || l.signal.aborted || f !== n) return;
 			if (document.visibilityState !== "visible") {
 				D("Workspace hidden. Checking access on return.");
 				return;
@@ -2980,7 +3110,7 @@ function va(e) {
 				403,
 				426
 			].includes(r.status)) {
-				D(oe(r.status), !0);
+				D(fe(r.status), !0);
 				return;
 			}
 			if (r.status === 409) throw Error("Read watermark changed");
@@ -2990,7 +3120,7 @@ function va(e) {
 				D("Your account scope changed. Open a fresh workspace.", !0);
 				return;
 			}
-			let a = oa(i.notifications), o = a.groups.find((t) => t.category === e);
+			let a = ua(i.notifications), o = a.groups.find((t) => t.category === e);
 			if (!o || BigInt(o.read_through) < BigInt(s)) throw Error("Unqualified read marker");
 			t.update((e) => ({
 				...e,
@@ -3002,16 +3132,16 @@ function va(e) {
 				notificationMessage: "Read marker saved. Newer changes remain unread."
 			}));
 		} catch {
-			u === l && f === n && !w && t.update((e) => ({
+			u === l && f === n && !T && t.update((e) => ({
 				...e,
 				notificationSave: "uncertain",
 				notificationMessage: "The read marker may have saved. Check notifications to see the current state."
 			}));
 		} finally {
-			u === l && (u = void 0), f === n && !w && ie();
+			u === l && (u = void 0), f === n && !T && ue();
 		}
 	}
-	function ye() {
+	function Ce() {
 		let e = E();
 		e.phase !== "ready" || !e.snapshot || e.layoutDraft || a || o || u || d || (i?.abort(), i = void 0, r && clearTimeout(r), r = void 0, t.set({
 			...e,
@@ -3021,9 +3151,9 @@ function va(e) {
 			},
 			layoutSave: "idle",
 			layoutMessage: "Arrange your Home panels, then save to your account."
-		}), ie());
+		}), ue());
 	}
-	function k(e) {
+	function we(e) {
 		let n = E();
 		n.phase === "ready" && n.layoutDraft && ![
 			"saving",
@@ -3038,22 +3168,22 @@ function va(e) {
 			layoutMessage: "Your arrangement is unsaved."
 		});
 	}
-	function be(e, t) {
+	function Te(e, t) {
 		let n = E().layoutDraft?.panels.map((e) => ({ ...e }));
 		if (!n) return;
 		let r = n.findIndex((t) => t.id === e), i = r + t;
-		r < 0 || i < 0 || i >= n.length || ([n[r], n[i]] = [n[i], n[r]], k(n));
+		r < 0 || i < 0 || i >= n.length || ([n[r], n[i]] = [n[i], n[r]], we(n));
 	}
-	function xe(e) {
+	function Ee(e) {
 		let t = E().layoutDraft?.panels.map((e) => ({ ...e }));
 		if (!t) return;
 		let n = t.find((t) => t.id === e);
-		!n || n.visible && t.filter((e) => e.visible).length === 1 || (n.visible = !n.visible, k(t));
+		!n || n.visible && t.filter((e) => e.visible).length === 1 || (n.visible = !n.visible, we(t));
 	}
-	function A() {
-		k(Wi());
+	function De() {
+		we(Wi());
 	}
-	function Se() {
+	function Oe() {
 		let e = E();
 		e.phase !== "ready" || [
 			"saving",
@@ -3064,11 +3194,11 @@ function va(e) {
 			layoutDraft: void 0,
 			layoutSave: "idle",
 			layoutMessage: "Your saved Home layout is in use."
-		}), ie());
+		}), ue());
 	}
-	function Ce(e) {
+	function ke(e) {
 		let n = E();
-		n.phase === "ready" && n.snapshot && n.layoutDraft && n.layoutSave === "conflict" && (e ? Se() : t.set({
+		n.phase === "ready" && n.snapshot && n.layoutDraft && n.layoutSave === "conflict" && (e ? Oe() : t.set({
 			...n,
 			layoutDraft: {
 				...n.layoutDraft,
@@ -3078,14 +3208,14 @@ function va(e) {
 			layoutMessage: "Your arrangement is kept against the checked saved layout. Review, then save deliberately."
 		}));
 	}
-	async function we() {
+	async function Ae() {
 		let e = E();
-		if (w || T || e.phase !== "ready" || !e.snapshot || !e.layoutDraft || e.layoutSave !== "idle" || a || o || u || d) return;
+		if (T || ae || e.phase !== "ready" || !e.snapshot || !e.layoutDraft || e.layoutSave !== "idle" || a || o || u || d) return;
 		let s = {
 			base: e.layoutDraft.base,
 			panels: e.layoutDraft.panels.map((e) => ({ ...e }))
 		};
-		if (!s.panels.some((e) => e.visible) || ua(s.panels, e.snapshot.layout.panels)) return;
+		if (!s.panels.some((e) => e.visible) || ma(s.panels, e.snapshot.layout.panels)) return;
 		i?.abort(), i = void 0, r && clearTimeout(r), r = void 0;
 		let c = new AbortController();
 		d = c;
@@ -3097,11 +3227,11 @@ function va(e) {
 		}));
 		let f = !1;
 		try {
-			let r = await ae("/api/workspace/layout", c, {
+			let r = await de("/api/workspace/layout", c, {
 				base_revision: s.base,
 				panels: s.panels
 			});
-			if (w || c.signal.aborted || l !== n) return;
+			if (T || c.signal.aborted || l !== n) return;
 			if (document.visibilityState !== "visible") {
 				D("Workspace hidden. Checking access on return.");
 				return;
@@ -3111,7 +3241,7 @@ function va(e) {
 				403,
 				426
 			].includes(r.status)) {
-				D(oe(r.status), !0);
+				D(fe(r.status), !0);
 				return;
 			}
 			if (r.status === 409) f = !0, t.update((e) => ({
@@ -3135,8 +3265,8 @@ function va(e) {
 					D("Your account scope changed. Open a fresh workspace.", !0);
 					return;
 				}
-				let i = sa(n.layout);
-				if (BigInt(i.revision) !== BigInt(s.base) + 1n || !ua(i.panels, s.panels)) throw Error("Unqualified layout result");
+				let i = da(n.layout);
+				if (BigInt(i.revision) !== BigInt(s.base) + 1n || !ma(i.panels, s.panels)) throw Error("Unqualified layout result");
 				t.update((e) => ({
 					...e,
 					snapshot: e.snapshot ? {
@@ -3149,18 +3279,18 @@ function va(e) {
 				}));
 			}
 		} catch {
-			d === c && l === n && !w && t.update((e) => ({
+			d === c && l === n && !T && t.update((e) => ({
 				...e,
 				layoutSave: "uncertain",
 				layoutMessage: "The layout may have saved. Check the saved layout before saving again; your changes have not been sent again."
 			}));
 		} finally {
-			d === c && (d = void 0), l === n && !w && (f ? await de(!0) : ie());
+			d === c && (d = void 0), l === n && !T && (f ? await _e(!0) : ue());
 		}
 	}
-	async function Te(e = E().activity.category, r = E().activity.query, i = !1) {
+	async function je(e = E().activity.category, r = E().activity.query, i = !1) {
 		let a = E();
-		if (w || T || a.phase !== "ready" || !a.snapshot || document.visibilityState !== "visible") return;
+		if (T || ae || a.phase !== "ready" || !a.snapshot || document.visibilityState !== "visible") return;
 		s?.abort();
 		let o = new AbortController();
 		s = o;
@@ -3183,8 +3313,8 @@ function va(e) {
 			}
 		}));
 		try {
-			let s = await ae(`/api/workspace/activity?${d}`, o);
-			if (w || o.signal.aborted || c !== f || l !== n) return;
+			let s = await de(`/api/workspace/activity?${d}`, o);
+			if (T || o.signal.aborted || c !== f || l !== n) return;
 			if (document.visibilityState !== "visible") {
 				D("Workspace hidden. Checking access on return.");
 				return;
@@ -3194,7 +3324,7 @@ function va(e) {
 				403,
 				426
 			].includes(s.status)) {
-				D(oe(s.status), !0);
+				D(fe(s.status), !0);
 				return;
 			}
 			let p = s.value;
@@ -3232,7 +3362,7 @@ function va(e) {
 				}
 			}));
 		} catch {
-			!w && c === f && l === n && t.update((t) => ({
+			!T && c === f && l === n && t.update((t) => ({
 				...t,
 				activity: {
 					...Ki(),
@@ -3246,9 +3376,9 @@ function va(e) {
 			s === o && (s = void 0);
 		}
 	}
-	async function Ee(e = !1) {
+	async function Me(e = !1) {
 		let r = E();
-		if (w || T || r.phase !== "ready" || !r.snapshot || document.visibilityState !== "visible" || c || !e && r.guide.phase === "ready") return;
+		if (T || ae || r.phase !== "ready" || !r.snapshot || document.visibilityState !== "visible" || c || !e && r.guide.phase === "ready") return;
 		let i = r.snapshot, a = new AbortController();
 		c = a;
 		let o = ++p, s = n;
@@ -3260,8 +3390,8 @@ function va(e) {
 			}
 		}));
 		try {
-			let e = await ae("/api/workspace/guide", a);
-			if (w || a.signal.aborted || o !== p || s !== n || !le(i)) return;
+			let e = await de("/api/workspace/guide", a);
+			if (T || a.signal.aborted || o !== p || s !== n || !he(i)) return;
 			if (document.visibilityState !== "visible") {
 				D("Workspace hidden. Checking access on return.");
 				return;
@@ -3271,15 +3401,15 @@ function va(e) {
 				403,
 				426
 			].includes(e.status)) {
-				D(oe(e.status), !0);
+				D(fe(e.status), !0);
 				return;
 			}
 			if (e.status !== 200) throw Error("Guide unavailable");
-			if (!ce(e.value, i)) {
+			if (!me(e.value, i)) {
 				D("Your account scope changed. Open a fresh workspace.", !0);
 				return;
 			}
-			let r = ca(e.value);
+			let r = fa(e.value);
 			t.update((e) => ({
 				...e,
 				guide: {
@@ -3289,7 +3419,7 @@ function va(e) {
 				}
 			}));
 		} catch {
-			!w && o === p && s === n && le(i) && t.update((e) => ({
+			!T && o === p && s === n && he(i) && t.update((e) => ({
 				...e,
 				guide: {
 					phase: "error",
@@ -3300,9 +3430,9 @@ function va(e) {
 			c === a && (c = void 0);
 		}
 	}
-	async function De(e = !1) {
+	async function Ne(e = !1) {
 		let r = E();
-		if (w || T || r.phase !== "ready" || !r.snapshot || document.visibilityState !== "visible") return;
+		if (T || ae || r.phase !== "ready" || !r.snapshot || document.visibilityState !== "visible") return;
 		let i = r.observations;
 		if (e && (!i.next || i.phase !== "ready" || i.revision !== r.snapshot.crafty?.revision)) return;
 		l?.abort();
@@ -3318,8 +3448,8 @@ function va(e) {
 			}
 		}));
 		try {
-			let r = await ae(`/api/workspace/observations${e ? `?${u}` : ""}`, o);
-			if (w || o.signal.aborted || s !== m || c !== n || !le(a)) return;
+			let r = await de(`/api/workspace/observations${e ? `?${u}` : ""}`, o);
+			if (T || o.signal.aborted || s !== m || c !== n || !he(a)) return;
 			if (document.visibilityState !== "visible") {
 				D("Workspace hidden. Checking access on return.");
 				return;
@@ -3329,7 +3459,7 @@ function va(e) {
 				403,
 				426
 			].includes(r.status)) {
-				D(oe(r.status), !0);
+				D(fe(r.status), !0);
 				return;
 			}
 			if (r.status === 409) {
@@ -3344,11 +3474,11 @@ function va(e) {
 				return;
 			}
 			if (r.status !== 200) throw Error("Observation history unavailable");
-			if (!ce(r.value, a)) {
+			if (!me(r.value, a)) {
 				D("Your account scope changed. Open a fresh workspace.", !0);
 				return;
 			}
-			let l = la(r.value, i, e);
+			let l = pa(r.value, i, e);
 			if (l.revision !== a.crafty?.revision || l.revision !== E().snapshot?.crafty?.revision) {
 				t.update((e) => ({
 					...e,
@@ -3366,7 +3496,7 @@ function va(e) {
 				observations: l
 			}));
 		} catch {
-			!w && s === m && c === n && le(a) && t.update((e) => ({
+			!T && s === m && c === n && he(a) && t.update((e) => ({
 				...e,
 				observations: {
 					...Ji(),
@@ -3378,14 +3508,14 @@ function va(e) {
 			l === o && (l = void 0);
 		}
 	}
-	function Oe() {
+	function Pe() {
 		let e = E();
-		if (w || T || e.phase !== "ready") return;
+		if (T || ae || e.phase !== "ready") return;
 		let n = Math.floor(Date.now() / 1e3), r = !1, i = { ...e.media };
 		for (let e of Yi) {
 			let t = i[e].observation;
 			if (!t) continue;
-			let a = ga(t, n);
+			let a = ba(t, n);
 			a !== t && (r = !0, i[e] = {
 				...i[e],
 				observation: a
@@ -3396,7 +3526,7 @@ function va(e) {
 			media: i
 		});
 	}
-	function ke(e, n, r = !1) {
+	function Fe(e, n, r = !1) {
 		let i = () => t.update((t) => ({
 			...t,
 			media: {
@@ -3406,54 +3536,54 @@ function va(e) {
 		}));
 		r ? jt(i) : i();
 	}
-	function Ae() {
+	function Ie() {
 		let e = E();
-		return !w && !T && e.phase === "ready" && e.snapshot?.account.role === "owner" && document.visibilityState === "visible" ? e.snapshot : void 0;
+		return !T && !ae && e.phase === "ready" && e.snapshot?.account.role === "owner" && document.visibilityState === "visible" ? e.snapshot : void 0;
 	}
-	function je(e) {
+	function Le(e) {
 		++y[e], g[e]?.abort(), delete g[e];
 	}
-	function Me() {
+	function Re() {
 		h = !1;
 		for (let e of Yi) {
-			je(e), ++b[e], _[e]?.abort(), delete _[e];
+			Le(e), ++b[e], _[e]?.abort(), delete _[e];
 			let t = E().media[e], n = !!v[e];
-			v[e]?.abort(), delete v[e], ke(e, {
+			v[e]?.abort(), delete v[e], Fe(e, {
 				phase: "idle",
 				save: n ? "uncertain" : t.save,
 				message: n ? "The save may have completed. Check the connection state before another change." : t.save === "uncertain" || t.save === "conflict" ? t.message : ""
 			}, !0);
 		}
 	}
-	async function Ne(e, t = !0) {
-		let r = Ae();
+	async function ze(e, t = !0) {
+		let r = Ie();
 		if (!r || v[e]) return;
-		h = !0, je(e), _[e]?.abort();
+		h = !0, Le(e), _[e]?.abort();
 		let i = new AbortController();
 		_[e] = i;
 		let a = ++b[e], o = n, s = E().media[e];
-		ke(e, {
+		Fe(e, {
 			...s,
 			phase: "loading",
 			observation: void 0,
 			message: "Checking the current enrollment…"
 		}, !0);
 		try {
-			let s = await ae(`/api/owner/media/${e}`, i);
-			if (w || i.signal.aborted || a !== b[e] || o !== n || !le(r)) return;
+			let s = await de(`/api/owner/media/${e}`, i);
+			if (T || i.signal.aborted || a !== b[e] || o !== n || !he(r)) return;
 			if ([
 				401,
 				403,
 				426
 			].includes(s.status)) {
-				D(oe(s.status), !0);
+				D(fe(s.status), !0);
 				return;
 			}
 			let c = s.value;
 			if (s.status !== 200 || !Q(c) || !$(c.revision) || typeof c.configured != "boolean") throw Error("Media enrollment unavailable");
 			let l = E().media[e].status;
 			if (l && BigInt(c.revision) < BigInt(l.revision)) throw Error("Older enrollment reply");
-			ke(e, {
+			Fe(e, {
 				phase: "ready",
 				status: {
 					revision: c.revision,
@@ -3461,11 +3591,11 @@ function va(e) {
 				},
 				save: "idle",
 				message: c.configured ? "Enrollment checked. Only observation requests are sent." : "No connection is enrolled."
-			}, !0), t && c.configured && await Fe(e);
+			}, !0), t && c.configured && await Ve(e);
 		} catch {
-			if (!w && a === b[e] && o === n && le(r)) {
+			if (!T && a === b[e] && o === n && he(r)) {
 				let t = E().media[e];
-				ke(e, {
+				Fe(e, {
 					...t,
 					phase: "error",
 					observation: void 0,
@@ -3476,35 +3606,35 @@ function va(e) {
 			_[e] === i && delete _[e];
 		}
 	}
-	async function Pe() {
-		Ae() && (h = !0, await Promise.all(Yi.map((e) => Ne(e))));
+	async function Be() {
+		Ie() && (h = !0, await Promise.all(Yi.map((e) => ze(e))));
 	}
-	async function Fe(e, t = 0) {
-		let r = Ae();
-		if (!r || !ha(t) || v[e]) return;
-		h = !0, je(e);
+	async function Ve(e, t = 0) {
+		let r = Ie();
+		if (!r || !ya(t) || v[e]) return;
+		h = !0, Le(e);
 		let i = new AbortController();
 		g[e] = i;
 		let a = y[e], o = n, s = E().media[e];
-		ke(e, {
+		Fe(e, {
 			...s,
 			phase: "loading",
 			observation: void 0,
 			message: "Checking sampled media observations…"
 		}, !0);
 		try {
-			let c = await ae(`/api/workspace/media/${e}?offset=${t}`, i);
-			if (w || i.signal.aborted || a !== y[e] || o !== n || !le(r)) return;
+			let c = await de(`/api/workspace/media/${e}?offset=${t}`, i);
+			if (T || i.signal.aborted || a !== y[e] || o !== n || !he(r)) return;
 			if ([
 				401,
 				403,
 				426
 			].includes(c.status)) {
-				D(oe(c.status), !0);
+				D(fe(c.status), !0);
 				return;
 			}
 			if (c.status === 409) {
-				je(e), ke(e, {
+				Le(e), Fe(e, {
 					phase: "error",
 					save: s.save,
 					message: "Enrollment changed. Check the connection state before reading its new scope."
@@ -3512,16 +3642,16 @@ function va(e) {
 				return;
 			}
 			if (c.status !== 200) throw Error("Media unavailable");
-			if (!ce(c.value, r)) {
+			if (!me(c.value, r)) {
 				D("Your account scope changed. Open a fresh workspace.", !0);
 				return;
 			}
 			if (c.value.provider !== e) throw Error("Wrong media provider");
-			let l = _a(c.value.observation, e, t), u = E().media[e].status;
+			let l = xa(c.value.observation, e, t), u = E().media[e].status;
 			if (u && BigInt(l.revision) < BigInt(u.revision)) throw Error("Older media scope");
 			u?.revision !== l.revision && (++b[e], _[e]?.abort(), delete _[e]);
 			let d = l.configured ? l.error === "checking" ? "A sample is being collected. Check observations again, or wait for the existing workspace access check." : l.error ? "This provider sample is unavailable or incomplete. Unknown values stay unknown." : l.complete ? "Media observations checked." : "A partial media sample is available; some details are unknown." : "No connection is enrolled.";
-			ke(e, {
+			Fe(e, {
 				phase: "ready",
 				status: {
 					revision: l.revision,
@@ -3532,7 +3662,7 @@ function va(e) {
 				message: d
 			}, !0);
 		} catch {
-			!w && a === y[e] && o === n && le(r) && ke(e, {
+			!T && a === y[e] && o === n && he(r) && Fe(e, {
 				...E().media[e],
 				phase: "error",
 				observation: void 0,
@@ -3542,35 +3672,35 @@ function va(e) {
 			g[e] === i && delete g[e];
 		}
 	}
-	async function Ie(e, t, r) {
-		let i = Ae(), a = E().media[e];
+	async function He(e, t, r) {
+		let i = Ie(), a = E().media[e];
 		if (!i || v[e] || a.phase !== "ready" || a.save !== "idle" || a.status?.revision !== t || !$(t)) return;
-		h = !0, je(e), ++b[e], _[e]?.abort(), delete _[e];
+		h = !0, Le(e), ++b[e], _[e]?.abort(), delete _[e];
 		let o = new AbortController();
 		v[e] = o;
 		let s = n;
-		ke(e, {
+		Fe(e, {
 			...a,
 			observation: void 0,
 			save: "saving",
 			message: r ? "Saving the dedicated connection…" : "Removing the connection…"
 		}, !0);
 		try {
-			let c = await ae(`/api/owner/media/${e}`, o, {
+			let c = await de(`/api/owner/media/${e}`, o, {
 				base_revision: t,
 				connection: r
 			});
-			if (w || o.signal.aborted || s !== n || !le(i) || v[e] !== o) return;
+			if (T || o.signal.aborted || s !== n || !he(i) || v[e] !== o) return;
 			if ([
 				401,
 				403,
 				426
 			].includes(c.status)) {
-				D(oe(c.status), !0);
+				D(fe(c.status), !0);
 				return;
 			}
 			if (c.status === 409) {
-				ke(e, {
+				Fe(e, {
 					phase: "error",
 					save: "conflict",
 					message: "The connection changed elsewhere. Check its current state before enrolling again."
@@ -3582,7 +3712,7 @@ function va(e) {
 				413,
 				429
 			].includes(c.status)) {
-				ke(e, {
+				Fe(e, {
 					...a,
 					observation: void 0,
 					save: "idle",
@@ -3592,7 +3722,7 @@ function va(e) {
 			}
 			let l = c.value;
 			if (c.status !== 200 || !Q(l) || !$(l.revision, !0) || BigInt(l.revision) !== BigInt(t) + 1n || l.configured !== (r !== null)) throw Error("Uncertain media save");
-			ke(e, {
+			Fe(e, {
 				phase: "ready",
 				status: {
 					revision: l.revision,
@@ -3602,7 +3732,7 @@ function va(e) {
 				message: r ? "Connection saved. Check its observations." : "Connection removed."
 			}, !0);
 		} catch {
-			!w && s === n && le(i) && v[e] === o && ke(e, {
+			!T && s === n && he(i) && v[e] === o && Fe(e, {
 				phase: "error",
 				save: "uncertain",
 				message: "The save may have completed. Check the connection state before entering credentials again."
@@ -3611,60 +3741,314 @@ function va(e) {
 			v[e] === o && delete v[e];
 		}
 	}
-	function Le() {
-		te(), D("Signing out…", !0);
+	function j() {
+		let e = E();
+		if (T || ae || e.phase !== "ready") return;
+		let n = Math.floor(Date.now() / 1e3), r = !1, i = { ...e.queues };
+		for (let e of Zi) {
+			let t = i[e].observation;
+			if (!t) continue;
+			let a = Oa(t, n);
+			a !== t && (r = !0, i[e] = {
+				...i[e],
+				observation: a
+			});
+		}
+		r && t.set({
+			...e,
+			queues: i
+		});
+	}
+	function Ue(e, n, r = !1) {
+		let i = () => t.update((t) => ({
+			...t,
+			queues: {
+				...t.queues,
+				[e]: n
+			}
+		}));
+		r ? jt(i) : i();
+	}
+	function We(e) {
+		++ee[e], S[e]?.abort(), delete S[e];
+	}
+	function Ge() {
+		x = !1;
+		for (let e of Zi) {
+			We(e), ++te[e], C[e]?.abort(), delete C[e];
+			let t = E().queues[e], n = !!w[e];
+			w[e]?.abort(), delete w[e], Ue(e, {
+				...$i(),
+				save: n ? "uncertain" : t.save,
+				message: n ? "The save may have completed. Check the connection state before another change." : t.save === "uncertain" || t.save === "conflict" ? t.message : ""
+			}, !0);
+		}
+	}
+	async function Ke(e) {
+		let t = Ie();
+		if (!t || w[e]) return;
+		x = !0, We(e), C[e]?.abort();
+		let r = new AbortController();
+		C[e] = r;
+		let i = ++te[e], a = n, o = E().queues[e];
+		Ue(e, {
+			...o,
+			phase: "loading",
+			observation: void 0,
+			message: "Checking the current enrollment…"
+		}, !0);
 		try {
-			C?.postMessage({ kind: "auth-changed" });
+			let s = await de(`/api/owner/queues/${e}`, r);
+			if (T || !x || r.signal.aborted || i !== te[e] || a !== n || !he(t)) return;
+			if (document.visibilityState !== "visible") {
+				D("Workspace hidden. Checking access on return.");
+				return;
+			}
+			if ([
+				401,
+				403,
+				426
+			].includes(s.status)) {
+				D(fe(s.status), !0);
+				return;
+			}
+			let c = s.value;
+			if (s.status !== 200 || !Q(c) || !$(c.revision) || typeof c.configured != "boolean" || c.profile !== Qi[e]) throw Error("Queue enrollment unavailable");
+			let l = E().queues[e].status;
+			if (l && (BigInt(c.revision) < BigInt(l.revision) || c.revision === l.revision && c.configured !== l.configured)) throw Error("Older enrollment reply");
+			Ue(e, {
+				phase: "ready",
+				offset: c.configured && l?.revision === c.revision ? o.offset : 0,
+				status: {
+					revision: c.revision,
+					configured: c.configured,
+					profile: c.profile
+				},
+				save: "idle",
+				message: c.configured ? "Enrollment checked. Check observations when you want a provider sample." : "No connection is enrolled."
+			}, !0);
+		} catch {
+			!T && x && i === te[e] && a === n && he(t) && Ue(e, {
+				...E().queues[e],
+				phase: "error",
+				observation: void 0,
+				message: "The connection state could not be checked. Retry deliberately before entering credentials."
+			}, !0);
+		} finally {
+			C[e] === r && delete C[e];
+		}
+	}
+	async function qe() {
+		Ie() && (x = !0, await Promise.all(Zi.map((e) => Ke(e))));
+	}
+	async function Je(e, t = E().queues[e].offset) {
+		let r = Ie();
+		if (!r || !ya(t) || w[e]) return;
+		x = !0, We(e);
+		let i = new AbortController();
+		S[e] = i;
+		let a = ee[e], o = n, s = E().queues[e];
+		Ue(e, {
+			...s,
+			offset: t,
+			phase: "loading",
+			observation: void 0,
+			message: "Checking queue observations…"
+		}, !0);
+		try {
+			let c = await de(`/api/workspace/queues/${e}?offset=${t}`, i);
+			if (T || !x || i.signal.aborted || a !== ee[e] || o !== n || !he(r)) return;
+			if (document.visibilityState !== "visible") {
+				D("Workspace hidden. Checking access on return.");
+				return;
+			}
+			if ([
+				401,
+				403,
+				426
+			].includes(c.status)) {
+				D(fe(c.status), !0);
+				return;
+			}
+			if (c.status === 409) {
+				We(e), Ue(e, {
+					...$i(),
+					phase: "error",
+					save: s.save,
+					message: "Enrollment changed. Check the connection state before reading its new scope."
+				}, !0);
+				return;
+			}
+			if (c.status !== 200) throw Error("Queues unavailable");
+			if (!me(c.value, r)) {
+				D("Your account scope changed. Open a fresh workspace.", !0);
+				return;
+			}
+			if (c.value.provider !== e) throw Error("Wrong queue provider");
+			let l = ka(c.value.observation, e, t), u = E().queues[e].status;
+			if (u && (BigInt(l.revision) < BigInt(u.revision) || l.revision === u.revision && l.configured !== u.configured)) throw Error("Older queue scope");
+			u?.revision !== l.revision && (++te[e], C[e]?.abort(), delete C[e]);
+			let d = l.configured ? l.error === "checking" ? "A sample is being collected. Displayed rows, if any, retain their earlier collection time." : l.error === "page_moved" ? "The provider moved this page as its queue changed. Reload the first page deliberately." : l.error === "unsupported_profile" ? "This provider does not match the supported API profile. Review the enrolled version and address." : l.error === "denied" ? "The provider denied access. Review deliberate key enrollment." : l.error === "rate_limited" ? "The provider limited requests. Try again deliberately later." : l.error ? "Queue observations are unavailable. Unknown values stay unknown." : l.complete ? "Queue observations checked." : "An incomplete sample is available; unreported values stay unknown." : "No connection is enrolled.";
+			Ue(e, {
+				phase: "ready",
+				offset: t,
+				status: {
+					revision: l.revision,
+					configured: l.configured,
+					profile: l.profile
+				},
+				observation: l,
+				save: E().queues[e].save,
+				message: d
+			}, !0);
+		} catch {
+			!T && x && a === ee[e] && o === n && he(r) && Ue(e, {
+				...E().queues[e],
+				phase: "error",
+				observation: void 0,
+				message: "Queue observations could not be checked. Retry deliberately; your private note is unchanged."
+			}, !0);
+		} finally {
+			S[e] === i && delete S[e];
+		}
+	}
+	async function Ye(e, t, r) {
+		let i = Ie(), a = E().queues[e];
+		if (!i || w[e] || a.phase !== "ready" || a.save !== "idle" || a.status?.revision !== t || !$(t)) return;
+		x = !0, We(e), ++te[e], C[e]?.abort(), delete C[e];
+		let o = new AbortController();
+		w[e] = o;
+		let s = n;
+		Ue(e, {
+			...a,
+			observation: void 0,
+			save: "saving",
+			message: r ? "Saving the deliberately enrolled connection…" : "Removing the connection…"
+		}, !0);
+		try {
+			let c = await de(`/api/owner/queues/${e}`, o, {
+				base_revision: t,
+				connection: r
+			});
+			if (T || !x || o.signal.aborted || s !== n || !he(i) || w[e] !== o) return;
+			if (document.visibilityState !== "visible") {
+				D("Workspace hidden. Checking access on return.");
+				return;
+			}
+			if ([
+				401,
+				403,
+				426
+			].includes(c.status)) {
+				D(fe(c.status), !0);
+				return;
+			}
+			if (c.status === 409) {
+				Ue(e, {
+					...$i(),
+					phase: "error",
+					save: "conflict",
+					message: "The connection changed elsewhere. Check its current state before enrolling again."
+				}, !0);
+				return;
+			}
+			if ([
+				400,
+				413,
+				429
+			].includes(c.status)) {
+				Ue(e, {
+					...a,
+					observation: void 0,
+					save: "idle",
+					message: "Connection not accepted. Review the root HTTPS address, supported version, certificate and broad-access acknowledgement."
+				}, !0);
+				return;
+			}
+			let l = c.value;
+			if (c.status !== 200 || !Q(l) || !$(l.revision, !0) || BigInt(l.revision) !== BigInt(t) + 1n || l.configured !== (r !== null) || l.profile !== Qi[e]) throw Error("Uncertain queue save");
+			Ue(e, {
+				phase: "ready",
+				offset: 0,
+				status: {
+					revision: l.revision,
+					configured: l.configured,
+					profile: l.profile
+				},
+				save: "idle",
+				message: r ? "Connection saved. Check its observations." : "Connection removed."
+			}, !0);
+		} catch {
+			!T && x && s === n && he(i) && w[e] === o && Ue(e, {
+				...E().queues[e],
+				phase: "error",
+				observation: void 0,
+				save: "uncertain",
+				message: "The save may have completed. Check the connection state before entering credentials again."
+			}, !0);
+		} finally {
+			w[e] === o && delete w[e];
+		}
+	}
+	function Xe() {
+		se(), D("Signing out…", !0);
+		try {
+			ie?.postMessage({ kind: "auth-changed" });
 		} catch {}
 	}
-	function Re() {
+	function Ze() {
 		let e = () => D("Workspace hidden. Checking access on return."), n = () => {
-			de();
+			_e();
 		}, r = () => {
 			document.visibilityState === "visible" ? n() : e();
 		};
 		try {
-			C = new BroadcastChannel("keida-hub-reborn.account.v1"), C.onmessage = (e) => {
+			ie = new BroadcastChannel("keida-hub-reborn.account.v1"), ie.onmessage = (e) => {
 				Q(e.data) && e.data.kind === "auth-changed" && D("Your sign-in may have changed. Open a fresh workspace.", !0);
 			};
 		} catch {}
-		return window.addEventListener("blur", e), window.addEventListener("pagehide", e), window.addEventListener("focus", n), window.addEventListener("pageshow", n), document.addEventListener("visibilitychange", r), de(), () => {
-			w = !0, re(), C?.close(), t.set(Zi("blocked", "Workspace closed.")), window.removeEventListener("blur", e), window.removeEventListener("pagehide", e), window.removeEventListener("focus", n), window.removeEventListener("pageshow", n), document.removeEventListener("visibilitychange", r);
+		return window.addEventListener("blur", e), window.addEventListener("pagehide", e), window.addEventListener("focus", n), window.addEventListener("pageshow", n), document.addEventListener("visibilitychange", r), _e(), () => {
+			T = !0, le(), ie?.close(), t.set(ta("blocked", "Workspace closed.")), window.removeEventListener("blur", e), window.removeEventListener("pagehide", e), window.removeEventListener("focus", n), window.removeEventListener("pageshow", n), document.removeEventListener("visibilitychange", r);
 		};
 	}
 	return {
 		model: t,
-		start: Re,
-		edit: fe,
-		recover: pe,
-		resolve: me,
-		save: he,
-		signOut: Le,
-		check: () => de(!0),
-		editService: _e,
-		pins: ve,
-		activity: Te,
-		markNotification: O,
-		beginLayout: ye,
-		moveLayout: be,
-		toggleLayout: xe,
-		resetLayout: A,
-		cancelLayout: Se,
-		resolveLayout: Ce,
-		saveLayout: we,
-		checkLayout: () => de(!0),
-		loadGuide: Ee,
-		observations: De,
-		openMedia: Pe,
-		closeMedia: Me,
-		checkMedia: Ne,
-		loadMedia: Fe,
-		saveMedia: Ie
+		start: Ze,
+		edit: ve,
+		recover: O,
+		resolve: ye,
+		save: k,
+		signOut: Xe,
+		check: () => _e(!0),
+		editService: xe,
+		pins: A,
+		activity: je,
+		markNotification: Se,
+		beginLayout: Ce,
+		moveLayout: Te,
+		toggleLayout: Ee,
+		resetLayout: De,
+		cancelLayout: Oe,
+		resolveLayout: ke,
+		saveLayout: Ae,
+		checkLayout: () => _e(!0),
+		loadGuide: Me,
+		observations: Ne,
+		openMedia: Be,
+		closeMedia: Re,
+		checkMedia: ze,
+		loadMedia: Ve,
+		saveMedia: He,
+		openQueues: qe,
+		closeQueues: Ge,
+		checkQueues: Ke,
+		loadQueues: Je,
+		saveQueues: Ye
 	};
 }
 // src/LayoutEditor.svelte
-var ya = /* @__PURE__ */ K("<li tabindex=\"-1\"><label><input type=\"checkbox\"/><span> </span></label> <div class=\"layout-move\"><button class=\"button secondary layout-up\">↑<span class=\"sr-only\">Move up</span></button><button class=\"button secondary layout-down\">↓<span class=\"sr-only\">Move down</span></button></div></li>"), ba = /* @__PURE__ */ K("<li> </li>"), xa = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Layout conflict\"><h3>There’s a newer saved layout</h3><p>Your arrangement is still shown. Compare it with the saved order below before choosing what to keep.</p><ol></ol><div class=\"button-row\"><button class=\"button secondary\">Keep my layout against saved layout</button><button class=\"text-button layout-use-saved\">Use saved layout</button></div></section>"), Sa = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain layout\"><h3>Check before saving again</h3><p>The layout may have saved. Your arrangement has not been sent again.</p><button class=\"button secondary check-layout check-saved-layout\">Check saved layout</button></section>"), Ca = /* @__PURE__ */ K("<section class=\"layout-editor card\" aria-label=\"Home layout\"><h2>Make Home yours</h2><p>Choose the panels you see and their order. Keep at least one visible. Your other views and open forms stay available.</p> <ol class=\"layout-list\"></ol> <!> <!> <div class=\"button-row\"><button class=\"button primary save-layout\"> </button><button class=\"text-button cancel-layout\">Cancel layout</button><button class=\"text-button reset-layout\">Reset layout</button></div> <p class=\"field-help\">Reset previews the default order and visibility. Save layout applies it to this account.</p></section>");
-function wa(e, t) {
+var ja = /* @__PURE__ */ K("<li tabindex=\"-1\"><label><input type=\"checkbox\"/><span> </span></label> <div class=\"layout-move\"><button class=\"button secondary layout-up\">↑<span class=\"sr-only\">Move up</span></button><button class=\"button secondary layout-down\">↓<span class=\"sr-only\">Move down</span></button></div></li>"), Ma = /* @__PURE__ */ K("<li> </li>"), Na = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Layout conflict\"><h3>There’s a newer saved layout</h3><p>Your arrangement is still shown. Compare it with the saved order below before choosing what to keep.</p><ol></ol><div class=\"button-row\"><button class=\"button secondary\">Keep my layout against saved layout</button><button class=\"text-button layout-use-saved\">Use saved layout</button></div></section>"), Pa = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain layout\"><h3>Check before saving again</h3><p>The layout may have saved. Your arrangement has not been sent again.</p><button class=\"button secondary check-layout check-saved-layout\">Check saved layout</button></section>"), Fa = /* @__PURE__ */ K("<section class=\"layout-editor card\" aria-label=\"Home layout\"><h2>Make Home yours</h2><p>Choose the panels you see and their order. Keep at least one visible. Your other views and open forms stay available.</p> <ol class=\"layout-list\"></ol> <!> <!> <div class=\"button-row\"><button class=\"button primary save-layout\"> </button><button class=\"text-button cancel-layout\">Cancel layout</button><button class=\"text-button reset-layout\">Reset layout</button></div> <p class=\"field-help\">Reset previews the default order and visibility. Save layout applies it to this account.</p></section>");
+function Ia(e, t) {
 	We(t, !1);
 	let n = /* @__PURE__ */ P(), r = /* @__PURE__ */ P(), i = /* @__PURE__ */ P(), a = Z(t, "draft", 8), o = Z(t, "saved", 8), s = Z(t, "state", 8), c = Z(t, "authorized", 8), l = Z(t, "move", 8), u = Z(t, "toggle", 8), d = Z(t, "save", 8), f = Z(t, "cancel", 8), p = Z(t, "reset", 8), m = Z(t, "resolve", 8), h = Z(t, "check", 8);
 	async function g(e, t) {
@@ -3681,9 +4065,9 @@ function wa(e, t) {
 	}), En(() => (W(a()), W(o())), () => {
 		F(i, !!a() && !!o() && a().panels.some((e, t) => e.id !== o()?.panels[t].id || e.visible !== o()?.panels[t].visible));
 	}), Dn(), Ti();
-	var _ = Ca(), v = R(I(_), 3);
+	var _ = Fa(), v = R(I(_), 3);
 	qr(v, 7, () => (W(a()), U(() => a()?.panels ?? [])), (e) => e.id, (e, t, i) => {
-		var a = ya(), o = I(a), s = I(o);
+		var a = ja(), o = I(a), s = I(o);
 		pi(s);
 		var c = L(R(s), !0);
 		A(o);
@@ -3698,9 +4082,9 @@ function wa(e, t) {
 		]), G("change", s, () => u()(H(t).id)), G("click", d, () => g(H(t).id, -1)), G("click", f, () => g(H(t).id, 1)), q(e, a);
 	}), A(v);
 	var y = R(v, 2), b = (e) => {
-		var t = xa(), n = R(I(t), 2);
+		var t = Na(), n = R(I(t), 2);
 		qr(n, 5, () => (W(o()), U(() => o()?.panels ?? [])), (e) => e.id, (e, t) => {
-			var n = ba(), r = L(n);
+			var n = Ma(), r = L(n);
 			z((e) => J(r, `${e ?? ""} — ${H(t), U(() => H(t).visible ? "Shown" : "Hidden") ?? ""}`), [() => (W(Gi), H(t), U(() => Gi(H(t).id)))]), q(e, n);
 		}), A(n);
 		var r = R(n), i = I(r), a = R(i);
@@ -3710,41 +4094,41 @@ function wa(e, t) {
 		s() === "conflict" && e(b);
 	});
 	var x = R(y, 2), S = (e) => {
-		var t = Sa(), n = R(I(t), 2);
+		var t = Pa(), n = R(I(t), 2);
 		A(t), G("click", n, () => h()()), q(e, t);
 	};
 	Y(x, (e) => {
 		s() === "uncertain" && e(S);
 	});
-	var C = R(x, 2), w = I(C), T = L(w, !0), E = R(w), ee = R(E);
+	var C = R(x, 2), w = I(C), ee = L(w, !0), te = R(w), ne = R(te);
 	A(C), Se(2), A(_), z(() => {
-		X(_, "hidden", !c() || !a()), w.disabled = H(n) || s() === "conflict" || !H(i), J(T, s() === "saving" ? "Saving layout…" : "Save layout"), E.disabled = H(n), ee.disabled = H(n);
-	}), G("click", w, () => d()()), G("click", E, function(...e) {
+		X(_, "hidden", !c() || !a()), w.disabled = H(n) || s() === "conflict" || !H(i), J(ee, s() === "saving" ? "Saving layout…" : "Save layout"), te.disabled = H(n), ne.disabled = H(n);
+	}), G("click", w, () => d()()), G("click", te, function(...e) {
 		f()?.apply(this, e);
-	}), G("click", ee, function(...e) {
+	}), G("click", ne, function(...e) {
 		p()?.apply(this, e);
 	}), q(e, _), Ge();
 }
 wr(["change", "click"]);
 // src/ObservationHistory.svelte
-var Ta = /* @__PURE__ */ K("<p class=\"observation-empty\">No retained observations in this window. A connection must be enrolled and observed before samples appear.</p>"), Ea = /* @__PURE__ */ K("<p class=\"notice\"> </p>"), Da = /* @__PURE__ */ K("<p class=\"field-help\"> </p>"), Oa = /* @__PURE__ */ K("<section><h4> </h4> <dl><dt>Reported process</dt><dd> </dd> <dt>Players</dt><dd> </dd> <dt>Freshness at collection</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd></dl> <!></section>"), ka = /* @__PURE__ */ K("<li><div class=\"guide-card-heading\"><h3> </h3><time> </time></div> <p class=\"observation-completeness\"> </p> <!> <div class=\"observation-servers\"></div></li>"), Aa = /* @__PURE__ */ K("<p class=\"quiet-label\"> </p> <!> <ol class=\"observation-list\"></ol>", 1), ja = /* @__PURE__ */ K("<section class=\"card observation-history\" aria-label=\"Provider observation history\"><p class=\"eyebrow\">RETAINED PROVIDER SAMPLES</p><h2 tabindex=\"-1\">Crafty observation history</h2> <p>Samples are collected while an authorized workspace checks the enrolled connection. At most the first sample per enrollment revision each minute is retained, up to the newest 10,000 batches.</p> <p class=\"field-help\">This is sampled, on-demand history. Gaps do not establish downtime, and a process or player report does not establish game readiness. Freshness below describes the sample at collection time.</p> <p> </p> <p class=\"workspace-status observation-status\" role=\"status\"> </p> <!> <div class=\"button-row\"><button class=\"button secondary observation-newest\">Check newest observations</button><button class=\"button secondary observation-older\">Older observations</button><button class=\"text-button\">Check current connection</button></div> <p class=\"field-help\">Up to 25 batches per page. New samples appear when you check newest. Older pages use the same history window; retention can shorten that window as new samples arrive. Reading history does not contact Crafty.</p></section>");
-function Ma(e, t) {
+var La = /* @__PURE__ */ K("<p class=\"observation-empty\">No retained observations in this window. A connection must be enrolled and observed before samples appear.</p>"), Ra = /* @__PURE__ */ K("<p class=\"notice\"> </p>"), za = /* @__PURE__ */ K("<p class=\"field-help\"> </p>"), Ba = /* @__PURE__ */ K("<section><h4> </h4> <dl><dt>Reported process</dt><dd> </dd> <dt>Players</dt><dd> </dd> <dt>Freshness at collection</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd></dl> <!></section>"), Va = /* @__PURE__ */ K("<li><div class=\"guide-card-heading\"><h3> </h3><time> </time></div> <p class=\"observation-completeness\"> </p> <!> <div class=\"observation-servers\"></div></li>"), Ha = /* @__PURE__ */ K("<p class=\"quiet-label\"> </p> <!> <ol class=\"observation-list\"></ol>", 1), Ua = /* @__PURE__ */ K("<section class=\"card observation-history\" aria-label=\"Provider observation history\"><p class=\"eyebrow\">RETAINED PROVIDER SAMPLES</p><h2 tabindex=\"-1\">Crafty observation history</h2> <p>Samples are collected while an authorized workspace checks the enrolled connection. At most the first sample per enrollment revision each minute is retained, up to the newest 10,000 batches.</p> <p class=\"field-help\">This is sampled, on-demand history. Gaps do not establish downtime, and a process or player report does not establish game readiness. Freshness below describes the sample at collection time.</p> <p> </p> <p class=\"workspace-status observation-status\" role=\"status\"> </p> <!> <div class=\"button-row\"><button class=\"button secondary observation-newest\">Check newest observations</button><button class=\"button secondary observation-older\">Older observations</button><button class=\"text-button\">Check current connection</button></div> <p class=\"field-help\">Up to 25 batches per page. New samples appear when you check newest. Older pages use the same history window; retention can shorten that window as new samples arrive. Reading history does not contact Crafty.</p></section>");
+function Wa(e, t) {
 	We(t, !1);
 	let n = Z(t, "state", 8), r = Z(t, "authorized", 8, !1), i = Z(t, "owner", 8, !1), a = Z(t, "load", 8), o = Z(t, "checkConnection", 8), s = (e) => e === null ? "Not reported" : (/* @__PURE__ */ new Date(Number(e) * 1e3)).toLocaleString(), c = (e) => e === "denied" ? "Provider access denied" : e === "timeout" ? "Provider timed out" : e === "transport" ? "Provider could not be reached" : e === "not_discovered" ? "Selected server was not discovered" : e === "malformed" ? "Provider response was incomplete or malformed" : e === "oversized" ? "Provider response exceeded the observation limit" : e === "invalid_configuration" ? "Connection could not be checked" : e ? "Provider observation unavailable" : "";
 	Ti();
-	var l = ja(), u = R(I(l), 7), d = L(u, !0), f = R(u, 2), p = L(f, !0), m = R(f, 2), h = (e) => {
-		var t = Aa(), r = ln(t), i = L(r), a = R(r, 2), o = (e) => {
-			q(e, Ta());
+	var l = Ua(), u = R(I(l), 7), d = L(u, !0), f = R(u, 2), p = L(f, !0), m = R(f, 2), h = (e) => {
+		var t = Ha(), r = ln(t), i = L(r), a = R(r, 2), o = (e) => {
+			q(e, La());
 		};
 		Y(a, (e) => {
 			W(n()), U(() => n().entries.length === 0) && e(o);
 		});
 		var l = R(a, 2);
 		qr(l, 5, () => (W(n()), U(() => n().entries)), (e) => e.id, (e, t) => {
-			var n = ka(), r = I(n), i = I(r), a = L(i), o = R(i), l = L(o, !0);
+			var n = Va(), r = I(n), i = I(r), a = L(i), o = R(i), l = L(o, !0);
 			A(r);
 			var u = R(r, 2), d = L(u, !0), f = R(u, 2), p = (e) => {
-				var n = Ea(), r = L(n, !0);
+				var n = Ra(), r = L(n, !0);
 				z((e) => J(r, e), [() => (H(t), U(() => c(H(t).error)))]), q(e, n);
 			};
 			Y(f, (e) => {
@@ -3752,10 +4136,10 @@ function Ma(e, t) {
 			});
 			var m = R(f, 2);
 			qr(m, 5, () => (H(t), U(() => H(t).servers)), Ur, (e, t) => {
-				var n = Oa(), r = I(n), i = L(r, !0), a = R(r, 2), o = R(I(a)), l = L(o, !0), u = R(o, 3), d = L(u), f = R(u, 3), p = L(f, !0), m = R(f, 3), h = L(m, !0), g = L(R(m, 2), !0);
+				var n = Ba(), r = I(n), i = L(r, !0), a = R(r, 2), o = R(I(a)), l = L(o, !0), u = R(o, 3), d = L(u), f = R(u, 3), p = L(f, !0), m = R(f, 3), h = L(m, !0), g = L(R(m, 2), !0);
 				A(a);
 				var _ = R(a, 2), v = (e) => {
-					var n = Da(), r = L(n, !0);
+					var n = za(), r = L(n, !0);
 					z((e) => J(r, e), [() => (H(t), U(() => c(H(t).error)))]), q(e, n);
 				};
 				Y(_, (e) => {
@@ -3780,8 +4164,8 @@ function Ma(e, t) {
 }
 wr(["click"]);
 // src/Connections.svelte
-var Na = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\">This observation could not be added to history. Your workspace is still available; retained history may be incomplete.</p>"), Pa = /* @__PURE__ */ K("<section class=\"card small-card\"><h2>No Crafty connection enrolled</h2><p>An owner can add dedicated access and choose which servers to show.</p></section>"), Fa = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\"> </p>"), Ia = /* @__PURE__ */ K("<p class=\"field-help\">This server could not be fully observed.</p>"), La = /* @__PURE__ */ K("<article class=\"card small-card server-card\"><h2> </h2> <p><strong> </strong> <span class=\"field-help\">Provider-reported process state</span></p> <dl><dt>Players</dt><dd> </dd> <dt>Freshness</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd> <dt>Join address</dt><dd> </dd></dl> <!></article>"), Ra = /* @__PURE__ */ K("<!> <div class=\"server-grid\"></div> <p class=\"field-help\">A running process does not establish game readiness. Join addresses are owner-reviewed; outside-network joining is accepted separately.</p>", 1), za = /* @__PURE__ */ K("<button class=\"button secondary\">Check connection state</button>"), Ba = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove server</button>"), Va = /* @__PURE__ */ K("<fieldset><legend> </legend> <label>Crafty server UUID</label><input name=\"server-id\" required=\"\" maxlength=\"36\"/> <label>Display name</label><input name=\"server-name\" required=\"\" maxlength=\"80\"/> <label>Reviewed public join address, optional</label><input name=\"server-join\" maxlength=\"253\" placeholder=\"play.example:25565\"/> <!></fieldset>"), Ha = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove connection</button>"), Ua = /* @__PURE__ */ K("<section class=\"card connection-setup\" aria-label=\"Dedicated Crafty enrollment\"><h2>Dedicated Crafty access</h2> <p>Create access specifically for Reborn, limited to viewing the selected servers. Credentials are encrypted on the server and are not shown again.</p> <p class=\"workspace-status\" role=\"status\"> </p> <!> <form autocomplete=\"off\"><label for=\"crafty-endpoint\">Crafty HTTPS address</label><input id=\"crafty-endpoint\" name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\" placeholder=\"https://crafty.example/\"/> <label for=\"crafty-token\">Dedicated API token</label><input id=\"crafty-token\" name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <label for=\"crafty-timezone\">Crafty’s configured time zone</label><input id=\"crafty-timezone\" name=\"timezone\" required=\"\" maxlength=\"64\" placeholder=\"America/Chicago or UTC\"/> <label for=\"crafty-ca\">Private CA certificate, if needed</label><textarea id=\"crafty-ca\" name=\"ca-pem\" maxlength=\"8192\" rows=\"3\"></textarea> <p class=\"field-help\">Leave the certificate blank for publicly trusted HTTPS. The address and certificate must pass normal hostname and trust checks.</p> <!> <div class=\"button-row\"><button class=\"button secondary\" type=\"button\">Add server</button> <button class=\"button primary\" type=\"submit\"> </button></div></form> <!></section>"), Wa = /* @__PURE__ */ K("<div><div class=\"button-row\"><button class=\"text-button\">View connection enrollment history</button><button class=\"text-button view-observation-history\">View provider observation history</button></div> <!> <div class=\"connections-intro\"><p>Server observations from your deliberately enrolled Crafty connection.</p><span class=\"quiet-label\">Read-only overview</span></div> <!> <!></div> <div><button class=\"text-button observation-back\">Back to connections</button> <!></div>", 1);
-function Ga(e, t) {
+var Ga = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\">This observation could not be added to history. Your workspace is still available; retained history may be incomplete.</p>"), Ka = /* @__PURE__ */ K("<section class=\"card small-card\"><h2>No Crafty connection enrolled</h2><p>An owner can add dedicated access and choose which servers to show.</p></section>"), qa = /* @__PURE__ */ K("<p class=\"notice\" role=\"status\"> </p>"), Ja = /* @__PURE__ */ K("<p class=\"field-help\">This server could not be fully observed.</p>"), Ya = /* @__PURE__ */ K("<article class=\"card small-card server-card\"><h2> </h2> <p><strong> </strong> <span class=\"field-help\">Provider-reported process state</span></p> <dl><dt>Players</dt><dd> </dd> <dt>Freshness</dt><dd> </dd> <dt>Collected</dt><dd> </dd><dt>Provider sample</dt><dd> </dd> <dt>Join address</dt><dd> </dd></dl> <!></article>"), Xa = /* @__PURE__ */ K("<!> <div class=\"server-grid\"></div> <p class=\"field-help\">A running process does not establish game readiness. Join addresses are owner-reviewed; outside-network joining is accepted separately.</p>", 1), Za = /* @__PURE__ */ K("<button class=\"button secondary\">Check connection state</button>"), Qa = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove server</button>"), $a = /* @__PURE__ */ K("<fieldset><legend> </legend> <label>Crafty server UUID</label><input name=\"server-id\" required=\"\" maxlength=\"36\"/> <label>Display name</label><input name=\"server-name\" required=\"\" maxlength=\"80\"/> <label>Reviewed public join address, optional</label><input name=\"server-join\" maxlength=\"253\" placeholder=\"play.example:25565\"/> <!></fieldset>"), eo = /* @__PURE__ */ K("<button class=\"text-button\" type=\"button\">Remove connection</button>"), to = /* @__PURE__ */ K("<section class=\"card connection-setup\" aria-label=\"Dedicated Crafty enrollment\"><h2>Dedicated Crafty access</h2> <p>Create access specifically for Reborn, limited to viewing the selected servers. Credentials are encrypted on the server and are not shown again.</p> <p class=\"workspace-status\" role=\"status\"> </p> <!> <form autocomplete=\"off\"><label for=\"crafty-endpoint\">Crafty HTTPS address</label><input id=\"crafty-endpoint\" name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\" placeholder=\"https://crafty.example/\"/> <label for=\"crafty-token\">Dedicated API token</label><input id=\"crafty-token\" name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <label for=\"crafty-timezone\">Crafty’s configured time zone</label><input id=\"crafty-timezone\" name=\"timezone\" required=\"\" maxlength=\"64\" placeholder=\"America/Chicago or UTC\"/> <label for=\"crafty-ca\">Private CA certificate, if needed</label><textarea id=\"crafty-ca\" name=\"ca-pem\" maxlength=\"8192\" rows=\"3\"></textarea> <p class=\"field-help\">Leave the certificate blank for publicly trusted HTTPS. The address and certificate must pass normal hostname and trust checks.</p> <!> <div class=\"button-row\"><button class=\"button secondary\" type=\"button\">Add server</button> <button class=\"button primary\" type=\"submit\"> </button></div></form> <!></section>"), no = /* @__PURE__ */ K("<div><div class=\"button-row\"><button class=\"text-button\">View connection enrollment history</button><button class=\"text-button view-observation-history\">View provider observation history</button></div> <!> <div class=\"connections-intro\"><p>Server observations from your deliberately enrolled Crafty connection.</p><span class=\"quiet-label\">Read-only overview</span></div> <!> <!></div> <div><button class=\"text-button observation-back\">Back to connections</button> <!></div>", 1);
+function ro(e, t) {
 	We(t, !1);
 	let n = Z(t, "binding", 8), r = Z(t, "history", 8), i = Z(t, "overview", 8), a = Z(t, "owner", 8, !1), o = Z(t, "active", 8, !1), s = Z(t, "refresh", 8), c = Z(t, "observationState", 8), l = Z(t, "loadObservations", 8), u = /* @__PURE__ */ P(), d = /* @__PURE__ */ P([0]), f = /* @__PURE__ */ P(0), p = /* @__PURE__ */ P(), m = /* @__PURE__ */ P(""), h = /* @__PURE__ */ P(!1), g = 0, _ = /* @__PURE__ */ P(!1), v = /* @__PURE__ */ P(), y = /* @__PURE__ */ P(), b = (e) => e === null ? "Not reported" : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleString();
 	function x() {
@@ -3848,25 +4232,25 @@ function Ga(e, t) {
 			clearTimeout(S), H(p) === b && F(p, void 0);
 		}
 	}
-	async function T() {
+	async function ee() {
 		await s()(), o() && (F(h, !1), F(m, "Review the current connection state before making another change."));
 	}
 	En(() => W(o()), () => {
 		o() || (x(), F(_, !1));
 	}), Dn(), Ti();
-	var E = Wa(), ee = ln(E), te = I(ee), ne = I(te), re = R(ne);
-	wi(re, (e) => F(v, e), () => H(v)), A(te);
-	var D = R(te, 2), ie = (e) => {
-		q(e, Na());
+	var te = no(), ne = ln(te), re = I(ne), ie = I(re), T = R(ie);
+	wi(T, (e) => F(v, e), () => H(v)), A(re);
+	var ae = R(re, 2), E = (e) => {
+		q(e, Ga());
 	};
-	Y(D, (e) => {
-		W(i()), U(() => i()?.history_error === "unavailable") && e(ie);
+	Y(ae, (e) => {
+		W(i()), U(() => i()?.history_error === "unavailable") && e(E);
 	});
-	var ae = R(D, 4), oe = (e) => {
-		q(e, Pa());
-	}, se = (e) => {
-		var t = Ra(), n = ln(t), r = (e) => {
-			var t = Fa(), n = L(t, !0);
+	var oe = R(ae, 4), se = (e) => {
+		q(e, Ka());
+	}, ce = (e) => {
+		var t = Xa(), n = ln(t), r = (e) => {
+			var t = qa(), n = L(t, !0);
 			z(() => J(n, (W(i()), U(() => i().error === "checking" ? "Checking the provider. Fresh results will appear on the next observation." : "Provider observations are unavailable or incomplete. Unknown player counts stay unknown.")))), q(e, t);
 		};
 		Y(n, (e) => {
@@ -3874,12 +4258,12 @@ function Ga(e, t) {
 		});
 		var a = R(n, 2);
 		qr(a, 5, () => (W(i()), U(() => i().servers)), Ur, (e, t) => {
-			var n = La(), r = I(n), i = L(r, !0), a = R(r, 2), o = L(I(a), !0);
+			var n = Ya(), r = I(n), i = L(r, !0), a = R(r, 2), o = L(I(a), !0);
 			Se(2), A(a);
 			var s = R(a, 2), c = R(I(s)), l = L(c), u = R(c, 3), d = L(u, !0), f = R(u, 3), p = L(f, !0), m = R(f, 2), h = L(m, !0), g = L(R(m, 3), !0);
 			A(s);
 			var _ = R(s, 2), v = (e) => {
-				q(e, Ia());
+				q(e, Ja());
 			};
 			Y(_, (e) => {
 				H(t), U(() => H(t).error) && e(v);
@@ -3888,21 +4272,21 @@ function Ga(e, t) {
 			}, [() => (H(t), U(() => b(H(t).collected_at))), () => (H(t), U(() => b(H(t).provider_at)))]), q(e, n);
 		}), A(a), Se(2), q(e, t);
 	};
-	Y(ae, (e) => {
-		W(i()), U(() => !i() || !i().configured) ? e(oe) : e(se, -1);
+	Y(oe, (e) => {
+		W(i()), U(() => !i() || !i().configured) ? e(se) : e(ce, -1);
 	});
-	var ce = R(ae, 2), le = (e) => {
-		var t = Ua(), n = R(I(t), 4), r = L(n, !0), a = R(n, 2), o = (e) => {
-			var t = za();
-			G("click", t, () => void T()), q(e, t);
+	var le = R(oe, 2), D = (e) => {
+		var t = to(), n = R(I(t), 4), r = L(n, !0), a = R(n, 2), o = (e) => {
+			var t = Za();
+			G("click", t, () => void ee()), q(e, t);
 		};
 		Y(a, (e) => {
 			H(h) && e(o);
 		});
 		var s = R(a, 2), c = R(I(s)), l = R(c, 3), g = R(l, 3), _ = R(g, 3), v = R(_, 4);
 		qr(v, 3, () => H(d), (e) => e, (e, t, n) => {
-			var r = Va(), i = I(r), a = L(i), o = R(i, 2), s = R(o), c = R(s, 2), l = R(c), u = R(l, 2), f = R(u), m = R(f, 2), g = (e) => {
-				var n = Ba();
+			var r = $a(), i = I(r), a = L(i), o = R(i, 2), s = R(o), c = R(s, 2), l = R(c), u = R(l, 2), f = R(u), m = R(f, 2), g = (e) => {
+				var n = Qa();
 				z(() => n.disabled = !!H(p) || H(h)), G("click", n, () => F(d, H(d).filter((e) => e !== H(t)))), q(e, n);
 			};
 			Y(m, (e) => {
@@ -3913,23 +4297,23 @@ function Ga(e, t) {
 		});
 		var y = R(v, 2), b = I(y), x = R(b, 2), S = L(x, !0);
 		A(y), A(s), wi(s, (e) => F(u, e), () => H(u));
-		var C = R(s, 2), E = (e) => {
-			var t = Ha();
+		var C = R(s, 2), te = (e) => {
+			var t = eo();
 			z(() => t.disabled = !!H(p) || H(h)), G("click", t, () => void w(!0)), q(e, t);
 		};
 		Y(C, (e) => {
-			W(i()), U(() => i()?.configured) && e(E);
+			W(i()), U(() => i()?.configured) && e(te);
 		}), A(t), z(() => {
 			J(r, H(m)), c.disabled = !!H(p) || H(h), l.disabled = !!H(p) || H(h), g.disabled = !!H(p) || H(h), _.disabled = !!H(p) || H(h), b.disabled = (H(d), H(p), H(h), U(() => H(d).length >= 8 || !!H(p) || H(h))), x.disabled = !!H(p) || H(h) || !i(), J(S, H(p) ? "Working…" : "Save dedicated connection");
 		}), Cr("submit", s, (e) => {
 			e.preventDefault(), w();
 		}), G("click", b, () => F(d, [...H(d), Jt(f)])), q(e, t);
 	};
-	Y(ce, (e) => {
-		a() && o() && e(le);
-	}), A(ee);
-	var ue = R(ee, 2), de = I(ue);
-	Ma(R(de, 2), {
+	Y(le, (e) => {
+		a() && o() && e(D);
+	}), A(ne);
+	var ue = R(ne, 2), de = I(ue);
+	Wa(R(de, 2), {
 		get state() {
 			return c();
 		},
@@ -3946,28 +4330,28 @@ function Ga(e, t) {
 			return s();
 		}
 	}), A(ue), wi(ue, (e) => F(y, e), () => H(y)), z(() => {
-		X(ee, "hidden", H(_)), re.disabled = !o(), X(ue, "hidden", !H(_));
-	}), G("click", ne, function(...e) {
+		X(ne, "hidden", H(_)), T.disabled = !o(), X(ue, "hidden", !H(_));
+	}), G("click", ie, function(...e) {
 		r()?.apply(this, e);
-	}), G("click", re, () => void S()), G("click", de, () => void C()), q(e, E), Ge();
+	}), G("click", T, () => void S()), G("click", de, () => void C()), q(e, te), Ge();
 }
 wr(["click"]);
 // src/Directory.svelte
-var Ka = /* @__PURE__ */ K("<button class=\"text-button\">Browse services <span aria-hidden=\"true\">→</span></button>"), qa = /* @__PURE__ */ K("<section class=\"notice\"><h3>Review the saved state</h3><p> </p><button class=\"button secondary\">Check saved services</button></section>"), Ja = /* @__PURE__ */ K("<option> </option>"), Ya = /* @__PURE__ */ K("<div class=\"directory-filters\"><div><label for=\"service-search\">Search services</label><input id=\"service-search\" type=\"search\" maxlength=\"120\" placeholder=\"Name, category or description\"/></div><div><label for=\"service-filter\">Category</label><select id=\"service-filter\"><option>All categories</option><!></select></div></div>"), Xa = /* @__PURE__ */ K("<section class=\"card small-card\"><h3> </h3><p> </p></section>"), Za = /* @__PURE__ */ K("<p> </p>"), Qa = /* @__PURE__ */ K("<button class=\"text-button move-up\">↑</button><button class=\"text-button move-down\">↓</button>", 1), $a = /* @__PURE__ */ K("<p>The directory changed. Review the service and choose Remove again.</p>"), eo = /* @__PURE__ */ K("<div class=\"notice\"><p> </p><!><div class=\"button-row\"><button class=\"button secondary confirm-remove\">Remove service</button><button class=\"text-button\">Keep service</button></div></div>"), to = /* @__PURE__ */ K("<div class=\"button-row\"><button class=\"text-button edit-service\"> </button><button class=\"text-button remove-service\">Remove</button></div> <!>", 1), no = /* @__PURE__ */ K("<article class=\"card small-card service-card\"><p class=\"eyebrow\"> </p><h3><a class=\"service-link\" target=\"_blank\" rel=\"noopener noreferrer\"> <span class=\"sr-only\">(opens in a new tab)</span> <span aria-hidden=\"true\">↗</span></a></h3> <!> <p class=\"field-help service-address\"> </p> <div class=\"button-row\"><button class=\"button secondary pin-service\"> </button> <!></div> <!></article>"), ro = /* @__PURE__ */ K("<div class=\"directory-grid\"></div>"), io = /* @__PURE__ */ K("<p class=\"field-help\">Up to 24 personal pins. Links open the selected service in a new tab. Each service handles its own sign-in; directory links do not check availability.</p>"), ao = /* @__PURE__ */ K("<div class=\"notice\"><p>The directory changed after this form was opened. Review the current entries, then choose whether to keep this edit.</p><button class=\"button secondary\" type=\"button\">Keep edit against current directory</button></div>"), oo = /* @__PURE__ */ K("<section class=\"card directory-editor\" aria-label=\"Service editor\"><h2> </h2><p>Add a reviewed HTTPS link without passwords, tokens, query parameters or fragments. These links are visible to signed-in accounts.</p> <form><label for=\"service-name\">Service name</label><input id=\"service-name\" name=\"service-name\" required=\"\" maxlength=\"80\"/> <label for=\"service-category\">Category</label><input id=\"service-category\" name=\"service-category\" required=\"\" maxlength=\"40\"/> <label for=\"service-url\">HTTPS link</label><input id=\"service-url\" name=\"service-url\" type=\"url\" required=\"\" maxlength=\"1024\" placeholder=\"https://service.example/\"/> <label for=\"service-description\">Description, optional</label><textarea id=\"service-description\" name=\"service-description\" maxlength=\"240\" rows=\"2\"></textarea> <!> <div class=\"button-row\"><button class=\"button primary\" type=\"submit\"> </button><button class=\"text-button\" type=\"button\"> </button></div></form></section>"), so = /* @__PURE__ */ K("<div class=\"directory-heading\"><div><p class=\"eyebrow\"> </p><h2> </h2></div><!></div> <p class=\"directory-status\" role=\"status\"> </p> <!> <!> <!> <!> <!>", 1);
-function co(e, t) {
+var io = /* @__PURE__ */ K("<button class=\"text-button\">Browse services <span aria-hidden=\"true\">→</span></button>"), ao = /* @__PURE__ */ K("<section class=\"notice\"><h3>Review the saved state</h3><p> </p><button class=\"button secondary\">Check saved services</button></section>"), oo = /* @__PURE__ */ K("<option> </option>"), so = /* @__PURE__ */ K("<div class=\"directory-filters\"><div><label for=\"service-search\">Search services</label><input id=\"service-search\" type=\"search\" maxlength=\"120\" placeholder=\"Name, category or description\"/></div><div><label for=\"service-filter\">Category</label><select id=\"service-filter\"><option>All categories</option><!></select></div></div>"), co = /* @__PURE__ */ K("<section class=\"card small-card\"><h3> </h3><p> </p></section>"), lo = /* @__PURE__ */ K("<p> </p>"), uo = /* @__PURE__ */ K("<button class=\"text-button move-up\">↑</button><button class=\"text-button move-down\">↓</button>", 1), fo = /* @__PURE__ */ K("<p>The directory changed. Review the service and choose Remove again.</p>"), po = /* @__PURE__ */ K("<div class=\"notice\"><p> </p><!><div class=\"button-row\"><button class=\"button secondary confirm-remove\">Remove service</button><button class=\"text-button\">Keep service</button></div></div>"), mo = /* @__PURE__ */ K("<div class=\"button-row\"><button class=\"text-button edit-service\"> </button><button class=\"text-button remove-service\">Remove</button></div> <!>", 1), ho = /* @__PURE__ */ K("<article class=\"card small-card service-card\"><p class=\"eyebrow\"> </p><h3><a class=\"service-link\" target=\"_blank\" rel=\"noopener noreferrer\"> <span class=\"sr-only\">(opens in a new tab)</span> <span aria-hidden=\"true\">↗</span></a></h3> <!> <p class=\"field-help service-address\"> </p> <div class=\"button-row\"><button class=\"button secondary pin-service\"> </button> <!></div> <!></article>"), go = /* @__PURE__ */ K("<div class=\"directory-grid\"></div>"), _o = /* @__PURE__ */ K("<p class=\"field-help\">Up to 24 personal pins. Links open the selected service in a new tab. Each service handles its own sign-in; directory links do not check availability.</p>"), vo = /* @__PURE__ */ K("<div class=\"notice\"><p>The directory changed after this form was opened. Review the current entries, then choose whether to keep this edit.</p><button class=\"button secondary\" type=\"button\">Keep edit against current directory</button></div>"), yo = /* @__PURE__ */ K("<section class=\"card directory-editor\" aria-label=\"Service editor\"><h2> </h2><p>Add a reviewed HTTPS link without passwords, tokens, query parameters or fragments. These links are visible to signed-in accounts.</p> <form><label for=\"service-name\">Service name</label><input id=\"service-name\" name=\"service-name\" required=\"\" maxlength=\"80\"/> <label for=\"service-category\">Category</label><input id=\"service-category\" name=\"service-category\" required=\"\" maxlength=\"40\"/> <label for=\"service-url\">HTTPS link</label><input id=\"service-url\" name=\"service-url\" type=\"url\" required=\"\" maxlength=\"1024\" placeholder=\"https://service.example/\"/> <label for=\"service-description\">Description, optional</label><textarea id=\"service-description\" name=\"service-description\" maxlength=\"240\" rows=\"2\"></textarea> <!> <div class=\"button-row\"><button class=\"button primary\" type=\"submit\"> </button><button class=\"text-button\" type=\"button\"> </button></div></form></section>"), bo = /* @__PURE__ */ K("<div class=\"directory-heading\"><div><p class=\"eyebrow\"> </p><h2> </h2></div><!></div> <p class=\"directory-status\" role=\"status\"> </p> <!> <!> <!> <!> <!>", 1);
+function xo(e, t) {
 	We(t, !1);
 	let n = /* @__PURE__ */ P(), r = /* @__PURE__ */ P(), i = /* @__PURE__ */ P(), a = Z(t, "directory", 8), o = Z(t, "authorized", 8, !1), s = Z(t, "owner", 8, !1), c = Z(t, "compact", 8, !1), l = Z(t, "state", 8), u = Z(t, "message", 8), d = Z(t, "browse", 8), f = Z(t, "check", 8), p = Z(t, "edit", 8), m = Z(t, "pin", 8), h = /* @__PURE__ */ P(""), g = /* @__PURE__ */ P(""), _ = /* @__PURE__ */ P(""), v = /* @__PURE__ */ P(""), y = /* @__PURE__ */ P(""), b = /* @__PURE__ */ P(""), x = /* @__PURE__ */ P(""), S = /* @__PURE__ */ P(), C = /* @__PURE__ */ P(), w = 0;
-	function T() {
+	function ee() {
 		++w, F(h, ""), F(g, ""), F(_, ""), F(v, ""), F(y, ""), F(b, ""), F(x, ""), F(C, void 0), F(S, void 0);
 	}
-	Li(T);
-	function E() {
+	Li(ee);
+	function te() {
 		F(_, ""), F(v, ""), F(y, ""), F(b, ""), F(x, ""), F(C, void 0), F(S, a()?.revision);
 	}
-	function ee(e) {
+	function ne(e) {
 		F(x, e.id), F(_, e.name), F(v, e.description), F(y, e.url), F(b, e.category), F(S, a()?.revision), F(C, void 0), document.querySelector("#service-name")?.focus();
 	}
-	async function te() {
+	async function re() {
 		if (H(n) || !s() || H(S) === void 0) return;
 		let e = w, t = {
 			action: H(x) ? "update" : "create",
@@ -3979,23 +4363,23 @@ function co(e, t) {
 				url: H(y)
 			}
 		};
-		await p()(H(S), t) && o() && e === w && (await pr(), o() && e === w && E());
+		await p()(H(S), t) && o() && e === w && (await pr(), o() && e === w && te());
 	}
-	function ne(e) {
+	function ie(e) {
 		!H(n) && a() && m()(a().pins.includes(e) ? a().pins.filter((t) => t !== e) : [...a().pins, e]);
 	}
-	function re(e, t) {
+	function T(e, t) {
 		if (H(n) || !a()) return;
 		let r = [...a().pins], i = r.indexOf(e), o = i + t;
 		i < 0 || o < 0 || o >= r.length || ([r[i], r[o]] = [r[o], r[i]], m()(r));
 	}
-	async function D(e) {
+	async function ae(e) {
 		if (H(n) || !a() || !s() || H(C)?.id !== e) return;
 		let t = w;
 		await p()(H(C).base, {
 			action: "delete",
 			id: e
-		}) && o() && t === w && (await pr(), o() && t === w && (F(C, void 0), H(x) === e && E()));
+		}) && o() && t === w && (await pr(), o() && t === w && (F(C, void 0), H(x) === e && te()));
 	}
 	En(() => (W(l()), W(o())), () => {
 		F(n, l() === "saving" || l() === "uncertain" || !o());
@@ -4009,34 +4393,34 @@ function co(e, t) {
 			return n >= 0 || r >= 0 ? (n < 0 ? 25 : n) - (r < 0 ? 25 : r) : e.name.localeCompare(t.name) || Number(BigInt(e.id) - BigInt(t.id));
 		}).filter((e) => c() ? a()?.pins.includes(e.id) : (!H(g) || e.category === H(g)) && `${e.name} ${e.category} ${e.description}`.toLocaleLowerCase().includes(H(h).toLocaleLowerCase())));
 	}), En(() => W(o()), () => {
-		o() || T();
+		o() || ee();
 	}), En(() => (W(o()), W(a()), H(S)), () => {
 		o() && a() && H(S) === void 0 && F(S, a().revision);
 	}), Dn(), Ti();
-	var ie = so(), ae = ln(ie), oe = I(ae), se = I(oe), ce = L(se, !0), le = L(R(se), !0);
-	A(oe);
-	var ue = R(oe), de = (e) => {
-		var t = Ka();
+	var E = bo(), oe = ln(E), se = I(oe), ce = I(se), le = L(ce, !0), D = L(R(ce), !0);
+	A(se);
+	var ue = R(se), de = (e) => {
+		var t = io();
 		G("click", t, function(...e) {
 			d()?.apply(this, e);
 		}), q(e, t);
 	};
 	Y(ue, (e) => {
 		c() && e(de);
-	}), A(ae);
-	var fe = R(ae, 2), pe = L(fe, !0), me = R(fe, 2), he = (e) => {
-		var t = qa(), n = R(I(t)), r = L(n, !0), i = R(n);
+	}), A(oe);
+	var fe = R(oe, 2), pe = L(fe, !0), me = R(fe, 2), he = (e) => {
+		var t = ao(), n = R(I(t)), r = L(n, !0), i = R(n);
 		A(t), z(() => J(r, l() === "uncertain" ? "Your change has not been sent again." : "Your edit is still in the form. Compare it with the current directory before saving.")), G("click", i, () => void f()()), q(e, t);
 	};
 	Y(me, (e) => {
 		(l() === "uncertain" || l() === "conflict") && e(he);
 	});
 	var ge = R(me, 2), _e = (e) => {
-		var t = Ya(), n = I(t), i = R(I(n));
+		var t = so(), n = I(t), i = R(I(n));
 		pi(i), A(n);
 		var a = R(n), o = R(I(a)), s = I(o);
 		s.value = s.__value = "", qr(R(s), 1, () => H(r), Ur, (e, t) => {
-			var n = Ja(), r = L(n, !0), i = {};
+			var n = oo(), r = L(n, !0), i = {};
 			z(() => {
 				J(r, H(t)), i !== (i = H(t)) && (n.value = (n.__value = i) ?? "");
 			}), q(e, n);
@@ -4046,38 +4430,38 @@ function co(e, t) {
 		c() || e(_e);
 	});
 	var ve = R(ge, 2), O = (e) => {
-		var t = Xa(), n = I(t), r = L(n, !0), i = L(R(n), !0);
+		var t = co(), n = I(t), r = L(n, !0), i = L(R(n), !0);
 		A(t), z(() => {
 			J(r, (W(c()), W(a()), U(() => c() ? "Keep your favorites close" : a()?.services.length ? "No matching services" : "Your directory starts here"))), J(i, (W(c()), W(a()), W(s()), U(() => c() ? "Pin services from the directory to show them on Home." : a()?.services.length ? "Try another search or category." : s() ? "Add a service below to make it available to signed-in accounts." : "An owner can add reviewed service links.")));
 		}), q(e, t);
 	}, ye = (e) => {
-		var t = ro();
+		var t = go();
 		qr(t, 5, () => H(i), (e) => e.id, (e, t) => {
 			let r = /* @__PURE__ */ M(() => (W(a()), H(t), U(() => a()?.pins.includes(H(t).id) ?? !1))), i = /* @__PURE__ */ M(() => (W(a()), H(t), U(() => a()?.pins.indexOf(H(t).id) ?? -1)));
-			var o = no(), l = I(o), u = L(l, !0), d = R(l), f = I(d), p = I(f, !0);
+			var o = ho(), l = I(o), u = L(l, !0), d = R(l), f = I(d), p = I(f, !0);
 			Se(3), A(f), A(d);
 			var m = R(d, 2), h = (e) => {
-				var n = Za(), r = L(n, !0);
+				var n = lo(), r = L(n, !0);
 				z(() => J(r, (H(t), U(() => H(t).description)))), q(e, n);
 			};
 			Y(m, (e) => {
 				H(t), U(() => H(t).description) && e(h);
 			});
 			var g = R(m, 2), _ = L(g, !0), v = R(g, 2), y = I(v), b = L(y, !0), x = R(y, 2), S = (e) => {
-				var r = Qa(), o = ln(r), s = R(o);
+				var r = uo(), o = ln(r), s = R(o);
 				z(() => {
 					X(o, "aria-label", (H(t), U(() => `Move ${H(t).name} up`))), o.disabled = H(n) || H(i) === 0, X(s, "aria-label", (H(t), U(() => `Move ${H(t).name} down`))), s.disabled = (H(n), W(H(i)), W(a()), U(() => H(n) || H(i) === (a()?.pins.length ?? 0) - 1));
-				}), G("click", o, () => re(H(t).id, -1)), G("click", s, () => re(H(t).id, 1)), q(e, r);
+				}), G("click", o, () => T(H(t).id, -1)), G("click", s, () => T(H(t).id, 1)), q(e, r);
 			};
 			Y(x, (e) => {
 				H(r) && e(S);
 			}), A(v);
-			var w = R(v, 2), T = (e) => {
-				var r = to(), i = ln(r), o = I(i), s = L(o), c = R(o);
+			var w = R(v, 2), ee = (e) => {
+				var r = mo(), i = ln(r), o = I(i), s = L(o), c = R(o);
 				A(i);
 				var l = R(i, 2), u = (e) => {
-					var r = eo(), i = I(r), o = L(i), s = R(i), c = (e) => {
-						q(e, $a());
+					var r = po(), i = I(r), o = L(i), s = R(i), c = (e) => {
+						q(e, fo());
 					};
 					Y(s, (e) => {
 						H(C), W(a()), U(() => H(C).base !== a()?.revision) && e(c);
@@ -4085,36 +4469,36 @@ function co(e, t) {
 					var l = R(s), u = I(l), d = R(u);
 					A(l), A(r), z(() => {
 						J(o, `Remove ${H(C), U(() => H(C).name) ?? ""} from the directory and everyone’s pins?`), u.disabled = (H(n), H(C), W(a()), U(() => H(n) || H(C).base !== a()?.revision));
-					}), G("click", u, () => void D(H(t).id)), G("click", d, () => F(C, void 0)), q(e, r);
+					}), G("click", u, () => void ae(H(t).id)), G("click", d, () => F(C, void 0)), q(e, r);
 				};
 				Y(l, (e) => {
 					H(C), H(t), U(() => H(C)?.id === H(t).id) && e(u);
 				}), z(() => {
 					o.disabled = H(n), J(s, `Edit ${H(t), U(() => H(t).name) ?? ""}`), c.disabled = H(n);
-				}), G("click", o, () => ee(H(t))), G("click", c, () => F(C, a() ? {
+				}), G("click", o, () => ne(H(t))), G("click", c, () => F(C, a() ? {
 					id: H(t).id,
 					base: a().revision,
 					name: H(t).name
 				} : void 0)), q(e, r);
 			};
 			Y(w, (e) => {
-				s() && !c() && e(T);
+				s() && !c() && e(ee);
 			}), A(o), z(() => {
 				X(o, "data-service-id", (H(t), U(() => H(t).id))), J(u, (H(t), U(() => H(t).category))), X(f, "href", (H(t), U(() => H(t).url))), J(p, (H(t), U(() => H(t).name))), J(_, (H(t), U(() => H(t).url))), X(y, "aria-pressed", H(r)), X(y, "aria-label", (W(H(r)), H(t), U(() => `${H(r) ? "Unpin" : "Pin"} ${H(t).name}`))), y.disabled = (H(n), W(H(r)), W(a()), U(() => H(n) || !H(r) && (a()?.pins.length ?? 0) >= 24)), J(b, H(r) ? "Pinned" : "Pin to Home");
-			}), G("click", y, () => ne(H(t).id)), q(e, o);
+			}), G("click", y, () => ie(H(t).id)), q(e, o);
 		}), A(t), q(e, t);
 	};
 	Y(ve, (e) => {
 		H(i), U(() => H(i).length === 0) ? e(O) : e(ye, -1);
 	});
 	var k = R(ve, 2), be = (e) => {
-		q(e, io());
+		q(e, _o());
 	};
 	Y(k, (e) => {
 		c() || e(be);
 	});
 	var xe = R(k, 2), Ce = (e) => {
-		var t = oo(), r = I(t), i = L(r, !0), o = R(r, 3), s = R(I(o));
+		var t = yo(), r = I(t), i = L(r, !0), o = R(r, 3), s = R(I(o));
 		pi(s);
 		var u = R(s, 3);
 		pi(u);
@@ -4123,29 +4507,29 @@ function co(e, t) {
 		var f = R(d, 3);
 		nt(f);
 		var p = R(f, 2), m = (e) => {
-			var t = ao(), r = R(I(t));
+			var t = vo(), r = R(I(t));
 			A(t), z(() => r.disabled = H(n)), G("click", r, () => F(S, a()?.revision)), q(e, t);
 		};
 		Y(p, (e) => {
 			H(S), W(a()), U(() => H(S) !== void 0 && a() && H(S) !== a().revision) && e(m);
 		});
-		var h = R(p, 2), g = I(h), C = L(g, !0), w = R(g), T = L(w, !0);
+		var h = R(p, 2), g = I(h), C = L(g, !0), w = R(g), ee = L(w, !0);
 		A(h), A(o), A(t), z(() => {
-			X(t, "hidden", c()), J(i, H(x) ? "Edit service" : "Add a service"), s.disabled = H(n), u.disabled = H(n), d.disabled = H(n), f.disabled = H(n), g.disabled = (H(n), H(S), W(a()), U(() => H(n) || H(S) !== a()?.revision)), J(C, l() === "saving" ? "Saving…" : H(x) ? "Save service" : "Add service"), w.disabled = H(n), J(T, H(x) ? "Cancel edit" : "Clear form");
+			X(t, "hidden", c()), J(i, H(x) ? "Edit service" : "Add a service"), s.disabled = H(n), u.disabled = H(n), d.disabled = H(n), f.disabled = H(n), g.disabled = (H(n), H(S), W(a()), U(() => H(n) || H(S) !== a()?.revision)), J(C, l() === "saving" ? "Saving…" : H(x) ? "Save service" : "Add service"), w.disabled = H(n), J(ee, H(x) ? "Cancel edit" : "Clear form");
 		}), Cr("submit", o, (e) => {
-			e.preventDefault(), te();
-		}), yi(s, () => H(_), (e) => F(_, e)), yi(u, () => H(b), (e) => F(b, e)), yi(d, () => H(y), (e) => F(y, e)), yi(f, () => H(v), (e) => F(v, e)), G("click", w, E), q(e, t);
+			e.preventDefault(), re();
+		}), yi(s, () => H(_), (e) => F(_, e)), yi(u, () => H(b), (e) => F(b, e)), yi(d, () => H(y), (e) => F(y, e)), yi(f, () => H(v), (e) => F(v, e)), G("click", w, te), q(e, t);
 	};
 	Y(xe, (e) => {
 		s() && o() && e(Ce);
 	}), z(() => {
-		J(ce, c() ? "YOUR SHORTCUTS" : "A PLACE FOR YOUR SERVICES"), J(le, c() ? "Pinned services" : "Service directory"), J(pe, u());
-	}), q(e, ie), Ge();
+		J(le, c() ? "YOUR SHORTCUTS" : "A PLACE FOR YOUR SERVICES"), J(D, c() ? "Pinned services" : "Service directory"), J(pe, u());
+	}), q(e, E), Ge();
 }
 wr(["click"]);
 // src/Activity.svelte
-var lo = /* @__PURE__ */ K("<p class=\"activity-empty\">No matching activity in this window. Try another action name or check the newest entries.</p>"), uo = /* @__PURE__ */ K("<li><div><strong> </strong><p> </p></div><time> </time></li>"), fo = /* @__PURE__ */ K("<!> <ol class=\"activity-list\"></ol> <div class=\"button-row\"><button class=\"button secondary\">Check newest activity</button><button class=\"button secondary\">Older activity</button></div> <p class=\"field-help\">Up to 25 entries per page. New changes appear when you check newest; older pages stay within the current history window. Search matches action names, not note or credential contents.</p>", 1), po = /* @__PURE__ */ K("<button class=\"button secondary\">Retry activity</button>"), mo = /* @__PURE__ */ K("<button class=\"button secondary\">Check activity</button>"), ho = /* @__PURE__ */ K("<section class=\"card activity-card\" aria-label=\"Your retained activity\"><h2>Your activity</h2> <p>Successful changes made by your account, retained from the introduction of Activity. Connection entries describe enrollment changes, not game actions or provider uptime.</p> <form class=\"activity-search\"><div><label for=\"activity-query\">Search action names</label><input id=\"activity-query\" maxlength=\"80\" placeholder=\"For example, saved or Crafty\"/></div> <div><label for=\"activity-category\">Activity category</label><select id=\"activity-category\"><option>All activity</option><option>Workspace notes</option><option>Services and pins</option><option>Connection enrollment</option></select></div> <button type=\"submit\" class=\"button primary\">Search activity</button></form> <p class=\"workspace-status\" role=\"status\"> </p> <!></section>");
-function go(e, t) {
+var So = /* @__PURE__ */ K("<p class=\"activity-empty\">No matching activity in this window. Try another action name or check the newest entries.</p>"), Co = /* @__PURE__ */ K("<li><div><strong> </strong><p> </p></div><time> </time></li>"), wo = /* @__PURE__ */ K("<!> <ol class=\"activity-list\"></ol> <div class=\"button-row\"><button class=\"button secondary\">Check newest activity</button><button class=\"button secondary\">Older activity</button></div> <p class=\"field-help\">Up to 25 entries per page. New changes appear when you check newest; older pages stay within the current history window. Search matches action names, not note or credential contents.</p>", 1), To = /* @__PURE__ */ K("<button class=\"button secondary\">Retry activity</button>"), Eo = /* @__PURE__ */ K("<button class=\"button secondary\">Check activity</button>"), Do = /* @__PURE__ */ K("<section class=\"card activity-card\" aria-label=\"Your retained activity\"><h2>Your activity</h2> <p>Successful changes made by your account, retained from the introduction of Activity. Connection entries describe enrollment changes, not game actions or provider uptime.</p> <form class=\"activity-search\"><div><label for=\"activity-query\">Search action names</label><input id=\"activity-query\" maxlength=\"80\" placeholder=\"For example, saved or Crafty\"/></div> <div><label for=\"activity-category\">Activity category</label><select id=\"activity-category\"><option>All activity</option><option>Workspace notes</option><option>Services and pins</option><option>Connection enrollment</option></select></div> <button type=\"submit\" class=\"button primary\">Search activity</button></form> <p class=\"workspace-status\" role=\"status\"> </p> <!></section>");
+function Oo(e, t) {
 	We(t, !1);
 	let n = Z(t, "state", 8), r = Z(t, "authorized", 8, !1), i = Z(t, "load", 8), a = /* @__PURE__ */ P(""), o = /* @__PURE__ */ P("all"), s = /* @__PURE__ */ P(), c = (e) => (/* @__PURE__ */ new Date(Number(e) * 1e3)).toLocaleString();
 	En(() => W(r()), () => {
@@ -4153,7 +4537,7 @@ function go(e, t) {
 	}), En(() => (W(n()), H(s)), () => {
 		n() !== H(s) && n().phase === "loading" && (F(s, n()), F(a, n().query), F(o, n().category));
 	}), Dn(), Ti();
-	var l = ho(), u = R(I(l), 4), d = I(u), f = R(I(d));
+	var l = Do(), u = R(I(l), 4), d = I(u), f = R(I(d));
 	pi(f), A(d);
 	var p = R(d, 2), m = R(I(p)), h = I(m);
 	h.value = h.__value = "all";
@@ -4166,15 +4550,15 @@ function go(e, t) {
 	var y = R(p, 2);
 	A(u);
 	var b = R(u, 2), x = L(b, !0), S = R(b, 2), C = (e) => {
-		var t = fo(), r = ln(t), a = (e) => {
-			q(e, lo());
+		var t = wo(), r = ln(t), a = (e) => {
+			q(e, So());
 		};
 		Y(r, (e) => {
 			W(n()), U(() => n().entries.length === 0) && e(a);
 		});
 		var o = R(r, 2);
 		qr(o, 5, () => (W(n()), U(() => n().entries)), (e) => e.id, (e, t) => {
-			var n = uo(), r = I(n), i = I(r), a = L(i, !0), o = L(R(i));
+			var n = Co(), r = I(n), i = I(r), a = L(i, !0), o = L(R(i));
 			A(r);
 			var s = R(r), l = L(s, !0);
 			A(n), z((e, r) => {
@@ -4184,14 +4568,14 @@ function go(e, t) {
 		var s = R(o, 2), l = I(s), u = R(l);
 		A(s), Se(2), z(() => u.disabled = (W(n()), U(() => !n().next))), G("click", l, () => void i()(n().category, n().query)), G("click", u, () => void i()(n().category, n().query, !0)), q(e, t);
 	}, w = (e) => {
-		var t = po();
+		var t = To();
 		G("click", t, () => void i()(n().category, n().query)), q(e, t);
-	}, T = (e) => {
-		var t = mo();
+	}, ee = (e) => {
+		var t = Eo();
 		z(() => t.disabled = !r()), G("click", t, () => void i()(H(o), H(a))), q(e, t);
 	};
 	Y(S, (e) => {
-		W(n()), U(() => n().phase === "ready") ? e(C) : (W(n()), U(() => n().phase === "error") ? e(w, 1) : (W(n()), U(() => n().phase === "idle") && e(T, 2)));
+		W(n()), U(() => n().phase === "ready") ? e(C) : (W(n()), U(() => n().phase === "error") ? e(w, 1) : (W(n()), U(() => n().phase === "idle") && e(ee, 2)));
 	}), A(l), z(() => {
 		f.disabled = !r(), m.disabled = !r(), y.disabled = !r(), J(x, (W(n()), U(() => n().message)));
 	}), Cr("submit", u, (e) => {
@@ -4200,8 +4584,8 @@ function go(e, t) {
 }
 wr(["click"]);
 // src/Notifications.svelte
-var _o = /* @__PURE__ */ K("<div class=\"notice\"><h3>Check your read markers</h3><p>The change may have completed. Check notifications before marking another group read.</p></div>"), vo = /* @__PURE__ */ K("<p class=\"notification-empty\"> </p>"), yo = /* @__PURE__ */ K("<li><div><h3> </h3><p class=\"notification-count\"> </p><p> </p><p class=\"field-help\"><time> </time></p></div> <button class=\"button secondary mark-notification-read\"> </button></li>"), bo = /* @__PURE__ */ K("<div class=\"notification-card card\"><div class=\"notification-heading\"><div><p class=\"eyebrow\">AT YOUR PACE</p><h2>Your notifications</h2></div><button class=\"button secondary check-notifications\">Check notifications</button></div> <p>Shared service and connection changes from other accounts, grouped together. Opening this inbox leaves them unread.</p> <label class=\"notification-filter\"><input id=\"notification-show-read\" type=\"checkbox\"/> Show read groups</label> <p class=\"notification-status\" role=\"status\"> </p> <!> <!> <ul class=\"notification-list\"></ul></div>");
-function xo(e, t) {
+var ko = /* @__PURE__ */ K("<div class=\"notice\"><h3>Check your read markers</h3><p>The change may have completed. Check notifications before marking another group read.</p></div>"), Ao = /* @__PURE__ */ K("<p class=\"notification-empty\"> </p>"), jo = /* @__PURE__ */ K("<li><div><h3> </h3><p class=\"notification-count\"> </p><p> </p><p class=\"field-help\"><time> </time></p></div> <button class=\"button secondary mark-notification-read\"> </button></li>"), Mo = /* @__PURE__ */ K("<div class=\"notification-card card\"><div class=\"notification-heading\"><div><p class=\"eyebrow\">AT YOUR PACE</p><h2>Your notifications</h2></div><button class=\"button secondary check-notifications\">Check notifications</button></div> <p>Shared service and connection changes from other accounts, grouped together. Opening this inbox leaves them unread.</p> <label class=\"notification-filter\"><input id=\"notification-show-read\" type=\"checkbox\"/> Show read groups</label> <p class=\"notification-status\" role=\"status\"> </p> <!> <!> <ul class=\"notification-list\"></ul></div>");
+function No(e, t) {
 	We(t, !1);
 	let n = /* @__PURE__ */ P(), r = Z(t, "value", 8), i = Z(t, "authorized", 8), a = Z(t, "state", 8), o = Z(t, "message", 8), s = Z(t, "check", 8), c = Z(t, "mark", 8), l = /* @__PURE__ */ P(!1), u = (e) => (/* @__PURE__ */ new Date(Number(e) * 1e3)).toLocaleString();
 	En(() => W(i()), () => {
@@ -4209,18 +4593,18 @@ function xo(e, t) {
 	}), En(() => (W(i()), W(r()), H(l)), () => {
 		F(n, i() ? (r()?.groups ?? []).filter((e) => H(l) || e.unread !== "0") : []);
 	}), Dn(), Ti();
-	var d = bo(), f = I(d), p = R(I(f));
+	var d = Mo(), f = I(d), p = R(I(f));
 	A(f);
 	var m = R(f, 4), h = I(m);
 	pi(h), Se(), A(m);
 	var g = R(m, 2), _ = L(g, !0), v = R(g, 2), y = (e) => {
-		q(e, _o());
+		q(e, ko());
 	};
 	Y(v, (e) => {
 		a() === "uncertain" && e(y);
 	});
 	var b = R(v, 2), x = (e) => {
-		var t = vo(), n = L(t, !0);
+		var t = Ao(), n = L(t, !0);
 		z(() => J(n, H(l) ? "No shared changes to show yet." : "You’re all caught up.")), q(e, t);
 	};
 	Y(b, (e) => {
@@ -4228,7 +4612,7 @@ function xo(e, t) {
 	});
 	var S = R(b, 2);
 	qr(S, 5, () => H(n), (e) => e.category, (e, t) => {
-		var n = yo(), r = I(n), o = I(r), s = L(o, !0), l = R(o), d = L(l, !0), f = R(l), p = L(f, !0), m = R(f), h = I(m), g = L(h, !0);
+		var n = jo(), r = I(n), o = I(r), s = L(o, !0), l = R(o), d = L(l, !0), f = R(l), p = L(f, !0), m = R(f), h = I(m), g = L(h, !0);
 		A(m), A(r);
 		var _ = R(r, 2), v = L(_);
 		A(n), z((e, r) => {
@@ -4240,69 +4624,81 @@ function xo(e, t) {
 }
 wr(["click"]);
 // src/Guide.svelte
-var So = /* @__PURE__ */ K("<li> </li>"), Co = /* @__PURE__ */ K("<button class=\"button secondary\">Open Connections</button>"), wo = /* @__PURE__ */ K("<button class=\"button secondary\">Open Media</button>"), To = /* @__PURE__ */ K("<p class=\"field-help\">Media enrollment and observations require owner access.</p>"), Eo = /* @__PURE__ */ K("<p class=\"field-help\">Setup will be available when this integration is implemented and qualified.</p>"), Do = /* @__PURE__ */ K("<article class=\"card integration-card\"><div class=\"guide-card-heading\"><h2> </h2><span class=\"integration-status\"> </span></div> <p> </p> <h3>What it offers</h3><ul></ul> <h3>Setup requirements</h3><ul></ul> <!></article>"), Oo = /* @__PURE__ */ K("<section class=\"card guide-intro\"><p class=\"eyebrow\">OPTIONAL CONNECTIONS</p><h2>Integration catalog</h2><p>Come back here to see what is available and what is planned. Each connection needs deliberate setup and its own access permissions.</p><p class=\"field-help\">Available means the Reborn feature exists. Connections shows Crafty enrollment. Media provides owner-only Jellyfin and Seerr observations; credentials and real provider acceptance are separate.</p></section> <div class=\"catalog-list\"></div>", 1), ko = /* @__PURE__ */ K("<h4>Recorded progress</h4><ul></ul>", 1), Ao = /* @__PURE__ */ K("<section><div class=\"guide-card-heading\"><h3> </h3><span class=\"quiet-label\"> </span></div> <!> <h4>Work still ahead</h4><ul></ul></section>"), jo = /* @__PURE__ */ K("<article class=\"card roadmap-note\" aria-label=\"Project roadmap note\"><p class=\"eyebrow\">A NOTE FOR THE ROAD AHEAD</p><h2>Keida Reborn roadmap</h2> <p> </p> <p class=\"field-help\">Work-list snapshot dated <time> </time>. This note ships with the site; it does not update itself from GitHub. Your private workspace note is separate.</p> <h3>Next priorities</h3><ol class=\"roadmap-priorities\"></ol> <div class=\"roadmap-milestones\"></div> <p><a rel=\"noreferrer\">Open the current roadmap and acceptance tracker <span aria-hidden=\"true\">↗</span></a></p></article>"), Mo = /* @__PURE__ */ K("<section class=\"card guide-intro\"><h2> </h2><p>The guide is available after your account access is checked.</p><button class=\"button secondary\"> </button></section>"), No = /* @__PURE__ */ K("<div class=\"guide-card\"><p class=\"workspace-status\" role=\"status\"> </p> <!></div>");
-function Po(e, t) {
+var Po = /* @__PURE__ */ K("<li> </li>"), Fo = /* @__PURE__ */ K("<button class=\"button secondary\">Open Connections</button>"), Io = /* @__PURE__ */ K("<button class=\"button secondary\">Open Media</button>"), Lo = /* @__PURE__ */ K("<p class=\"field-help\">Media enrollment and observations require owner access.</p>"), Ro = /* @__PURE__ */ K("<button class=\"button secondary\">Open Queues</button>"), zo = /* @__PURE__ */ K("<p class=\"field-help\">Queue enrollment and observations require owner access.</p>"), Bo = /* @__PURE__ */ K("<p class=\"field-help\">Setup will be available when this integration is implemented and qualified.</p>"), Vo = /* @__PURE__ */ K("<article class=\"card integration-card\"><div class=\"guide-card-heading\"><h2> </h2><span class=\"integration-status\"> </span></div> <p> </p> <h3>What it offers</h3><ul></ul> <h3>Setup requirements</h3><ul></ul> <!></article>"), Ho = /* @__PURE__ */ K("<section class=\"card guide-intro\"><p class=\"eyebrow\">OPTIONAL CONNECTIONS</p><h2>Integration catalog</h2><p>Come back here to see what is available and what is planned. Each connection needs deliberate setup and its own access permissions.</p><p class=\"field-help\">Available means the Reborn feature exists. Connections shows Crafty enrollment. Media provides Jellyfin and Seerr observations; Queues provides Sonarr, Radarr and qBittorrent observations. Both are owner-only; credentials and real provider acceptance are separate.</p></section> <div class=\"catalog-list\"></div>", 1), Uo = /* @__PURE__ */ K("<h4>Recorded progress</h4><ul></ul>", 1), Wo = /* @__PURE__ */ K("<section><div class=\"guide-card-heading\"><h3> </h3><span class=\"quiet-label\"> </span></div> <!> <h4>Work still ahead</h4><ul></ul></section>"), Go = /* @__PURE__ */ K("<article class=\"card roadmap-note\" aria-label=\"Project roadmap note\"><p class=\"eyebrow\">A NOTE FOR THE ROAD AHEAD</p><h2>Keida Reborn roadmap</h2> <p> </p> <p class=\"field-help\">Work-list snapshot dated <time> </time>. This note ships with the site; it does not update itself from GitHub. Your private workspace note is separate.</p> <h3>Next priorities</h3><ol class=\"roadmap-priorities\"></ol> <div class=\"roadmap-milestones\"></div> <p><a rel=\"noreferrer\">Open the current roadmap and acceptance tracker <span aria-hidden=\"true\">↗</span></a></p></article>"), Ko = /* @__PURE__ */ K("<section class=\"card guide-intro\"><h2> </h2><p>The guide is available after your account access is checked.</p><button class=\"button secondary\"> </button></section>"), qo = /* @__PURE__ */ K("<div class=\"guide-card\"><p class=\"workspace-status\" role=\"status\"> </p> <!></div>");
+function Jo(e, t) {
 	We(t, !1);
-	let n = Z(t, "mode", 8, "catalog"), r = Z(t, "state", 8), i = Z(t, "authorized", 8, !1), a = Z(t, "retry", 8), o = Z(t, "connections", 8), s = Z(t, "media", 8), c = Z(t, "owner", 8, !1);
+	let n = Z(t, "mode", 8, "catalog"), r = Z(t, "state", 8), i = Z(t, "authorized", 8, !1), a = Z(t, "retry", 8), o = Z(t, "connections", 8), s = Z(t, "media", 8), c = Z(t, "queues", 8), l = Z(t, "owner", 8, !1);
 	Ti();
-	var l = No(), u = I(l), d = L(u, !0), f = R(u, 2), p = (e) => {
+	var u = qo(), d = I(u), f = L(d, !0), p = R(d, 2), m = (e) => {
 		var t = Nr(), i = ln(t), a = (e) => {
-			var t = Oo(), n = R(ln(t), 2);
+			var t = Ho(), n = R(ln(t), 2);
 			qr(n, 5, () => (W(r()), U(() => r().value.catalog)), (e) => e.id, (e, t) => {
-				var n = Do(), r = I(n), i = I(r), a = L(i, !0), l = R(i), u = L(l, !0);
+				var n = Vo(), r = I(n), i = I(r), a = L(i, !0), u = R(i), d = L(u, !0);
 				A(r);
-				var d = R(r, 2), f = L(d, !0), p = R(d, 3);
-				qr(p, 5, () => (H(t), U(() => H(t).capabilities)), Ur, (e, t) => {
-					var n = So(), r = L(n, !0);
-					z(() => J(r, H(t))), q(e, n);
-				}), A(p);
-				var m = R(p, 3);
-				qr(m, 5, () => (H(t), U(() => H(t).requirements)), Ur, (e, t) => {
-					var n = So(), r = L(n, !0);
+				var f = R(r, 2), p = L(f, !0), m = R(f, 3);
+				qr(m, 5, () => (H(t), U(() => H(t).capabilities)), Ur, (e, t) => {
+					var n = Po(), r = L(n, !0);
 					z(() => J(r, H(t))), q(e, n);
 				}), A(m);
-				var h = R(m, 2), g = (e) => {
+				var h = R(m, 3);
+				qr(h, 5, () => (H(t), U(() => H(t).requirements)), Ur, (e, t) => {
+					var n = Po(), r = L(n, !0);
+					z(() => J(r, H(t))), q(e, n);
+				}), A(h);
+				var g = R(h, 2), _ = (e) => {
 					var n = Nr(), r = ln(n), i = (e) => {
-						var t = Co();
+						var t = Fo();
 						G("click", t, function(...e) {
 							o()?.apply(this, e);
 						}), q(e, t);
 					}, a = (e) => {
-						var t = wo();
-						G("click", t, function(...e) {
-							s()?.apply(this, e);
+						var t = Nr(), n = ln(t), r = (e) => {
+							var t = Io();
+							G("click", t, function(...e) {
+								s()?.apply(this, e);
+							}), q(e, t);
+						}, i = (e) => {
+							q(e, Lo());
+						};
+						Y(n, (e) => {
+							l() ? e(r) : e(i, -1);
 						}), q(e, t);
-					}, l = (e) => {
-						q(e, To());
+					}, u = (e) => {
+						var t = Ro();
+						G("click", t, function(...e) {
+							c()?.apply(this, e);
+						}), q(e, t);
+					}, d = (e) => {
+						q(e, zo());
 					};
 					Y(r, (e) => {
-						H(t), U(() => H(t).id === "crafty") ? e(i) : c() ? e(a, 1) : e(l, -1);
+						H(t), U(() => H(t).id === "crafty") ? e(i) : (H(t), U(() => H(t).id === "jellyfin" || H(t).id === "seerr") ? e(a, 1) : l() ? e(u, 2) : e(d, -1));
 					}), q(e, n);
-				}, _ = (e) => {
-					q(e, Eo());
+				}, v = (e) => {
+					q(e, Bo());
 				};
-				Y(h, (e) => {
-					H(t), U(() => H(t).status === "available") ? e(g) : e(_, -1);
+				Y(g, (e) => {
+					H(t), U(() => H(t).status === "available") ? e(_) : e(v, -1);
 				}), A(n), z(() => {
-					X(n, "data-integration-id", (H(t), U(() => H(t).id))), J(a, (H(t), U(() => H(t).name))), X(l, "data-status", (H(t), U(() => H(t).status))), J(u, (H(t), U(() => H(t).status === "available" ? "Available" : "Planned"))), J(f, (H(t), U(() => H(t).summary)));
+					X(n, "data-integration-id", (H(t), U(() => H(t).id))), J(a, (H(t), U(() => H(t).name))), X(u, "data-status", (H(t), U(() => H(t).status))), J(d, (H(t), U(() => H(t).status === "available" ? "Available" : "Planned"))), J(p, (H(t), U(() => H(t).summary)));
 				}), q(e, n);
 			}), A(n), q(e, t);
-		}, l = (e) => {
-			var t = jo(), n = R(I(t), 3), i = L(n, !0), a = R(n, 2), o = R(I(a)), s = L(o, !0);
+		}, u = (e) => {
+			var t = Go(), n = R(I(t), 3), i = L(n, !0), a = R(n, 2), o = R(I(a)), s = L(o, !0);
 			Se(), A(a);
 			var c = R(a, 3);
 			qr(c, 5, () => (W(r()), U(() => r().value.roadmap.priorities)), Ur, (e, t) => {
-				var n = So(), r = L(n, !0);
+				var n = Po(), r = L(n, !0);
 				z(() => J(r, H(t))), q(e, n);
 			}), A(c);
 			var l = R(c, 2);
 			qr(l, 5, () => (W(r()), U(() => r().value.roadmap.milestones)), (e) => e.id, (e, t) => {
-				var n = Ao(), r = I(n), i = I(r), a = L(i), o = L(R(i), !0);
+				var n = Wo(), r = I(n), i = I(r), a = L(i), o = L(R(i), !0);
 				A(r);
 				var s = R(r, 2), c = (e) => {
-					var n = ko(), r = R(ln(n));
+					var n = Uo(), r = R(ln(n));
 					qr(r, 5, () => (H(t), U(() => H(t).delivered)), Ur, (e, t) => {
-						var n = So(), r = L(n, !0);
+						var n = Po(), r = L(n, !0);
 						z(() => J(r, H(t))), q(e, n);
 					}), A(r), q(e, n);
 				};
@@ -4311,7 +4707,7 @@ function Po(e, t) {
 				});
 				var l = R(s, 3);
 				qr(l, 5, () => (H(t), U(() => H(t).remaining)), Ur, (e, t) => {
-					var n = So(), r = L(n, !0);
+					var n = Po(), r = L(n, !0);
 					z(() => J(r, H(t))), q(e, n);
 				}), A(l), A(n), z(() => {
 					X(n, "data-milestone-id", (H(t), U(() => H(t).id))), X(n, "aria-label", (H(t), U(() => `${H(t).id}: ${H(t).title}`))), J(a, `${H(t), U(() => H(t).id) ?? ""} · ${H(t), U(() => H(t).title) ?? ""}`), J(o, (H(t), U(() => H(t).status)));
@@ -4323,22 +4719,22 @@ function Po(e, t) {
 			}), q(e, t);
 		};
 		Y(i, (e) => {
-			n() === "catalog" ? e(a) : e(l, -1);
+			n() === "catalog" ? e(a) : e(u, -1);
 		}), q(e, t);
-	}, m = (e) => {
-		var t = Mo(), i = I(t), o = L(i, !0), s = R(i, 2), c = L(s, !0);
+	}, h = (e) => {
+		var t = Ko(), i = I(t), o = L(i, !0), s = R(i, 2), c = L(s, !0);
 		A(t), z(() => {
 			J(o, n() === "roadmap" ? "Roadmap note" : "Integration catalog"), J(c, (W(r()), U(() => r().phase === "error" ? "Retry workspace guide" : "Check workspace guide")));
 		}), G("click", s, () => void a()()), q(e, t);
 	};
-	Y(f, (e) => {
-		W(i()), W(r()), U(() => i() && r().phase === "ready" && r().value) ? e(p) : (W(i()), W(r()), U(() => i() && r().phase !== "loading") && e(m, 1));
-	}), A(l), z(() => J(d, (W(r()), U(() => r().message)))), q(e, l), Ge();
+	Y(p, (e) => {
+		W(i()), W(r()), U(() => i() && r().phase === "ready" && r().value) ? e(m) : (W(i()), W(r()), U(() => i() && r().phase !== "loading") && e(h, 1));
+	}), A(u), z(() => J(f, (W(r()), U(() => r().message)))), q(e, u), Ge();
 }
 wr(["click"]);
 // src/Media.svelte
-var Fo = /* @__PURE__ */ K("<section class=\"card small-card media-owner-only\"><h2>Owner access required</h2><p>An owner can enroll and view media connections. Provider-account sharing has not been configured for members.</p></section>"), Io = /* @__PURE__ */ K("<div class=\"media-playback\" data-media-playback=\"\"><h3>Recent server playback</h3><p> </p><p class=\"field-help\">Across the Jellyfin server, not limited to the selected library: sessions active within 120 seconds with a reported playing item. Counts do not show users, devices or watch titles.</p></div>"), Lo = /* @__PURE__ */ K("<small>Some details unavailable</small>"), Ro = /* @__PURE__ */ K("<tr data-media-item=\"\"><td> <!></td><td> </td><td> </td></tr>"), zo = /* @__PURE__ */ K("<div class=\"media-table-scroll\"><table class=\"media-table\"><caption> </caption><thead><tr><th scope=\"col\">Title</th><th scope=\"col\">Type</th><th scope=\"col\"> </th></tr></thead><tbody></tbody></table></div>"), Bo = /* @__PURE__ */ K("<p class=\"media-empty\"> </p>"), Vo = /* @__PURE__ */ K("<p class=\"field-help\">No usable rows were reported for this sample. This does not establish an empty library or request list.</p>"), Ho = /* @__PURE__ */ K("<p class=\"notice\">More rows exist beyond this bounded view.</p>"), Uo = /* @__PURE__ */ K("<dl class=\"media-sample\"><dt>Collected</dt><dd> </dd><dt>Freshness</dt><dd> </dd><dt>Sample</dt><dd> </dd></dl> <!> <!> <p class=\"field-help\"> </p> <!> <div class=\"button-row media-pagination\"><button class=\"text-button media-previous\"> </button><span class=\"quiet-label\"> </span><button class=\"text-button media-next\"> </button></div>", 1), Wo = /* @__PURE__ */ K("<p class=\"field-help\">Choose one Jellyfin library by its ID. This limits the rows requested here; the underlying API key may still access all libraries and sessions.</p>"), Go = /* @__PURE__ */ K("<label for=\"jellyfin-library\">Jellyfin library ID</label><input id=\"jellyfin-library\" name=\"library-id\" required=\"\" maxlength=\"36\"/><p class=\"field-help\">Use the library’s lowercase 32-digit ID or UUID, without an address or API key.</p>", 1), Ko = /* @__PURE__ */ K("<button class=\"text-button media-remove\"> </button>"), qo = /* @__PURE__ */ K("<section class=\"card media-provider\"><div class=\"guide-card-heading\"><h2> </h2><span class=\"quiet-label\">Owner-only observations</span></div> <p class=\"workspace-status\" role=\"status\" data-media-status=\"\"> </p> <div class=\"button-row media-actions\"><button class=\"button secondary media-check-state\"> </button><button class=\"button secondary media-check-observations\"> </button></div> <!> <details class=\"media-enrollment\"><summary> </summary><p>Use a key created deliberately for Reborn. It is encrypted on the server and will not be shown again.</p><p class=\"notice\"> </p> <!> <form autocomplete=\"off\"><label> </label><input name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\"/> <label>Dedicated API key</label><input name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <!> <label>Private CA certificate, if needed</label><textarea name=\"ca-pem\" rows=\"3\" maxlength=\"8192\"></textarea><p class=\"field-help\">Leave blank for publicly trusted HTTPS. Normal hostname and trust checks always apply.</p> <label class=\"media-ack\"><input name=\"acknowledge\" type=\"checkbox\" required=\"\"/>I understand this key may grant broad access, and I choose owner-only media observations.</label> <button class=\"button primary media-save\" type=\"submit\"> </button></form></details> <!></section>"), Jo = /* @__PURE__ */ K("<div class=\"media-providers\"></div>"), Yo = /* @__PURE__ */ K("<div class=\"media-view\"><section class=\"card media-intro\"><p class=\"eyebrow\">MEDIA, WITH DELIBERATE ACCESS</p><h2>Media observations</h2><p>Check a selected Jellyfin library, counts of recent playback and Seerr request status. These connections send observation requests only.</p><p class=\"field-help\">Media is owner-only. Hub member accounts are not linked to provider accounts, and this view does not share their playback or request identities.</p></section> <!></div>");
-function Xo(e, t) {
+var Yo = /* @__PURE__ */ K("<section class=\"card small-card media-owner-only\"><h2>Owner access required</h2><p>An owner can enroll and view media connections. Provider-account sharing has not been configured for members.</p></section>"), Xo = /* @__PURE__ */ K("<div class=\"media-playback\" data-media-playback=\"\"><h3>Recent server playback</h3><p> </p><p class=\"field-help\">Across the Jellyfin server, not limited to the selected library: sessions active within 120 seconds with a reported playing item. Counts do not show users, devices or watch titles.</p></div>"), Zo = /* @__PURE__ */ K("<small>Some details unavailable</small>"), Qo = /* @__PURE__ */ K("<tr data-media-item=\"\"><td> <!></td><td> </td><td> </td></tr>"), $o = /* @__PURE__ */ K("<div class=\"media-table-scroll\"><table class=\"media-table\"><caption> </caption><thead><tr><th scope=\"col\">Title</th><th scope=\"col\">Type</th><th scope=\"col\"> </th></tr></thead><tbody></tbody></table></div>"), es = /* @__PURE__ */ K("<p class=\"media-empty\"> </p>"), ts = /* @__PURE__ */ K("<p class=\"field-help\">No usable rows were reported for this sample. This does not establish an empty library or request list.</p>"), ns = /* @__PURE__ */ K("<p class=\"notice\">More rows exist beyond this bounded view.</p>"), rs = /* @__PURE__ */ K("<dl class=\"media-sample\"><dt>Collected</dt><dd> </dd><dt>Freshness</dt><dd> </dd><dt>Sample</dt><dd> </dd></dl> <!> <!> <p class=\"field-help\"> </p> <!> <div class=\"button-row media-pagination\"><button class=\"text-button media-previous\"> </button><span class=\"quiet-label\"> </span><button class=\"text-button media-next\"> </button></div>", 1), is = /* @__PURE__ */ K("<p class=\"field-help\">Choose one Jellyfin library by its ID. This limits the rows requested here; the underlying API key may still access all libraries and sessions.</p>"), as = /* @__PURE__ */ K("<label for=\"jellyfin-library\">Jellyfin library ID</label><input id=\"jellyfin-library\" name=\"library-id\" required=\"\" maxlength=\"36\"/><p class=\"field-help\">Use the library’s lowercase 32-digit ID or UUID, without an address or API key.</p>", 1), os = /* @__PURE__ */ K("<button class=\"text-button media-remove\"> </button>"), ss = /* @__PURE__ */ K("<section class=\"card media-provider\"><div class=\"guide-card-heading\"><h2> </h2><span class=\"quiet-label\">Owner-only observations</span></div> <p class=\"workspace-status\" role=\"status\" data-media-status=\"\"> </p> <div class=\"button-row media-actions\"><button class=\"button secondary media-check-state\"> </button><button class=\"button secondary media-check-observations\"> </button></div> <!> <details class=\"media-enrollment\"><summary> </summary><p>Use a key created deliberately for Reborn. It is encrypted on the server and will not be shown again.</p><p class=\"notice\"> </p> <!> <form autocomplete=\"off\"><label> </label><input name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\"/> <label>Dedicated API key</label><input name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <!> <label>Private CA certificate, if needed</label><textarea name=\"ca-pem\" rows=\"3\" maxlength=\"8192\"></textarea><p class=\"field-help\">Leave blank for publicly trusted HTTPS. Normal hostname and trust checks always apply.</p> <label class=\"media-ack\"><input name=\"acknowledge\" type=\"checkbox\" required=\"\"/>I understand this key may grant broad access, and I choose owner-only media observations.</label> <button class=\"button primary media-save\" type=\"submit\"> </button></form></details> <!></section>"), cs = /* @__PURE__ */ K("<div class=\"media-providers\"></div>"), ls = /* @__PURE__ */ K("<div class=\"media-view\"><section class=\"card media-intro\"><p class=\"eyebrow\">MEDIA, WITH DELIBERATE ACCESS</p><h2>Media observations</h2><p>Check a selected Jellyfin library, counts of recent playback and Seerr request status. These connections send observation requests only.</p><p class=\"field-help\">Media is owner-only. Hub member accounts are not linked to provider accounts, and this view does not share their playback or request identities.</p></section> <!></div>");
+function us(e, t) {
 	We(t, !1);
 	let n = Z(t, "owner", 8, !1), r = Z(t, "active", 8, !1), i = Z(t, "state", 8), a = Z(t, "check", 8), o = Z(t, "load", 8), s = Z(t, "save", 8), c = ["jellyfin", "seerr"], l = (e) => e === "jellyfin" ? "Jellyfin" : "Seerr", u = /* @__PURE__ */ P({}), d = (e) => e === null ? "Not collected" : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleString(), f = (e) => r() && n() && i()[e].phase === "ready" && i()[e].save === "idle" && !!i()[e].status;
 	function p() {
@@ -4360,33 +4756,33 @@ function Xo(e, t) {
 	En(() => (W(r()), W(n())), () => {
 		r() && n() || p();
 	}), Dn(), Ti();
-	var h = Yo(), g = R(I(h), 2), _ = (e) => {
-		q(e, Fo());
+	var h = ls(), g = R(I(h), 2), _ = (e) => {
+		q(e, Yo());
 	}, v = (e) => {
-		var t = Jo();
+		var t = cs();
 		qr(t, 5, () => c, (e) => e, (e, t) => {
 			let s = /* @__PURE__ */ M(() => (W(i()), H(t), U(() => i()[H(t)]))), c = /* @__PURE__ */ M(() => (W(H(s)), U(() => H(s).observation))), f = /* @__PURE__ */ M(() => (W(r()), W(H(s)), U(() => !r() || H(s).save === "saving"))), p = /* @__PURE__ */ M(() => (W(r()), W(n()), W(H(s)), U(() => r() && n() && H(s).phase === "ready" && H(s).save === "idle" && !!H(s).status)));
-			var h = qo(), g = I(h), _ = L(I(g), !0);
+			var h = ss(), g = I(h), _ = L(I(g), !0);
 			Se(), A(g);
 			var v = R(g, 2), y = L(v, !0), b = R(v, 2), x = I(b), S = L(x), C = R(x), w = L(C);
 			A(b);
-			var T = R(b, 2), E = (e) => {
-				var n = Uo(), r = ln(n), i = R(I(r)), a = L(i, !0), s = R(i, 2), u = L(s, !0), p = L(R(s, 2), !0);
+			var ee = R(b, 2), te = (e) => {
+				var n = rs(), r = ln(n), i = R(I(r)), a = L(i, !0), s = R(i, 2), u = L(s, !0), p = L(R(s, 2), !0);
 				A(r);
 				var m = R(r, 2), h = (e) => {
-					var t = Io(), n = L(R(I(t)), !0);
+					var t = Xo(), n = L(R(I(t)), !0);
 					Se(), A(t), z(() => J(n, (W(H(c)), U(() => H(c).playback && H(c).playback.playing !== null && H(c).playback.paused !== null ? `${H(c).playback.playing} playing · ${H(c).playback.paused} paused` : "Playback counts unavailable")))), q(e, t);
 				};
 				Y(m, (e) => {
 					H(t) === "jellyfin" && e(h);
 				});
 				var g = R(m, 2), _ = (e) => {
-					var n = zo(), r = I(n), i = I(r), a = L(i, !0), o = R(i), s = I(o), l = L(R(I(s), 2), !0);
+					var n = $o(), r = I(n), i = I(r), a = L(i, !0), o = R(i), s = I(o), l = L(R(I(s), 2), !0);
 					A(s), A(o);
 					var u = R(o);
 					qr(u, 5, () => (W(H(c)), U(() => H(c).items)), (e) => e.id, (e, n) => {
-						var r = Ro(), i = I(r), a = I(i, !0), o = R(a), s = (e) => {
-							q(e, Lo());
+						var r = Qo(), i = I(r), a = I(i, !0), o = R(a), s = (e) => {
+							q(e, Zo());
 						};
 						Y(o, (e) => {
 							H(n), U(() => H(n).detail_error) && e(s);
@@ -4399,43 +4795,43 @@ function Xo(e, t) {
 						J(a, H(t) === "jellyfin" ? "Selected library rows" : "Recent request rows"), J(l, H(t) === "jellyfin" ? "Year" : "Request status"), X(u, "data-media-rows", H(t));
 					}), q(e, n);
 				}, v = (e) => {
-					var n = Bo(), r = L(n, !0);
+					var n = es(), r = L(n, !0);
 					z(() => J(r, H(t) === "jellyfin" ? "No movie or series rows were reported in this library." : "No requests were reported.")), q(e, n);
 				}, y = (e) => {
-					q(e, Vo());
+					q(e, ts());
 				};
 				Y(g, (e) => {
 					W(H(c)), U(() => H(c).items.length) ? e(_) : (W(H(c)), U(() => H(c).complete && H(c).error === null && H(c).total === 0) ? e(v, 1) : (W(H(c)), U(() => H(c).error !== "checking") && e(y, 2)));
 				});
 				var b = R(g, 2), x = L(b), S = R(b, 2), C = (e) => {
-					q(e, Ho());
+					q(e, ns());
 				};
 				Y(S, (e) => {
 					W(H(c)), U(() => H(c).truncated) && e(C);
 				});
-				var w = R(S, 2), T = I(w), E = L(T), ee = R(T), te = L(ee), ne = R(ee), re = L(ne);
+				var w = R(S, 2), ee = I(w), te = L(ee), ne = R(ee), re = L(ne), ie = R(ne), T = L(ie);
 				A(w), z((e, t, n) => {
-					J(a, e), J(u, (W(H(c)), U(() => H(c).freshness === "fresh" ? "Recent collection" : H(c).freshness === "stale" ? "Stale collection" : "Collection age unknown"))), J(p, (W(H(c)), U(() => H(c).complete ? "Complete for these bounded queries" : "Incomplete or still checking"))), J(x, `${W(H(c)), U(() => H(c).total === null ? "Provider total unavailable." : `${H(c).total} rows reported by the provider.`) ?? ""} Up to 12 rows per page and the first 60 rows only. Pages can change as the provider changes.`), T.disabled = (W(H(f)), W(H(c)), U(() => H(f) || H(c).offset === 0)), J(E, `Previous ${t ?? ""} page`), J(te, `Page ${W(H(c)), U(() => H(c).offset / 12 + 1) ?? ""}`), ne.disabled = (W(H(f)), W(H(c)), U(() => H(f) || H(c).next_offset === null)), J(re, `Next ${n ?? ""} page`);
+					J(a, e), J(u, (W(H(c)), U(() => H(c).freshness === "fresh" ? "Recent collection" : H(c).freshness === "stale" ? "Stale collection" : "Collection age unknown"))), J(p, (W(H(c)), U(() => H(c).complete ? "Complete for these bounded queries" : "Incomplete or still checking"))), J(x, `${W(H(c)), U(() => H(c).total === null ? "Provider total unavailable." : `${H(c).total} rows reported by the provider.`) ?? ""} Up to 12 rows per page and the first 60 rows only. Pages can change as the provider changes.`), ee.disabled = (W(H(f)), W(H(c)), U(() => H(f) || H(c).offset === 0)), J(te, `Previous ${t ?? ""} page`), J(re, `Page ${W(H(c)), U(() => H(c).offset / 12 + 1) ?? ""}`), ie.disabled = (W(H(f)), W(H(c)), U(() => H(f) || H(c).next_offset === null)), J(T, `Next ${n ?? ""} page`);
 				}, [
 					() => (W(H(c)), U(() => d(H(c).checked_at))),
 					() => (H(t), U(() => l(H(t)))),
 					() => (H(t), U(() => l(H(t))))
-				]), G("click", T, () => void o()(H(t), H(c).offset - 12)), G("click", ne, () => H(c).next_offset !== null && void o()(H(t), H(c).next_offset)), q(e, n);
-			}, ee = (e) => {
-				var n = Bo(), r = L(n);
+				]), G("click", ee, () => void o()(H(t), H(c).offset - 12)), G("click", ie, () => H(c).next_offset !== null && void o()(H(t), H(c).next_offset)), q(e, n);
+			}, ne = (e) => {
+				var n = es(), r = L(n);
 				z((e) => J(r, `No ${e ?? ""} connection enrolled.`), [() => (H(t), U(() => l(H(t))))]), q(e, n);
 			};
-			Y(T, (e) => {
-				W(H(c)), U(() => H(c)?.configured) ? e(E) : (W(H(s)), U(() => H(s).status && !H(s).status.configured) && e(ee, 1));
+			Y(ee, (e) => {
+				W(H(c)), U(() => H(c)?.configured) ? e(te) : (W(H(s)), U(() => H(s).status && !H(s).status.configured) && e(ne, 1));
 			});
-			var te = R(T, 2), ne = I(te), re = L(ne), D = R(ne, 2), ie = L(D), ae = R(D, 2), oe = (e) => {
-				q(e, Wo());
+			var re = R(ee, 2), ie = I(re), T = L(ie), ae = R(ie, 2), E = L(ae), oe = R(ae, 2), se = (e) => {
+				q(e, is());
 			};
-			Y(ae, (e) => {
-				H(t) === "jellyfin" && e(oe);
+			Y(oe, (e) => {
+				H(t) === "jellyfin" && e(se);
 			});
-			var se = R(ae, 2), ce = I(se), le = L(ce), ue = R(ce), de = R(ue, 2), fe = R(de), pe = R(fe, 2), me = (e) => {
-				var t = Go(), n = R(ln(t));
+			var ce = R(oe, 2), le = I(ce), D = L(le), ue = R(le), de = R(ue, 2), fe = R(de), pe = R(fe, 2), me = (e) => {
+				var t = as(), n = R(ln(t));
 				X(n, "pattern", "[a-f0-9]{32}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"), Se(), z(() => n.disabled = !H(p)), q(e, t);
 			};
 			Y(pe, (e) => {
@@ -4444,9 +4840,9 @@ function Xo(e, t) {
 			var he = R(pe, 2), ge = R(he), _e = R(ge, 3), ve = I(_e);
 			Se(), A(_e);
 			var O = R(_e, 2), ye = L(O);
-			A(se), wi(se, (e, t) => Ut(u, H(u)[t] = e), (e) => H(u)?.[e], () => [H(t)]), A(te);
-			var k = R(te, 2), be = (e) => {
-				var n = Ko(), r = L(n);
+			A(ce), wi(ce, (e, t) => Ut(u, H(u)[t] = e), (e) => H(u)?.[e], () => [H(t)]), A(re);
+			var k = R(re, 2), be = (e) => {
+				var n = os(), r = L(n);
 				z((e) => {
 					n.disabled = !H(p), J(r, `Remove ${e ?? ""} connection`);
 				}, [() => (H(t), U(() => l(H(t))))]), G("click", n, () => void m(H(t), !0)), q(e, n);
@@ -4454,7 +4850,7 @@ function Xo(e, t) {
 			Y(k, (e) => {
 				W(H(s)), U(() => H(s).status?.configured) && e(be);
 			}), A(h), z((e, n, r, i, a, o, l, u, d, m) => {
-				X(h, "data-media-provider", H(t)), X(h, "data-media-revision", (W(H(s)), U(() => H(s).status?.revision ?? ""))), X(h, "data-media-configured", e), X(h, "data-media-error", (W(H(c)), U(() => H(c)?.error ?? ""))), X(h, "data-media-complete", n), X(h, "data-media-offset", (W(H(c)), U(() => H(c)?.offset ?? 0))), X(h, "data-media-save", (W(H(s)), U(() => H(s).save))), X(h, "aria-label", r), J(_, i), J(y, (W(H(s)), U(() => H(s).message || "Check the connection state to begin."))), x.disabled = H(f), J(S, `Check ${a ?? ""} connection state`), C.disabled = (W(H(f)), W(H(s)), U(() => H(f) || H(s).phase === "loading" || !H(s).status?.configured)), J(w, `Check ${o ?? ""} observations`), J(re, `Enroll dedicated ${l ?? ""} access`), J(ie, `A ${u ?? ""} API key can grant administrator access. Reborn sends observation requests only; this does not restrict what the key itself can do.`), X(ce, "for", `${H(t)}-endpoint`), J(le, `${d ?? ""} HTTPS address`), X(ue, "id", `${H(t)}-endpoint`), X(ue, "placeholder", `https://${H(t)}.example/`), ue.disabled = !H(p), X(de, "for", `${H(t)}-token`), X(fe, "id", `${H(t)}-token`), fe.disabled = !H(p), X(he, "for", `${H(t)}-ca`), X(ge, "id", `${H(t)}-ca`), ge.disabled = !H(p), X(_e, "for", `${H(t)}-ack`), X(ve, "id", `${H(t)}-ack`), ve.disabled = !H(p), O.disabled = !H(p), J(ye, `Save ${m ?? ""} connection`);
+				X(h, "data-media-provider", H(t)), X(h, "data-media-revision", (W(H(s)), U(() => H(s).status?.revision ?? ""))), X(h, "data-media-configured", e), X(h, "data-media-error", (W(H(c)), U(() => H(c)?.error ?? ""))), X(h, "data-media-complete", n), X(h, "data-media-offset", (W(H(c)), U(() => H(c)?.offset ?? 0))), X(h, "data-media-save", (W(H(s)), U(() => H(s).save))), X(h, "aria-label", r), J(_, i), J(y, (W(H(s)), U(() => H(s).message || "Check the connection state to begin."))), x.disabled = H(f), J(S, `Check ${a ?? ""} connection state`), C.disabled = (W(H(f)), W(H(s)), U(() => H(f) || H(s).phase === "loading" || !H(s).status?.configured)), J(w, `Check ${o ?? ""} observations`), J(T, `Enroll dedicated ${l ?? ""} access`), J(E, `A ${u ?? ""} API key can grant administrator access. Reborn sends observation requests only; this does not restrict what the key itself can do.`), X(le, "for", `${H(t)}-endpoint`), J(D, `${d ?? ""} HTTPS address`), X(ue, "id", `${H(t)}-endpoint`), X(ue, "placeholder", `https://${H(t)}.example/`), ue.disabled = !H(p), X(de, "for", `${H(t)}-token`), X(fe, "id", `${H(t)}-token`), fe.disabled = !H(p), X(he, "for", `${H(t)}-ca`), X(ge, "id", `${H(t)}-ca`), ge.disabled = !H(p), X(_e, "for", `${H(t)}-ack`), X(ve, "id", `${H(t)}-ack`), ve.disabled = !H(p), O.disabled = !H(p), J(ye, `Save ${m ?? ""} connection`);
 			}, [
 				() => (W(H(s)), U(() => String(H(s).status?.configured ?? !1))),
 				() => (W(H(c)), U(() => String(H(c)?.complete ?? !1))),
@@ -4466,7 +4862,7 @@ function Xo(e, t) {
 				() => (H(t), U(() => l(H(t)))),
 				() => (H(t), U(() => l(H(t)))),
 				() => (H(t), U(() => l(H(t))))
-			]), G("click", x, () => void a()(H(t))), G("click", C, () => void o()(H(t), H(c)?.offset ?? 0)), Cr("submit", se, (e) => {
+			]), G("click", x, () => void a()(H(t))), G("click", C, () => void o()(H(t), H(c)?.offset ?? 0)), Cr("submit", ce, (e) => {
 				e.preventDefault(), m(H(t));
 			}), q(e, h);
 		}), A(t), q(e, t);
@@ -4476,15 +4872,189 @@ function Xo(e, t) {
 	}), A(h), q(e, h), Ge();
 }
 wr(["click"]);
-// src/App.svelte
-var Zo = /* @__PURE__ */ K("<span class=\"notification-badge\"> </span>"), Qo = /* @__PURE__ */ K("<a rel=\"noreferrer\"> </a>"), $o = /* @__PURE__ */ K("<section class=\"recovery card\"><p class=\"eyebrow\">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class=\"button-row\"><a class=\"button primary\" href=\"/workspace\">Open workspace again</a><a class=\"button secondary\" href=\"/account\">Your account</a></div></section>"), es = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">▤</span><h2>Your workspace note</h2><p> </p><button class=\"text-button\">Keep writing <span aria-hidden=\"true\">→</span></button>", 1), ts = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">◇</span><h2>Connections</h2><p> </p><button class=\"text-button\">View connections <span aria-hidden=\"true\">→</span></button>", 1), ns = /* @__PURE__ */ K("<section><!></section>"), rs = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Draft recovery\"><h2>A draft is waiting</h2><p>This browser session has an unfinished note for this account. Review it before saving.</p><div class=\"button-row\"><button class=\"button secondary\">Recover draft</button><button class=\"text-button\">Discard draft</button></div></section>"), is = /* @__PURE__ */ K("<p class=\"field-help\">Browser storage is unavailable. Draft recovery is limited to this open page.</p>"), as = /* @__PURE__ */ K("<p class=\"notice\">Shorten this note to 4096 bytes before saving or leaving this page.</p>"), os = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Save conflict\"><h2>There’s a newer saved note</h2><p>Your draft is still in the editor. Compare it with the saved version, then choose what to keep.</p><pre> </pre><div class=\"button-row\"><button class=\"button secondary\">Keep my draft</button><button class=\"text-button\">Use saved note</button></div></section>"), ss = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain save\"><h2>Check before saving again</h2><p>The previous save may have completed. Your draft has not been sent again.</p><button class=\"button secondary\">Check saved note</button></section>"), cs = /* @__PURE__ */ K("<a class=\"skip-link\" href=\"#workspace-content\">Skip to content</a> <div class=\"workspace-shell\"><aside class=\"sidebar\" aria-label=\"Workspace sidebar\"><a class=\"brand\" href=\"/workspace\"><span class=\"brand-mark\" aria-hidden=\"true\">K</span><span>Keida <small>REBORN</small></span></a> <p class=\"nav-label\">YOUR SPACE</p> <nav class=\"main-nav\" aria-label=\"Workspace views\"><button><span aria-hidden=\"true\">⌂</span>Home</button> <button><span aria-hidden=\"true\">▤</span>Workspace note<span aria-hidden=\"true\"></span></button> <button><span aria-hidden=\"true\">◇</span>Connections</button> <button><span aria-hidden=\"true\">▦</span>Services</button> <button><span aria-hidden=\"true\">◷</span>Activity</button> <button><span aria-hidden=\"true\">♧</span>Notifications<!></button> <button><span aria-hidden=\"true\">⊞</span>Integrations</button> <button><span aria-hidden=\"true\">≡</span>Roadmap</button> <button><span aria-hidden=\"true\">▻</span>Media</button></nav> <div class=\"sidebar-bottom\"><a href=\"/account\" class=\"account-link\"><span class=\"avatar\" aria-hidden=\"true\">K</span><span><strong> </strong><small> </small></span></a> <form method=\"post\" action=\"/account/sign-out\"><input type=\"hidden\" name=\"product\" value=\"keida-hub-reborn\"/> <input type=\"hidden\" name=\"contract\" value=\"reborn-account-v1\"/> <input type=\"hidden\" name=\"csrf_token\"/> <button type=\"submit\" class=\"sign-out\">Sign out <span aria-hidden=\"true\">↗</span></button></form> <details class=\"version\"><summary> <span>Build details</span></summary> <dl><dt>Source</dt><dd><!></dd><dt>Tree</dt><dd> </dd><dt>Channel</dt><dd> </dd><dt>Workspace contract</dt><dd>reborn-workspace-v1</dd></dl></details></div></aside> <main id=\"workspace-content\" class=\"workspace-content\"><header class=\"page-header\"><div><p class=\"eyebrow\">YOUR OWN CORNER OF KEIDA</p><h1 tabindex=\"-1\"> </h1></div><span class=\"connection-state\"><span aria-hidden=\"true\">●</span> </span></header> <p class=\"workspace-status\" role=\"status\"> </p> <!> <section class=\"home-view\"><div class=\"welcome-card card\"><div><p class=\"eyebrow\">MAKE YOURSELF AT HOME</p><h2>A useful place<br/>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><div class=\"button-row\"><button class=\"button primary\">Open your note <span aria-hidden=\"true\">↗</span></button><button class=\"text-button\">Read the Roadmap note</button></div></div><div class=\"orb\" aria-hidden=\"true\"><div>K</div></div></div> <div class=\"home-layout-heading\"><p class=\"layout-status\" role=\"status\"> </p><button class=\"button secondary customize-home\">Customize Home</button></div> <div><!></div> <div></div></section> <section class=\"note-view\" aria-label=\"Workspace note\"><div class=\"note-heading\"><p>A private note, available each time you sign in.</p><span class=\"quiet-label\"> </span></div> <!> <form class=\"note-card card\"><label for=\"workspace-note\">Workspace note</label> <textarea id=\"workspace-note\" name=\"workspace-note\" maxlength=\"4096\" spellcheck=\"true\" aria-describedby=\"note-help note-size\" placeholder=\"What would you like to come back to?\"></textarea> <p id=\"note-help\" class=\"field-help\">For ordinary notes. Keep passwords, API keys and other secrets out of this space.</p> <div class=\"note-footer\"><span id=\"note-size\"> </span><button class=\"button primary\" type=\"submit\"> </button></div></form> <!> <!> <!> <!></section> <section aria-label=\"Connections\"><!></section> <section aria-label=\"Activity\"><!></section> <section aria-label=\"Notifications\"><!></section> <section><!></section> <section aria-label=\"Media\"><!></section> <footer class=\"content-footer\"><span>Keida Reborn</span><a href=\"/account\">Account &amp; recovery</a></footer></main></div>", 1);
-function ls(e, t) {
+// src/Queues.svelte
+var ds = /* @__PURE__ */ K("<section class=\"card small-card queue-owner-only\"><h2>Owner access required</h2><p>An owner can enroll and view queue connections. Provider-account sharing has not been configured for members.</p></section>"), fs = /* @__PURE__ */ K("<p class=\"field-help\">Transfers include downloading, uploading, stopped, checking and other reported states. Progress estimates current wanted/selected bytes; it does not measure checking, import or playback completion.</p>"), ps = /* @__PURE__ */ K("<p class=\"field-help\">The provider queue includes pending and delayed releases. Its count does not establish the number of active downloads or downloader health. Progress estimates downloaded bytes and does not establish import or playback completion.</p>"), ms = /* @__PURE__ */ K("<th scope=\"col\">Import state</th>"), hs = /* @__PURE__ */ K("<th scope=\"col\">Download rate</th><th scope=\"col\">Upload rate</th>", 1), gs = /* @__PURE__ */ K("<td> </td>"), _s = /* @__PURE__ */ K("<td> </td><td> </td>", 1), vs = /* @__PURE__ */ K("<tr data-queue-item=\"\"><td> <small> </small></td><td> </td><!><td> </td><td> </td><!></tr>"), ys = /* @__PURE__ */ K("<div class=\"queue-table-scroll\" tabindex=\"0\" role=\"region\"><table class=\"queue-table\"><caption> </caption><thead><tr><th scope=\"col\">Title</th><th scope=\"col\">State</th><!><th scope=\"col\">Progress estimate</th><th scope=\"col\">Size</th><!></tr></thead><tbody></tbody></table></div>"), bs = /* @__PURE__ */ K("<p class=\"queue-empty\"> </p>"), xs = /* @__PURE__ */ K("<p class=\"field-help\">No usable rows were reported for this sample. This does not establish an empty provider queue.</p>"), Ss = /* @__PURE__ */ K("<p class=\"notice\">More items exist beyond this bounded view.</p>"), Cs = /* @__PURE__ */ K("<button class=\"button secondary queue-first-page\"> </button>"), ws = /* @__PURE__ */ K("<dl class=\"queue-sample\"><dt>Collected</dt><dd> </dd><dt>Freshness</dt><dd> </dd><dt>Sample</dt><dd> </dd></dl> <!> <!> <p class=\"field-help\"> </p> <!> <!> <div class=\"button-row queue-pagination\"><button class=\"text-button queue-previous\"> </button><span class=\"quiet-label\"> </span><button class=\"text-button queue-next\"> </button></div>", 1), Ts = /* @__PURE__ */ K("<button class=\"text-button queue-remove\"> </button>"), Es = /* @__PURE__ */ K("<section class=\"card queue-provider\"><div class=\"guide-card-heading\"><h2> </h2><span class=\"quiet-label\">Owner-only observations</span></div> <p class=\"workspace-status\" role=\"status\" data-queue-status=\"\"> </p> <div class=\"button-row queue-actions\"><button class=\"button secondary queue-check-state\"> </button><button class=\"button secondary queue-check-observations\"> </button></div> <!> <details class=\"queue-enrollment\"><summary> </summary><p>Use access deliberately enrolled for Reborn. The key is encrypted on the server and will not be shown again.</p><p class=\"notice\"> </p><p class=\"field-help\"> </p> <form autocomplete=\"off\"><label> </label><input name=\"endpoint\" type=\"url\" required=\"\" maxlength=\"512\"/> <label>API key</label><input name=\"token\" type=\"password\" required=\"\" maxlength=\"8192\" autocomplete=\"off\"/> <label>Private CA certificate, if needed</label><textarea name=\"ca-pem\" rows=\"3\" maxlength=\"8192\"></textarea><p class=\"field-help\">Leave blank for publicly trusted HTTPS. Normal hostname and trust checks always apply.</p> <label class=\"queue-ack\"><input name=\"acknowledge\" type=\"checkbox\" required=\"\"/>I understand this key may grant broad management access, and I choose owner-only queue observations.</label> <button class=\"button primary queue-save\" type=\"submit\"> </button></form></details> <!></section>"), Ds = /* @__PURE__ */ K("<div class=\"queue-providers\"></div>"), Os = /* @__PURE__ */ K("<div class=\"queues-view\"><section class=\"card queue-intro\"><p class=\"eyebrow\">QUEUE OBSERVATIONS</p><h2>See what’s in motion</h2><p>Check Sonarr and Radarr queue items, including pending releases, and qBittorrent transfers. Each provider is checked only when requested.</p><p class=\"field-help\">This view is owner-only. Member accounts have no provider identity mapping or accepted sharing policy.</p></section> <!></div>");
+function ks(e, t) {
 	We(t, !1);
-	let n = () => Ni(u, "$model", r), [r, i] = Pi(), a = /* @__PURE__ */ P(), o = /* @__PURE__ */ P(), s = /* @__PURE__ */ P(), c = Z(t, "binding", 8), l = va(c()), u = l.model, d = /* @__PURE__ */ P("home"), f = /* @__PURE__ */ P(), p = /* @__PURE__ */ P(), m = /* @__PURE__ */ P(Wi()), h, g = document.querySelector("meta[name=\"reborn-version\"]")?.content ?? "development", _ = document.querySelector("meta[name=\"reborn-commit\"]")?.content ?? "unqualified", v = document.querySelector("meta[name=\"reborn-tree\"]")?.content ?? "unqualified", y = document.querySelector("meta[name=\"reborn-channel\"]")?.content ?? "development";
+	let n = Z(t, "owner", 8, !1), r = Z(t, "active", 8, !1), i = Z(t, "state", 8), a = Z(t, "check", 8), o = Z(t, "load", 8), s = Z(t, "save", 8), c = [
+		"sonarr",
+		"radarr",
+		"qbittorrent"
+	], l = (e) => e === "sonarr" ? "Sonarr" : e === "radarr" ? "Radarr" : "qBittorrent", u = (e) => e === "sonarr" ? "Sonarr 4 · API v3" : e === "radarr" ? "Radarr 6 · API v3" : "qBittorrent 5.2–5.3 · Bearer API key", d = (e) => e === null ? "Not collected" : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleString(), f = (e, t) => e === null ? "Not reported" : `${new Intl.NumberFormat().format(e)} ${t}`, p = (e) => e === null ? "Not reported" : `${(e / 100).toFixed(2)}%`, m = /* @__PURE__ */ P({}), h = {};
+	function g() {
+		for (let e of c) H(m)[e]?.reset();
+	}
+	function _(e, t, n) {
+		for (let r of c) {
+			let i = e[r].status, a = t && n && i ? `${i.revision}:${i.configured}` : "";
+			a === h[r] && t && n || H(m)[r]?.reset(), h[r] = a;
+		}
+	}
+	Li(g);
+	async function v(e) {
+		H(m)[e]?.reset(), await a()(e);
+	}
+	async function y(e, t = !1) {
+		let a = i()[e], o = a.status;
+		if (!r() || !n() || a.phase !== "ready" || a.save !== "idle" || !o) return;
+		let c = H(m)[e] ? new FormData(H(m)[e]) : void 0, l = t ? null : {
+			endpoint: String(c?.get("endpoint") ?? ""),
+			token: String(c?.get("token") ?? ""),
+			ca_pem: String(c?.get("ca-pem") ?? ""),
+			profile: Qi[e],
+			acknowledge_broad_access: c?.get("acknowledge") === "on"
+		};
+		H(m)[e]?.reset(), await s()(e, o.revision, l);
+	}
+	En(() => (W(i()), W(r()), W(n())), () => {
+		_(i(), r(), n());
+	}), Dn(), Ti();
+	var b = Os(), x = R(I(b), 2), S = (e) => {
+		q(e, ds());
+	}, C = (e) => {
+		var t = Ds();
+		qr(t, 5, () => c, (e) => e, (e, t) => {
+			let a = /* @__PURE__ */ M(() => (W(i()), H(t), U(() => i()[H(t)]))), s = /* @__PURE__ */ M(() => (W(H(a)), U(() => H(a).observation))), c = /* @__PURE__ */ M(() => (W(r()), W(H(a)), U(() => !r() || H(a).save === "saving"))), h = /* @__PURE__ */ M(() => (W(H(a)), W(H(s)), U(() => H(a).phase === "loading" || H(s)?.error === "checking"))), g = /* @__PURE__ */ M(() => (W(r()), W(n()), W(H(a)), U(() => r() && n() && H(a).phase === "ready" && H(a).save === "idle" && !!H(a).status)));
+			var _ = Es(), b = I(_), x = L(I(b));
+			Se(), A(b);
+			var S = R(b, 2), C = L(S, !0), w = R(S, 2), ee = I(w), te = L(ee), ne = R(ee), re = L(ne);
+			A(w);
+			var ie = R(w, 2), T = (e) => {
+				var n = ws(), r = ln(n), i = R(I(r)), u = L(i, !0), m = R(i, 2), g = L(m, !0), _ = L(R(m, 2), !0);
+				A(r);
+				var v = R(r, 2), y = (e) => {
+					q(e, fs());
+				}, b = (e) => {
+					q(e, ps());
+				};
+				Y(v, (e) => {
+					H(t) === "qbittorrent" ? e(y) : e(b, -1);
+				});
+				var x = R(v, 2), S = (e) => {
+					var n = ys(), r = I(n), i = I(r), a = L(i, !0), o = R(i), c = I(o), u = R(I(c), 2), d = (e) => {
+						q(e, ms());
+					};
+					Y(u, (e) => {
+						H(t) !== "qbittorrent" && e(d);
+					});
+					var m = R(u, 3), h = (e) => {
+						var t = hs();
+						Se(), q(e, t);
+					};
+					Y(m, (e) => {
+						H(t) === "qbittorrent" && e(h);
+					}), A(c), A(o);
+					var g = R(o);
+					qr(g, 5, () => (W(H(s)), U(() => H(s).items)), (e) => e.id, (e, n) => {
+						var r = vs(), i = I(r), a = I(i, !0), o = L(R(a), !0);
+						A(i);
+						var s = R(i), c = L(s, !0), l = R(s), u = (e) => {
+							var t = gs(), r = L(t, !0);
+							z(() => J(r, (H(n), U(() => H(n).import_state === null ? "Not reported" : H(n).import_state === "unknown" ? "Unknown" : H(n).import_state)))), q(e, t);
+						};
+						Y(l, (e) => {
+							H(t) !== "qbittorrent" && e(u);
+						});
+						var d = R(l), m = L(d, !0), h = R(d), g = L(h, !0), _ = R(h), v = (e) => {
+							var t = _s(), r = ln(t), i = L(r, !0), a = L(R(r), !0);
+							z((e, t) => {
+								J(i, e), J(a, t);
+							}, [() => (H(n), U(() => f(H(n).download_bytes_per_second, "B/s"))), () => (H(n), U(() => f(H(n).upload_bytes_per_second, "B/s")))]), q(e, t);
+						};
+						Y(_, (e) => {
+							H(t) === "qbittorrent" && e(v);
+						}), A(r), z((e, t) => {
+							J(a, (H(n), U(() => H(n).title ?? "Title unavailable"))), J(o, (H(n), U(() => H(n).warning === !0 ? "Provider warning reported" : H(n).warning === null ? "Warning state not reported" : ""))), J(c, (H(n), U(() => H(n).status === "unknown" ? "Unknown" : H(n).status))), J(m, e), J(g, t);
+						}, [() => (H(n), U(() => p(H(n).progress_basis_points))), () => (H(n), U(() => f(H(n).size_bytes, "B")))]), q(e, r);
+					}), A(g), A(r), A(n), z((e) => {
+						X(n, "aria-label", e), J(a, H(t) === "qbittorrent" ? "All-state Transfers" : "Queue and pending items"), X(g, "data-queue-rows", H(t));
+					}, [() => (H(t), U(() => `${l(H(t))} ${H(t) === "qbittorrent" ? "transfers" : "queue items"}`))]), q(e, n);
+				}, C = (e) => {
+					var n = bs(), r = L(n, !0);
+					z(() => J(r, H(t) === "qbittorrent" ? "No transfers were reported on this page." : "No queue or pending items were reported on this page.")), q(e, n);
+				}, w = (e) => {
+					q(e, xs());
+				};
+				Y(x, (e) => {
+					W(H(s)), U(() => H(s).items.length) ? e(S) : (W(H(s)), U(() => H(s).complete && H(s).error === null) ? e(C, 1) : (W(H(s)), U(() => H(s).error !== "checking" && H(s).error !== "page_moved") && e(w, 2)));
+				});
+				var ee = R(x, 2), te = L(ee), ne = R(ee, 2), re = (e) => {
+					q(e, Ss());
+				};
+				Y(ne, (e) => {
+					W(H(s)), U(() => H(s).truncated) && e(re);
+				});
+				var ie = R(ne, 2), T = (e) => {
+					var n = Cs(), r = L(n);
+					z((e) => {
+						n.disabled = H(c) || H(h), J(r, `Reload first ${e ?? ""} page`);
+					}, [() => (H(t), U(() => l(H(t))))]), G("click", n, () => void o()(H(t), 0)), q(e, n);
+				};
+				Y(ie, (e) => {
+					W(H(s)), U(() => H(s).error === "page_moved") && e(T);
+				});
+				var ae = R(ie, 2), E = I(ae), oe = L(E), se = R(E), ce = L(se), le = R(se), D = L(le);
+				A(ae), z((e, n, r) => {
+					J(u, e), J(g, (W(H(s)), U(() => H(s).freshness === "fresh" ? "Recent collection" : H(s).freshness === "stale" ? "Stale collection" : "Collection age unknown"))), J(_, (W(H(s)), U(() => H(s).complete ? "Complete for this bounded query" : "Incomplete or still checking"))), J(te, `${W(H(s)), H(t), U(() => H(s).total === null ? H(t) === "qbittorrent" ? "Provider total is not supplied." : "Provider total unavailable." : `${H(s).total} queue and pending items reported by the provider.`) ?? ""} Up to 12 rows per page and the first 60 rows only. Live pages can move as the provider changes.`), E.disabled = (W(H(c)), W(H(h)), W(H(a)), W(H(s)), U(() => H(c) || H(h) || H(a).offset === 0 || H(s).error === "page_moved")), J(oe, `Previous ${n ?? ""} page`), J(ce, `Page ${W(H(a)), U(() => H(a).offset / 12 + 1) ?? ""}`), le.disabled = (W(H(c)), W(H(h)), W(H(s)), U(() => H(c) || H(h) || H(s).next_offset === null)), J(D, `Next ${r ?? ""} page`);
+				}, [
+					() => (W(H(s)), U(() => d(H(s).checked_at))),
+					() => (H(t), U(() => l(H(t)))),
+					() => (H(t), U(() => l(H(t))))
+				]), G("click", E, () => void o()(H(t), H(a).offset - 12)), G("click", le, () => H(s).next_offset !== null && void o()(H(t), H(s).next_offset)), q(e, n);
+			}, ae = (e) => {
+				var n = bs(), r = L(n);
+				z((e) => J(r, `No ${e ?? ""} connection enrolled.`), [() => (H(t), U(() => l(H(t))))]), q(e, n);
+			};
+			Y(ie, (e) => {
+				W(H(s)), U(() => H(s)?.configured) ? e(T) : (W(H(a)), U(() => H(a).status && !H(a).status.configured) && e(ae, 1));
+			});
+			var E = R(ie, 2), oe = I(E), se = L(oe), ce = R(oe, 2), le = L(ce), D = R(ce), ue = L(D), de = R(D, 2), fe = I(de), pe = L(fe), me = R(fe), he = R(me, 2), ge = R(he), _e = R(ge, 2), ve = R(_e), O = R(ve, 3), ye = I(O);
+			Se(), A(O);
+			var k = R(O, 2), be = L(k);
+			A(de), wi(de, (e, t) => Ut(m, H(m)[t] = e), (e) => H(m)?.[e], () => [H(t)]), A(E);
+			var xe = R(E, 2), Ce = (e) => {
+				var n = Ts(), r = L(n);
+				z((e) => {
+					n.disabled = !H(g), J(r, `Remove ${e ?? ""} connection`);
+				}, [() => (H(t), U(() => l(H(t))))]), G("click", n, () => void y(H(t), !0)), q(e, n);
+			};
+			Y(xe, (e) => {
+				W(H(a)), U(() => H(a).status?.configured) && e(Ce);
+			}), A(_), z((e, n, r, i, o, l, u, d, f, p, m, v) => {
+				X(_, "data-queue-provider", H(t)), X(_, "data-queue-phase", (W(H(a)), U(() => H(a).phase))), X(_, "data-queue-revision", (W(H(a)), U(() => H(a).status?.revision ?? ""))), X(_, "data-queue-configured", e), X(_, "data-queue-error", (W(H(s)), U(() => H(s)?.error ?? ""))), X(_, "data-queue-complete", n), X(_, "data-queue-offset", (W(H(a)), U(() => H(a).offset))), X(_, "data-queue-save", (W(H(a)), U(() => H(a).save))), X(_, "data-queue-freshness", (W(H(s)), U(() => H(s)?.freshness ?? "unknown"))), X(_, "data-queue-total", (W(H(s)), U(() => H(s)?.total ?? ""))), X(_, "data-queue-truncated", r), X(_, "aria-label", i), J(x, `${o ?? ""}${H(t) === "qbittorrent" ? " Transfers" : " queue"}`), J(C, (W(H(a)), U(() => H(a).message || "Check the connection state to begin."))), ee.disabled = H(c), J(te, `Check ${l ?? ""} connection state`), ne.disabled = (W(H(c)), W(H(h)), W(H(a)), U(() => H(c) || H(h) || !H(a).status?.configured)), J(re, `Check ${u ?? ""} observations`), J(se, `Enroll ${d ?? ""} access`), J(le, `A global ${f ?? ""} API key may grant broad management authority. Reborn sends observation requests only; this does not restrict what the key itself can do.`), J(ue, `Supported profile: ${p ?? ""}. Use a root-mounted HTTPS address. Subpath installations and username/password login are not supported here.`), X(fe, "for", `queue-${H(t)}-endpoint`), J(pe, `${m ?? ""} HTTPS address`), X(me, "id", `queue-${H(t)}-endpoint`), X(me, "placeholder", `https://${H(t)}.example/`), me.disabled = !H(g), X(he, "for", `queue-${H(t)}-token`), X(ge, "id", `queue-${H(t)}-token`), ge.disabled = !H(g), X(_e, "for", `queue-${H(t)}-ca`), X(ve, "id", `queue-${H(t)}-ca`), ve.disabled = !H(g), X(O, "for", `queue-${H(t)}-ack`), X(ye, "id", `queue-${H(t)}-ack`), ye.disabled = !H(g), k.disabled = !H(g), J(be, `Save ${v ?? ""} connection`);
+			}, [
+				() => (W(H(a)), U(() => String(H(a).status?.configured ?? !1))),
+				() => (W(H(s)), U(() => String(H(s)?.complete ?? !1))),
+				() => (W(H(s)), U(() => String(H(s)?.truncated ?? !1))),
+				() => (H(t), U(() => `${l(H(t))} queue connection`)),
+				() => (H(t), U(() => l(H(t)))),
+				() => (H(t), U(() => l(H(t)))),
+				() => (H(t), U(() => l(H(t)))),
+				() => (H(t), U(() => l(H(t)))),
+				() => (H(t), U(() => l(H(t)))),
+				() => (H(t), U(() => u(H(t)))),
+				() => (H(t), U(() => l(H(t)))),
+				() => (H(t), U(() => l(H(t))))
+			]), G("click", ee, () => void v(H(t))), G("click", ne, () => void o()(H(t), H(a).offset)), Cr("submit", de, (e) => {
+				e.preventDefault(), y(H(t));
+			}), q(e, _);
+		}), A(t), q(e, t);
+	};
+	Y(x, (e) => {
+		n() ? e(C, -1) : e(S);
+	}), A(b), q(e, b), Ge();
+}
+wr(["click"]);
+// src/App.svelte
+var As = /* @__PURE__ */ K("<span class=\"notification-badge\"> </span>"), js = /* @__PURE__ */ K("<a rel=\"noreferrer\"> </a>"), Ms = /* @__PURE__ */ K("<section class=\"recovery card\"><p class=\"eyebrow\">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class=\"button-row\"><a class=\"button primary\" href=\"/workspace\">Open workspace again</a><a class=\"button secondary\" href=\"/account\">Your account</a></div></section>"), Ns = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">▤</span><h2>Your workspace note</h2><p> </p><button class=\"text-button\">Keep writing <span aria-hidden=\"true\">→</span></button>", 1), Ps = /* @__PURE__ */ K("<span class=\"card-icon\" aria-hidden=\"true\">◇</span><h2>Connections</h2><p> </p><button class=\"text-button\">View connections <span aria-hidden=\"true\">→</span></button>", 1), Fs = /* @__PURE__ */ K("<section><!></section>"), Is = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Draft recovery\"><h2>A draft is waiting</h2><p>This browser session has an unfinished note for this account. Review it before saving.</p><div class=\"button-row\"><button class=\"button secondary\">Recover draft</button><button class=\"text-button\">Discard draft</button></div></section>"), Ls = /* @__PURE__ */ K("<p class=\"field-help\">Browser storage is unavailable. Draft recovery is limited to this open page.</p>"), Rs = /* @__PURE__ */ K("<p class=\"notice\">Shorten this note to 4096 bytes before saving or leaving this page.</p>"), zs = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Save conflict\"><h2>There’s a newer saved note</h2><p>Your draft is still in the editor. Compare it with the saved version, then choose what to keep.</p><pre> </pre><div class=\"button-row\"><button class=\"button secondary\">Keep my draft</button><button class=\"text-button\">Use saved note</button></div></section>"), Bs = /* @__PURE__ */ K("<section class=\"notice\" aria-label=\"Uncertain save\"><h2>Check before saving again</h2><p>The previous save may have completed. Your draft has not been sent again.</p><button class=\"button secondary\">Check saved note</button></section>"), Vs = /* @__PURE__ */ K("<a class=\"skip-link\" href=\"#workspace-content\">Skip to content</a> <div class=\"workspace-shell\"><aside class=\"sidebar\" aria-label=\"Workspace sidebar\"><a class=\"brand\" href=\"/workspace\"><span class=\"brand-mark\" aria-hidden=\"true\">K</span><span>Keida <small>REBORN</small></span></a> <p class=\"nav-label\">YOUR SPACE</p> <nav class=\"main-nav\" aria-label=\"Workspace views\"><button><span aria-hidden=\"true\">⌂</span>Home</button> <button><span aria-hidden=\"true\">▤</span>Workspace note<span aria-hidden=\"true\"></span></button> <button><span aria-hidden=\"true\">◇</span>Connections</button> <button><span aria-hidden=\"true\">▦</span>Services</button> <button><span aria-hidden=\"true\">◷</span>Activity</button> <button><span aria-hidden=\"true\">♧</span>Notifications<!></button> <button><span aria-hidden=\"true\">⊞</span>Integrations</button> <button><span aria-hidden=\"true\">≡</span>Roadmap</button> <button><span aria-hidden=\"true\">▻</span>Media</button> <button><span aria-hidden=\"true\">⇄</span>Queues</button></nav> <div class=\"sidebar-bottom\"><a href=\"/account\" class=\"account-link\"><span class=\"avatar\" aria-hidden=\"true\">K</span><span><strong> </strong><small> </small></span></a> <form method=\"post\" action=\"/account/sign-out\"><input type=\"hidden\" name=\"product\" value=\"keida-hub-reborn\"/> <input type=\"hidden\" name=\"contract\" value=\"reborn-account-v1\"/> <input type=\"hidden\" name=\"csrf_token\"/> <button type=\"submit\" class=\"sign-out\">Sign out <span aria-hidden=\"true\">↗</span></button></form> <details class=\"version\"><summary> <span>Build details</span></summary> <dl><dt>Source</dt><dd><!></dd><dt>Tree</dt><dd> </dd><dt>Channel</dt><dd> </dd><dt>Workspace contract</dt><dd>reborn-workspace-v1</dd></dl></details></div></aside> <main id=\"workspace-content\" class=\"workspace-content\"><header class=\"page-header\"><div><p class=\"eyebrow\">YOUR OWN CORNER OF KEIDA</p><h1 tabindex=\"-1\"> </h1></div><span class=\"connection-state\"><span aria-hidden=\"true\">●</span> </span></header> <p class=\"workspace-status\" role=\"status\"> </p> <!> <section class=\"home-view\"><div class=\"welcome-card card\"><div><p class=\"eyebrow\">MAKE YOURSELF AT HOME</p><h2>A useful place<br/>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><div class=\"button-row\"><button class=\"button primary\">Open your note <span aria-hidden=\"true\">↗</span></button><button class=\"text-button\">Read the Roadmap note</button></div></div><div class=\"orb\" aria-hidden=\"true\"><div>K</div></div></div> <div class=\"home-layout-heading\"><p class=\"layout-status\" role=\"status\"> </p><button class=\"button secondary customize-home\">Customize Home</button></div> <div><!></div> <div></div></section> <section class=\"note-view\" aria-label=\"Workspace note\"><div class=\"note-heading\"><p>A private note, available each time you sign in.</p><span class=\"quiet-label\"> </span></div> <!> <form class=\"note-card card\"><label for=\"workspace-note\">Workspace note</label> <textarea id=\"workspace-note\" name=\"workspace-note\" maxlength=\"4096\" spellcheck=\"true\" aria-describedby=\"note-help note-size\" placeholder=\"What would you like to come back to?\"></textarea> <p id=\"note-help\" class=\"field-help\">For ordinary notes. Keep passwords, API keys and other secrets out of this space.</p> <div class=\"note-footer\"><span id=\"note-size\"> </span><button class=\"button primary\" type=\"submit\"> </button></div></form> <!> <!> <!> <!></section> <section aria-label=\"Connections\"><!></section> <section aria-label=\"Activity\"><!></section> <section aria-label=\"Notifications\"><!></section> <section><!></section> <section aria-label=\"Media\"><!></section> <section aria-label=\"Queues\"><!></section> <footer class=\"content-footer\"><span>Keida Reborn</span><a href=\"/account\">Account &amp; recovery</a></footer></main></div>", 1);
+function Hs(e, t) {
+	We(t, !1);
+	let n = () => Ni(u, "$model", r), [r, i] = Pi(), a = /* @__PURE__ */ P(), o = /* @__PURE__ */ P(), s = /* @__PURE__ */ P(), c = Z(t, "binding", 8), l = Aa(c()), u = l.model, d = /* @__PURE__ */ P("home"), f = /* @__PURE__ */ P(), p = /* @__PURE__ */ P(), m = /* @__PURE__ */ P(Wi()), h, g = document.querySelector("meta[name=\"reborn-version\"]")?.content ?? "development", _ = document.querySelector("meta[name=\"reborn-commit\"]")?.content ?? "unqualified", v = document.querySelector("meta[name=\"reborn-tree\"]")?.content ?? "unqualified", y = document.querySelector("meta[name=\"reborn-channel\"]")?.content ?? "development";
 	function b(e) {
-		H(d) === "media" && e !== "media" ? (l.closeMedia(), jt(() => {
+		let t = H(d) === "media" && e !== "media" || H(d) === "queues" && e !== "queues";
+		H(d) === "media" && e !== "media" && l.closeMedia(), H(d) === "queues" && e !== "queues" && l.closeQueues(), t ? jt(() => {
 			F(d, e);
-		})) : F(d, e), H(f)?.focus(), e === "activity" && l.activity(), e === "notifications" && l.check(), (e === "integrations" || e === "roadmap") && l.loadGuide(), e === "media" && l.openMedia();
+		}) : F(d, e), H(f)?.focus(), e === "activity" && l.activity(), e === "notifications" && l.check(), (e === "integrations" || e === "roadmap") && l.loadGuide(), e === "media" && l.openMedia(), e === "queues" && l.openQueues();
 	}
 	let x = () => n().snapshot ? `${n().snapshot.account.id}:${n().snapshot.session_generation}:${n().snapshot.account.role}` : "";
 	Ri(() => {
@@ -4510,23 +5080,23 @@ function ls(e, t) {
 			"uncertain"
 		].includes(n().save));
 	}), Dn(), Ti();
-	var S = cs(), C = R(ln(S), 2), w = I(C), T = R(I(w), 4), E = I(T);
-	let ee;
-	var te = R(E, 2);
+	var S = Vs(), C = R(ln(S), 2), w = I(C), ee = R(I(w), 4), te = I(ee);
 	let ne;
-	var re = R(I(te), 2);
-	let D;
-	A(te);
-	var ie = R(te, 2);
+	var re = R(te, 2);
+	let ie;
+	var T = R(I(re), 2);
 	let ae;
-	var oe = R(ie, 2);
-	let se;
-	var ce = R(oe, 2);
-	let le;
-	var ue = R(ce, 2);
+	A(re);
+	var E = R(re, 2);
+	let oe;
+	var se = R(E, 2);
+	let ce;
+	var le = R(se, 2);
+	let D;
+	var ue = R(le, 2);
 	let de;
 	var fe = R(I(ue), 2), pe = (e) => {
-		var t = Zo(), r = L(t, !0);
+		var t = As(), r = L(t, !0);
 		z(() => {
 			X(t, "aria-label", (n(), U(() => `${n().snapshot.notifications.unread_groups} unread groups`))), J(r, (n(), U(() => n().snapshot.notifications.unread_groups)));
 		}), q(e, t);
@@ -4540,45 +5110,47 @@ function ls(e, t) {
 	let _e;
 	var ve = R(ge, 2);
 	let O;
-	A(T);
-	var ye = R(T, 2), k = I(ye), be = R(I(k)), xe = I(be), Ce = L(xe, !0), we = L(R(xe), !0);
-	A(be), A(k);
-	var Te = R(k, 2), Ee = R(R(I(Te), 2), 2);
-	pi(Ee), Se(2), A(Te);
-	var De = R(Te, 2), Oe = I(De), ke = I(Oe, !0);
-	Se(), A(Oe);
-	var Ae = R(Oe, 2), je = R(I(Ae)), Me = I(je), Ne = (e) => {
-		var t = Qo(), n = L(t, !0);
+	var ye = R(ve, 2);
+	let k;
+	A(ee);
+	var be = R(ee, 2), xe = I(be), Ce = R(I(xe)), we = I(Ce), Te = L(we, !0), Ee = L(R(we), !0);
+	A(Ce), A(xe);
+	var De = R(xe, 2), Oe = R(R(I(De), 2), 2);
+	pi(Oe), Se(2), A(De);
+	var ke = R(De, 2), Ae = I(ke), je = I(Ae, !0);
+	Se(), A(Ae);
+	var Me = R(Ae, 2), Ne = R(I(Me)), Pe = I(Ne), Fe = (e) => {
+		var t = js(), n = L(t, !0);
 		z(() => {
 			X(t, "href", `https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/commit/${_}`), J(n, _);
 		}), q(e, t);
-	}, Pe = /* @__PURE__ */ mt(() => U(() => /^[a-f0-9]{40}$/.test(_))), Fe = (e) => {
+	}, Ie = /* @__PURE__ */ mt(() => U(() => /^[a-f0-9]{40}$/.test(_))), Le = (e) => {
 		var t = Mr();
 		z(() => J(t, _)), q(e, t);
 	};
-	Y(Me, (e) => {
-		H(Pe) ? e(Ne) : e(Fe, -1);
-	}), A(je);
-	var Ie = R(je, 2), Le = L(Ie, !0), Re = L(R(Ie, 2), !0);
-	Se(2), A(Ae), A(De), A(ye), A(w);
-	var ze = R(w, 2), Be = I(ze), Ve = I(Be), He = R(I(Ve)), j = L(He, !0);
-	wi(He, (e) => F(f, e), () => H(f)), A(Ve);
-	var Ue = R(Ve), Ke = R(I(Ue), 1, !0);
-	A(Ue), A(Be);
-	var qe = R(Be, 2), Je = L(qe, !0), Ye = R(qe, 2), Xe = (e) => {
-		q(e, $o());
+	Y(Pe, (e) => {
+		H(Ie) ? e(Fe) : e(Le, -1);
+	}), A(Ne);
+	var Re = R(Ne, 2), ze = L(Re, !0), Be = L(R(Re, 2), !0);
+	Se(2), A(Me), A(ke), A(be), A(w);
+	var Ve = R(w, 2), He = I(Ve), j = I(He), Ue = R(I(j)), Ke = L(Ue, !0);
+	wi(Ue, (e) => F(f, e), () => H(f)), A(j);
+	var qe = R(j), Je = R(I(qe), 1, !0);
+	A(qe), A(He);
+	var Ye = R(He, 2), Xe = L(Ye, !0), Ze = R(Ye, 2), Qe = (e) => {
+		q(e, Ms());
 	};
-	Y(Ye, (e) => {
-		n(), U(() => n().phase !== "ready") && e(Xe);
+	Y(Ze, (e) => {
+		n(), U(() => n().phase !== "ready") && e(Qe);
 	});
-	var Ze = R(Ye, 2), Qe = I(Ze), $e = I(Qe), et = R(I($e), 3), tt = I(et), rt = R(tt);
-	A(et), A($e), Se(), A(Qe);
-	var it = R(Qe, 2), at = I(it), ot = L(at, !0), st = R(at);
-	A(it);
-	var ct = R(it, 2), lt = I(ct);
+	var $e = R(Ze, 2), et = I($e), tt = I(et), rt = R(I(tt), 3), it = I(rt), at = R(it);
+	A(rt), A(tt), Se(), A(et);
+	var ot = R(et, 2), st = I(ot), ct = L(st, !0), lt = R(st);
+	A(ot);
+	var ut = R(ot, 2), dt = I(ut);
 	{
 		let e = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.layout))), t = /* @__PURE__ */ M(() => (n(), U(() => n().phase === "ready")));
-		wa(lt, {
+		Ia(dt, {
 			get draft() {
 				return n(), U(() => n().layoutDraft);
 			},
@@ -4614,22 +5186,22 @@ function ls(e, t) {
 			}
 		});
 	}
-	A(ct);
-	var ut = R(ct, 2);
-	let dt;
-	qr(ut, 5, () => H(m), (e) => e.id, (e, t) => {
-		var r = ns();
+	A(ut);
+	var ft = R(ut, 2);
+	let pt;
+	qr(ft, 5, () => H(m), (e) => e.id, (e, t) => {
+		var r = Fs();
 		let i;
 		var a = I(r), o = (e) => {
-			var t = es(), r = R(ln(t), 2), i = L(r, !0), a = R(r);
+			var t = Ns(), r = R(ln(t), 2), i = L(r, !0), a = R(r);
 			z(() => J(i, (n(), U(() => n().dirty ? "You have an unsaved draft open." : n().snapshot?.note.revision === "0" ? "A blank page for whatever comes next." : "Your saved note is ready when you are.")))), G("click", a, () => b("note")), q(e, t);
 		}, s = (e) => {
-			var t = ts(), r = R(ln(t), 2), i = L(r, !0), a = R(r);
+			var t = Ps(), r = R(ln(t), 2), i = L(r, !0), a = R(r);
 			z(() => J(i, (n(), U(() => n().snapshot?.crafty?.configured ? "Your enrolled Crafty observations are available in Connections." : "Enroll dedicated Crafty access to see your selected servers.")))), G("click", a, () => b("connections")), q(e, t);
 		}, c = (e) => {
 			{
 				let t = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.directory))), r = /* @__PURE__ */ M(() => (n(), U(() => n().phase === "ready"))), i = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.account.role === "owner"))), a = /* @__PURE__ */ M(() => H(d) === "home");
-				co(e, {
+				xo(e, {
 					get directory() {
 						return H(t);
 					},
@@ -4670,54 +5242,54 @@ function ls(e, t) {
 				"pins-panel": H(t).id === "pins"
 			});
 		}), q(e, r);
-	}), A(ut), wi(ut, (e) => F(p, e), () => H(p)), A(Ze);
-	var ft = R(Ze, 2), pt = I(ft), ht = L(R(I(pt)), !0);
-	A(pt);
-	var gt = R(pt, 2), _t = (e) => {
-		var t = rs(), n = R(I(t), 2), r = I(n), i = R(r);
+	}), A(ft), wi(ft, (e) => F(p, e), () => H(p)), A($e);
+	var ht = R($e, 2), gt = I(ht), _t = L(R(I(gt)), !0);
+	A(gt);
+	var vt = R(gt, 2), yt = (e) => {
+		var t = Is(), n = R(I(t), 2), r = I(n), i = R(r);
 		A(n), A(t), G("click", r, function(...e) {
 			l.recover?.apply(this, e);
 		}), G("click", i, () => l.resolve(!0)), q(e, t);
 	};
-	Y(gt, (e) => {
-		n(), U(() => n().recovery) && e(_t);
+	Y(vt, (e) => {
+		n(), U(() => n().recovery) && e(yt);
 	});
-	var vt = R(gt, 2), yt = R(I(vt), 2);
-	nt(yt);
-	var bt = R(yt, 4), N = I(bt);
-	let xt;
-	var St = L(N), Ct = R(N), wt = L(Ct, !0);
-	A(bt), A(vt);
-	var Tt = R(vt, 2), Et = (e) => {
-		q(e, is());
-	};
-	Y(Tt, (e) => {
-		n(), U(() => n().storageLimited) && e(Et);
-	});
-	var Dt = R(Tt, 2), Ot = (e) => {
-		q(e, as());
+	var bt = R(vt, 2), N = R(I(bt), 2);
+	nt(N);
+	var xt = R(N, 4), St = I(xt);
+	let Ct;
+	var wt = L(St), Tt = R(St), Et = L(Tt, !0);
+	A(xt), A(bt);
+	var Dt = R(bt, 2), Ot = (e) => {
+		q(e, Ls());
 	};
 	Y(Dt, (e) => {
-		H(o) > 4096 && e(Ot);
+		n(), U(() => n().storageLimited) && e(Ot);
 	});
 	var kt = R(Dt, 2), At = (e) => {
-		var t = os(), r = R(I(t), 2), i = L(r, !0), a = R(r), o = I(a), s = R(o);
-		A(a), A(t), z(() => J(i, (n(), U(() => n().snapshot?.note.body)))), G("click", o, () => l.resolve(!1)), G("click", s, () => l.resolve(!0)), q(e, t);
+		q(e, Rs());
 	};
 	Y(kt, (e) => {
-		n(), U(() => n().save === "conflict") && e(At);
+		H(o) > 4096 && e(At);
 	});
 	var Mt = R(kt, 2), Nt = (e) => {
-		var t = ss(), n = R(I(t), 2);
-		A(t), G("click", n, () => l.check()), q(e, t);
+		var t = zs(), r = R(I(t), 2), i = L(r, !0), a = R(r), o = I(a), s = R(o);
+		A(a), A(t), z(() => J(i, (n(), U(() => n().snapshot?.note.body)))), G("click", o, () => l.resolve(!1)), G("click", s, () => l.resolve(!0)), q(e, t);
 	};
 	Y(Mt, (e) => {
-		n(), U(() => n().save === "uncertain") && e(Nt);
-	}), A(ft);
-	var Pt = R(ft, 2), Ft = I(Pt);
+		n(), U(() => n().save === "conflict") && e(Nt);
+	});
+	var Pt = R(Mt, 2), Ft = (e) => {
+		var t = Bs(), n = R(I(t), 2);
+		A(t), G("click", n, () => l.check()), q(e, t);
+	};
+	Y(Pt, (e) => {
+		n(), U(() => n().save === "uncertain") && e(Ft);
+	}), A(ht);
+	var It = R(ht, 2), Lt = I(It);
 	{
 		let e = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.crafty))), t = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.account.role === "owner"))), r = /* @__PURE__ */ M(() => (H(d), n(), U(() => H(d) === "connections" && n().phase === "ready")));
-		Ga(Ft, {
+		ro(Lt, {
 			history: () => {
 				F(d, "activity"), H(f)?.focus(), l.activity("connections", "");
 			},
@@ -4744,11 +5316,11 @@ function ls(e, t) {
 			}
 		});
 	}
-	A(Pt);
-	var It = R(Pt, 2), Lt = I(It);
+	A(It);
+	var Rt = R(It, 2), zt = I(Rt);
 	{
 		let e = /* @__PURE__ */ M(() => (n(), U(() => n().phase === "ready")));
-		go(Lt, {
+		Oo(zt, {
 			get state() {
 				return n(), U(() => n().activity);
 			},
@@ -4760,11 +5332,11 @@ function ls(e, t) {
 			}
 		});
 	}
-	A(It);
-	var Rt = R(It, 2), zt = I(Rt);
+	A(Rt);
+	var Bt = R(Rt, 2), Vt = I(Bt);
 	{
 		let e = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.notifications))), t = /* @__PURE__ */ M(() => (n(), U(() => n().phase === "ready")));
-		xo(zt, {
+		No(Vt, {
 			get value() {
 				return H(e);
 			},
@@ -4785,11 +5357,11 @@ function ls(e, t) {
 			}
 		});
 	}
-	A(Rt);
-	var Bt = R(Rt, 2), Vt = I(Bt);
+	A(Bt);
+	var Ht = R(Bt, 2), Ut = I(Ht);
 	{
 		let e = /* @__PURE__ */ M(() => H(d) === "roadmap" ? "roadmap" : "catalog"), t = /* @__PURE__ */ M(() => (n(), U(() => n().phase === "ready"))), r = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.account.role === "owner")));
-		Po(Vt, {
+		Jo(Ut, {
 			get mode() {
 				return H(e);
 			},
@@ -4802,16 +5374,17 @@ function ls(e, t) {
 			retry: () => l.loadGuide(!0),
 			connections: () => b("connections"),
 			media: () => b("media"),
+			queues: () => b("queues"),
 			get owner() {
 				return H(r);
 			}
 		});
 	}
-	A(Bt);
-	var Ht = R(Bt, 2), Ut = I(Ht);
+	A(Ht);
+	var Wt = R(Ht, 2), Gt = I(Wt);
 	{
 		let e = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.account.role === "owner"))), t = /* @__PURE__ */ M(() => (H(d), n(), U(() => H(d) === "media" && n().phase === "ready")));
-		Xo(Ut, {
+		us(Gt, {
 			get state() {
 				return n(), U(() => n().media);
 			},
@@ -4832,26 +5405,51 @@ function ls(e, t) {
 			}
 		});
 	}
-	A(Ht), Se(2), A(ze), A(C), z(() => {
-		X(E, "aria-current", H(d) === "home" ? "page" : void 0), ee = ti(E, 1, "", null, ee, { active: H(d) === "home" }), X(te, "aria-current", H(d) === "note" ? "page" : void 0), ne = ti(te, 1, "", null, ne, { active: H(d) === "note" }), D = ti(re, 1, "draft-dot", null, D, { visible: n().dirty }), X(ie, "aria-current", H(d) === "connections" ? "page" : void 0), ae = ti(ie, 1, "", null, ae, { active: H(d) === "connections" }), X(oe, "aria-current", H(d) === "directory" ? "page" : void 0), se = ti(oe, 1, "", null, se, { active: H(d) === "directory" }), X(ce, "aria-current", H(d) === "activity" ? "page" : void 0), le = ti(ce, 1, "", null, le, { active: H(d) === "activity" }), X(ue, "aria-current", H(d) === "notifications" ? "page" : void 0), de = ti(ue, 1, "", null, de, { active: H(d) === "notifications" }), X(me, "aria-current", H(d) === "integrations" ? "page" : void 0), he = ti(me, 1, "", null, he, { active: H(d) === "integrations" }), X(ge, "aria-current", H(d) === "roadmap" ? "page" : void 0), _e = ti(ge, 1, "", null, _e, { active: H(d) === "roadmap" }), X(ve, "aria-current", H(d) === "media" ? "page" : void 0), O = ti(ve, 1, "", null, O, { active: H(d) === "media" }), J(Ce, (n(), U(() => n().snapshot?.account.username ?? "Your account"))), J(we, (n(), U(() => n().snapshot?.account.role === "owner" ? "Owner" : n().snapshot?.account.role === "member" ? "Member" : "Check account access"))), mi(Ee, c()), J(ke, g), J(Le, v), J(Re, y), J(j, H(d) === "home" ? "Welcome home." : H(d) === "note" ? "A little space to think." : H(d) === "connections" ? "Your servers, at a glance." : H(d) === "directory" ? "Everything within reach." : H(d) === "activity" ? "Pick up the thread." : H(d) === "notifications" ? "Catch up at your pace." : H(d) === "integrations" ? "Make the right connections." : H(d) === "media" ? "A window into your media." : "See what comes next."), J(Ke, (n(), U(() => n().phase === "ready" ? "Session checked" : n().phase === "checking" ? "Checking access" : "Access paused"))), J(Je, (n(), U(() => n().message))), X(Ze, "hidden", (H(d), n(), U(() => H(d) !== "home" && H(d) !== "directory" || n().phase !== "ready"))), X(Ze, "aria-label", H(d) === "directory" ? "Service directory view" : "Home"), X(Qe, "hidden", H(d) !== "home"), X(it, "hidden", H(d) !== "home"), J(ot, (n(), U(() => n().layoutMessage || "Your panels, in your own order."))), st.disabled = (n(), U(() => !!n().layoutDraft || n().phase !== "ready" || n().layoutSave === "saving")), X(ct, "hidden", H(d) !== "home"), dt = ti(ut, 1, "home-grid", null, dt, { "services-view": H(d) === "directory" }), X(ft, "hidden", (H(d), n(), U(() => H(d) !== "note" || n().phase !== "ready"))), J(ht, (n(), U(() => n().dirty ? "Unsaved changes" : "Up to date"))), mi(yt, (n(), U(() => n().draft))), yt.disabled = (n(), U(() => n().phase !== "ready")), xt = ti(N, 1, "", null, xt, { "over-limit": H(o) > 4096 }), J(St, `${H(o) ?? ""} / 4096 bytes`), Ct.disabled = !H(s), J(wt, (n(), U(() => n().save === "saving" ? "Saving…" : "Save note"))), X(Pt, "hidden", (H(d), n(), U(() => H(d) !== "connections" || n().phase !== "ready"))), X(It, "hidden", (H(d), n(), U(() => H(d) !== "activity" || n().phase !== "ready"))), X(Rt, "hidden", (H(d), n(), U(() => H(d) !== "notifications" || n().phase !== "ready"))), X(Bt, "hidden", (H(d), n(), U(() => H(d) !== "integrations" && H(d) !== "roadmap" || n().phase !== "ready"))), X(Bt, "aria-label", H(d) === "roadmap" ? "Roadmap note" : "Integration catalog"), X(Ht, "hidden", (H(d), n(), U(() => H(d) !== "media" || n().phase !== "ready")));
-	}), G("click", E, () => b("home")), G("click", te, () => b("note")), G("click", ie, () => b("connections")), G("click", oe, () => b("directory")), G("click", ce, () => b("activity")), G("click", ue, () => b("notifications")), G("click", me, () => b("integrations")), G("click", ge, () => b("roadmap")), G("click", ve, () => b("media")), Cr("submit", Te, () => l.signOut()), G("click", tt, () => b("note")), G("click", rt, () => b("roadmap")), G("click", st, function(...e) {
+	A(Wt);
+	var Kt = R(Wt, 2), qt = I(Kt);
+	{
+		let e = /* @__PURE__ */ M(() => (n(), U(() => n().snapshot?.account.role === "owner"))), t = /* @__PURE__ */ M(() => (H(d), n(), U(() => H(d) === "queues" && n().phase === "ready")));
+		ks(qt, {
+			get state() {
+				return n(), U(() => n().queues);
+			},
+			get owner() {
+				return H(e);
+			},
+			get active() {
+				return H(t);
+			},
+			get check() {
+				return U(() => l.checkQueues);
+			},
+			get load() {
+				return U(() => l.loadQueues);
+			},
+			get save() {
+				return U(() => l.saveQueues);
+			}
+		});
+	}
+	A(Kt), Se(2), A(Ve), A(C), z(() => {
+		X(te, "aria-current", H(d) === "home" ? "page" : void 0), ne = ti(te, 1, "", null, ne, { active: H(d) === "home" }), X(re, "aria-current", H(d) === "note" ? "page" : void 0), ie = ti(re, 1, "", null, ie, { active: H(d) === "note" }), ae = ti(T, 1, "draft-dot", null, ae, { visible: n().dirty }), X(E, "aria-current", H(d) === "connections" ? "page" : void 0), oe = ti(E, 1, "", null, oe, { active: H(d) === "connections" }), X(se, "aria-current", H(d) === "directory" ? "page" : void 0), ce = ti(se, 1, "", null, ce, { active: H(d) === "directory" }), X(le, "aria-current", H(d) === "activity" ? "page" : void 0), D = ti(le, 1, "", null, D, { active: H(d) === "activity" }), X(ue, "aria-current", H(d) === "notifications" ? "page" : void 0), de = ti(ue, 1, "", null, de, { active: H(d) === "notifications" }), X(me, "aria-current", H(d) === "integrations" ? "page" : void 0), he = ti(me, 1, "", null, he, { active: H(d) === "integrations" }), X(ge, "aria-current", H(d) === "roadmap" ? "page" : void 0), _e = ti(ge, 1, "", null, _e, { active: H(d) === "roadmap" }), X(ve, "aria-current", H(d) === "media" ? "page" : void 0), O = ti(ve, 1, "", null, O, { active: H(d) === "media" }), X(ye, "aria-current", H(d) === "queues" ? "page" : void 0), k = ti(ye, 1, "", null, k, { active: H(d) === "queues" }), J(Te, (n(), U(() => n().snapshot?.account.username ?? "Your account"))), J(Ee, (n(), U(() => n().snapshot?.account.role === "owner" ? "Owner" : n().snapshot?.account.role === "member" ? "Member" : "Check account access"))), mi(Oe, c()), J(je, g), J(ze, v), J(Be, y), J(Ke, H(d) === "home" ? "Welcome home." : H(d) === "note" ? "A little space to think." : H(d) === "connections" ? "Your servers, at a glance." : H(d) === "directory" ? "Everything within reach." : H(d) === "activity" ? "Pick up the thread." : H(d) === "notifications" ? "Catch up at your pace." : H(d) === "integrations" ? "Make the right connections." : H(d) === "media" ? "A window into your media." : H(d) === "queues" ? "See what’s in motion." : "See what comes next."), J(Je, (n(), U(() => n().phase === "ready" ? "Session checked" : n().phase === "checking" ? "Checking access" : "Access paused"))), J(Xe, (n(), U(() => n().message))), X($e, "hidden", (H(d), n(), U(() => H(d) !== "home" && H(d) !== "directory" || n().phase !== "ready"))), X($e, "aria-label", H(d) === "directory" ? "Service directory view" : "Home"), X(et, "hidden", H(d) !== "home"), X(ot, "hidden", H(d) !== "home"), J(ct, (n(), U(() => n().layoutMessage || "Your panels, in your own order."))), lt.disabled = (n(), U(() => !!n().layoutDraft || n().phase !== "ready" || n().layoutSave === "saving")), X(ut, "hidden", H(d) !== "home"), pt = ti(ft, 1, "home-grid", null, pt, { "services-view": H(d) === "directory" }), X(ht, "hidden", (H(d), n(), U(() => H(d) !== "note" || n().phase !== "ready"))), J(_t, (n(), U(() => n().dirty ? "Unsaved changes" : "Up to date"))), mi(N, (n(), U(() => n().draft))), N.disabled = (n(), U(() => n().phase !== "ready")), Ct = ti(St, 1, "", null, Ct, { "over-limit": H(o) > 4096 }), J(wt, `${H(o) ?? ""} / 4096 bytes`), Tt.disabled = !H(s), J(Et, (n(), U(() => n().save === "saving" ? "Saving…" : "Save note"))), X(It, "hidden", (H(d), n(), U(() => H(d) !== "connections" || n().phase !== "ready"))), X(Rt, "hidden", (H(d), n(), U(() => H(d) !== "activity" || n().phase !== "ready"))), X(Bt, "hidden", (H(d), n(), U(() => H(d) !== "notifications" || n().phase !== "ready"))), X(Ht, "hidden", (H(d), n(), U(() => H(d) !== "integrations" && H(d) !== "roadmap" || n().phase !== "ready"))), X(Ht, "aria-label", H(d) === "roadmap" ? "Roadmap note" : "Integration catalog"), X(Wt, "hidden", (H(d), n(), U(() => H(d) !== "media" || n().phase !== "ready"))), X(Kt, "hidden", (H(d), n(), U(() => H(d) !== "queues" || n().phase !== "ready")));
+	}), G("click", te, () => b("home")), G("click", re, () => b("note")), G("click", E, () => b("connections")), G("click", se, () => b("directory")), G("click", le, () => b("activity")), G("click", ue, () => b("notifications")), G("click", me, () => b("integrations")), G("click", ge, () => b("roadmap")), G("click", ve, () => b("media")), G("click", ye, () => b("queues")), Cr("submit", De, () => l.signOut()), G("click", it, () => b("note")), G("click", at, () => b("roadmap")), G("click", lt, function(...e) {
 		l.beginLayout?.apply(this, e);
-	}), Cr("submit", vt, (e) => {
+	}), Cr("submit", bt, (e) => {
 		e.preventDefault(), l.save();
-	}), G("input", yt, (e) => l.edit(e.currentTarget.value)), q(e, S), Ge(), i();
+	}), G("input", N, (e) => l.edit(e.currentTarget.value)), q(e, S), Ge(), i();
 }
 wr(["click", "input"]);
 // src/main.ts
-var us = document.getElementById("workspace-root"), ds = document.querySelector("meta[name=\"reborn-session-binding\"]")?.content, fs = document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content;
-if (us && ds && /^[a-f0-9]{64}$/.test(ds) && fs === "reborn-workspace-v1") {
-	let e = Array.from(us.childNodes);
-	us.replaceChildren();
+var Us = document.getElementById("workspace-root"), Ws = document.querySelector("meta[name=\"reborn-session-binding\"]")?.content, Gs = document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content;
+if (Us && Ws && /^[a-f0-9]{64}$/.test(Ws) && Gs === "reborn-workspace-v1") {
+	let e = Array.from(Us.childNodes);
+	Us.replaceChildren();
 	try {
-		Rr(ls, {
-			target: us,
-			props: { binding: ds }
+		Rr(Hs, {
+			target: Us,
+			props: { binding: Ws }
 		});
 	} catch {
-		us.replaceChildren(...e);
+		Us.replaceChildren(...e);
 	}
 }

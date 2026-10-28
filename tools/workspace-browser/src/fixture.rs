@@ -82,7 +82,14 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
             | "/api/workspace/notifications/read"
             | "/api/workspace/layout"
     ) || (request.method() == axum::http::Method::PUT
-        && matches!(path, "/api/owner/media/jellyfin" | "/api/owner/media/seerr"))
+        && matches!(
+            path,
+            "/api/owner/media/jellyfin"
+                | "/api/owner/media/seerr"
+                | "/api/owner/queues/sonarr"
+                | "/api/owner/queues/radarr"
+                | "/api/owner/queues/qbittorrent"
+        ))
     {
         proxy.writes.fetch_add(1, Ordering::SeqCst);
     }

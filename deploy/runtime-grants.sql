@@ -24,3 +24,8 @@ GRANT SELECT, INSERT ON provider_server_observations TO reborn_app;
 -- revisions may be replaced, but runtime cannot erase/insert or rename providers.
 GRANT SELECT ON media_connections TO reborn_app;
 GRANT UPDATE (revision, sealed) ON media_connections TO reborn_app;
+
+-- Queue enrollment has a separate fixed provider set. Runtime may replace only
+-- revision/sealed columns, never create, erase or rename queue provider rows.
+GRANT SELECT ON queue_connections TO reborn_app;
+GRANT UPDATE (revision, sealed) ON queue_connections TO reborn_app;

@@ -16,8 +16,11 @@ Retained private Activity/history is installed as0.1.9 (issue12).
 Grouped notifications/read state are installed as0.1.10 (issue14).
 Personal Home arrangement is installed as0.1.11 (issue16).
 The [integration catalog, retained sampled provider history and Roadmap note](docs/M2_CATALOG.md)
-are installed as0.1.12 (issue18). The current independent slice is
-[owner-only Jellyfin/Seerr observations](docs/M3_MEDIA.md), tracked in issue20.
+are installed as0.1.12 (issue18).
+[Owner-only Jellyfin/Seerr observations](docs/M3_MEDIA.md) are installed as0.1.13
+(issue20). The current independent slice is
+[owner-only Sonarr/Radarr/qBittorrent queue observations](docs/M3_QUEUES.md),
+tracked in issue22.
 Existing accepted functionality in
 another application is a behavior reference, not a completed Reborn milestone.
 

@@ -10,19 +10,21 @@ pub fn router(service: Service) -> Router {
 async fn read(State(service): State<Service>, headers: HeaderMap) -> Response {
     let result = async {
         let p = workspace::bound(&service, &headers, false).await?;
-        // Retained0.1.12 clients accept only their original catalog capability
-        // set. New clients opt into media entries explicitly.
+        // Retained clients accept their exact catalog capability snapshots.
+        // Queue entries require an explicit new-client opt-in.
         let mut capabilities = headers.get_all("x-reborn-guide").iter();
-        let media = match (capabilities.next(), capabilities.next()) {
-            (None, None) => false,
-            (Some(value), None) if value == "media-v1" => true,
+        let (media, queues) = match (capabilities.next(), capabilities.next()) {
+            (None, None) => (false, false),
+            (Some(value), None) if value == "media-v1" => (true, false),
+            (Some(value), None) if value == "queues-v1" => (true, true),
             _ => return Err(ApiError(StatusCode::UPGRADE_REQUIRED, "upgrade_required")),
         };
         let current = store::guide_session(&service.pool, &service.key_id, &p.hash).await?;
         Ok::<_, ApiError>(Json(json!({
             "product":"keida-hub-reborn", "contract":"reborn-workspace-v1", "schema":1,
             "account":account(current.account), "session_generation":current.generation.to_string(),
-            "catalog":catalog(media), "roadmap":roadmap(media)
+            "catalog":if queues {queue_catalog()} else {catalog(media)},
+            "roadmap":if queues {queue_roadmap()} else {roadmap(media)}
         })).into_response())
     }
     .await;
@@ -121,5 +123,36 @@ fn roadmap(media: bool) -> Value {
             "delivered":[],
             "remaining":["Jellyfin and Seerr observations first, then Sonarr, Radarr and qBittorrent queues.","Separately design and accept every request, approval or download mutation."]});
     }
+    out
+}
+
+fn queue_catalog() -> Value {
+    let mut out = catalog(true);
+    out[3] = json!({"id":"sonarr","name":"Sonarr","status":"available",
+        "summary":"Owner-only Sonarr queue and pending-release rows.",
+        "requirements":["An owner deliberately enrolls broad-key access and valid root-mounted HTTPS for Sonarr 4.","A global API key may grant management access; observation requests do not restrict that key."],
+        "capabilities":["Bounded live pages with reported byte progress, separate import state and explicit unknown or partial data.","Open Queues to enroll access; queue rows are not downloader health or playback availability."]});
+    out[4] = json!({"id":"radarr","name":"Radarr","status":"available",
+        "summary":"Owner-only Radarr queue and pending-release rows.",
+        "requirements":["An owner deliberately enrolls broad-key access and valid root-mounted HTTPS for Radarr 6.","A global API key may grant management access; observation requests do not restrict that key."],
+        "capabilities":["Bounded live pages with reported byte progress, separate import state and explicit unknown or partial data.","Open Queues to enroll access; importing or managing downloads is separate work."]});
+    out[5] = json!({"id":"qbittorrent","name":"qBittorrent","status":"available",
+        "summary":"Owner-only all-state transfer observations for qBittorrent 5.2 and 5.3.",
+        "requirements":["An owner deliberately enrolls a global Bearer API key and valid root-mounted HTTPS.","The key may grant management access; password, Basic and cookie login modes are outside this profile."],
+        "capabilities":["Bounded transfer pages and reported selected-byte progress, without files, peers, trackers, paths or download links.","Provider total stays unknown; this view provides no download controls or complete-inventory claim."]});
+    out
+}
+
+fn queue_roadmap() -> Value {
+    let mut out = roadmap(true);
+    out["priorities"] = json!([
+        "Use the integration catalog and retained Crafty observation history; review the refreshed desktop and mobile workspace.",
+        "Deliberately enroll dedicated read-only Crafty access, valid TLS and reviewed server and public join details; verify real observations and freshness.",
+        "Deliberately enroll owner-only Jellyfin and Seerr access; review broad-key privacy, selected library, bounded rows and counts-only playback before real acceptance.",
+        "Deliberately enroll owner-only Sonarr, Radarr and qBittorrent access in Queues; review supported versions, broad-key privacy, valid HTTPS and real queue/transfer freshness."
+    ]);
+    out["milestones"][3] = json!({"id":"M3","title":"Media and downloads","status":"In progress; real provider acceptance pending",
+        "delivered":["Owner-only encrypted Jellyfin and Seerr enrollment, bounded library/request pages and counts-only recent playback.","Owner-only encrypted Sonarr/Radarr queue and qBittorrent transfer enrollment, bounded live pages, separate import state and reported byte progress in this build."],
+        "remaining":["Deliberate real provider access, supported-version/TLS/privacy review and actual library/request/queue/transfer freshness acceptance.","Separately design and accept every request, approval or download management action."]});
     out
 }

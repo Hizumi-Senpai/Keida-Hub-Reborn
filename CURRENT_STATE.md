@@ -7,59 +7,56 @@ precedence over historical bootstrap examples.
 
 ## Verified baseline at slice start
 
-The verified baseline is Reborn0.1.12 at https://rewrite.keida.me: main
-`ae171b0ef1aef1f2a5ccd486ef9c31b4bda05035`, tree
-`8c6a0a218b3a0fd294297a4639743a1514d1903f`, schema9.
-[Exact source/CI/artifact/current-data recovery/install receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6451929340).
-Exact head/main passed89 Rust tests,58 checked SQLx records,11 native +11
-exact-image HTTPS browser workflows,11 retained account outcomes and packaged
-observation/newer-write recovery. Actual-data8→9 and final fenced matched restore
-preserved12 prior relations and3 sequence states.
+Reborn0.1.13 is HTTP/runtime/recovery-qualified at https://rewrite.keida.me: main
+`02a7f321dd83b358da810085c563c963bdc6f3eb`, tree
+`a134483871c37533f195248d5729df5f2fca678e`, schema10.
+[Exact source/artifact/current-data/install receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6455928640).
+Head/main each passed24steps:102Rust tests,61checkedSQLx records,12native+12exact-image
+HTTPS browser workflows,11account outcomes including actual ten-minute expiry,
+and packaged media/newer-write recovery. Actual-current9→10 and final fenced
+matched restore preserved14 prior relations/four sequence states/migrations1–9.
 
-Private notes, encrypted GET-only Crafty enrollment/observations, service
-directory/search/categories, personal pins, Activity, grouped notifications/read
-markers, per-account Home panel order/visibility, Integrations catalog, retained
-Crafty observations and a separate Roadmap note are installed. Actual refreshed
-owner desktop/mobile workflows and real dedicated Crafty/TLS/join/freshness
-acceptance remain open. Crafty is not enrolled. M0/M1/full M2 stay open.
+Private notes, dedicated Crafty observations, directory/search/pins, Activity,
+notifications/read markers, Home arrangement, catalog/Roadmap, sampled Crafty
+history and owner-only Jellyfin/Seerr Media are installed. Actual refreshed owner
+workflows and deliberate real-provider/TLS/privacy/join/freshness acceptance remain
+open. Fresh23:25Z metadata inventory found Crafty/Jellyfin/Seerr unconfigured;
+this is not provider acceptance. M0/M1/full M2/M3 remain open.
 
 ## Current source slice
 
-[Owner-only Jellyfin/Seerr observations](docs/M3_MEDIA.md),
-[issue20](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/20). Deliberate
-encrypted enrollment and normalized bounded GET-only observations stay separate
-from shared workspace/note responses. API keys may grant administrator access;
-observation-only behavior does not scope a key. No mapped provider identity or
-member sharing is inferred. One persistent workspace preserves notes/forms/layouts.
+[Owner-only queue and transfer observations](docs/M3_QUEUES.md),
+[issue22](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/22), frozen before
+application code. Explicit Sonarr4/APIv3, Radarr6/APIv3 and qBittorrent5.2/5.3
+Bearer-key profiles use authenticated version admission before bounded GET reads.
+No implicit sharing, inherited keys, password/cookie fallback or management actions.
+Queue enrollment has a separate fixed-row relation and encryption domain; existing
+Media/Crafty configuration remains readable unchanged. The single persistent
+workspace preserves its prior nine navigation entries, notes/forms/focus/layouts
+and scheduler. New clients explicitly request queues-v1 guide capabilities while
+no-header0.1.12 and media-v1/0.1.13 snapshots remain exact.
 
-Schema10 requires exact-head/main CI, exact-image browser/recovery and fresh actual
-current-data9→10/key/session qualification before replacement, covering all14 prior
-relations/four sequence states/migrations1–9. Installed remains0.1.12 until an exact
-receipt records otherwise. Schema9 binaries refuse10; preserve
-newer writes through reviewed forward/manual recovery, never automatic old dumps.
-Exact0.1.12/11/10/9/8/7/6 client assets remain available.
-
-Real Crafty and Jellyfin/Seerr enrollment/TLS/privacy/freshness acceptance remain
-deliberate gates. Later media work adds queue views and separately reviewed
-mutations. Broader old-client,
-room/asset/edit callers and complete M0/M2 acceptance remain open.
+Schema11 requires actual checked SQLx generation, exact-head/main CI, exact-image
+browser/recovery and fresh current-data10→11/key/session qualification before
+replacement, covering **15prior relations including media_connections/four sequence
+states/migrations1–10**. Installed remains0.1.13 until an exact receipt says otherwise.
+Schema10 binaries refuse11; preserve newer writes through reviewed forward/manual
+recovery, never automatic older dumps. Exact0.1.13/12/11/10/9/8/7/6 assets are retained.
+The existing pinned serde_json raw_value feature supplies lossless bounded numeric
+lexemes for byte quantities; no package/version or production runtime is added.
 
 ## Ownership and limits
 
-One active CORE integrates, merges, deploys and writes shared checkpoints. Local
-helpers have explicit source scopes and no integration or host authority. External
-Original/Rewrite assignments and unpublished branches remain protected. Main
-ruleset25845081 requires the up-to-date Rust1.99.1/PostgreSQL16 PR check with no
-bypass/force/deletion; refresh actual rules before integration.
+One CORE integrates/merges/deploys/shared checkpoints. Helpers have explicit local
+file scopes and no GitHub or host authority. Main ruleset25845081 remains active,
+strict Rust1.99.1/PostgreSQL16 with no bypass actors/force/deletion; refresh before
+integration. External assignments/branches and Original/Rewrite data remain intact.
 
-Original keida.me, nginx/tunnel, games/controllers/proxy and Steam updater remain
-with their owners. Fresh2026-10-27 inventory observes Crafty-4 running since
-17:20:19Z, an external change since the prior stopped receipt; preserve its current
-state. Rewrite0.1.4 remains preserved with its own data/key/image/recovery. Reborn
-uses private PostgreSQL/key/network and restricted runtime/migrator roles. Useful
-prior0.1.11 and matched schema8 recovery remain retained. Host-updater activation
-and game-control transfer require separate concrete review and authorization.
-
-Never request secrets in chat, read owner passwords or replay credential
-submissions. Safari/iPhone, outside-LAN joins, performance and actual-owner/provider
-acceptance require their own evidence.
+Reborn owns its private PostgreSQL/key/config/network. Source fixtures and recovered
+copies have separate disposable clusters/networks; no copied production owner is
+promoted and no credential submission is replayed. Useful prior0.1.12 and final
+matched schema9 recovery remain retained at this slice start. Original, nginx/tunnel,
+Crafty/Jellyfin/Seerr/Sonarr/Radarr/qBittorrent and Steam updater keep their state and
+responsibilities. Host-updater activation and game transfer require separate review
+and authorization. Never read owner passwords/request secrets in chat. Actual
+Safari/iPhone, performance, normal-use and real-provider acceptance require evidence.

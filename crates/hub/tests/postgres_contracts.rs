@@ -272,21 +272,21 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
     assert_eq!(metadata.len(), 1);
     assert!(metadata[0].get::<bool, _>("singleton"));
     assert_eq!(metadata[0].get::<String, _>("product"), "keida-hub-reborn");
-    assert_eq!(metadata[0].get::<i32, _>("schema_version"), 10);
+    assert_eq!(metadata[0].get::<i32, _>("schema_version"), 11);
     for statement in [
         "UPDATE reborn_schema SET singleton = FALSE",
         "UPDATE reborn_schema SET product = 'keida-hub-rewrite'",
-        "UPDATE reborn_schema SET schema_version = 11",
+        "UPDATE reborn_schema SET schema_version = 12",
     ] {
         assert_constraint(&mut connection, statement, "23514").await;
     }
-    assert_constraint(&mut connection, "INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',10)", "23505").await;
+    assert_constraint(&mut connection, "INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',11)", "23505").await;
 
     let ledger_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM _sqlx_migrations")
         .fetch_one(&mut connection)
         .await
         .expect("migration ledger count");
-    assert_eq!(ledger_count, 10);
+    assert_eq!(ledger_count, 11);
     assert_migrated(completed(database.migrate()).await);
     assert_eq!(
         sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM _sqlx_migrations")
@@ -297,7 +297,7 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
     );
 
     // Restore fixture bytes after each fault; acceptance requires rejecting the fault, not trusting a copied result.
-    for version in [1_i64, 2, 3, 4, 5, 6, 7, 8, 9, 10] {
+    for version in [1_i64, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] {
         let checksum: Vec<u8> =
             sqlx::query_scalar("SELECT checksum FROM _sqlx_migrations WHERE version = $1")
                 .bind(version)
@@ -347,7 +347,7 @@ async fn readiness_requires_the_exact_migrated_schema_without_migrating_on_reads
         .await
         .expect("remove singleton fixture row");
     server.readiness(false).await;
-    connection.execute("INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',10)").await.expect("restore singleton fixture row");
+    connection.execute("INSERT INTO reborn_schema (singleton,product,schema_version) VALUES (TRUE,'keida-hub-reborn',11)").await.expect("restore singleton fixture row");
     server.readiness(true).await;
 }
 
@@ -360,10 +360,10 @@ async fn concurrent_migration_commands_leave_all_complete_migrations_and_valid_m
     assert_migrated(first);
     assert_migrated(second);
     let mut connection = database.connect().await;
-    let row = sqlx::query("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE success AND version IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)) AS completed FROM _sqlx_migrations")
+    let row = sqlx::query("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE success AND version IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)) AS completed FROM _sqlx_migrations")
         .fetch_one(&mut connection).await.expect("inspect concurrent ledger");
-    assert_eq!(row.get::<i64, _>("total"), 10);
-    assert_eq!(row.get::<i64, _>("completed"), 10);
+    assert_eq!(row.get::<i64, _>("total"), 11);
+    assert_eq!(row.get::<i64, _>("completed"), 11);
     let server = Server::start(&database).await;
     server.readiness(true).await;
 }
@@ -434,13 +434,13 @@ async fn actual_schema_one_upgrades_through_auth_to_workspace_without_losing_exi
             .await
             .expect("inspect upgraded metadata");
     assert_eq!(after.get::<String, _>("product"), "keida-hub-reborn");
-    assert_eq!(after.get::<i32, _>("schema_version"), 10);
+    assert_eq!(after.get::<i32, _>("schema_version"), 11);
     let ledger =
         sqlx::query("SELECT version, checksum, success FROM _sqlx_migrations ORDER BY version")
             .fetch_all(&mut connection)
             .await
             .expect("inspect upgraded ledger");
-    assert_eq!(ledger.len(), 10);
+    assert_eq!(ledger.len(), 11);
     assert_eq!(ledger[0].get::<i64, _>("version"), 1);
     assert_eq!(ledger[1].get::<i64, _>("version"), 2);
     assert_eq!(ledger[2].get::<i64, _>("version"), 3);
@@ -532,7 +532,7 @@ async fn schema_two_upgrade_preserves_real_account_session_and_accepted_migratio
             .fetch_one(&mut connection)
             .await
             .expect("current schema"),
-        10
+        11
     );
 }
 
@@ -1202,5 +1202,266 @@ async fn schema_nine_upgrade_preserves_fourteen_relations_four_sequences_and_all
         "UPDATE media_connections SET revision=1,sealed=decode(repeat('ab',30101),'hex') WHERE provider='jellyfin'",
     ] {
         assert_constraint(&mut db, statement, "23514").await;
+    }
+}
+
+#[tokio::test]
+async fn queues_actual_runtime_role_can_only_read_and_update_the_three_fixed_connections() {
+    let database = Database::create().await;
+    assert_migrated(completed(database.migrate()).await);
+    let role = RuntimeRole {
+        name: format!(
+            "keida_reborn_queue_role_{}_{:x}",
+            std::process::id(),
+            DATABASE_COUNTER.fetch_add(1, Ordering::Relaxed)
+        ),
+        url: database.url.clone(),
+    };
+    assert!(
+        role.name.len() <= 63
+            && role
+                .name
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b == b'_')
+    );
+    let mut db = database.connect().await;
+    // Only the generated and checked fixture identifier enters dynamic SQL.
+    sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
+        "CREATE ROLE \"{}\" NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE",
+        role.name
+    )))
+    .execute(&mut db)
+    .await
+    .unwrap();
+    sqlx::raw_sql(sqlx::AssertSqlSafe(
+        include_str!("../../../deploy/runtime-grants.sql").replace("reborn_app", &role.name),
+    ))
+    .execute(&mut db)
+    .await
+    .unwrap();
+    sqlx::raw_sql(sqlx::AssertSqlSafe(format!("SET ROLE \"{}\"", role.name)))
+        .execute(&mut db)
+        .await
+        .unwrap();
+    let rows =
+        sqlx::query("SELECT provider,revision,sealed FROM queue_connections ORDER BY provider")
+            .fetch_all(&mut db)
+            .await
+            .unwrap();
+    assert_eq!(rows.len(), 3);
+    assert_eq!(
+        rows.iter()
+            .map(|r| r.get::<String, _>("provider"))
+            .collect::<Vec<_>>(),
+        ["qbittorrent", "radarr", "sonarr"]
+    );
+    for row in rows {
+        assert_eq!(row.get::<i64, _>("revision"), 0);
+        assert!(row.get::<Option<Vec<u8>>, _>("sealed").is_none());
+    }
+    db.execute("UPDATE queue_connections SET revision=1,sealed=decode(repeat('ad',100),'hex') WHERE provider='sonarr'").await.unwrap();
+    db.execute("UPDATE queue_connections SET revision=2,sealed=NULL WHERE provider='sonarr'")
+        .await
+        .unwrap();
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>(
+            "SELECT revision FROM queue_connections WHERE provider='sonarr'"
+        )
+        .fetch_one(&mut db)
+        .await
+        .unwrap(),
+        2
+    );
+    for statement in [
+        "INSERT INTO queue_connections (provider,revision) VALUES ('sonarr',0)",
+        "DELETE FROM queue_connections WHERE provider='radarr'",
+        "UPDATE queue_connections SET provider=provider WHERE provider='sonarr'",
+        "ALTER TABLE queue_connections ADD COLUMN unauthorized_runtime_column text",
+        "CREATE TABLE unauthorized_queue_runtime_table (id int)",
+        "UPDATE _sqlx_migrations SET checksum=decode('00','hex') WHERE version=11",
+        "DELETE FROM _sqlx_migrations WHERE version=11",
+        "UPDATE reborn_schema SET schema_version=11",
+    ] {
+        assert_constraint(&mut db, statement, "42501").await;
+    }
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM queue_connections")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        3
+    );
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM media_connections")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        2
+    );
+    db.execute("RESET ROLE").await.unwrap();
+    for statement in [
+        "INSERT INTO queue_connections VALUES ('other',0,NULL)",
+        "UPDATE queue_connections SET revision=-1 WHERE provider='radarr'",
+        "UPDATE queue_connections SET revision=0,sealed=decode(repeat('ab',100),'hex') WHERE provider='radarr'",
+        "UPDATE queue_connections SET revision=1,sealed=decode('ab','hex') WHERE provider='radarr'",
+        "UPDATE queue_connections SET revision=1,sealed=decode(repeat('ab',30101),'hex') WHERE provider='radarr'",
+    ] {
+        assert_constraint(&mut db, statement, "23514").await;
+    }
+}
+
+#[tokio::test]
+async fn schema_ten_upgrade_preserves_fifteen_relations_four_sequences_and_ten_migration_checksums()
+{
+    let database = Database::create().await;
+    let mut db = database.connect().await;
+    let source = sqlx::migrate!("../../migrations");
+    let prior: Vec<_> = source
+        .iter()
+        .filter(|migration| migration.version <= 10)
+        .cloned()
+        .collect();
+    assert_eq!(prior.len(), 10);
+    sqlx::migrate::Migrator::with_migrations(prior.clone())
+        .run(&mut db)
+        .await
+        .unwrap();
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT schema_version::bigint FROM reborn_schema")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        10
+    );
+    assert!(!sqlx::query_scalar::<_,bool>("SELECT EXISTS(SELECT 1 FROM pg_tables WHERE schemaname='public' AND tablename='queue_connections')").fetch_one(&mut db).await.unwrap());
+    // Every accepted schema10 relation receives distinctive data; ciphertext is
+    // opaque here because this contract checks migration byte preservation.
+    for statement in [
+        "INSERT INTO users (username,password_phc,role,generation) VALUES ('queue_upgrade_owner','$argon2id$v=19$m=19456,t=2,p=1$opaque-retained-phc','owner',11)",
+        "UPDATE auth_state SET owner_id=1,key_id=decode(repeat('b3',32),'hex')",
+        "UPDATE auth_throttles SET window_start=501,attempts=3 WHERE scope=1",
+        "INSERT INTO sessions (verifier,account_id,generation,created_at,expires_at) SELECT decode(repeat('c7',32),'hex'),id,11,500,900 FROM users",
+        "INSERT INTO workspace_notes SELECT id,'Schema10 accepted private note survives 海',29 FROM users",
+        "UPDATE crafty_connection SET revision=9,sealed=decode(repeat('de',100),'hex')",
+        "INSERT INTO directory_services (name,category,description,url) VALUES ('Retained schema10 service','Home','Private retained description','https://retained.example.invalid/')",
+        "UPDATE directory_state SET revision=7",
+        "INSERT INTO directory_pins SELECT id,8,ARRAY[1]::bigint[] FROM users",
+        "INSERT INTO activity_events (account_id,kind,revision,occurred_at) SELECT id,'note_saved',29,501 FROM users",
+        "INSERT INTO notification_groups SELECT id,'services',9,4,'service_updated',12,502 FROM users",
+        "INSERT INTO dashboard_layouts SELECT id,10,ARRAY['connections','pins','note'],TRUE,FALSE,TRUE FROM users",
+        "INSERT INTO provider_observations (sample_id,connection_revision,checked_at,complete,error) VALUES (decode(repeat('a9',16),'hex'),9,540,FALSE,'unavailable')",
+        "INSERT INTO provider_server_observations (batch_id,ordinal,name,state,players,capacity,collected_at,provider_at,freshness,error) SELECT id,1,'Retained observed zero','running',0,30,540,539,'fresh',NULL FROM provider_observations",
+        "INSERT INTO provider_server_observations (batch_id,ordinal,name,state,freshness,error) SELECT id,2,'Retained unknown','unknown','unknown','unavailable' FROM provider_observations",
+        "UPDATE media_connections SET revision=13,sealed=decode(repeat('f1',100),'hex') WHERE provider='jellyfin'",
+        "UPDATE media_connections SET revision=6,sealed=NULL WHERE provider='seerr'",
+        "SELECT setval('users_id_seq',37,FALSE)",
+        "SELECT setval('directory_services_id_seq',61,TRUE)",
+        "SELECT setval('activity_events_id_seq',109,FALSE)",
+        "SELECT setval('provider_observations_id_seq',151,TRUE)",
+    ] {
+        db.execute(statement).await.unwrap();
+    }
+    async fn snapshot(db: &mut PgConnection) -> Vec<Value> {
+        let mut values = Vec::new();
+        // This explicit pre-existing allowlist is independent of the new schema.
+        for table in [
+            "users",
+            "sessions",
+            "auth_state",
+            "auth_throttles",
+            "workspace_notes",
+            "crafty_connection",
+            "directory_state",
+            "directory_services",
+            "directory_pins",
+            "activity_events",
+            "notification_groups",
+            "dashboard_layouts",
+            "provider_observations",
+            "provider_server_observations",
+            "media_connections",
+        ] {
+            let statement = format!(
+                "SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]'::jsonb) FROM {table} t"
+            );
+            values.push(
+                sqlx::query_scalar(sqlx::AssertSqlSafe(statement.as_str()))
+                    .fetch_one(&mut *db)
+                    .await
+                    .unwrap(),
+            );
+        }
+        for sequence in [
+            "users_id_seq",
+            "directory_services_id_seq",
+            "activity_events_id_seq",
+            "provider_observations_id_seq",
+        ] {
+            let statement =
+                format!("SELECT jsonb_build_array(last_value,is_called) FROM {sequence}");
+            values.push(
+                sqlx::query_scalar(sqlx::AssertSqlSafe(statement.as_str()))
+                    .fetch_one(&mut *db)
+                    .await
+                    .unwrap(),
+            );
+        }
+        values
+    }
+    let before = snapshot(&mut db).await;
+    assert_eq!(before.len(), 19);
+    let migration_rows: Vec<(i64, Vec<u8>, bool)> =
+        sqlx::query_as("SELECT version,checksum,success FROM _sqlx_migrations ORDER BY version")
+            .fetch_all(&mut db)
+            .await
+            .unwrap();
+    assert_eq!(migration_rows.len(), 10);
+    assert_migrated(completed(database.migrate()).await);
+    assert_eq!(
+        snapshot(&mut db).await,
+        before,
+        "queue migration changed accepted schema10 data or sequence state"
+    );
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT schema_version::bigint FROM reborn_schema")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        11
+    );
+    let after: Vec<(i64, Vec<u8>, bool)> = sqlx::query_as(
+        "SELECT version,checksum,success FROM _sqlx_migrations WHERE version<=10 ORDER BY version",
+    )
+    .fetch_all(&mut db)
+    .await
+    .unwrap();
+    assert_eq!(
+        after, migration_rows,
+        "queue migration rewrote a prior ledger row"
+    );
+    for migration in prior {
+        let checksum: Vec<u8> =
+            sqlx::query_scalar("SELECT checksum FROM _sqlx_migrations WHERE version=$1")
+                .bind(migration.version)
+                .fetch_one(&mut db)
+                .await
+                .unwrap();
+        assert_eq!(checksum, migration.checksum.as_ref());
+    }
+    let rows =
+        sqlx::query("SELECT provider,revision,sealed FROM queue_connections ORDER BY provider")
+            .fetch_all(&mut db)
+            .await
+            .unwrap();
+    assert_eq!(rows.len(), 3);
+    assert_eq!(
+        rows.iter()
+            .map(|r| r.get::<String, _>("provider"))
+            .collect::<Vec<_>>(),
+        ["qbittorrent", "radarr", "sonarr"]
+    );
+    for row in rows {
+        assert_eq!(row.get::<i64, _>("revision"), 0);
+        assert!(row.get::<Option<Vec<u8>>, _>("sealed").is_none());
     }
 }
