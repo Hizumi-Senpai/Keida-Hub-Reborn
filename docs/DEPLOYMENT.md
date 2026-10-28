@@ -1,10 +1,11 @@
 # Keida Hub Reborn deployment contract
 
-Status: deployment contract. Reborn0.1.16/schema12 is the installed baseline under
-the [exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6462653936).
-Candidate session-review source17/schema13 requires its own qualification.
-The bootstrap examples below preserve their planning context; they are not current
-resource ownership or installation state. Refresh issue1 and actual host identity.
+Status: deployment contract. Reborn0.1.17/schema13 is the installed baseline under
+[the exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6466893195).
+Candidate browser-refresh source18 keeps schema13 and needs its own exact head/
+main, image/browser and current-data compatible upgrade/rollback qualification.
+The bootstrap examples below preserve planning context; fresh receipts and actual
+resource discovery override them. This slice activates no host updater.
 
 At this planning checkpoint, `https://rewrite.keida.me` serves **Keida Hub
 Rewrite v0.1.4**, not Reborn. Its eventual reuse for Reborn is reserved; creating
@@ -190,18 +191,14 @@ health/HTTP evidence, public/browser result and terminal success/failure/recover
 state. Record limitations and pending owner acceptance explicitly. Preserve prior
 checkpoint history rather than replacing it with an unqualified success claim.
 
-Current installed baseline: **Reborn0.1.14/schema11**, as recorded in the
-[exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6458999115).
-Source/fixture CI, publication, installation, loaded owner browser, real provider
-acceptance and separately authorized host-updater activation remain distinct.
-Refresh issue1 before any host action; bootstrap examples above are historical.
-
-
-The current frozen implementation slice is [M4.1 identity](M4_IDENTITY.md), issue25.
-Documentation-only accepted source0.1.15 did not publish/install a new image.
-Expected next application source0.1.16/schema12 must qualify against actual live14
-schema11, including16 prior domain relations, all four sequence states/is_called,
-ledger1–11, accepted Discord application/link/newer-write preservation and loss
-of unfinished RAM attempts. A schema11 binary must reject12; no old backup may
-silently erase newer writes. Dedicated real Discord enrollment/callback log privacy
-and owner browser acceptance remain distinct from synthetic protocol fixtures.
+Current installed baseline: **Reborn0.1.17/schema13**, as recorded in the
+[exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6466893195).
+The current frozen source slice is [M5.1 browser refresh](M5_BROWSER_REFRESH.md),
+issue29. Expected18 keeps schema13 and requires current-data compatible17/18
+checks, all prior domain relations, four sequence states/is_called, the complete
+ledger1–13, matched key/configuration and newer-write preservation. Keep every
+22 baseline asset and add the new pair. Retain useful17/matched13 only after18
+qualification; retire only the exactly identified obsolete16 container then.
+Never restore an older dump over newer writes. Source/fixture, published artifact,
+installation, loaded owner browser, real provider and updater acceptance remain
+separate. Refresh issue1 and actual host ownership before any host operation.

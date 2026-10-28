@@ -1,5 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { flushSync } from 'svelte';
+import { refresh, type AccessScope } from './refresh';
 const PRODUCT = 'keida-hub-reborn';
 const CONTRACT = 'reborn-workspace-v1';
 const MAX_REVISION = 9223372036854775807n;
@@ -327,7 +328,28 @@ export function workspace(binding: string) {
   let channel: BroadcastChannel | undefined;
   let disposed = false;
   let terminal = false;
+  let admitted: AccessScope | undefined;
+  let connectionPending = false, connectionUncertain = false;
   const state = () => get(model);
+  const refreshBusy = (): boolean => !!saving || !!editing || !!marking || !!arranging || !!identitySaving || !!sessionsSaving
+    || connectionPending || connectionUncertain || mediaProviders.some(p => !!mediaSaving[p]) || queueProviders.some(p => !!queueSaving[p])
+    || [state().save, state().directorySave, state().layoutSave, state().notificationSave, state().identity.save, state().sessions.save,
+      ...mediaProviders.map(p => state().media[p].save), ...queueProviders.map(p => state().queues[p].save)].includes('uncertain');
+  function refreshDrafts(): boolean {
+    const s = state();
+    if (s.dirty || s.recovery || s.layoutDraft) return true;
+    // Inspect only whether a form has work. Never retain or copy its values.
+    return Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('#workspace-root form input, #workspace-root form textarea, #workspace-root form select')).some(element => {
+      if (element instanceof HTMLInputElement && ['hidden', 'submit', 'button'].includes(element.type) || element.id === 'workspace-note') return false;
+      if (element instanceof HTMLInputElement && ['checkbox', 'radio'].includes(element.type)) return element.checked !== element.defaultChecked;
+      if (element instanceof HTMLSelectElement) { const options = Array.from(element.options); let defaultIndex = 0; options.forEach((option, index) => { if (option.defaultSelected) defaultIndex = index; }); return element.selectedIndex !== (defaultIndex < 0 ? 0 : defaultIndex); }
+      return element.value !== element.defaultValue || element instanceof HTMLInputElement && element.type === 'password' && element.value.length > 0;
+    });
+  }
+  const updates = refresh(binding, { scope: () => admitted, blocked: message => invalidate(message, true), busy: refreshBusy,
+    drafts: refreshDrafts, discard: removeDraft, leaving: () => { terminal = true; cancel(); } });
+  const refreshStatus = () => ({ busy: refreshBusy(), drafts: refreshDrafts() });
+  function connectionMutation(pending: boolean, uncertain: boolean): void { connectionPending = pending; connectionUncertain = uncertain; model.update(s => ({ ...s })); }
   const storageKey = (s: Snapshot) => `${PRODUCT}.workspace.v1:${s.account.id}:${s.session_generation}`;
   function removeDraft(): void {
     held = undefined;
@@ -367,7 +389,7 @@ export function workspace(binding: string) {
     arranging?.abort(); arranging = undefined;
   }
   function invalidate(message: string, blocked = false): void {
-    cancel(); terminal ||= blocked;
+    updates.pause(blocked); cancel(); terminal ||= blocked;
     flushSync(() => model.set(empty(blocked ? 'blocked' : 'paused', message)));
   }
   function schedule(): void {
@@ -431,6 +453,8 @@ export function workspace(binding: string) {
       if (response.status !== 200) { invalidate(rejected(response.status), true); return; }
       const next = snapshot(response.value);
       if (!authorized(next)) { invalidate('Your account scope changed. Open a fresh workspace.', true); return; }
+      if (admitted && (next.account.id !== admitted.account.id || next.account.username !== admitted.account.username || next.account.role !== admitted.account.role || next.session_generation !== admitted.session_generation)) { invalidate('Your account scope changed. Open a fresh workspace.', true); return; }
+      admitted = { account: next.account, session_generation: next.session_generation };
       const before = state(); key = storageKey(next);
       if (before.phase === 'ready') {
         const connection = mergeCrafty(before, next.crafty);
@@ -473,7 +497,7 @@ export function workspace(binding: string) {
           if (pending?.error === 'checking' && !queueReading[provider] && !queueSaving[provider] && !queueStatusReading[provider]) void loadQueues(provider, pending.offset);
         }
       }
-      schedule();
+      void updates.discover(); schedule();
     } catch {
       if (reading === controller && current === epoch && !disposed) invalidate('Your workspace could not be checked. Open workspace again to retry deliberately.', true);
     } finally { if (reading === controller) reading = undefined; }
@@ -1140,7 +1164,7 @@ export function workspace(binding: string) {
   }
   function start(): () => void {
     const pause = () => invalidate('Workspace hidden. Checking access on return.');
-    const resume = () => { void read(); };
+    const resume = () => { updates.resume(); void read(); };
     const visibility = () => { if (document.visibilityState === 'visible') resume(); else pause(); };
     try {
       channel = new BroadcastChannel('keida-hub-reborn.account.v1');
@@ -1153,11 +1177,11 @@ export function workspace(binding: string) {
     document.addEventListener('visibilitychange', visibility);
     void read();
     return () => {
-      disposed = true; cancel(); channel?.close(); model.set(empty('blocked', 'Workspace closed.'));
+      disposed = true; updates.dispose(); cancel(); channel?.close(); model.set(empty('blocked', 'Workspace closed.'));
       window.removeEventListener('blur', pause); window.removeEventListener('pagehide', pause);
       window.removeEventListener('focus', resume); window.removeEventListener('pageshow', resume);
       document.removeEventListener('visibilitychange', visibility);
     };
   }
-  return { model, start, edit, recover, resolve, save, signOut, check: () => read(true), editService, pins, activity, markNotification, beginLayout, moveLayout, toggleLayout, resetLayout, cancelLayout, resolveLayout, saveLayout, checkLayout: () => read(true), loadGuide, observations, openMedia, closeMedia, checkMedia, loadMedia, saveMedia, openQueues, closeQueues, checkQueues, loadQueues, saveQueues, openIdentity, closeIdentity, checkIdentity, identityAction, saveDiscordApplication, openSessions, closeSessions, checkSessions, revokeSession };
+  return { model, updates, refreshStatus, connectionMutation, start, edit, recover, resolve, save, signOut, check: () => read(true), editService, pins, activity, markNotification, beginLayout, moveLayout, toggleLayout, resetLayout, cancelLayout, resolveLayout, saveLayout, checkLayout: () => read(true), loadGuide, observations, openMedia, closeMedia, checkMedia, loadMedia, saveMedia, openQueues, closeQueues, checkQueues, loadQueues, saveQueues, openIdentity, closeIdentity, checkIdentity, identityAction, saveDiscordApplication, openSessions, closeSessions, checkSessions, revokeSession };
 }

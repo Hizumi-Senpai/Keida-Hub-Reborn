@@ -1,10 +1,11 @@
 # Reborn versions and safe updating
 
 Status: deterministic source identity, immutable manual release publication and
-matched packaged recovery are implemented. Reborn0.1.16/schema12 is the installed baseline;
-[issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6462653936)
-contains exact evidence. Full draft-safe update discovery/refresh and an automatic
-host updater remain separate work. No daemon is activated by the manual release CLI.
+matched packaged recovery are implemented. Reborn0.1.17/schema13 is the installed baseline;
+[issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6466893195)
+contains exact evidence. Browser server-change discovery/draft-safe refresh is the frozen issue29
+source slice, awaiting exact qualification. An automatic host updater remains
+separate work. No daemon is activated by the manual release CLI.
 
 ## Numbered identity for every accepted main merge
 
@@ -135,7 +136,8 @@ must not silently extend it. End in an explicit compatible-ready,
 sign-in-required, incompatible or could-not-reconnect state. Cancellation stops
 future requests and prevents late responses from changing the selected page state.
 Retain the document on failure and offer a deliberate bounded retry or safe GET.
-These numbers are planned acceptance constants, not claims about existing code.
+Issue29 implements these constants; its exact browser/runtime qualification
+is tracked separately from this contract.
 
 ## One separately enrolled host updater
 

@@ -11,6 +11,7 @@ pub fn router(service: Service) -> Router {
     Router::new()
         .route("/", get(|| async { Redirect::to("/workspace") }))
         .route("/workspace", get(document))
+        .route("/api/workspace/access", get(access))
         .route("/api/workspace/snapshot", get(snapshot))
         .route("/api/workspace/note", axum::routing::put(save))
         .route("/assets/workspace/{file}", get(asset))
@@ -58,7 +59,13 @@ async fn document(State(service): State<Service>, headers: HeaderMap) -> Respons
             .replace("{{VERSION}}", identity.version)
             .replace("{{COMMIT}}", identity.commit)
             .replace("{{TREE}}", identity.tree)
-            .replace("{{CHANNEL}}", identity.channel);
+            .replace("{{CHANNEL}}", identity.channel)
+            .replace(
+                "{{ORDINAL}}",
+                &identity.ordinal.map_or_else(String::new, |n| n.to_string()),
+            )
+            .replace("{{AUTH_CONTRACT}}", identity.contract)
+            .replace("{{PACKAGE_VERSION}}", identity.package_version);
         Ok::<_, ApiError>(Html(html).into_response())
     }
     .await;
@@ -84,6 +91,25 @@ async fn document(State(service): State<Service>, headers: HeaderMap) -> Respons
         HeaderValue::from_static("same-origin"),
     );
     response
+}
+// A reconnect probe must not fetch private notes, sample providers or mutate
+// authentication cookies. The existing bound admission owns current authority.
+async fn access(State(service): State<Service>, headers: HeaderMap) -> Response {
+    let result = async {
+        let p = bound(&service, &headers, false).await?;
+        let session = store::guide_session(&service.pool, &service.key_id, &p.hash).await?;
+        Ok::<_, ApiError>(
+            Json(json!({
+                "product":"keida-hub-reborn", "contract":CONTRACT, "schema":1,
+                "account":account(session.account),
+                "session_generation":session.generation.to_string(),
+                "identity":crate::identity::compiled()
+            }))
+            .into_response(),
+        )
+    }
+    .await;
+    result.unwrap_or_else(private_error)
 }
 async fn asset(Path(file): Path<String>) -> Response {
     let path = format!("/assets/workspace/{file}");

@@ -76,3 +76,10 @@ Axe, reconciles a committed lost reply by GET without replay, rejects late enrol
 and revoked-authority payloads, and verifies member isolation. Its fixed expectations
 come from the frozen queue contract and fictional TLS fixture inputs; it never
 reads production provider credentials or emits authenticated DOM/screenshots.
+
+M5 refresh qualification uses the fixture TLS proxy to change health/access
+replies without changing the application or reading a real owner account. It
+checks dirty and secret forms, pending/lost effects without replay, cancellation,
+product/account/compatibility failures and an actual sixty-second hidden-tab
+deadline before deliberate fixed-path GET navigation. No fake clock extends or
+shortens the production reconnect budget.

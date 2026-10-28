@@ -77,3 +77,7 @@ Primary contracts: Crafty's official [OpenAPI](https://docs.craftycontrol.com/pa
 [ring AEAD](https://docs.rs/ring/0.17.14/ring/aead/),
 [PostgreSQL backup](https://www.postgresql.org/docs/16/backup-dump.html), and
 the pinned GitHub [artifact uploader](https://github.com/actions/upload-artifact/tree/cf430e030ddbb5b0abf93d22962f4752f3646cd9).
+
+The browser-refresh slice keeps schema13 and all22 existing assets, adding its
+new pair for a24-asset manifest. Its supported prior17 binary must be checked
+against current schema13 data and newer writes; no schema migration is needed.

@@ -11,14 +11,15 @@ immediately; do not wait for external workers or restart architecture selection.
 
 Repository: https://github.com/Hizumi-Senpai/Keida-Hub-Reborn
 Target URL: https://rewrite.keida.me
-Keep https://keida.me live and unchanged. Installed Reborn0.1.16/schema12 at the
-target URL is recorded in Rebornissue1 comment6462653936; source is
-bb1094922baa9197297bc749a31aa1d942801ba1. Source0.1.15 was documentation-only
-self-hosted Commander policy. Preserve independent Rewrite/data and useful prior14
-with its matched final11 recovery until the next qualified retention decision.
-Current independent work: frozen M4.2 personal active-session review and targeted
-other-session sign-out, issue27 and docs/M4_SESSIONS.md; expected source17/schema13
-needs its own head/main/image/browser/current12→13/final-fenced qualification.
+Keep https://keida.me live and unchanged. Installed Reborn0.1.17/schema13 at the
+target URL is recorded in Rebornissue1 comment6466893195; source is
+cc258e0376cef8e4eb88281efcc61c69fa11be2b. Preserve independent Rewrite/data and
+useful prior16 with its matched final12 recovery until a qualified retention
+decision. Personal session review/targeted sign-out (issue27) is installed.
+Current independent work: frozen M5.1 server-change discovery and deliberate
+draft-safe refresh, issue29 and docs/M5_BROWSER_REFRESH.md. Expected source18
+keeps schema13 and needs its own head/main/image/browser/current-data/final-fenced
+qualification.
 Installed Discord identity linking is bounded M4.1; dedicated real application
 registration/private enrollment/callback-query privacy/owner acceptance remains
 pending. Refresh receipts, actual host identity/processes/locks and source before

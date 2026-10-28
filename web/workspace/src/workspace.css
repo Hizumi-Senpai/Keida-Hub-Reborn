@@ -843,3 +843,11 @@ textarea::placeholder {
 .session-row .field-help { margin-block: .65rem 0; }
 .sessions-account-link { margin-top: 1.5rem; }
 @media (max-width: 600px) { .sessions-heading, .session-row-heading { align-items: flex-start; flex-direction: column; gap: .5rem; } .session-details { grid-template-columns: 1fr; gap: .25rem; } .session-details dd { margin-bottom: .5rem; } .sessions-card .button { max-width: 100%; white-space: normal; } }
+
+.refresh-control { display: grid; gap: .35rem; margin-top: .7rem; }
+.refresh-control .text-button { justify-self: start; }
+.refresh-notice { margin-bottom: 1.5rem; }
+.refresh-notice h2 { margin-top: 0; }
+.refresh-builds { display: grid; grid-template-columns: auto 1fr; gap: .4rem 1rem; overflow-wrap: anywhere; }
+.refresh-builds dd { margin: 0; }
+.refresh-builds .field-help { display: inline-block; margin-left: .35rem; }

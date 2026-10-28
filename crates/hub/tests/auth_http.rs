@@ -19,6 +19,8 @@ mod discord_contracts;
 mod media_contracts;
 #[path = "support/queues_contracts.rs"]
 mod queues_contracts;
+#[path = "support/refresh_contracts.rs"]
+mod refresh_contracts;
 #[path = "support/sessions_contracts.rs"]
 mod sessions_contracts;
 

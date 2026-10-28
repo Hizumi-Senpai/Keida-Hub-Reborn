@@ -22,8 +22,9 @@ are installed as0.1.12 (issue18).
 are installed as0.1.14 (issue22). Documentation-only source0.1.15 records the
 self-hosted Commander policy. [Discord identity linking/status/local unlink](docs/M4_IDENTITY.md)
 is installed as0.1.16/schema12 (issue25), with real Discord setup/privacy and
-owner acceptance pending. The next independent slice is
-[personal session review/targeted sign-out](docs/M4_SESSIONS.md), issue27.
+owner acceptance pending. [Personal session review/targeted sign-out](docs/M4_SESSIONS.md)
+is installed as0.1.17/schema13 (issue27). The next independent slice is
+[server-change discovery and draft-safe refresh](docs/M5_BROWSER_REFRESH.md), issue29.
 Existing accepted functionality in
 another application is a behavior reference, not a completed Reborn milestone.
 
