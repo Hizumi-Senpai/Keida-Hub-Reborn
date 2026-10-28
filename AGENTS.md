@@ -59,6 +59,15 @@ identity. Every accepted main merge advances the documented numbered identity.
 
 ## Shared-host and data boundaries
 
+For remote host/device operations, use only the owner's self-hosted Keida Remote
+Commander tools (`mcp__codex_apps__keida_remote_commander_*`). First refresh
+`mcp__codex_apps__keida_remote_commander_list_devices` and verify the target host
+and account. Device IDs and account mappings belong to that relay; hosted Remote
+Desktop Commander IDs/mappings are not interchangeable. The hosted
+`mcp__codex_apps__remote_desktop_commander_*` tools require an explicit user request;
+do not fall back to them automatically. A transport change preserves every
+ownership, lock, sealed/hash-verified execution, audit and no-replay requirement.
+
 Before remote actions refresh host/container/process/network/bridge ownership.
 Use new private immutable, hash-verified execution with bounded diagnostics.
 Never replay old commands, execute a shared mutable pending file, overwrite another
