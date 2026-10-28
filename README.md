@@ -20,10 +20,13 @@ daily-use catalog, sampled Crafty history and Roadmap note are installed.
 ([issue20](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/20)).
 [Owner-only queue/transfer observations](docs/M3_QUEUES.md) are installed as0.1.14
 ([issue22](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/22)). Source0.1.15
-records the self-hosted Commander policy without changing live14. The current slice
-is [Discord identity linking/status/local unlink](docs/M4_IDENTITY.md),
-[issue25](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/25). Source, packaged
-verification, installation and live acceptance are recorded separately.
+records the self-hosted Commander policy. [Discord identity linking/status/local
+unlink](docs/M4_IDENTITY.md) is installed as0.1.16/schema12
+([issue25](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/25)); dedicated
+real Discord setup/privacy/owner acceptance remains pending. The current
+independent slice is [personal session review/targeted sign-out](docs/M4_SESSIONS.md),
+[issue27](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/27). Source, packaged
+verification, installation and real owner/provider acceptance remain separate.
 
 ## Start here
 
@@ -65,14 +68,17 @@ Mobile retains a full useful 2D dashboard without downloading the 3D experience.
 
 ## What happens next
 
-Continue **M3 queue and transfer observations** for explicitly admitted stable
-Sonarr4/APIv3, Radarr6/APIv3 and qBittorrent5.2/5.3 Bearer-key profiles. Version
-admission precedes bounded queue reads; private titles and transfer details remain
-owner-only. Broad management keys are not read-only merely because this adapter
-sends GET. No management actions or password/cookie fallback are included.
-M0/M1/full M2/M3 remain open pending complete acceptance. Deliberate real Crafty,
-Jellyfin/Seerr and queue access/TLS/privacy/freshness acceptance remain separate.
-Game-control and host-updater responsibility keep their separate review gates.
+Continue **M4 personal session review and targeted sign-out** under the frozen
+issue27 contract. Existing accounts inspect their complete bounded active list
+and can deliberately retire one other session; current/all native sign-out stays
+available. No bearer/verifier, guessed device/IP/last-used information, account
+promotion or provider action is added. Require exact head/main CI, image/browser
+proof and matched current12→13 recovery before installation.
+
+Dedicated Discord application enrollment/callback-query privacy and real owner
+linking acceptance remain open, alongside earlier daily-use/Crafty/Media/Queues
+acceptance. Full M0–M4 are not complete. Game-control and host-updater authority
+retain their separate review gates.
 
 Performance goals are proposed budgets until measured on named hardware/browsers.
 The architecture is selected; it is not a benchmark victory or feature-parity claim.

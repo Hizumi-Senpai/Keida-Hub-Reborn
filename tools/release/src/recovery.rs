@@ -1,6 +1,8 @@
 //! Isolated packaged install/restore/failed-candidate rehearsal; never live data.
 #[path = "discord_recovery.rs"]
 mod discord_recovery;
+#[path = "sessions_recovery.rs"]
+mod sessions_recovery;
 use crate::{Result, directory, hash, hex};
 use reqwest::{Client, Response};
 use serde_json::{Value, json};
@@ -1473,7 +1475,26 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         .await?;
     discord_recovery::no_transient_dump(&pg, "first")?;
     discord_recovery::protocol(&discord_fixture)?;
+    let sessions_owner = sessions_recovery::Context {
+        client: &client,
+        origin: &origin,
+        session: &session,
+        binding,
+        account: &claimed["account"],
+    };
+    let sessions_member = sessions_recovery::Context {
+        client: &client,
+        origin: &origin,
+        session: &member_session,
+        binding: member_binding,
+        account: &member_login["account"],
+    };
+    let initial_sessions =
+        sessions_recovery::Witness::exercise(&sessions_owner, &password, &sessions_member).await?;
     docker(&["stop", "--time", "5", &first])?;
+    // Include public_ref and revoked rows in this same-schema13 proof. No raw
+    // verifier or selector is emitted in the public qualification report.
+    let initial_sessions_fingerprint = sessions_recovery::database_fingerprint(&pg, "first")?;
     let dump = scope.root.join("database.dump");
     let dump_file = std::fs::OpenOptions::new()
         .write(true)
@@ -1576,6 +1597,13 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         "UPDATE activity_events SET revision=revision WHERE id=1",
         "DELETE FROM activity_events WHERE id=1",
         "UPDATE _sqlx_migrations SET success=success WHERE version=1",
+        "UPDATE sessions SET public_ref=public_ref WHERE FALSE",
+        "UPDATE sessions SET verifier=verifier WHERE FALSE",
+        "UPDATE sessions SET account_id=account_id WHERE FALSE",
+        "UPDATE sessions SET generation=generation WHERE FALSE",
+        "UPDATE sessions SET created_at=created_at WHERE FALSE",
+        "UPDATE sessions SET expires_at=expires_at WHERE FALSE",
+        "INSERT INTO sessions (verifier,account_id,generation,created_at,expires_at,public_ref) SELECT verifier,account_id,generation,created_at,expires_at,public_ref FROM sessions WHERE FALSE",
     ] {
         runtime_denied(&restore_pg, "restored", sql)?;
     }
@@ -1593,7 +1621,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         "-v",
         "ON_ERROR_STOP=1",
         "-c",
-        "UPDATE queue_connections SET revision=revision,sealed=sealed",
+        "UPDATE queue_connections SET revision=revision,sealed=sealed; UPDATE sessions SET revoked=revoked",
     ])?;
     let restored = format!("reborn-recovery-restored-{nonce}");
     scope.containers.push(restored.clone());
@@ -1611,6 +1639,28 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     invoke(args, &["serve"])?;
     let origin = format!("http://127.0.0.1:{restored_port}");
     wait(&client, &origin).await?;
+    if sessions_recovery::database_fingerprint(&restore_pg, "restored")?
+        != initial_sessions_fingerprint
+    {
+        return Err("matched schema13 restore changed session selectors or revocation");
+    }
+    let sessions_owner = sessions_recovery::Context {
+        client: &client,
+        origin: &origin,
+        session: &session,
+        binding,
+        account: &claimed["account"],
+    };
+    let sessions_member = sessions_recovery::Context {
+        client: &client,
+        origin: &origin,
+        session: &member_session,
+        binding: member_binding,
+        account: &member_login["account"],
+    };
+    initial_sessions.verify(&sessions_owner).await?;
+    let newer_sessions =
+        sessions_recovery::Witness::exercise(&sessions_owner, &password, &sessions_member).await?;
     // Read retained data before requesting a new provider collection. A later
     // minute's demand sample must not disguise missing restored history.
     let restored_requests = provider.requests().len();
@@ -2014,6 +2064,8 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     if invoke(args, &["serve"]).is_ok() {
         return Err("invalid candidate unexpectedly started");
     }
+    initial_sessions.verify(&sessions_owner).await?;
+    newer_sessions.verify(&sessions_owner).await?;
     let preserved = value(
         admitted(
             &client,
@@ -2230,7 +2282,10 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     }
     discord_recovery::no_transient_dump(&restore_pg, "restored")?;
     discord_recovery::protocol(&discord_fixture)?;
-    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":12,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"restored_notifications_and_read_state":true,"restored_personal_layout_and_newer_edits":true,"restored_provider_observations_and_newer_samples":true,"restored_media_connections_and_observations":true,"restored_queue_connections_and_observations":true,"restored_discord_application_and_links":true,"restored_discord_newer_identity_writes":true,"discarded_unfinished_discord_attempts_on_restart":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
+    initial_sessions.verify(&sessions_owner).await?;
+    newer_sessions.verify(&sessions_owner).await?;
+    sessions_member.status().await?;
+    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":13,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"restored_notifications_and_read_state":true,"restored_personal_layout_and_newer_edits":true,"restored_provider_observations_and_newer_samples":true,"restored_media_connections_and_observations":true,"restored_queue_connections_and_observations":true,"restored_discord_application_and_links":true,"restored_discord_newer_identity_writes":true,"discarded_unfinished_discord_attempts_on_restart":true,"restored_session_selectors_and_targeted_revocation":true,"preserved_newer_sessions_and_unrelated_access":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
     crate::write(
         &out.join("recovery-proof.json"),
         &serde_json::to_vec(&report).map_err(|_| "recovery proof encoding failed")?,

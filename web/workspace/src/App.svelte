@@ -10,11 +10,12 @@
   import Media from './Media.svelte';
   import Queues from './Queues.svelte';
   import Identity from './Identity.svelte';
+  import Sessions from './Sessions.svelte';
   export let binding: string;
   const controller = workspace(binding);
   const model = controller.model;
-  type View = 'home' | 'note' | 'connections' | 'directory' | 'activity' | 'notifications' | 'integrations' | 'roadmap' | 'media' | 'queues' | 'identity';
-  let view: View = window.location.hash === '#identity' ? 'identity' : 'home';
+  type View = 'home' | 'note' | 'connections' | 'directory' | 'activity' | 'notifications' | 'integrations' | 'roadmap' | 'media' | 'queues' | 'identity' | 'sessions';
+  let view: View = window.location.hash === '#sessions' ? 'sessions' : window.location.hash === '#identity' ? 'identity' : 'home';
   let heading: HTMLHeadingElement;
   let panelGrid: HTMLDivElement;
   let panels: HomePanel[] = defaultPanels();
@@ -31,10 +32,13 @@
   $: bytes = new TextEncoder().encode($model.draft).length;
   $: canSave = $model.phase === 'ready' && $model.dirty && bytes <= 4096
     && !['saving', 'checking-conflict'].includes($model.layoutSave) && $model.notificationSave !== 'saving' && !['saving', 'checking-conflict', 'conflict', 'uncertain'].includes($model.save);
-  function navigate(next: View): void { const closing = view === 'media' && next !== 'media' || view === 'queues' && next !== 'queues' || view === 'identity' && next !== 'identity'; if (view === 'media' && next !== 'media') controller.closeMedia(); if (view === 'queues' && next !== 'queues') controller.closeQueues(); if (view === 'identity' && next !== 'identity') controller.closeIdentity(); if (closing) flushSync(() => { view = next; }); else view = next; heading?.focus(); if (next === 'activity') void controller.activity(); if (next === 'notifications') void controller.check(); if (next === 'integrations' || next === 'roadmap') void controller.loadGuide(); if (next === 'media') void controller.openMedia(); if (next === 'queues') void controller.openQueues(); }
+  function navigate(next: View): void { const closing = view === 'media' && next !== 'media' || view === 'queues' && next !== 'queues' || view === 'identity' && next !== 'identity' || view === 'sessions' && next !== 'sessions'; if (view === 'media' && next !== 'media') controller.closeMedia(); if (view === 'queues' && next !== 'queues') controller.closeQueues(); if (view === 'identity' && next !== 'identity') controller.closeIdentity(); if (view === 'sessions' && next !== 'sessions') controller.closeSessions(); if (closing) flushSync(() => { view = next; }); else view = next; heading?.focus(); if (next === 'activity') void controller.activity(); if (next === 'notifications') void controller.check(); if (next === 'integrations' || next === 'roadmap') void controller.loadGuide(); if (next === 'media') void controller.openMedia(); if (next === 'queues') void controller.openQueues(); }
   let identityOpened = false;
   $: if (view !== 'identity' || $model.phase !== 'ready') identityOpened = false;
   $: if (view === 'identity' && $model.phase === 'ready' && !identityOpened) { identityOpened = true; void controller.openIdentity(); }
+  let sessionsOpened = false;
+  $: if (view !== 'sessions' || $model.phase !== 'ready') sessionsOpened = false;
+  $: if (view === 'sessions' && $model.phase === 'ready' && !sessionsOpened) { sessionsOpened = true; void controller.openSessions(); }
   const focusScope = () => $model.snapshot ? `${$model.snapshot.account.id}:${$model.snapshot.session_generation}:${$model.snapshot.account.role}` : '';
   beforeUpdate(() => {
     const element = document.activeElement;
@@ -72,7 +76,8 @@
     </nav>
     <div class="sidebar-bottom">
       <a href="/account" class="account-link"><span class="avatar" aria-hidden="true">K</span><span><strong>{$model.snapshot?.account.username ?? 'Your account'}</strong><small>{$model.snapshot?.account.role === 'owner' ? 'Owner' : $model.snapshot?.account.role === 'member' ? 'Member' : 'Check account access'}</small></span></a>
-      <form method="post" action="/account/sign-out" onsubmit={() => controller.signOut()}>
+      <button class="text-button review-sessions" data-open-sessions disabled={$model.phase !== 'ready'} aria-current={view === 'sessions' ? 'page' : undefined} onclick={() => navigate('sessions')}>Review sign-in sessions</button>
+      <form id="workspace-sign-out" method="post" action="/account/sign-out" onsubmit={() => controller.signOut()}>
         <input type="hidden" name="product" value="keida-hub-reborn">
         <input type="hidden" name="contract" value="reborn-account-v1">
         <input type="hidden" name="csrf_token" value={binding}>
@@ -84,7 +89,7 @@
     </div>
   </aside>
   <main id="workspace-content" class="workspace-content">
-    <header class="page-header"><div><p class="eyebrow">YOUR OWN CORNER OF KEIDA</p><h1 tabindex="-1" bind:this={heading}>{view === 'home' ? 'Welcome home.' : view === 'note' ? 'A little space to think.' : view === 'connections' ? 'Your servers, at a glance.' : view === 'directory' ? 'Everything within reach.' : view === 'activity' ? 'Pick up the thread.' : view === 'notifications' ? 'Catch up at your pace.' : view === 'integrations' ? 'Make the right connections.' : view === 'media' ? 'A window into your media.' : view === 'queues' ? 'See what’s in motion.' : view === 'identity' ? 'An identity you choose.' : 'See what comes next.'}</h1></div><span class="connection-state"><span aria-hidden="true">●</span>{$model.phase === 'ready' ? 'Session checked' : $model.phase === 'checking' ? 'Checking access' : 'Access paused'}</span></header>
+    <header class="page-header"><div><p class="eyebrow">YOUR OWN CORNER OF KEIDA</p><h1 tabindex="-1" bind:this={heading}>{view === 'home' ? 'Welcome home.' : view === 'note' ? 'A little space to think.' : view === 'connections' ? 'Your servers, at a glance.' : view === 'directory' ? 'Everything within reach.' : view === 'activity' ? 'Pick up the thread.' : view === 'notifications' ? 'Catch up at your pace.' : view === 'integrations' ? 'Make the right connections.' : view === 'media' ? 'A window into your media.' : view === 'queues' ? 'See what’s in motion.' : view === 'identity' ? 'An identity you choose.' : view === 'sessions' ? 'Your active sign-ins.' : 'See what comes next.'}</h1></div><span class="connection-state"><span aria-hidden="true">●</span>{$model.phase === 'ready' ? 'Session checked' : $model.phase === 'checking' ? 'Checking access' : 'Access paused'}</span></header>
     <p class="workspace-status" role="status">{$model.message}</p>
     {#if $model.phase !== 'ready'}
       <section class="recovery card"><p class="eyebrow">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class="button-row"><a class="button primary" href="/workspace">Open workspace again</a><a class="button secondary" href="/account">Your account</a></div></section>
@@ -129,6 +134,7 @@
     <section hidden={view !== 'media' || $model.phase !== 'ready'} aria-label="Media"><Media state={$model.media} owner={$model.snapshot?.account.role === 'owner'} active={view === 'media' && $model.phase === 'ready'} check={controller.checkMedia} load={controller.loadMedia} save={controller.saveMedia} /></section>
     <section hidden={view !== 'queues' || $model.phase !== 'ready'} aria-label="Queues"><Queues state={$model.queues} owner={$model.snapshot?.account.role === 'owner'} active={view === 'queues' && $model.phase === 'ready'} check={controller.checkQueues} load={controller.loadQueues} save={controller.saveQueues} /></section>
     <section hidden={view !== 'identity' || $model.phase !== 'ready'} aria-label="Identity"><Identity {binding} state={$model.identity} owner={$model.snapshot?.account.role === 'owner'} active={view === 'identity' && $model.phase === 'ready'} check={controller.checkIdentity} act={controller.identityAction} saveApplication={controller.saveDiscordApplication} /></section>
+    <section hidden={view !== 'sessions' || $model.phase !== 'ready'} aria-label="Sign-in sessions"><Sessions state={$model.sessions} active={view === 'sessions' && $model.phase === 'ready'} check={controller.checkSessions} revoke={controller.revokeSession} /></section>
     <footer class="content-footer"><span>Keida Reborn</span><a href="/account">Account &amp; recovery</a></footer>
   </main>
 </div>

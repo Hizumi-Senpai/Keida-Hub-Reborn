@@ -12,6 +12,7 @@ pub(super) mod media;
 pub(super) mod notifications;
 pub(super) mod observations;
 pub(super) mod queues;
+pub(super) mod sessions;
 pub(super) mod workspace;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

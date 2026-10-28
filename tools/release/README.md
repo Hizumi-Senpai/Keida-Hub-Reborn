@@ -2,7 +2,9 @@
 
 `reborn-release` is CORE operational tooling, not an application endpoint,
 installation daemon, host updater or game controller. Its actual CI caller is
-`.github/workflows/foundation.yml`; the frozen scope is docs/LIVE_ALPHA.md.
+`.github/workflows/foundation.yml`; the current session slice is frozen in
+[M4_SESSIONS.md](../../docs/M4_SESSIONS.md), alongside the retained provider and
+Discord recovery contracts.
 
 `inspect-image IMAGE_ID COMMIT TREE VERSION CHANNEL PRIVATE_OUTPUT` verifies the
 repository Docker image's default UID65532, entrypoint/healthcheck, OCI labels,
@@ -24,6 +26,18 @@ alter schema or write migration admission. A failed candidate must leave a newer
 accepted write intact; no old dump is silently restored over it. The nonsecret
 `recovery-proof.json` explicitly labels its fixture scope. Only newly allocated
 container names and private fixture files are cleaned; no live data is accepted.
+
+Schema13 additionally uses genuine fictional-account logins to create independent
+sessions, revokes one other session, and verifies its actual token receives401
+while the acting, third and unrelated member sessions remain usable. A digest of
+all stored session columns, including UUID selectors and the revoked row, must
+match across the real dump/restore before any new login can prune inactive rows.
+New sessions and a second targeted revocation after restoration must survive the
+failed candidate and the current writer's restart. Only after these checks pass
+are `restored_session_selectors_and_targeted_revocation` and
+`preserved_newer_sessions_and_unrelated_access` emitted as true. Existing
+Discord, media, queue and other domain proofs remain required. No bearer,
+selector, CSRF value or private session list enters the public report.
 
 `publish ROOT MANIFEST ARCHIVE REPO EXPECTED_MAIN CI_RUN` requires a private0700
 release root, exact accepted-source derivation through the sibling Rust identity
@@ -50,12 +64,14 @@ database dumps, keys, credentials, authenticated screenshots or storage state.
 Linux is the executed platform. Windows, native iPhone/Safari, outside-LAN game
 joining, real provider acceptance and workload performance stay separate.
 
-The first alpha has one supported workspace contract and no lazy renderer chunks.
-The accepted0.1.6 JS/CSS bytes are additionally retained at their original immutable
-hashes. There is no previous installed Reborn release; source retention alone does
-not qualify a previous binary on schema4. Future upgrades must qualify their
-actual supported old-page/asset/data window. The first cross-product rollback
-returns the preserved route to Rewrite while retaining all newer Reborn data.
+The sessions slice keeps the same workspace contract and retains all20 baseline
+workspace assets plus its new hashed JS/CSS pair. Image inspection requires the
+current22-asset manifest. Retaining assets does not qualify the prior
+schema12 binary on schema13. Actual12→13 qualification must compare every legacy
+session column without treating the newly backfilled `public_ref` as an old
+column; full schema13 recovery includes and preserves it. Upgrades must qualify
+their actual old-page, asset and data window, with no automatic older-dump restore
+over newer writes.
 
 Primary contracts: Crafty's official [OpenAPI](https://docs.craftycontrol.com/pages/developer-guide/api-reference/openapi-spec.yml),
 [ring AEAD](https://docs.rs/ring/0.17.14/ring/aead/),

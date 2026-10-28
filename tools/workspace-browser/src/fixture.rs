@@ -120,6 +120,8 @@ struct Proxy {
     hold: Mutex<Option<(&'static str, Arc<Hold>)>>,
     pub reads: AtomicU64,
     pub writes: AtomicU64,
+    session_reads: AtomicU64,
+    session_writes: AtomicU64,
     callback_requests: AtomicU64,
     callback_auth_cookie: AtomicBool,
 }
@@ -165,6 +167,12 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
     }
     if path == "/api/workspace/snapshot" {
         proxy.reads.fetch_add(1, Ordering::SeqCst);
+    }
+    if path == "/api/workspace/sessions" {
+        proxy.session_reads.fetch_add(1, Ordering::SeqCst);
+    }
+    if path == "/api/workspace/sessions/revoke" {
+        proxy.session_writes.fetch_add(1, Ordering::SeqCst);
     }
     if matches!(
         path,
@@ -708,6 +716,8 @@ impl Fixture {
             writes: AtomicU64::new(0),
             callback_requests: AtomicU64::new(0),
             callback_auth_cookie: AtomicBool::new(false),
+            session_reads: AtomicU64::new(0),
+            session_writes: AtomicU64::new(0),
         });
         let router = Router::new().fallback(forward).with_state(proxy.clone());
         let server = tokio::spawn(async move {
@@ -821,6 +831,12 @@ impl Fixture {
     pub fn writes(&self) -> u64 {
         self.proxy.writes.load(Ordering::SeqCst)
     }
+    pub fn session_reads(&self) -> u64 {
+        self.proxy.session_reads.load(Ordering::SeqCst)
+    }
+    pub fn session_writes(&self) -> u64 {
+        self.proxy.session_writes.load(Ordering::SeqCst)
+    }
     // Only this freshly allocated, loopback-administered fixture database is
     // seeded. Actual TLS collection is tested separately; these older samples
     // provide enough independent rows to exercise the browser's keyset window
@@ -904,6 +920,236 @@ impl Drop for Fixture {
 }
 
 impl Fixture {
+    fn session_client(&self) -> Check<Client> {
+        let certificate = reqwest::Certificate::from_pem(
+            &fs::read(self.root.join("ca.crt")).map_err(|_| "session fixture CA read")?,
+        )
+        .map_err(|_| "session fixture CA decode")?;
+        Client::builder()
+            .timeout(Duration::from_secs(5))
+            .tls_certs_only([certificate])
+            .redirect(reqwest::redirect::Policy::none())
+            .no_proxy()
+            .build()
+            .map_err(|_| "session fixture HTTPS client")
+    }
+    /// Observe a real browser bearer only inside this freshly owned HTTPS
+    /// fixture. Neither tokens nor response bodies are printed or persisted.
+    pub async fn session_admission(&self, cookie: &str) -> Check<(u16, serde_json::Value)> {
+        let response = self
+            .session_client()?
+            .get(format!("{}/api/auth/session", self.origin))
+            .header("Cookie", format!("__Host-keida-reborn-session={cookie}"))
+            .header("X-Reborn-Product", "keida-hub-reborn")
+            .header("X-Reborn-Contract", "reborn-auth-v1")
+            .send()
+            .await
+            .map_err(|_| "session fixture actual token admission")?;
+        let status = response.status().as_u16();
+        let value = response
+            .json()
+            .await
+            .map_err(|_| "session admission JSON")?;
+        Ok((status, value))
+    }
+    pub async fn native_account_html(&self, browser: &Browser) -> Check<String> {
+        let cookie = browser.cookie("__Host-keida-reborn-session").await?;
+        let response = self
+            .session_client()?
+            .get(format!("{}/account", self.origin))
+            .header("Cookie", format!("__Host-keida-reborn-session={cookie}"))
+            .send()
+            .await
+            .map_err(|_| "native Account source request")?;
+        check(
+            response.status() == StatusCode::OK
+                && response
+                    .headers()
+                    .get("content-type")
+                    .and_then(|v| v.to_str().ok())
+                    .is_some_and(|v| v.starts_with("text/html")),
+            "native Account public HTML response",
+        )?;
+        let bytes = response
+            .bytes()
+            .await
+            .map_err(|_| "native Account source body")?;
+        check(bytes.len() <= 256 * 1024, "native Account source bound")?;
+        String::from_utf8(bytes.to_vec()).map_err(|_| "native Account source encoding")
+    }
+    pub async fn session_list(&self, browser: &Browser) -> Check<serde_json::Value> {
+        let (status, value) = self.session_request(browser, None).await?;
+        check(status == 200, "personal session fixture list admission")?;
+        Ok(value)
+    }
+    pub async fn session_revoke(
+        &self,
+        browser: &Browser,
+        id: &str,
+    ) -> Check<(u16, serde_json::Value)> {
+        self.session_request(browser, Some(id)).await
+    }
+    async fn session_request(
+        &self,
+        browser: &Browser,
+        target: Option<&str>,
+    ) -> Check<(u16, serde_json::Value)> {
+        let cookie = browser.cookie("__Host-keida-reborn-session").await?;
+        let (status, auth) = self.session_admission(&cookie).await?;
+        check(status == 200, "personal session fixture current authority")?;
+        let csrf = auth["csrf_token"]
+            .as_str()
+            .ok_or("personal session fixture CSRF")?;
+        let client = self.session_client()?;
+        let mut request = client
+            .request(
+                if target.is_some() {
+                    reqwest::Method::POST
+                } else {
+                    reqwest::Method::GET
+                },
+                format!(
+                    "{}/api/workspace/sessions{}",
+                    self.origin,
+                    if target.is_some() { "/revoke" } else { "" }
+                ),
+            )
+            .header("Cookie", format!("__Host-keida-reborn-session={cookie}"))
+            .header("X-Reborn-Product", "keida-hub-reborn")
+            .header("X-Reborn-Contract", "reborn-workspace-v1")
+            .header("X-CSRF-Token", csrf);
+        if let Some(id) = target {
+            request = request
+                .header("Origin", &self.origin)
+                .json(&serde_json::json!({"session_id":id}));
+        }
+        let response = request
+            .send()
+            .await
+            .map_err(|_| "personal session fixture request")?;
+        check(
+            !response.headers().contains_key("set-cookie"),
+            "session review and targeted sign-out never mutate authentication cookies",
+        )?;
+        let status = response.status().as_u16();
+        let bytes = response
+            .bytes()
+            .await
+            .map_err(|_| "personal session fixture body")?;
+        check(
+            bytes.len() <= 16 * 1024,
+            "personal session fixture response bound",
+        )?;
+        let value = serde_json::from_slice(&bytes).map_err(|_| "personal session fixture JSON")?;
+        Ok((status, value))
+    }
+    /// Three browser sessions remain genuine native logins. Extra random rows
+    /// only exercise the complete32/overflow boundary without password-hash
+    /// timing or fabricated browser/device metadata. PostgreSQL owns each UUID.
+    pub async fn seed_sessions(&self, count: u32) -> Check<Vec<String>> {
+        check(
+            (1..=30).contains(&count),
+            "owned session boundary seed bound",
+        )?;
+        let mut url = url::Url::parse(&self.admin).map_err(|_| "owned session seed URL")?;
+        url.set_path(&self.name);
+        let mut db = database(url.as_str()).await?;
+        let mut ids = Vec::new();
+        for _ in 0..count {
+            let mut verifier = [0u8; 32];
+            getrandom::fill(&mut verifier).map_err(|_| "owned session verifier randomness")?;
+            let id: String = sqlx::query_scalar("INSERT INTO sessions (verifier, account_id, generation, created_at, expires_at) SELECT $1, id, generation, floor(extract(epoch FROM clock_timestamp()))::bigint - 60, floor(extract(epoch FROM clock_timestamp()))::bigint + 3600 FROM users WHERE username = $2 RETURNING public_ref::text")
+                .bind(verifier.as_slice()).bind(&self.username).fetch_one(&mut db).await
+                .map_err(|_| "owned session boundary seed")?;
+            ids.push(id);
+        }
+        Ok(ids)
+    }
+    pub async fn remove_seeded_sessions(&self, ids: &[String]) -> Check<()> {
+        check(
+            !ids.is_empty() && ids.len() <= 30,
+            "owned session cleanup bound",
+        )?;
+        let mut url = url::Url::parse(&self.admin).map_err(|_| "owned session cleanup URL")?;
+        url.set_path(&self.name);
+        let mut db = database(url.as_str()).await?;
+        for id in ids {
+            let removed = sqlx::query("DELETE FROM sessions WHERE public_ref = $1::text::uuid AND account_id = (SELECT id FROM users WHERE username = $2)")
+                .bind(id).bind(&self.username).execute(&mut db).await
+                .map_err(|_| "owned session boundary cleanup")?;
+            check(
+                removed.rows_affected() == 1,
+                "only exact owned seeded session removed",
+            )?;
+        }
+        Ok(())
+    }
+    /// This workflow deliberately makes seven native logins. Age only the
+    /// existing synthetic login-throttle windows once between phases so two
+    /// randomly keyed usernames cannot turn an unrelated bucket collision into
+    /// a browser flake. Normal password, reservation and rotation still run;
+    /// rate-limit acceptance belongs to the independent auth/store contracts.
+    pub async fn age_session_login_windows(&self) -> Check<()> {
+        let mut url = url::Url::parse(&self.admin).map_err(|_| "owned throttle fixture URL")?;
+        url.set_path(&self.name);
+        let mut db = database(url.as_str()).await?;
+        let mut tx = db
+            .begin()
+            .await
+            .map_err(|_| "owned throttle fixture transaction")?;
+        let before: Vec<(i16, i64, i16)> = sqlx::query_as(
+            "SELECT scope, window_start, attempts FROM auth_throttles ORDER BY scope",
+        )
+        .fetch_all(&mut *tx)
+        .await
+        .map_err(|_| "owned throttle fixture baseline")?;
+        check(
+            before.len() == 66
+                && before
+                    .iter()
+                    .enumerate()
+                    .all(|(i, row)| usize::try_from(row.0).ok() == Some(i)),
+            "exact existing synthetic throttle scopes",
+        )?;
+        let now: i64 =
+            sqlx::query_scalar("SELECT floor(extract(epoch FROM clock_timestamp()))::bigint")
+                .fetch_one(&mut *tx)
+                .await
+                .map_err(|_| "owned throttle fixture time")?;
+        let changed =
+            sqlx::query("UPDATE auth_throttles SET window_start = $1 WHERE scope BETWEEN 1 AND 65")
+                .bind(now - 61)
+                .execute(&mut *tx)
+                .await
+                .map_err(|_| "owned throttle fixture window aging")?;
+        check(
+            changed.rows_affected() == 65,
+            "only65 existing synthetic login windows aged",
+        )?;
+        let after: Vec<(i16, i64, i16)> = sqlx::query_as(
+            "SELECT scope, window_start, attempts FROM auth_throttles ORDER BY scope",
+        )
+        .fetch_all(&mut *tx)
+        .await
+        .map_err(|_| "owned throttle fixture result")?;
+        check(
+            after.len() == 66
+                && before.iter().zip(&after).all(|(a, b)| {
+                    a.0 == b.0
+                        && a.2 == b.2
+                        && if b.0 == 0 {
+                            a.1 == b.1
+                        } else {
+                            b.1 == now - 61
+                        }
+                }),
+            "throttle aging preserves attempts, all scopes and owner-setup window",
+        )?;
+        // The sole UPDATE above names no users, sessions or instance-key table.
+        tx.commit()
+            .await
+            .map_err(|_| "owned throttle fixture commit")
+    }
     async fn api_write(
         &self,
         browser: &Browser,

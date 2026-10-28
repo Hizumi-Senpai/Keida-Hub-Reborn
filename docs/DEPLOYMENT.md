@@ -1,7 +1,8 @@
 # Keida Hub Reborn deployment contract
 
-Status: deployment contract. Reborn0.1.14 is installed and qualified under the
-[exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6458999115).
+Status: deployment contract. Reborn0.1.16/schema12 is the installed baseline under
+the [exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6462653936).
+Candidate session-review source17/schema13 requires its own qualification.
 The bootstrap examples below preserve their planning context; they are not current
 resource ownership or installation state. Refresh issue1 and actual host identity.
 

@@ -828,3 +828,18 @@ textarea::placeholder {
 .identity-enrollment .identity-ack input { width: auto; flex: 0 0 auto; margin-top: .35rem; }
 .identity-start-form { margin-block: 1.25rem .65rem; }
 @media (max-width: 520px) { .identity-details { grid-template-columns: 1fr; gap: .35rem; } .identity-details dd { margin-bottom: .7rem; } .identity-card .button { max-width: 100%; white-space: normal; } }
+
+.review-sessions { align-self: flex-start; text-align: left; font-size: .8rem; }
+.sessions-view { display: grid; gap: 1.25rem; max-width: 62rem; }
+.sessions-card { min-width: 0; }
+.sessions-heading, .session-row-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.sessions-heading h2, .session-row-heading h3 { margin-block: .35rem; }
+.session-list { list-style: none; padding: 0; margin-block: 1.5rem; }
+.session-row { padding-block: 1.25rem; border-top: 1px solid var(--line); }
+.session-current-badge { flex-shrink: 0; }
+.session-details { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: .45rem 1rem; margin-block: 1rem; }
+.session-details dt { color: var(--muted); }
+.session-details dd { margin: 0; overflow-wrap: anywhere; }
+.session-row .field-help { margin-block: .65rem 0; }
+.sessions-account-link { margin-top: 1.5rem; }
+@media (max-width: 600px) { .sessions-heading, .session-row-heading { align-items: flex-start; flex-direction: column; gap: .5rem; } .session-details { grid-template-columns: 1fr; gap: .25rem; } .session-details dd { margin-bottom: .5rem; } .sessions-card .button { max-width: 100%; white-space: normal; } }

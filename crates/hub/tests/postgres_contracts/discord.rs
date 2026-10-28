@@ -242,8 +242,15 @@ async fn schema_eleven_upgrade_preserves_sixteen_relations_four_sequences_and_el
             "media_connections",
             "queue_connections",
         ] {
+            // Compare all accepted legacy fields; schema13's new random
+            // selector is checked independently for uniqueness and stability.
+            let projection = if table == "sessions" {
+                "to_jsonb(t)-'public_ref'"
+            } else {
+                "to_jsonb(t)"
+            };
             let statement = format!(
-                "SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]'::jsonb) FROM {table} t"
+                "SELECT coalesce(jsonb_agg({projection} ORDER BY ({projection})::text),'[]'::jsonb) FROM {table} t"
             );
             values.push(
                 sqlx::query_scalar(sqlx::AssertSqlSafe(statement.as_str()))
@@ -300,7 +307,7 @@ async fn schema_eleven_upgrade_preserves_sixteen_relations_four_sequences_and_el
             .fetch_one(&mut db)
             .await
             .unwrap(),
-        12
+        13
     );
     assert_eq!(
         sqlx::query_as::<_, (i64, Option<Vec<u8>>)>(
