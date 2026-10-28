@@ -979,7 +979,11 @@ async fn discord_application_logout_revocation_and_key_changes_during_io_recheck
                     .send()
                     .await
                     .unwrap();
-                assert_eq!(response.status(), StatusCode::OK);
+                assert_eq!(
+                    response.status(),
+                    StatusCode::NO_CONTENT,
+                    "local logout must complete before the held provider reply"
+                );
                 StatusCode::UNAUTHORIZED
             }
             "revocation" => {
@@ -987,7 +991,11 @@ async fn discord_application_logout_revocation_and_key_changes_during_io_recheck
                     .send()
                     .await
                     .unwrap();
-                assert_eq!(response.status(), StatusCode::OK);
+                assert_eq!(
+                    response.status(),
+                    StatusCode::NO_CONTENT,
+                    "session revocation must complete before the held provider reply"
+                );
                 StatusCode::UNAUTHORIZED
             }
             "key" => {
