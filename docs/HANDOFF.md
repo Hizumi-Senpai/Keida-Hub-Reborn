@@ -22,6 +22,13 @@ issues, especially the deployment/ownership and roadmap trackers. Refresh curren
 GitHub main/open PRs/branches, authentication/tools and host ownership; scratch
 files, CLI credentials, remote processes and browser sessions may not transfer.
 
+Use only the self-hosted `mcp__codex_apps__keida_remote_commander_*` tools for
+remote host/device operations. Refresh that relay's `list_devices`, then verify
+the host/account mapping; hosted RDC IDs/accounts are not interchangeable.
+Hosted Remote Desktop Commander requires an explicit user
+request, never automatic fallback. Keep sealed audited execution, ownership and
+locks; never replay historical scripts. See AGENTS.md and docs/DEPLOYMENT.md.
+
 https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1 — receipts/ownership
 https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/2 — M0–M8 tracker
 https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/3 — next M0 task

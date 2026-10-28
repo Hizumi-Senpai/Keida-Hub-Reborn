@@ -56,6 +56,14 @@ owner, scheduler or SQLite writer may be introduced as a migration shortcut.
 
 ## CORE execution preflight
 
+Remote host/device operations go through the self-hosted Keida Remote Commander
+(`mcp__codex_apps__keida_remote_commander_*`) only. Refresh its `list_devices`
+before targeting a device and verify host/account identity. Relay-local IDs and
+account mappings cannot be copied from hosted Remote Desktop Commander; using
+that older tool requires an explicit user request, with no automatic fallback.
+Changing the carrier does not relax the sealed execution/audit, operation-lock,
+ownership or no-historical-replay rules below.
+
 CORE alone integrates, merges, deploys, coordinates shared-host work and records
 deployment checkpoints. Immediately before a host operation, refresh:
 
