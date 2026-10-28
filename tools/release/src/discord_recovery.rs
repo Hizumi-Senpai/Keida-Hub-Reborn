@@ -38,6 +38,22 @@ pub(super) struct Pending {
     cookies: String,
     bases: Value,
 }
+// Askama uses numeric ampersands in HTML attributes. Decode exactly one HTML
+// layer; treating &#38; as URL bytes would turn the rest of the query into a
+// fragment and silently drop the fixed authorization parameters.
+fn authorization_attribute(mut encoded: &str) -> Result<String> {
+    let mut decoded = String::with_capacity(encoded.len());
+    while let Some((prefix, entity)) = encoded.split_once('&') {
+        decoded.push_str(prefix);
+        encoded = ["amp;", "#38;", "#x26;", "#X26;"]
+            .into_iter()
+            .find_map(|name| entity.strip_prefix(name))
+            .ok_or("Discord recovery authorization HTML entity rejected")?;
+        decoded.push('&');
+    }
+    decoded.push_str(encoded);
+    Ok(decoded)
+}
 fn native_headers(response: &Response) -> Result<()> {
     if response
         .headers()
@@ -232,7 +248,7 @@ impl Context<'_> {
             .find('"')
             .ok_or("Discord recovery authorization anchor malformed")?
             + start;
-        let authorization = html[start..end].replace("&amp;", "&");
+        let authorization = authorization_attribute(&html[start..end])?;
         let callback = fixture.authorization_callback(&authorization)?;
         let callback = callback
             .strip_prefix(ORIGIN)
@@ -407,4 +423,37 @@ pub(super) fn protocol(fixture: &Discord) -> Result<()> {
         return Err("Discord recovery fixed protocol or TLS evidence differs");
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn actual_attribute_encoding_retains_all_eight_oauth_parameters_once() {
+        let url = "https://discord.com/oauth2/authorize?client_id=123456789012345678&response_type=code&scope=identify&prompt=consent&state=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&code_challenge_method=S256&code_challenge=abcdefghijklmnopqrstuvwxyz0123456789abcdefghi&redirect_uri=https%3A%2F%2Frecovery.reborn.test%2Faccount%2Fdiscord%2Fcallback";
+        for entity in ["&amp;", "&#38;", "&#x26;", "&#X26;"] {
+            let encoded = url.replace('&', entity);
+            let decoded = authorization_attribute(&encoded).unwrap();
+            assert_eq!(decoded, url);
+            let parsed = Url::parse(&decoded).unwrap();
+            assert!(parsed.fragment().is_none());
+            assert_eq!(parsed.query_pairs().count(), 8);
+            assert_eq!(
+                parsed
+                    .query_pairs()
+                    .find(|(k, _)| k == "redirect_uri")
+                    .unwrap()
+                    .1,
+                format!("{ORIGIN}/account/discord/callback")
+            );
+        }
+        assert_eq!(
+            authorization_attribute("?one=1&amp;amp;two=2").unwrap(),
+            "?one=1&amp;two=2"
+        );
+        for malformed in ["?one=1&two=2", "?one=1&#38two=2", "?one=1&unknown;two=2"] {
+            assert!(authorization_attribute(malformed).is_err());
+        }
+    }
 }

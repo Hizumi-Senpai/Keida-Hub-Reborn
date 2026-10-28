@@ -239,6 +239,55 @@ struct Flow {
     snapshot: Value,
 }
 
+fn authorization_attribute(raw: &str) -> String {
+    // The server emits an escaped HTML attribute, not a ready-to-parse URL.
+    // Askama may use decimal/hex numeric entities as well as named entities.
+    // Decode the complete attribute before URL parsing so an encoded ampersand
+    // cannot become a fragment marker that hides authorization parameters.
+    let mut decoded = String::with_capacity(raw.len());
+    let mut rest = raw;
+    while let Some(start) = rest.find('&') {
+        decoded.push_str(&rest[..start]);
+        let entity = &rest[start + 1..];
+        let end = entity
+            .find(';')
+            .expect("terminated authorization attribute entity");
+        let entity = &entity[..end];
+        let character = match entity {
+            "amp" => '&',
+            "quot" => '"',
+            "apos" => '\'',
+            "lt" => '<',
+            "gt" => '>',
+            _ => {
+                let number = if let Some(hex) = entity
+                    .strip_prefix("#x")
+                    .or_else(|| entity.strip_prefix("#X"))
+                {
+                    u32::from_str_radix(hex, 16)
+                } else {
+                    entity
+                        .strip_prefix('#')
+                        .expect("known authorization attribute entity")
+                        .parse::<u32>()
+                }
+                .expect("numeric authorization attribute entity");
+                let character =
+                    char::from_u32(number).expect("valid authorization attribute scalar");
+                assert!(
+                    character.is_ascii_graphic(),
+                    "visible ASCII authorization attribute entity"
+                );
+                character
+            }
+        };
+        decoded.push(character);
+        rest = &rest[start + 1 + end + 1..];
+    }
+    decoded.push_str(rest);
+    decoded
+}
+
 async fn begin(server: &Server, actor: &Session) -> (String, String) {
     let current = status(server, actor, &[]).await;
     let fields = [
@@ -303,10 +352,7 @@ async fn begin(server: &Server, actor: &Session) -> (String, String) {
         .find("https://discord.com/oauth2/authorize?")
         .expect("fixed Discord authorization anchor");
     let end = html[start..].find('"').unwrap() + start;
-    let authorize = html[start..end]
-        .replace("&amp;", "&")
-        .replace("&#x3d;", "=")
-        .replace("&#x2f;", "/");
+    let authorize = authorization_attribute(&html[start..end]);
     let parsed = Url::parse(&authorize).unwrap();
     let parameters: std::collections::BTreeMap<_, _> = parsed.query_pairs().collect();
     assert_eq!(parameters.len(), 8);
@@ -324,6 +370,26 @@ async fn begin(server: &Server, actor: &Session) -> (String, String) {
     );
     assert!(!parameters.contains_key("client_secret"));
     (flow, authorize)
+}
+
+#[test]
+fn escaped_authorization_attributes_keep_every_query_parameter_before_url_parsing() {
+    for attribute in [
+        "https://discord.com/oauth2/authorize?client_id=1&amp;response_type=code&amp;scope=identify",
+        "https://discord.com/oauth2/authorize?client_id&#61;1&#38;response_type&#61;code&#38;scope&#61;identify",
+        "https://discord.com/oauth2/authorize?client_id&#x3d;1&#x26;response_type&#X3D;code&#X26;scope&#x3D;identify",
+    ] {
+        let url = Url::parse(&authorization_attribute(attribute)).unwrap();
+        assert!(url.fragment().is_none());
+        let fields: std::collections::BTreeMap<_, _> = url.query_pairs().collect();
+        assert_eq!(fields.len(), 3);
+        assert_eq!(fields.get("client_id").map(|v| v.as_ref()), Some("1"));
+        assert_eq!(
+            fields.get("response_type").map(|v| v.as_ref()),
+            Some("code")
+        );
+        assert_eq!(fields.get("scope").map(|v| v.as_ref()), Some("identify"));
+    }
 }
 
 fn callback_path(callback: &str) -> String {
