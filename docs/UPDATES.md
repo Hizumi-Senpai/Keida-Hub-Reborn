@@ -4,8 +4,13 @@ Status: deterministic source identity, immutable manual publication, matched
 recovery and M5.1 browser server-change discovery/draft-safe refresh are installed
 and runtime-qualified in **Reborn0.1.18/schema13**. [Exact18 evidence](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6482571904)
 separates head/main CI, artifact, installation, recovery/retention and still-open
-owner/provider acceptance. Prepare the host-updater contract and concrete
-bootstrap review next, under [the successor handoff](HANDOFF.md). No daemon is
+owner/provider acceptance. The host-updater contract and concrete bootstrap review
+are now frozen for implementation in
+[issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/31),
+[M5_HOST_UPDATER.md](M5_HOST_UPDATER.md) and
+[M5_UPDATER_BOOTSTRAP_REVIEW.md](M5_UPDATER_BOOTSTRAP_REVIEW.md), under
+[the successor handoff](HANDOFF.md). No updater executable is qualified yet;
+actual implementation and isolated failure evidence are next. No daemon is
 activated by the manual release CLI; activation needs separate authorization.
 
 ## Numbered identity for every accepted main merge

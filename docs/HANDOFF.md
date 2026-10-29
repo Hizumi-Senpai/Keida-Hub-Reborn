@@ -1,5 +1,24 @@
 # Successor CORE handoff — installed 0.1.18
 
+## Successor preparation checkpoint — October28,2026
+
+The successor CORE has assumed integration ownership under the owner's explicit
+handoff, refreshed GitHub and self-hosted Commander host/lock/process/container
+state, and frozen M5.2 in
+[issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/31),
+[M5_HOST_UPDATER.md](M5_HOST_UPDATER.md) and
+[M5_UPDATER_BOOTSTRAP_REVIEW.md](M5_UPDATER_BOOTSTRAP_REVIEW.md).
+The six predecessor handoff documents are carried into this review branch;
+main and live remain0.1.18. No installation, activation or retirement was repeated.
+Next implement and independently qualify the bounded Rust one-shot protocol in
+isolation. Actual updater binary/digest, bootstrap manifest and failure/reboot/
+uninstall evidence remain open before separate installation/activation approval.
+The historical predecessor handoff below remains intact; its stop-after-final
+instruction records that earlier ownership transfer, not a second transfer by
+this preparation checkpoint.
+
+## Predecessor handoff record
+
 Prepared October 28, 2026, America/Chicago, at the owner's request. This CORE
 finishes the shared checkpoint and stops shared mutations after its final handoff
 response. One successor CORE then owns integration, publication, deployment and

@@ -27,9 +27,13 @@ was introduced in0.1.17/schema13 (issue27). [Server-change discovery and
 draft-safe refresh](docs/M5_BROWSER_REFRESH.md), issue29, is installed and
 runtime/recovery/retention-qualified in **0.1.18/schema13** under the
 [exact18 receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6482571904).
-Real owner/provider acceptance remains open. The next independent M5 task is to
-freeze the host-updater contract and prepare its concrete bootstrap review;
-installation/activation needs separate authorization. See [successor handoff](docs/HANDOFF.md).
+Real owner/provider acceptance remains open. The M5 host-updater preparation
+contract is frozen in [issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/31),
+[execution contract](docs/M5_HOST_UPDATER.md) and
+[concrete bootstrap review](docs/M5_UPDATER_BOOTSTRAP_REVIEW.md). Next implement
+and independently qualify its Rust one-shot protocol in isolation; no updater
+binary or activation-ready packet exists yet. Installation/activation needs
+separate authorization. See [successor handoff](docs/HANDOFF.md).
 Existing accepted functionality in
 another application is a behavior reference, not a completed Reborn milestone.
 

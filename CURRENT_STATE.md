@@ -1,8 +1,9 @@
 # Reborn current state
 
-Updated October 28, 2026, America/Chicago, for the requested successor handoff.
-This documentation branch is unmerged; accepted main and running release remain
-0.1.18. Fresh issue1 receipts and host discovery govern later operations.
+Updated October 28, 2026, America/Chicago, by the successor CORE for M5.2 review.
+This documentation branch carries the six-file predecessor handoff and remains
+unmerged; accepted main and running release remain0.1.18. Fresh issue1 receipts
+and host discovery govern later operations.
 
 ## Installed and qualified
 
@@ -39,14 +40,23 @@ build snapshot, not a live deployment/acceptance feed.
 
 ## Next concrete task
 
-Prepare and freeze a new **M5 host-updater contract and concrete bootstrap review**
-in an issue, using existing Rust release tools and actual immutable/manual18
-evidence. Refresh tools, GitHub and complete host/updater ownership first. Review
-source/binary/digest, paths/privileges, single-owner request/status/lock/dedup and
-uncertain states, artifact trust, exact targets, current-data recovery, uninstall
-and failure behavior. Complete authorized preparation before asking for separately
-required activation approval. No daemon/scheduler/second writer is authorized by
-this handoff. Missing real credentials do not block independent preparation.
+The **M5 host-updater contract and concrete bootstrap review** are frozen in
+[issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/31),
+[execution contract](docs/M5_HOST_UPDATER.md) and
+[host-specific review](docs/M5_UPDATER_BOOTSTRAP_REVIEW.md). Fresh Commander/SSH,
+GitHub, process/container/network/port/mount/lock, actual manual binary and ledger
+inspection supports this preparation. Exact18 and PG births, stopped17 and the
+final13 checksum index agree; the transient Docker CLI timeout and launcher
+precondition failure are retained honestly in the review.
+
+Next implement and independently qualify the Rust one-shot request/status/journal
+protocol in isolation: local qualified artifacts, exact Reborn app-only targets,
+schema13-compatible replacement, bounded uncertain-result reconciliation and
+current-data rollback. There is no updater binary/digest or activation-ready
+packet yet. Full competing-owner/bootstrap/reboot/uninstall fixtures remain open.
+Installation/activation requires separate approval of the completed exact packet;
+no daemon/scheduler/second writer is authorized here. Missing real provider
+credentials do not block independent preparation.
 
 ## Ownership and continuity
 

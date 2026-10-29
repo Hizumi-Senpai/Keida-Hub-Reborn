@@ -73,13 +73,15 @@ Mobile retains a full useful 2D dashboard without downloading the 3D experience.
 
 ## What happens next
 
-Prepare and freeze the next **M5 host-updater contract and concrete bootstrap
-review**, using the existing Rust release tools and qualified18 manual receipts.
-Review actual source/binary/digest, privileges/paths, competing-updater inventory,
-single-owner request/status/lock protocol, artifact trust, exact targets,
-current-data rollback, uninstall and failure recovery. Complete reviewable
-preparation before requesting the separately required installation/activation
-approval. No updater daemon, scheduler or second writer is activated here.
+The **M5 host-updater contract and concrete bootstrap review** are frozen for
+implementation in [issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/31):
+[execution contract](docs/M5_HOST_UPDATER.md) and
+[actual host/source/binary/bootstrap review](docs/M5_UPDATER_BOOTSTRAP_REVIEW.md).
+Next implement and qualify the bounded Rust one-shot protocol in isolation.
+Actual updater source/binary, crash/reboot/recovery/uninstall evidence and a
+complete activation packet remain open. Installation/activation requires separate
+owner approval of that exact packet. No updater daemon, scheduler or second
+writer is activated here; main and live remain0.1.18 on this unmerged branch.
 M5.1 browser refresh is already installed; do not repeat18's installation/cleanup.
 
 Dedicated Discord application enrollment/callback-query privacy and real owner

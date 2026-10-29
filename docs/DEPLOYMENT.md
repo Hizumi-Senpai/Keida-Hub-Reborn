@@ -205,3 +205,10 @@ Source/fixture, artifact, installation, loaded owner browser, real providers and
 updater acceptance remain separate. Next prepare the separately reviewed updater
 contract/bootstrap; activation requires its own approval. Refresh issue1, the
 [successor handoff](HANDOFF.md) and actual ownership before operations.
+
+The successor's M5.2 preparation is frozen in
+[issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/31), the
+[one-shot execution contract](M5_HOST_UPDATER.md) and
+[concrete host bootstrap review](M5_UPDATER_BOOTSTRAP_REVIEW.md). Those documents
+review actual manual tools/resources and identify the missing updater executable
+and failure qualification. They install nothing and grant no activation authority.
