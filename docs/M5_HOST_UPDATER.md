@@ -1,5 +1,21 @@
 # M5.2 host-updater contract
 
+## M5.6 path and authority refinement — October29,2026
+
+The [durable namespace/origin contract](M5_UPDATER_NAMESPACE.md), issue40, refines
+this document's proposed path and bootstrap rules for the ACTUAL Unraid layout.
+It selects a protected data-only boot anchor and Btrfs opaque capabilities;
+the strict existing path readers cannot directly admit cache/appdata. Its narrow
+VFAT0600 data-record profile does not relax the0400 sealed-input rules below.
+Neither anchor nor updater state is allocated. No mount or reboot hook is selected.
+
+M5.3/M5.4 are accepted diagnostic foundations through source21; M5.5's real18
+packet passed with all effect/adoption/readiness flagsfalse. The next actual
+Rust slice is issue41's read-only namespace probe. Full origin/executor/reboot/
+rollback/uninstall qualification and separate installation approval remain open.
+The source18/no-binary descriptions below are historical M5.2 preparation facts,
+not the current source or an activation receipt. Live/channel remain18/schema13.
+
 Frozen preparation scope: [issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/31),
 October 28, 2026, America/Chicago. This is a contract for an implementation to be
 reviewed, not an implemented updater or permission to install it. Read the

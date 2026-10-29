@@ -73,22 +73,25 @@ Mobile retains a full useful 2D dashboard without downloading the 3D experience.
 
 ## What happens next
 
-The **M5 host-updater contract and concrete bootstrap review** are frozen for
-implementation in [issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/31):
-[execution contract](docs/M5_HOST_UPDATER.md) and
-[actual host/source/binary/bootstrap review](docs/M5_UPDATER_BOOTSTRAP_REVIEW.md).
-The first [request/journal foundation](docs/M5_UPDATER_FOUNDATION.md), issue33,
-is accepted as source0.1.20 (PR35); exact head76 and main77 each passed24 steps/
-221 Rust tests, including25 independent updater fixtures. The subsequent
-[sealed current-artifact/adoption-plan diagnostic](docs/M5_UPDATER_ADMISSION.md),
-issue36, is in review. It checks a fixed private local bundle and proposes
-generation1 while preserving manual authority. It cannot adopt state or execute
-a host operation. Full eventual-head/main evidence for that new slice and the
-actual executor remain separate. Crash/reboot/current-data rollback/bootstrap/
-uninstall evidence and a complete activation packet remain open. Installation
-requires separate owner approval of that exact packet. Live/channel remain
-0.1.18/schema13; no updater daemon, scheduler or second writer is activated.
-M5.1 browser refresh is already installed; do not repeat18's installation/cleanup.
+The [M5 host-updater execution contract](docs/M5_HOST_UPDATER.md) and
+[concrete bootstrap review](docs/M5_UPDATER_BOOTSTRAP_REVIEW.md) remain preparation.
+The request/journal foundation is accepted as source0.1.20; the
+[CURRENT-artifact/adoption-PLAN diagnostic](docs/M5_UPDATER_ADMISSION.md) is accepted
+as source0.1.21/PR37, with head78/main79 each24 steps/237 Rust tests.
+[M5.5](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/38) has qualified the real installed18
+review packet while retaining manual authority and all effect/adoption/readiness
+flagsfalse.
+
+The next [M5.6 durable namespace/origin contract](docs/M5_UPDATER_NAMESPACE.md),
+[issue40](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/40), selects a proposed protected
+boot data anchor and persistent Btrfs directory/file capabilities without generic
+ancestor exceptions, shared permission changes, mounts or boot hooks. The smallest
+next code task is [issue41](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/41), a fixed
+read-only Rust namespace probe. Actual origin adoption, executor, crash/reboot,
+current-data rollback and uninstall qualification remain open. Complete the exact
+source/binary/bootstrap packet before asking for separate installation approval.
+Live/channel stay0.1.18/schema13. Owner service enrollment waits until home;
+do not repeat18's installation or cleanup.
 
 Dedicated Discord application enrollment/callback-query privacy and real owner
 linking acceptance remain open, alongside earlier daily-use/Crafty/Media/Queues

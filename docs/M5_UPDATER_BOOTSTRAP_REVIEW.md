@@ -1,5 +1,31 @@
 # M5.2 concrete host-updater bootstrap review
 
+## M5.6 concrete namespace decision — October29,2026
+
+Read the [durable namespace/origin contract](M5_UPDATER_NAMESPACE.md), issue40,
+before using the original proposed footprint below. Cache/appdata are actually
+UID99/0777; generic trusted-ancestry readers correctly reject them. The selected
+proposal adds a DATA-ONLY root-protected /boot/config origin anchor, while
+persistent state/journals stay on Btrfs and are reached by verified opaque
+app/state/lock capabilities. VFAT0600 masked records have a narrow explicit
+profile; existing0400 sealed-input rules remain strict. No mounts, shared
+permission changes, boot hooks, daemon or scheduler are selected.
+
+Fresh actual read-only handle lookup/reopen succeeded for existing root/lock
+objects. This is neither reboot proof nor installed authority. No new state-root
+handle, executor binary, bootstrap manifest or complete approval packet exists.
+The proposed boot directory and updater state path remain unallocated. Full
+VFAT/Btrfs durable-origin, caller, failure/reboot/current-data rollback/uninstall
+qualification is still required before separate installation approval.
+
+Source21's diagnostic and M5.5's real CURRENT18 review packet are qualified;
+effects/adoption/execution-ready remainfalse. Next issue41 implements the fixed
+read-only Rust probe. The older no-source/no-binary/current-source18 observations
+below retain their original date and do not override newer receipts. Live18 stays
+installed. Actual Crafty externally restarted again at16:01:05.952484269Z on
+October29; actor/cause is unresolved, no CORE lifecycle command was issued and no
+approved ownership baseline or zero-player claim follows.
+
 Prepared October 28, 2026, America/Chicago, for [issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/31).
 Review result: the [execution contract](M5_HOST_UPDATER.md) can be frozen for
 implementation. **Installation and activation are not ready for approval.**

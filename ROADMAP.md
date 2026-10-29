@@ -31,16 +31,20 @@ Real owner/provider acceptance remains open. The M5 host-updater preparation
 contract is frozen in [issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/31),
 [execution contract](docs/M5_HOST_UPDATER.md) and
 [concrete bootstrap review](docs/M5_UPDATER_BOOTSTRAP_REVIEW.md). Next implement
-and independently qualify its Rust one-shot protocol in isolation; no updater
-binary or activation-ready packet exists yet. Installation/activation needs
+and independently qualify the remaining Rust one-shot executor in isolation;
+a diagnostic binary exists, but no activation-ready executor packet exists yet. Installation/activation needs
 separate authorization. See [successor handoff](docs/HANDOFF.md).
-The first [M5.3 request/journal foundation](docs/M5_UPDATER_FOUNDATION.md), issue33,
-is accepted as source0.1.20/PR35 with head76/main77 each all24 steps/221 Rust tests,
-including25 independent updater fixtures. It has no host dispatcher. The next
-[M5.4 admission/adoption-plan contract](docs/M5_UPDATER_ADMISSION.md), issue36,
-is in review: fixed local evidence consistency, no authority transition or host
-effect. Fresh artifact/host admission, actual executor, current-data rollback,
-reboot/bootstrap/uninstall and full updater activation remain separate gates.
+The [M5.3 request/journal foundation](docs/M5_UPDATER_FOUNDATION.md) and
+[M5.4 CURRENT-artifact/adoption-PLAN diagnostic](docs/M5_UPDATER_ADMISSION.md) are
+accepted through source0.1.21/PR37; head78/main79 each passed24 steps/237 Rust tests.
+[M5.5](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/38) qualified the real CURRENT18
+review packet without adopting authority. [M5.6](docs/M5_UPDATER_NAMESPACE.md),
+issue40, freezes a proposed protected boot-data anchor and Btrfs capabilities for
+the actual writable Unraid ancestry. The anchor/state paths remain unallocated.
+Next [issue41](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/41) implements the smallest
+read-only Rust probe before a separately qualified capability/journal caller,
+authority-origin transaction and executor. Full current-data rollback, reboot,
+uninstall and exact installation approval gates stay open.
 Existing accepted functionality in
 another application is a behavior reference, not a completed Reborn milestone.
 

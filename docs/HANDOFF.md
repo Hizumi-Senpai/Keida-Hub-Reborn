@@ -1,5 +1,38 @@
 # Successor CORE handoff — installed 0.1.18
 
+## M5.6 continuation checkpoint — October29,2026
+
+The same successor CORE continues; this is not a new ownership transfer.
+M5.4 was accepted as source0.1.21 atfd3bff1b0c14be8bcbf06162bb1b1e562ccc5ea5
+(PR37), tree43a3d83015842120f317c4a63a7a7f1b0e82ee82; head78/main79 each passed
+24 steps/237 Rust tests. [Final source21 receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6487915377).
+M5.5 issue38 is complete for the real CURRENT18/root-sealed review packet,
+[full evidence](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/38#issuecomment-6500827314).
+All effect/adoption/execution-ready flags stayfalse; manual authority is intact.
+
+[M5.6 issue40](M5_UPDATER_NAMESPACE.md) freezes the durable namespace/origin
+contract: proposed protected boot DATA anchor plus persistent Btrfs capabilities,
+no generic ancestor exception, shared chmod/chown, mount or reboot hook. Actual
+root/lock handle reopen succeeded read-only; no bootstrap/state root is allocated,
+and reboot/durable-origin/executor qualification is open. Next issue41 is the
+fixed read-only Rust namespace probe; complete the full actual executor packet
+before requesting separate installation/activation approval.
+
+Live/channel stay0.1.18/schema13. Owner provider enrollment#39 waits until home
+for private Bazzite sign-in; no cloud browser or credential replay. A fresh11:13CDT
+read found18 healthy/ready, unchanged manual/state/final13-index hashes, retained
+stopped17 and unchanged app/PG births. Crafty externally returned to running with
+sameCID/image and NEW StartedAt2026-10-29T16:01:05.952484269Z; no CORE lifecycle
+command was issued, actor/cause remains unresolved. Reconcile ownership before
+future host effects. Unknown player/client evidence stays unknown.
+
+Use only self-hosted Commander with fresh identity/ownership, new immutable
+audited source and the actually held SAME permanent operation lock. Original,
+Rewrite, external workers/branches/unpublished work and useful17/final13 stay
+preserved. No installation, deployment or cleanup is pending. Source history and
+eventual accepted ordinal/CI are in issue1; this documentation merge alone does
+not deploy. All older dated handoff/checkpoint text below remains historical.
+
 ## M5.4 review checkpoint — October28,2026
 
 The same successor CORE continues. PR35 is accepted as source0.1.20 at
