@@ -898,7 +898,9 @@ fn expect_refused(files: Files) {
 fn complete_fictional_bundle_is_diagnostic_only_and_opaque_evidence_is_not_reinterpreted() {
     assert_complete_fixture(fixture_files());
     let zip: Vec<u8> = (0..130 * 1024).map(|index| (index % 251) as u8).collect();
-    let tar: Vec<u8> = (0..200 * 1024).map(|index| ((index % 241) as u8) ^ 0xa5).collect();
+    let tar: Vec<u8> = (0..200 * 1024)
+        .map(|index| ((index % 241) as u8) ^ 0xa5)
+        .collect();
     assert_complete_fixture(fixture_files_with_archives(&zip, &tar));
 }
 
