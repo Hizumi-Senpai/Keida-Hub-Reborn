@@ -35,6 +35,11 @@ The modules begin in one application rather than speculative distributed service
 
 ## Browser architecture
 
+Home is the useful configurable tile dashboard; sidebar views hold detailed
+provider workflows and administration. See [the Home contract](HOME_TILES.md).
+Browser build outputs follow the [finite asset window](BROWSER_ASSET_RETENTION.md);
+retention does not silently grow or redefine server authority.
+
 The authenticated dashboard, chat, arrangement editor, and optional room form **one persistent Svelte workspace**. They are interconnected views of the same owned state, not unrelated islands that reconstruct each other on navigation.
 
 The server provides a safely encoded, versioned initial data snapshot and serves compiled immutable browser assets. Node tooling may build these assets; a Node server is not required in production. The workspace is a deliberately bounded client application. Askama-generated HTML is **not** Svelte server output and must not be passed off as hydratable Svelte markup. Adding actual Svelte SSR would require a separate measured architecture decision and runtime review.

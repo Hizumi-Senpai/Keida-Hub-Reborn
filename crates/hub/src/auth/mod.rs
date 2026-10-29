@@ -13,6 +13,7 @@ mod notifications;
 mod observations;
 mod queues;
 mod sessions;
+mod tiles;
 pub mod store;
 #[cfg(test)]
 mod store_contracts;
@@ -141,6 +142,7 @@ pub fn router(service: Service) -> Router {
         .merge(observations::router(service.clone()))
         .merge(discord::router(service.clone()))
         .merge(sessions::router(service.clone()))
+        .merge(tiles::router(service.clone()))
         .merge(workspace::router(service))
 }
 

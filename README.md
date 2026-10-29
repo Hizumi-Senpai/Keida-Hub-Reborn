@@ -1,5 +1,11 @@
 # Keida Hub Reborn
 
+Active product candidate: [useful configurable Home tiles](docs/HOME_TILES.md)
+and [finite generated browser asset retention](docs/BROWSER_ASSET_RETENTION.md),
+tracked in [issue43](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/43).
+The sidebar keeps detailed views and administration. Live remains0.1.18/schema13
+until the candidate is independently qualified and installed.
+
 A fresh Rust-centered Keida Hub, authorized on **2026-10-25 America/Chicago**.
 The goal is a fast, reliable, feature-rich self-hosted dashboard and control platform
 with an optional editable 3D room and companion.

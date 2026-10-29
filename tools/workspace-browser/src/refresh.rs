@@ -47,7 +47,8 @@ pub async fn run() -> Check<()> {
 
     step("refresh phase02 layout, service and secret-form flags without value persistence");
     b.click(".main-nav button:nth-child(1)").await?;
-    b.click(".customize-home").await?;
+    b.wait("return !!document.querySelector('.customize-tiles') && !document.querySelector('.customize-tiles').disabled;",json!([])).await?;
+    b.click(".customize-tiles").await?;
     review(&b).await?;
     check(
         b.evaluate(
@@ -60,7 +61,7 @@ pub async fn run() -> Check<()> {
     )?;
     b.click(".refresh-stay").await?;
     // The normal cancel control owns the arrangement; refresh does not replace it.
-    b.evaluate("const buttons=[...document.querySelectorAll('.layout-editor button')];const c=buttons.find(e=>/Cancel/.test(e.textContent));if(c)c.click();return true;",json!([])).await?;
+    b.click(".cancel-tiles").await?;
     b.click(".main-nav button:nth-child(4)").await?;
     b.fill("#service-name", "Unfinished reviewed service")
         .await?;

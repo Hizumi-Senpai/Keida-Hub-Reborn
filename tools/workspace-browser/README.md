@@ -27,7 +27,7 @@ Ubuntu Noble bytes pinned by SHA256
 Node does not run this native browser driver. Svelte's compiled application is
 the code under test.
 
-Thirteen independent workflows cover real native enrollment/TLS, persistent editor
+Fifteen retained workflow areas cover real native enrollment/TLS, persistent editor
 identity and selection, one poll owner, draft/keyboard/reflow/accessibility,
 concurrent-device409, editing during a held successful save, committed lost
 response/no replay, cross-tab account switch/late response, explicit same-account
@@ -55,8 +55,11 @@ Primary protocol references: [W3C WebDriver](https://www.w3.org/TR/webdriver2/),
 
 The ninth workflow verifies grouped notifications, read watermarks, racing/lost responses without replay, persisted reads, privacy and desktop/390px accessibility.
 
-The tenth workflow verifies personal Home arrangement with conflict/lost-response
-reconciliation, focus and component lifetimes. The eleventh verifies the integration
+The tenth workflow now verifies the delivered configurable Home tiles, including
+selection, order, normal/wide sizing, conflict/lost-response reconciliation,
+account/role isolation, focus and component lifetimes. It replaces the former
+fixed-three-panel UI exercise; the old three-panel API remains independently
+covered by Rust HTTP/database contracts. The eleventh verifies the integration
 catalog, separate dated Roadmap note, actual TLS observation capture, stable
 history pagination, owner archive/member narrowing, note-save enrollment races,
 late-response privacy and desktop/390px accessibility. No fixture touches production.
@@ -84,6 +87,24 @@ product/account/compatibility failures and an actual sixty-second hidden-tab
 deadline before deliberate fixed-path GET navigation. No fake clock extends or
 shortens the production reconnect budget.
 
-Run the retained15 workflows with no argument (unchanged240-second cap), then
-run `reborn-workspace-browser --refresh` for the new workflow (120-second cap).
-CI requires both calls in native and exact-image modes:16 workflows per mode.
+Run the retained15 workflow areas with no argument (unchanged240-second cap),
+then `reborn-workspace-browser --refresh` (unchanged120-second cap), and
+`reborn-workspace-browser --tiles` (separate180-second cap). CI requires all three
+calls in native and exact-image modes:17 workflows per mode.
+
+The additional Home resource/recovery workflow uses actual fictional HTTPS
+Crafty, Jellyfin, Seerr and qBittorrent providers. Native enrollment precedes Home
+observation clicks. It verifies bounded summaries, wanted-byte progress, secret
+projection and no write effects; crosses an actual15-second scheduler interval
+with provider tiles hidden; and checks390px/Axe and owner/member isolation.
+A cold module-load failure leaves native fresh-workspace/Account links usable.
+The same admitted browser later offers and deliberately recovers its scoped note
+draft without a PUT. Browser cache disabling is a named test seam for that cold
+module failure, never a production instruction or credential replay. Independent
+expectations are in [HOME_TILES_BROWSER_CONTRACTS](../../docs/HOME_TILES_BROWSER_CONTRACTS.md).
+
+The resource invocation exports two bounded `SAFE_HOME_FIXTURE_PNG` viewport
+images (desktop and390px mobile) only after proving the populated Home is the
+fixed fictional fixture, all provider fields are cleared/closed and credential
+canaries are absent. These are visual-review artifacts, not screenshot-based
+behavior assertions or captures of production accounts.

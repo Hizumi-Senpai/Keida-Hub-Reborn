@@ -134,7 +134,7 @@ async fn schema_twelve_upgrade_preserves_eighteen_relations_and_backfills_indepe
             .fetch_one(&mut db)
             .await
             .unwrap(),
-        13
+        14
     );
     let after_ledger: Vec<(i64, Vec<u8>, bool)> = sqlx::query_as(
         "SELECT version,checksum,success FROM _sqlx_migrations WHERE version<=12 ORDER BY version",

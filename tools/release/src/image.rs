@@ -2,6 +2,7 @@
 use crate::{Result, directory, hash, hex};
 use serde_json::{Value, json};
 use std::{
+    collections::BTreeSet,
     fs,
     path::Path,
     process::{Command, Stdio},
@@ -18,6 +19,40 @@ fn docker(args: &[&str]) -> Result<Vec<u8>> {
     Ok(output.stdout)
 }
 struct Container(String);
+fn asset_manifest(schema: u64, assets: &[Value]) -> Result<()> {
+    // Historical CURRENT18 qualification remains available. New schema14 images
+    // ship only the current generation and the two reviewed predecessor pairs.
+    let expected = match schema {
+        13 => 24,
+        14 => 6,
+        _ => return Err("packaged interface mismatch"),
+    };
+    if assets.len() != expected {
+        return Err("packaged asset manifest rejected");
+    }
+    let mut unique = BTreeSet::new();
+    let mut scripts = 0;
+    let mut styles = 0;
+    for value in assets {
+        let path = value.as_str().ok_or("packaged asset manifest rejected")?;
+        let (hash, extension) = path
+            .strip_prefix("/assets/workspace/")
+            .and_then(|path| path.split_once('.'))
+            .ok_or("packaged asset manifest rejected")?;
+        if !crate::digest(hash, 64) || !unique.insert(path) {
+            return Err("packaged asset manifest rejected");
+        }
+        match extension {
+            "js" => scripts += 1,
+            "css" => styles += 1,
+            _ => return Err("packaged asset manifest rejected"),
+        }
+    }
+    if scripts != expected / 2 || styles != expected / 2 {
+        return Err("packaged asset manifest rejected");
+    }
+    Ok(())
+}
 impl Drop for Container {
     fn drop(&mut self) {
         let _ = Command::new("docker")
@@ -71,7 +106,6 @@ pub(super) fn inspect(
     let labels = &metadata["Config"]["Labels"];
     for (name, expected) in [
         ("keida.product", "keida-hub-reborn"),
-        ("keida.schema", "13"),
         ("keida.tree", tree),
         ("keida.channel", channel),
         ("org.opencontainers.image.version", version),
@@ -107,23 +141,21 @@ pub(super) fn inspect(
             return Err("packaged binary/source mismatch");
         }
     }
-    if public["database_schema"] != 13 || public["workspace_contract"] != "reborn-workspace-v1" {
+    let schema = match (
+        public["database_schema"].as_u64(),
+        labels["keida.schema"].as_str(),
+    ) {
+        (Some(13), Some("13")) => 13,
+        (Some(14), Some("14")) => 14,
+        _ => return Err("packaged interface mismatch"),
+    };
+    if public["workspace_contract"] != "reborn-workspace-v1" {
         return Err("packaged interface mismatch");
     }
     let assets = public["assets"]
         .as_array()
         .ok_or("packaged assets absent")?;
-    if assets.len() != 24
-        || assets.iter().any(|a| {
-            !a.as_str().is_some_and(|a| {
-                a.strip_prefix("/assets/workspace/")
-                    .and_then(|a| a.split_once('.'))
-                    .is_some_and(|(h, e)| crate::digest(h, 64) && matches!(e, "js" | "css"))
-            })
-        })
-    {
-        return Err("packaged asset manifest rejected");
-    }
+    asset_manifest(schema, assets)?;
     let mut random = [0u8; 12];
     getrandom::fill(&mut random).map_err(|_| "inspection identity failed")?;
     let name = format!("reborn-image-inspect-{}", hex(&random));
@@ -162,7 +194,7 @@ pub(super) fn inspect(
         image,
     ])?;
     let archive_sha256 = hash(&archive)?;
-    let proof = json!({"format":1,"product":"keida-hub-reborn","identity":identity,"database_schema":13,"workspace_contract":"reborn-workspace-v1","assets":assets,"image_id":image,"binary_sha256":binary_sha256,"archive_sha256":archive_sha256});
+    let proof = json!({"format":1,"product":"keida-hub-reborn","identity":identity,"database_schema":schema,"workspace_contract":"reborn-workspace-v1","assets":assets,"image_id":image,"binary_sha256":binary_sha256,"archive_sha256":archive_sha256});
     crate::write(
         &out.join("image-proof.json"),
         &serde_json::to_vec(&proof).map_err(|_| "image proof encoding failed")?,
@@ -170,4 +202,46 @@ pub(super) fn inspect(
     )?;
     println!("Packaged image inspection passed: {version} {commit} {image}");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn assets(pairs: u64) -> Vec<Value> {
+        (0..pairs)
+            .flat_map(|pair| {
+                [
+                    json!(format!("/assets/workspace/{:064x}.js", pair * 2)),
+                    json!(format!("/assets/workspace/{:064x}.css", pair * 2 + 1)),
+                ]
+            })
+            .collect()
+    }
+
+    #[test]
+    fn schema14_shipping_window_preserves_historical18_inspection() {
+        assert!(asset_manifest(14, &assets(3)).is_ok());
+        assert!(asset_manifest(13, &assets(12)).is_ok());
+        assert!(asset_manifest(14, &assets(12)).is_err());
+        assert!(asset_manifest(13, &assets(3)).is_err());
+        assert!(asset_manifest(15, &assets(3)).is_err());
+        for replacement in [
+            Value::Null,
+            json!("/assets/workspace/latest.js"),
+            json!("https://assets.example/workspace.js"),
+            json!(format!("/assets/workspace/{:064x}.wasm", 2)),
+        ] {
+            let mut invalid = assets(3);
+            invalid[0] = replacement;
+            assert!(asset_manifest(14, &invalid).is_err());
+        }
+        let mut duplicate = assets(3);
+        duplicate[1] = duplicate[0].clone();
+        assert!(asset_manifest(14, &duplicate).is_err());
+        let scripts_only = (0..6)
+            .map(|n| json!(format!("/assets/workspace/{n:064x}.js")))
+            .collect::<Vec<_>>();
+        assert!(asset_manifest(14, &scripts_only).is_err());
+    }
 }

@@ -53,6 +53,23 @@ data, original game controllers, listeners, bot jobs, backup/update workers and
 unpublished external work retain their owners. A new repository, roadmap or
 read-only adapter transfers no operational authority or hostname.
 
+## Current product priority — useful tile Home
+
+The owner directed [issue43](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/43)
+after reviewing UI drift and accumulated compiled browser assets. The next
+visible product delivery is the [configurable Home tile dashboard](docs/HOME_TILES.md):
+games, Jellyfin, requests, downloads and saved services, with notes optional.
+Keep detailed views and management in the sidebar. Add/remove, ordering and
+normal/wide controls are deliberate revisioned edits; arbitrary drag/resize is
+later work. Reuse current Rust providers and persistent Svelte components.
+
+The same delivery introduces a [finite browser asset window](docs/BROWSER_ASSET_RETENTION.md),
+retaining exact17/18 plus the new generation and retiring only older cold assets
+with native recovery. This is source/artifact cleanup, not hidden languages or a
+new backend. The implementation candidate uses additive schema14; live remains18/13
+until exact qualification and installation. M5 issue41 remains independent and
+open; no updater installation/activation is authorized by this product priority.
+
 ## Delivery order
 
 M0 and the first useful M1 slice are the immediate work. M2–M5 can advance in

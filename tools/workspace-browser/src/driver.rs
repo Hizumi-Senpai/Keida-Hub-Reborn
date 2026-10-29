@@ -353,6 +353,22 @@ impl Browser {
         .await?;
         Ok(())
     }
+    // Called only after the fixture workflow proves the displayed Home has
+    // fictional observations and no credential fields or private provider data.
+    // Never expose a raw protocol reply, account page or browser session state.
+    pub async fn fixture_home_screenshot(&self) -> Check<String> {
+        let reply = self.call(Method::GET, "/screenshot", None).await?;
+        let data = reply.as_str().ok_or("fixture Home PNG response")?;
+        let padding = if data.ends_with("==") { 2 } else if data.ends_with('=') { 1 } else { 0 };
+        check(
+            data.starts_with("iVBORw0KGgo")
+                && data.len().is_multiple_of(4)
+                && data.len() / 4 * 3 - padding <= 250 * 1024
+                && data.bytes().all(|b| b.is_ascii_alphanumeric() || b"+/=".contains(&b)),
+            "bounded fixture Home PNG encoding",
+        )?;
+        Ok(data.to_owned())
+    }
     pub async fn back(&self) -> Check<()> {
         self.call(Method::POST, "/back", Some(json!({}))).await?;
         Ok(())

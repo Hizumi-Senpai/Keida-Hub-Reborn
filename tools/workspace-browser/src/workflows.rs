@@ -8,10 +8,10 @@ mod sessions;
 use crate::{Check, check, driver::Browser, fixture::Fixture};
 use serde_json::json;
 use std::{fs, time::Duration};
-fn step(name: &'static str) {
+pub(super) fn step(name: &'static str) {
     println!("RUST_BROWSER_STEP {name}");
 }
-async fn claim(f: &Fixture, b: &Browser) -> Check<()> {
+pub(super) async fn claim(f: &Fixture, b: &Browser) -> Check<()> {
     b.navigate(&format!("{}/account/claim", f.origin)).await?;
     b.fill("input[name=setup_secret]", &f.setup).await?;
     b.fill("input[name=username]", &f.username).await?;
@@ -20,7 +20,7 @@ async fn claim(f: &Fixture, b: &Browser) -> Check<()> {
     b.wait("return location.pathname === '/account'", json!([]))
         .await
 }
-async fn sign_in(f: &Fixture, b: &Browser, user: &str, password: &str) -> Check<()> {
+pub(super) async fn sign_in(f: &Fixture, b: &Browser, user: &str, password: &str) -> Check<()> {
     b.navigate(&format!("{}/account/sign-in", f.origin)).await?;
     b.fill("input[name=username]", user).await?;
     b.fill("input[name=password]", password).await?;
@@ -28,14 +28,14 @@ async fn sign_in(f: &Fixture, b: &Browser, user: &str, password: &str) -> Check<
     b.wait("return location.pathname === '/account'", json!([]))
         .await
 }
-async fn workspace(f: &Fixture, b: &Browser) -> Check<()> {
+pub(super) async fn workspace(f: &Fixture, b: &Browser) -> Check<()> {
     b.navigate(&format!("{}/workspace", f.origin)).await?;
     b.wait("return !!document.querySelector('#workspace-note') && !document.querySelector('#workspace-note').disabled && document.querySelector('.workspace-status').textContent.includes('checked')",json!([])).await
 }
-async fn note(b: &Browser) -> Check<()> {
+pub(super) async fn note(b: &Browser) -> Check<()> {
     b.click(".main-nav button:nth-child(2)").await
 }
-async fn body(b: &Browser, expected: &str) -> Check<()> {
+pub(super) async fn body(b: &Browser, expected: &str) -> Check<()> {
     check(
         b.evaluate(
             "return document.querySelector('#workspace-note').value === arguments[0]",
@@ -46,13 +46,13 @@ async fn body(b: &Browser, expected: &str) -> Check<()> {
         "editor text matches expected private draft",
     )
 }
-async fn saved(b: &Browser) -> Check<()> {
+pub(super) async fn saved(b: &Browser) -> Check<()> {
     b.wait("return document.querySelector('.workspace-status').textContent.includes('Saved to your account')",json!([])).await
 }
 async fn cleared(b: &Browser, previous: &str) -> Check<()> {
     b.wait("return document.querySelector('#workspace-note')?.value === '' && !document.body.textContent.includes(arguments[0])",json!([previous])).await
 }
-async fn accessibility(b: &Browser) -> Check<()> {
+pub(super) async fn accessibility(b: &Browser) -> Check<()> {
     let path = std::env::var("REBORN_AXE_SCRIPT").map_err(|_| "pinned Axe prerequisite")?;
     let source = fs::read_to_string(path).map_err(|_| "Axe script read")?;
     check(source.len() < 1024 * 1024, "Axe script bound")?;
@@ -71,7 +71,7 @@ async fn accessibility(b: &Browser) -> Check<()> {
     )
 }
 
-async fn media_enroll(
+pub(super) async fn media_enroll(
     b: &Browser,
     provider: &reborn_crafty_fixture::media::Media,
     name: &'static str,
@@ -188,7 +188,7 @@ async fn media_enroll(
     .await
 }
 
-async fn media_observed(b: &Browser, name: &'static str, expected: &str) -> Check<()> {
+pub(super) async fn media_observed(b: &Browser, name: &'static str, expected: &str) -> Check<()> {
     // The UI deliberately does not create another timer. Each click here is an
     // actual user refresh while Rust owns the bounded in-flight collection.
     let deadline = tokio::time::Instant::now() + Duration::from_secs(8);
@@ -287,7 +287,7 @@ async fn queue_form(
     Ok(revision)
 }
 
-async fn queue_enroll(
+pub(super) async fn queue_enroll(
     b: &Browser,
     provider: &reborn_crafty_fixture::queues::Queues,
     name: &'static str,
@@ -336,7 +336,7 @@ async fn queue_result(
     }
 }
 
-async fn queue_observed(b: &Browser, name: &'static str, rows: usize) -> Check<()> {
+pub(super) async fn queue_observed(b: &Browser, name: &'static str, rows: usize) -> Check<()> {
     queue_refresh(b, name).await?;
     queue_result(b, name, 0, rows, "").await
 }
@@ -364,7 +364,8 @@ async fn owner_queue_observations() -> Check<()> {
     check(owner.evaluate("window.__queueEditor=document.querySelector('#workspace-note');window.__queueEditor.setSelectionRange(4,13);return window.__queueEditor.value===arguments[0];",json!([draft])).await? == true,"retain actual private editor before Queues")?;
     owner.click(".main-nav button:nth-child(10)").await?;
     owner.wait("return ['sonarr','radarr','qbittorrent'].every(name=>document.querySelector('[data-queue-provider='+name+']')?.dataset.queuePhase==='ready');",json!([])).await?;
-    check(owner.evaluate("const nav=[...document.querySelectorAll('.main-nav button')],labels=['Home','Workspace note','Connections','Services','Activity','Notifications','Integrations','Roadmap','Media','Queues','Identity'];return nav.length===labels.length && labels.every((label,index)=>nav[index].textContent.includes(label)) && document.querySelectorAll('[data-home-panel]').length===3;",json!([])).await? == true,"Queues is tenth, retaining every earlier navigation position and three Home panels")?;
+    crate::tiles::ready(&owner).await?;
+    check(owner.evaluate("const nav=[...document.querySelectorAll('.main-nav button')],labels=['Home','Workspace note','Connections','Services','Activity','Notifications','Integrations','Roadmap','Media','Queues','Identity'];return nav.length===labels.length && labels.every((label,index)=>nav[index].textContent.includes(label)) && ['games','jellyfin','requests','downloads','services'].every(id=>!!document.querySelector('[data-home-tile='+id+']'));",json!([])).await? == true,"Queues is tenth, retaining every earlier navigation position and useful Home tiles")?;
     check(
         sonarr.requests().is_empty() && radarr.requests().is_empty() && qbit.requests().is_empty(),
         "opening owner queue status does not collect provider observations",
@@ -1141,7 +1142,8 @@ async fn owner_media_observations() -> Check<()> {
     step("media phase01f navigate-Media-and-wait-native-fields");
     owner.click(".main-nav button:nth-child(9)").await?;
     owner.wait("return !!document.querySelector('#jellyfin-token') && !!document.querySelector('#seerr-token');", json!([])).await?;
-    check(owner.evaluate("const nav=[...document.querySelectorAll('.main-nav button')],labels=['Home','Workspace note','Connections','Services','Activity','Notifications','Integrations','Roadmap','Media','Queues','Identity'];return nav.length===labels.length && labels.every((label,index)=>nav[index].textContent.includes(label)) && document.querySelectorAll('[data-home-panel]').length===3;", json!([])).await? == true, "Media retains its ninth position before Queues without adding Home panels")?;
+    crate::tiles::ready(&owner).await?;
+    check(owner.evaluate("const nav=[...document.querySelectorAll('.main-nav button')],labels=['Home','Workspace note','Connections','Services','Activity','Notifications','Integrations','Roadmap','Media','Queues','Identity'];return nav.length===labels.length && labels.every((label,index)=>nav[index].textContent.includes(label)) && ['games','jellyfin','requests','downloads','services'].every(id=>!!document.querySelector('[data-home-tile='+id+']'));", json!([])).await? == true, "Media retains its ninth position before Queues and the same useful Home tiles")?;
     step("media phase01g enroll-Jellyfin");
     media_enroll(&owner, &provider, "jellyfin").await?;
     step("media phase01h enroll-Seerr");
@@ -1833,7 +1835,7 @@ async fn directory_and_personal_pins() -> Check<()> {
     b.fill("#service-name", "An unfinished service draft")
         .await?;
     b.click(".main-nav button:first-child").await?;
-    check(b.evaluate("return document.querySelectorAll('.service-card').length===2 && window.__libraryCard===[...document.querySelectorAll('.service-card')].find(e=>e.textContent.includes('My Library')) && window.__directoryEditor===document.querySelector('#workspace-note') && window.__linkForm===document.querySelector('#service-name')",json!([])).await?==true,"home/directory navigation retains actual card, service form and note editor")?;
+    check(b.evaluate("return document.querySelectorAll('[data-home-tile=services] .service-tile-links li').length===2 && document.querySelector('[data-home-tile=services] .service-tile-links li').textContent.includes('My Games') && window.__libraryCard===[...document.querySelectorAll('.service-card')].find(e=>e.textContent.includes('My Library')) && window.__directoryEditor===document.querySelector('#workspace-note') && window.__linkForm===document.querySelector('#service-name')",json!([])).await?==true,"home/directory navigation retains actual card, service form and note editor")?;
     b.click(".main-nav button:nth-child(4)").await?;
     check(
         b.evaluate(
@@ -1896,7 +1898,8 @@ async fn directory_and_personal_pins() -> Check<()> {
         .await?;
     sign_in(&f, &b, &f.username, &f.password).await?;
     workspace(&f, &b).await?;
-    check(b.evaluate("return document.querySelectorAll('.service-card').length===1 && document.querySelector('.service-card h3').textContent.includes('My Library')",json!([])).await?==true,"owner pins persist independently after account switch")?;
+    crate::tiles::ready(&b).await?;
+    check(b.evaluate("return document.querySelectorAll('[data-home-tile=services] .service-tile-links li').length===1 && document.querySelector('[data-home-tile=services] .service-tile-links li').textContent.includes('My Library')",json!([])).await?==true,"owner pins persist independently after account switch")?;
     b.close().await?;
     drop(b);
     f.close().await?;
@@ -2135,301 +2138,9 @@ async fn grouped_notifications() -> Check<()> {
     Ok(())
 }
 
-async fn home_panels(b: &Browser, order: [&str; 3], visible: [&str; 3]) -> Check<()> {
-    check(b.evaluate("const panels=[...document.querySelectorAll('[data-home-panel]')], shown=panels.filter(p=>p.getClientRects().length>0 && !p.closest('[hidden]')); return panels.length===3 && panels.every((p,i)=>p.dataset.homePanel===arguments[0][i]) && shown.map(p=>p.dataset.homePanel).join(',')===arguments[1].filter(Boolean).join(',') && shown.every((p,i)=>{if(!i)return true;const before=shown[i-1].getBoundingClientRect(),next=p.getBoundingClientRect();return next.top>before.top-1 && (Math.abs(next.top-before.top)>1 || next.left>=before.right-1);});", json!([order, visible])).await? == true, "Home panels retain authoritative DOM reading order and requested visibility")
-}
-
-async fn arrange_pins_first(b: &Browser) -> Check<()> {
-    b.click(".customize-home").await?;
-    // Focus is a browser primitive; the actual command is native keyboard Enter.
-    check(b.evaluate("const button=document.querySelector('button[aria-label=\"Move Pinned services up\"]'); button.focus();return document.activeElement===button;", json!([])).await? == true, "layout reorder control receives keyboard focus")?;
-    b.keys("\u{e007}").await?;
-    b.wait(
-        "return document.activeElement===document.querySelector('[data-layout-row=\"pins\"]');",
-        json!([]),
-    )
-    .await?;
-    b.click("button[aria-label='Move Pinned services up']")
-        .await?;
-    b.click("input[aria-label='Show Connections']").await?;
-    home_panels(b, ["pins", "note", "connections"], ["pins", "note", ""]).await
-}
-
-async fn layout_saved(b: &Browser) -> Check<()> {
-    b.wait("return document.querySelector('.layout-status')?.textContent.includes('Layout saved') && !document.querySelector('.layout-editor:not([hidden])');", json!([])).await
-}
-
+// The delivered Home now uses the bounded tile catalog. Keep the old workflow's
+// save/race/privacy/focus obligations on that actual UI; legacy three-panel API
+// compatibility is verified by the Rust HTTP/database contracts.
 async fn personal_home_layout() -> Check<()> {
-    step("personal Home arrangement, native keyboard controls and persistent panels");
-    let f = Fixture::new().await?;
-    let mut a = f.browser(true).await?;
-    claim(&f, &a).await?;
-    let (member, password) = f.enroll_member(&a).await?;
-    workspace(&f, &a).await?;
-    home_panels(
-        &a,
-        ["note", "connections", "pins"],
-        ["note", "connections", "pins"],
-    )
-    .await?;
-    note(&a).await?;
-    a.fill("#workspace-note", "An unfinished note while arranging Home")
-        .await?;
-    a.click(".main-nav button:nth-child(4)").await?;
-    a.fill(
-        "#service-name",
-        "An unfinished service while arranging Home",
-    )
-    .await?;
-    a.evaluate("window.__layoutNote=document.querySelector('#workspace-note');window.__layoutService=document.querySelector('#service-name');window.__layoutPanels=[...document.querySelectorAll('[data-home-panel]')];return true;", json!([])).await?;
-    a.click(".main-nav button:first-child").await?;
-    let writes = f.writes();
-    arrange_pins_first(&a).await?;
-    a.click(".reset-layout").await?;
-    home_panels(
-        &a,
-        ["note", "connections", "pins"],
-        ["note", "connections", "pins"],
-    )
-    .await?;
-    a.click("input[aria-label='Show Connections']").await?;
-    a.click("input[aria-label='Show Pinned services']").await?;
-    check(
-        a.evaluate(
-            "return document.querySelector('input[aria-label=\"Show Workspace note\"]').disabled;",
-            json!([]),
-        )
-        .await?
-            == true,
-        "the last visible Home panel cannot be hidden",
-    )?;
-    a.click(".reset-layout").await?;
-    a.click(".cancel-layout").await?;
-    check(
-        f.writes() == writes,
-        "layout preview, reset and cancel create no server writes",
-    )?;
-    arrange_pins_first(&a).await?;
-    a.click(".save-layout").await?;
-    layout_saved(&a).await?;
-    home_panels(&a, ["pins", "note", "connections"], ["pins", "note", ""]).await?;
-    check(a.evaluate("return window.__layoutNote===document.querySelector('#workspace-note') && window.__layoutService===document.querySelector('#service-name') && window.__layoutPanels.every(p=>p===[...document.querySelectorAll('[data-home-panel]')].find(n=>n.dataset.homePanel===p.dataset.homePanel)) && window.__layoutNote.value==='An unfinished note while arranging Home' && window.__layoutService.value==='An unfinished service while arranging Home';", json!([])).await? == true, "Home reorder and hide preserve actual panel, note editor and service form instances and drafts")?;
-    a.click(".main-nav button:nth-child(3)").await?;
-    check(
-        a.evaluate(
-            "return !!document.querySelector('section[aria-label=Connections]:not([hidden])');",
-            json!([]),
-        )
-        .await?
-            == true,
-        "hidden Home connection summary remains available in Connections",
-    )?;
-    a.click(".main-nav button:nth-child(4)").await?;
-    check(a.evaluate("return document.querySelector('#service-name').value==='An unfinished service while arranging Home';", json!([])).await? == true, "service draft remains usable after Home layout save")?;
-    a.click(".main-nav button:first-child").await?;
-
-    step("layout reload, stale concurrent browser edit and retained conflict comparison");
-    let mut b = f.browser(true).await?;
-    sign_in(&f, &b, &f.username, &f.password).await?;
-    workspace(&f, &b).await?;
-    home_panels(&b, ["pins", "note", "connections"], ["pins", "note", ""]).await?;
-    b.click(".customize-home").await?;
-    b.click("input[aria-label='Show Connections']").await?;
-    home_panels(
-        &b,
-        ["pins", "note", "connections"],
-        ["pins", "note", "connections"],
-    )
-    .await?;
-    // Hold an actual old observation while the other browser commits. This
-    // freezes a known stale base without relying on the 15-second poll timing.
-    let obsolete = f.hold("/api/workspace/snapshot");
-    b.evaluate(
-        "window.dispatchEvent(new Event('focus'));return true;",
-        json!([]),
-    )
-    .await?;
-    tokio::time::timeout(Duration::from_secs(3), obsolete.entered.notified())
-        .await
-        .map_err(|_| "old concurrent layout snapshot hold")?;
-    a.click(".customize-home").await?;
-    a.click(".reset-layout").await?;
-    a.click(".save-layout").await?;
-    layout_saved(&a).await?;
-    let canonical = f.hold("/api/workspace/snapshot");
-    b.click(".save-layout").await?;
-    tokio::time::timeout(Duration::from_secs(3), canonical.entered.notified())
-        .await
-        .map_err(|_| "layout conflict canonical snapshot hold")?;
-    obsolete.release.notify_one();
-    check(b.evaluate("return document.querySelector('.save-layout').disabled && !document.querySelector('section[aria-label=\"Layout conflict\"]');", json!([])).await? == true, "layout cannot resolve conflict before fresh canonical data arrives")?;
-    home_panels(
-        &b,
-        ["pins", "note", "connections"],
-        ["pins", "note", "connections"],
-    )
-    .await?;
-    canonical.release.notify_one();
-    b.wait(
-        "return !!document.querySelector('section[aria-label=\"Layout conflict\"]');",
-        json!([]),
-    )
-    .await?;
-    home_panels(
-        &b,
-        ["pins", "note", "connections"],
-        ["pins", "note", "connections"],
-    )
-    .await?;
-    b.click("section[aria-label='Layout conflict'] button:last-of-type")
-        .await?;
-    home_panels(
-        &b,
-        ["note", "connections", "pins"],
-        ["note", "connections", "pins"],
-    )
-    .await?;
-
-    step("committed layout response loss reconciles once without mutation replay");
-    arrange_pins_first(&b).await?;
-    let writes = f.writes();
-    let lost = f.hold("/api/workspace/layout");
-    b.click(".save-layout").await?;
-    tokio::time::timeout(Duration::from_secs(3), lost.entered.notified())
-        .await
-        .map_err(|_| "actual committed layout response hold")?;
-    b.wait("return !!document.querySelector('section[aria-label=\"Uncertain layout\"]') && document.querySelector('.layout-status').textContent.includes('may have saved');", json!([])).await?;
-    check(
-        b.evaluate(
-            "return document.querySelector('.save-layout').disabled;",
-            json!([]),
-        )
-        .await?
-            == true,
-        "uncertain layout cannot be resubmitted before reconciliation",
-    )?;
-    lost.release.notify_one();
-    b.click(".check-layout").await?;
-    b.wait("return !document.querySelector('.layout-editor:not([hidden])') && document.querySelector('.layout-status').textContent.includes('matches your changes');", json!([])).await?;
-    check(
-        f.writes() == writes + 1,
-        "committed lost layout response uses authorized GET without replaying PUT",
-    )?;
-    home_panels(&b, ["pins", "note", "connections"], ["pins", "note", ""]).await?;
-    workspace(&f, &b).await?;
-    home_panels(&b, ["pins", "note", "connections"], ["pins", "note", ""]).await?;
-
-    step("remote Home reorder preserves active service form focus and selection");
-    workspace(&f, &a).await?;
-    home_panels(&a, ["pins", "note", "connections"], ["pins", "note", ""]).await?;
-    a.click(".main-nav button:nth-child(4)").await?;
-    a.fill(
-        "#service-name",
-        "A focused service draft during a remote Home reorder",
-    )
-    .await?;
-    check(a.evaluate("window.__focusedService=document.querySelector('#service-name');window.__focusedService.setSelectionRange(3,11);window.__focusedPanelOrder=[...document.querySelectorAll('[data-home-panel]')].map(p=>p.dataset.homePanel).join(',');return document.activeElement===window.__focusedService;", json!([])).await? == true, "service form starts focused with an actual text selection")?;
-    b.click(".customize-home").await?;
-    b.click(".reset-layout").await?;
-    b.click(".save-layout").await?;
-    layout_saved(&b).await?;
-    let focused = f.hold("/api/workspace/snapshot");
-    a.evaluate(
-        "window.__layoutObservationStart=performance.now();window.dispatchEvent(new Event('focus'));return true;",
-        json!([]),
-    )
-    .await?;
-    tokio::time::timeout(Duration::from_secs(3), focused.entered.notified())
-        .await
-        .map_err(|_| "focused service canonical layout observation hold")?;
-    focused.release.notify_one();
-    // Observe completion of the real authorized fetch, then allow its Svelte
-    // DOM work to render before checking focus. No application state is injected.
-    a.wait("return performance.getEntriesByType('resource').some(e=>new URL(e.name).pathname==='/api/workspace/snapshot' && e.initiatorType==='fetch' && e.startTime>=window.__layoutObservationStart);", json!([])).await?;
-    a.evaluate("return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))));", json!([])).await?;
-    check(a.evaluate("return document.querySelector('#service-name')===window.__focusedService && document.activeElement===window.__focusedService && window.__focusedService.selectionStart===3 && window.__focusedService.selectionEnd===11 && window.__focusedService.value==='A focused service draft during a remote Home reorder' && [...document.querySelectorAll('[data-home-panel]')].map(p=>p.dataset.homePanel).join(',')===window.__focusedPanelOrder;", json!([])).await? == true, "authorized layout refresh while Services is active preserves exact form focus, selection, draft and wrapper positions")?;
-    a.click(".main-nav button:first-child").await?;
-    home_panels(
-        &a,
-        ["note", "connections", "pins"],
-        ["note", "connections", "pins"],
-    )
-    .await?;
-    arrange_pins_first(&b).await?;
-    b.click(".save-layout").await?;
-    layout_saved(&b).await?;
-
-    step("independent member layout and native desktop/mobile arrangement controls");
-    let mut other = f.browser(true).await?;
-    sign_in(&f, &other, &member, &password).await?;
-    workspace(&f, &other).await?;
-    home_panels(
-        &other,
-        ["note", "connections", "pins"],
-        ["note", "connections", "pins"],
-    )
-    .await?;
-    other.click(".customize-home").await?;
-    other
-        .click("input[aria-label='Show Pinned services']")
-        .await?;
-    other.click(".save-layout").await?;
-    layout_saved(&other).await?;
-    workspace(&f, &other).await?;
-    home_panels(
-        &other,
-        ["note", "connections", "pins"],
-        ["note", "connections", ""],
-    )
-    .await?;
-    workspace(&f, &b).await?;
-    home_panels(&b, ["pins", "note", "connections"], ["pins", "note", ""]).await?;
-    b.click(".customize-home").await?;
-    accessibility(&b).await?;
-    b.mobile().await?;
-    accessibility(&b).await?;
-    check(
-        b.evaluate(
-            "return innerWidth===390 && document.documentElement.scrollWidth<=innerWidth+1;",
-            json!([]),
-        )
-        .await?
-            == true,
-        "Home arrangement controls and panels reflow at 390px",
-    )?;
-    b.click(".reset-layout").await?;
-    home_panels(
-        &b,
-        ["note", "connections", "pins"],
-        ["note", "connections", "pins"],
-    )
-    .await?;
-    b.click(".cancel-layout").await?;
-    home_panels(&b, ["pins", "note", "connections"], ["pins", "note", ""]).await?;
-
-    step("layout draft privacy and rejection of obsolete private snapshot");
-    let private = f.hold("/api/workspace/snapshot");
-    b.evaluate(
-        "window.dispatchEvent(new Event('focus'));return true;",
-        json!([]),
-    )
-    .await?;
-    tokio::time::timeout(Duration::from_secs(3), private.entered.notified())
-        .await
-        .map_err(|_| "layout privacy snapshot hold")?;
-    b.click(".customize-home").await?;
-    b.click(".reset-layout").await?;
-    check(b.evaluate("window.dispatchEvent(new Event('blur'));return !document.querySelector('.layout-editor:not([hidden])') && document.querySelector('#workspace-note').value==='' && ![...document.querySelectorAll('[data-home-panel]')].some(p=>p.getClientRects().length>0 && !p.closest('[hidden]'));", json!([])).await? == true, "privacy loss clears layout draft, all private Home panels and note synchronously")?;
-    f.revoke_all(&b).await?;
-    private.release.notify_one();
-    tokio::time::sleep(Duration::from_millis(200)).await;
-    check(b.evaluate("return !document.querySelector('.layout-editor:not([hidden])') && ![...document.querySelectorAll('[data-home-panel]')].some(p=>p.getClientRects().length>0 && !p.closest('[hidden]'));", json!([])).await? == true, "late snapshot cannot restore layout or panels after account privacy loss")?;
-    other.close().await?;
-    b.close().await?;
-    a.close().await?;
-    f.close().await?;
-    println!(
-        "PASS Rust browser: personal Home order/visibility, stable components/drafts/focused service selection, concurrent conflict, lost response without replay, account isolation, privacy and narrow accessibility"
-    );
-    Ok(())
+    crate::tiles::arrangement().await
 }

@@ -132,10 +132,15 @@ pub enum RefreshMode {
     IdentityRace,
     Legacy17,
 }
+struct HeldResponse {
+    path: &'static str,
+    method: Option<axum::http::Method>,
+    gate: Arc<Hold>,
+}
 struct Proxy {
     upstream: String,
     client: Client,
-    hold: Mutex<Option<(&'static str, Arc<Hold>)>>,
+    hold: Mutex<Option<HeldResponse>>,
     pub reads: AtomicU64,
     pub writes: AtomicU64,
     refresh_mode: AtomicU64,
@@ -223,7 +228,8 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
     ) || (request.method() == axum::http::Method::PUT
         && matches!(
             path,
-            "/api/owner/media/jellyfin"
+            "/api/workspace/tiles"
+                | "/api/owner/media/jellyfin"
                 | "/api/owner/media/seerr"
                 | "/api/owner/queues/sonarr"
                 | "/api/owner/queues/radarr"
@@ -235,8 +241,8 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
     }
     let hold = {
         let mut held = proxy.hold.lock().expect("private fixture mutex");
-        if held.as_ref().is_some_and(|(target, _)| *target == path) {
-            held.take().map(|(_, h)| h)
+        if held.as_ref().is_some_and(|target| target.path == path && target.method.as_ref().is_none_or(|method| method == request.method())) {
+            held.take().map(|target| target.gate)
         } else {
             None
         }
@@ -895,11 +901,17 @@ impl Fixture {
         .await
     }
     pub fn hold(&self, path: &'static str) -> Arc<Hold> {
+        self.hold_method(path, None)
+    }
+    pub fn hold_write(&self, path: &'static str) -> Arc<Hold> {
+        self.hold_method(path, Some(axum::http::Method::PUT))
+    }
+    fn hold_method(&self, path: &'static str, method: Option<axum::http::Method>) -> Arc<Hold> {
         let h = Arc::new(Hold {
             entered: Notify::new(),
             release: Notify::new(),
         });
-        *self.proxy.hold.lock().expect("fixture hold mutex") = Some((path, h.clone()));
+        *self.proxy.hold.lock().expect("fixture hold mutex") = Some(HeldResponse { path, method, gate: h.clone() });
         h
     }
     pub fn callback_evidence(&self) -> (u64, bool) {

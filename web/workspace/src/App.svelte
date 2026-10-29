@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { onMount, beforeUpdate, afterUpdate, flushSync } from 'svelte';
-  import { workspace, defaultPanels, type HomePanel } from './controller';
-  import LayoutEditor from './LayoutEditor.svelte';
+  import { onMount, beforeUpdate, afterUpdate, flushSync, tick } from 'svelte';
+  import { workspace } from './controller';
+  import HomeTiles from './HomeTiles.svelte';
+  import TileEditor from './TileEditor.svelte';
   import Connections from './Connections.svelte';
   import Directory from './Directory.svelte';
   import Activity from './Activity.svelte';
@@ -16,25 +17,37 @@
   const controller = workspace(binding);
   const model = controller.model;
   const updates = controller.updates.model;
+  const tileControl = controller.tiles;
+  const tileModel = tileControl.model;
   type View = 'home' | 'note' | 'connections' | 'directory' | 'activity' | 'notifications' | 'integrations' | 'roadmap' | 'media' | 'queues' | 'identity' | 'sessions';
   let view: View = window.location.hash === '#sessions' ? 'sessions' : window.location.hash === '#identity' ? 'identity' : 'home';
   let heading: HTMLHeadingElement;
-  let panelGrid: HTMLDivElement;
-  let panels: HomePanel[] = defaultPanels();
+  let panelGrid: HTMLDivElement | undefined;
+  let tileEditor: HTMLDivElement | undefined;
+  let customizeButton: HTMLButtonElement | undefined;
   let movedFocus: { element: HTMLElement; scope: string } | undefined;
   const version = document.querySelector<HTMLMetaElement>('meta[name="reborn-version"]')?.content ?? 'development';
   const commit = document.querySelector<HTMLMetaElement>('meta[name="reborn-commit"]')?.content ?? 'unqualified';
   const tree = document.querySelector<HTMLMetaElement>('meta[name="reborn-tree"]')?.content ?? 'unqualified';
   const channel = document.querySelector<HTMLMetaElement>('meta[name="reborn-channel"]')?.content ?? 'development';
-  $: desiredPanels = $model.layoutDraft?.panels ?? $model.snapshot?.layout.panels ?? defaultPanels();
-  // Services shares the same pinned-services instance. Defer order changes until
-  // Home is shown so a background layout check cannot detach its focused form.
-  $: if ($model.phase !== 'ready') panels = defaultPanels();
-  else if (view !== 'directory') panels = desiredPanels;
+  $: displayedTiles = $tileModel.draft?.tiles ?? $tileModel.value?.layout.tiles ?? [];
+  $: if ($model.phase === 'ready') controller.setObservationView(view, displayedTiles.map(tile => tile.id));
   $: bytes = new TextEncoder().encode($model.draft).length;
   $: canSave = $model.phase === 'ready' && $model.dirty && bytes <= 4096
-    && !['saving', 'checking-conflict'].includes($model.layoutSave) && $model.notificationSave !== 'saving' && !['saving', 'checking-conflict', 'conflict', 'uncertain'].includes($model.save);
-  function navigate(next: View): void { const closing = view === 'media' && next !== 'media' || view === 'queues' && next !== 'queues' || view === 'identity' && next !== 'identity' || view === 'sessions' && next !== 'sessions'; if (view === 'media' && next !== 'media') controller.closeMedia(); if (view === 'queues' && next !== 'queues') controller.closeQueues(); if (view === 'identity' && next !== 'identity') controller.closeIdentity(); if (view === 'sessions' && next !== 'sessions') controller.closeSessions(); if (closing) flushSync(() => { view = next; }); else view = next; heading?.focus(); if (next === 'activity') void controller.activity(); if (next === 'notifications') void controller.check(); if (next === 'integrations' || next === 'roadmap') void controller.loadGuide(); if (next === 'media') void controller.openMedia(); if (next === 'queues') void controller.openQueues(); }
+    && $model.notificationSave !== 'saving' && !['saving', 'checking-conflict', 'conflict', 'uncertain'].includes($model.save);
+  function navigate(next: View): void {
+    const closing = view === 'identity' && next !== 'identity' || view === 'sessions' && next !== 'sessions';
+    if (view === 'identity' && next !== 'identity') controller.closeIdentity();
+    if (view === 'sessions' && next !== 'sessions') controller.closeSessions();
+    if (closing) flushSync(() => { view = next; }); else view = next;
+    heading?.focus();
+    if (next === 'activity') void controller.activity();
+    if (next === 'notifications') void controller.check();
+    if (next === 'integrations' || next === 'roadmap') void controller.loadGuide();
+    if (next === 'media') void controller.openMedia();
+    if (next === 'queues') void controller.openQueues();
+  }
+
   let identityOpened = false;
   $: if (view !== 'identity' || $model.phase !== 'ready') identityOpened = false;
   $: if (view === 'identity' && $model.phase === 'ready' && !identityOpened) { identityOpened = true; void controller.openIdentity(); }
@@ -42,9 +55,16 @@
   $: if (view !== 'sessions' || $model.phase !== 'ready') sessionsOpened = false;
   $: if (view === 'sessions' && $model.phase === 'ready' && !sessionsOpened) { sessionsOpened = true; void controller.openSessions(); }
   const focusScope = () => $model.snapshot ? `${$model.snapshot.account.id}:${$model.snapshot.session_generation}:${$model.snapshot.account.role}` : '';
+  async function finishTileEditing(action: () => void | Promise<void>): Promise<void> {
+    const scope = focusScope();
+    await action(); await tick();
+    if (scope && scope === focusScope() && view === 'home' && $model.phase === 'ready' && !$tileModel.draft
+        && document.activeElement === document.body && document.visibilityState === 'visible' && document.hasFocus()
+        && customizeButton?.isConnected && !customizeButton.disabled && customizeButton.getClientRects().length > 0) customizeButton.focus({ preventScroll: true });
+  }
   beforeUpdate(() => {
     const element = document.activeElement;
-    movedFocus = view === 'home' && $model.phase === 'ready' && element instanceof HTMLElement && panelGrid?.contains(element)
+    movedFocus = view === 'home' && $model.phase === 'ready' && element instanceof HTMLElement && (panelGrid?.contains(element) || tileEditor?.contains(element))
       ? { element, scope: focusScope() } : undefined;
   });
   afterUpdate(() => {
@@ -52,8 +72,12 @@
     // Keyed moves can temporarily blur a focused descendant. This render cycle
     // restores only a visible same-account node when focus fell back to body.
     if (prior && view === 'home' && $model.phase === 'ready' && prior.scope === focusScope() && prior.element.isConnected
-        && panelGrid?.contains(prior.element) && document.activeElement === document.body && document.visibilityState === 'visible'
-        && document.hasFocus() && prior.element.getClientRects().length > 0) prior.element.focus({ preventScroll: true });
+        && (panelGrid?.contains(prior.element) || tileEditor?.contains(prior.element)) && document.activeElement === document.body && document.visibilityState === 'visible'
+        && document.hasFocus() && prior.element.getClientRects().length > 0) {
+      const target = prior.element instanceof HTMLButtonElement && prior.element.disabled
+        ? prior.element.closest<HTMLElement>('[data-tile-row]') : prior.element;
+      target?.focus({ preventScroll: true });
+    }
   });
   onMount(controller.start);
 </script>
@@ -94,23 +118,21 @@
   <main id="workspace-content" class="workspace-content">
     <header class="page-header"><div><p class="eyebrow">YOUR OWN CORNER OF KEIDA</p><h1 tabindex="-1" bind:this={heading}>{view === 'home' ? 'Welcome home.' : view === 'note' ? 'A little space to think.' : view === 'connections' ? 'Your servers, at a glance.' : view === 'directory' ? 'Everything within reach.' : view === 'activity' ? 'Pick up the thread.' : view === 'notifications' ? 'Catch up at your pace.' : view === 'integrations' ? 'Make the right connections.' : view === 'media' ? 'A window into your media.' : view === 'queues' ? 'See what’s in motion.' : view === 'identity' ? 'An identity you choose.' : view === 'sessions' ? 'Your active sign-ins.' : 'See what comes next.'}</h1></div><span class="connection-state"><span aria-hidden="true">●</span>{$model.phase === 'ready' ? 'Session checked' : $model.phase === 'checking' ? 'Checking access' : 'Access paused'}</span></header>
     <p class="workspace-status" role="status">{$model.message}</p>
-    <RefreshNotice control={controller.updates} inspect={controller.refreshStatus} workspaceModel={$model} />
+    <RefreshNotice control={controller.updates} inspect={() => { void $tileModel; return controller.refreshStatus(); }} workspaceModel={$model} />
     {#if $model.phase !== 'ready'}
       <section class="recovery card"><p class="eyebrow">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class="button-row"><a class="button primary" href="/workspace">Open workspace again</a><a class="button secondary" href="/account">Your account</a></div></section>
     {/if}
-    <section class="home-view" hidden={(view !== 'home' && view !== 'directory') || $model.phase !== 'ready'} aria-label={view === 'directory' ? 'Service directory view' : 'Home'}>
-      <div class="welcome-card card" hidden={view !== 'home'}><div><p class="eyebrow">MAKE YOURSELF AT HOME</p><h2>A useful place<br>to pick things up.</h2><p>Keep a thought, make a plan, or leave yourself a reminder. Your workspace note is private to your account.</p><div class="button-row"><button class="button primary" onclick={() => navigate('note')}>Open your note <span aria-hidden="true">↗</span></button><button class="text-button" onclick={() => navigate('roadmap')}>Read the Roadmap note</button></div></div><div class="orb" aria-hidden="true"><div>K</div></div></div>
-      <div class="home-layout-heading" hidden={view !== 'home'}><p class="layout-status" role="status">{$model.layoutMessage || 'Your panels, in your own order.'}</p><button class="button secondary customize-home" disabled={!!$model.layoutDraft || $model.phase !== 'ready' || $model.layoutSave === 'saving'} onclick={controller.beginLayout}>Customize Home</button></div>
-      <div hidden={view !== 'home'}><LayoutEditor draft={$model.layoutDraft} saved={$model.snapshot?.layout} state={$model.layoutSave} authorized={$model.phase === 'ready'} move={controller.moveLayout} toggle={controller.toggleLayout} save={controller.saveLayout} cancel={controller.cancelLayout} reset={controller.resetLayout} resolve={controller.resolveLayout} check={controller.checkLayout} /></div>
-      <div class="home-grid" bind:this={panelGrid} class:services-view={view === 'directory'}>
-        {#each panels as panel (panel.id)}
-          <section data-home-panel={panel.id} class:card={panel.id !== 'pins'} class:small-card={panel.id !== 'pins'} class:pins-panel={panel.id === 'pins'} hidden={$model.phase !== 'ready' || (panel.id === 'pins' ? view === 'home' && !panel.visible : view !== 'home' || !panel.visible)} aria-label={panel.id === 'pins' ? 'Services' : panel.id === 'note' ? 'Workspace note shortcut' : 'Connections shortcut'}>
-            {#if panel.id === 'note'}<span class="card-icon" aria-hidden="true">▤</span><h2>Your workspace note</h2><p>{$model.dirty ? 'You have an unsaved draft open.' : $model.snapshot?.note.revision !== '0' ? 'Your saved note is ready when you are.' : 'A blank page for whatever comes next.'}</p><button class="text-button" onclick={() => navigate('note')}>Keep writing <span aria-hidden="true">→</span></button>
-            {:else if panel.id === 'connections'}<span class="card-icon" aria-hidden="true">◇</span><h2>Connections</h2><p>{$model.snapshot?.crafty?.configured ? 'Your enrolled Crafty observations are available in Connections.' : 'Enroll dedicated Crafty access to see your selected servers.'}</p><button class="text-button" onclick={() => navigate('connections')}>View connections <span aria-hidden="true">→</span></button>
-            {:else}<Directory directory={$model.snapshot?.directory} authorized={$model.phase === 'ready'} owner={$model.snapshot?.account.role === 'owner'} compact={view === 'home'} state={$model.directorySave} message={$model.directoryMessage} browse={() => navigate('directory')} check={controller.check} edit={controller.editService} pin={controller.pins} />{/if}
-          </section>
-        {/each}
-      </div>
+    <section class="home-view" hidden={view !== 'home' || $model.phase !== 'ready'} aria-label="Home">
+      <div class="home-layout-heading"><p class="tiles-status" role="status">{$tileModel.message || 'Your games, media and services in one place.'}</p><button bind:this={customizeButton} class="button secondary customize-tiles" disabled={$model.phase !== 'ready' || !$tileModel.value || !!$tileModel.draft || $tileModel.save !== 'idle'} onclick={tileControl.begin}>Customize tiles</button></div>
+      <div bind:this={tileEditor}><TileEditor state={$tileModel} control={tileControl} finish={finishTileEditing} authorized={$model.phase === 'ready'} /></div>
+      {#if $model.phase === 'ready' && $tileModel.value}
+        <HomeTiles tiles={displayedTiles} catalog={$tileModel.value.catalog} crafty={$model.snapshot?.crafty} directory={$model.snapshot?.directory} media={$model.media} queues={$model.queues} dirty={$model.dirty} noteSaved={$model.snapshot?.note.revision !== '0'} authorized={$model.phase === 'ready'} owner={$model.snapshot?.account.role === 'owner'} {navigate} observe={controller.checkHome} bind:grid={panelGrid} />
+      {:else if $model.phase === 'ready'}
+        <section class="card tile-layout-unavailable"><h2>{$tileModel.phase === 'error' ? 'Your tiles could not be loaded' : 'Getting your tiles ready'}</h2><p>Notes and detailed views remain available in the sidebar.</p><div class="button-row"><button class="button secondary check-tiles" disabled={$tileModel.phase === 'loading'} onclick={() => void tileControl.check()}>Check saved tiles</button><a class="text-button" href="/workspace">Open workspace again</a></div></section>
+      {/if}
+    </section>
+    <section class="service-directory-view" hidden={view !== 'directory' || $model.phase !== 'ready'} aria-label="Service directory view">
+      <Directory directory={$model.snapshot?.directory} authorized={$model.phase === 'ready'} owner={$model.snapshot?.account.role === 'owner'} compact={false} state={$model.directorySave} message={$model.directoryMessage} browse={() => navigate('directory')} check={controller.check} edit={controller.editService} pin={controller.pins} />
     </section>
     <section class="note-view" hidden={view !== 'note' || $model.phase !== 'ready'} aria-label="Workspace note">
       <div class="note-heading"><p>A private note, available each time you sign in.</p><span class="quiet-label">{$model.dirty ? 'Unsaved changes' : 'Up to date'}</span></div>

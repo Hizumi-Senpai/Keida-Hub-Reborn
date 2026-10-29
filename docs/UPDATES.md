@@ -1,5 +1,12 @@
 # Reborn versions and safe updating
 
+The owner-directed [Home candidate](HOME_TILES.md) introduces the
+[finite browser asset support/retirement policy](BROWSER_ASSET_RETENTION.md).
+Its schema14 migration is forward-only for prior17/18 binaries; legacy browser
+API compatibility and retained browser bytes are separate from binary rollback.
+Historical CURRENT18 updater diagnostics remain fixed to their reviewed schema13
+packet; this candidate does not extend updater adoption or activate an executor.
+
 ## M5.6 namespace refinement — October29,2026
 
 The M5.3/M5.4 diagnostics are accepted through source0.1.21/PR37, with

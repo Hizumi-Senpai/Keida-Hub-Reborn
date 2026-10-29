@@ -3,6 +3,8 @@
 mod discord_recovery;
 #[path = "sessions_recovery.rs"]
 mod sessions_recovery;
+#[path = "tiles_recovery.rs"]
+mod tiles_recovery;
 use crate::{Result, directory, hash, hex};
 use reqwest::{Client, Response};
 use serde_json::{Value, json};
@@ -1146,6 +1148,21 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     if saved["account"] != member_login["account"] || saved["layout"] != member_layout {
         return Err("packaged member layout receipt differs");
     }
+    let tiles_owner = tiles_recovery::Context {
+        client: &client,
+        origin: &origin,
+        session: &session,
+        binding,
+        account: &claimed["account"],
+    };
+    let tiles_member = tiles_recovery::Context {
+        client: &client,
+        origin: &origin,
+        session: &member_session,
+        binding: member_binding,
+        account: &member_login["account"],
+    };
+    let initial_tiles = tiles_recovery::Witness::seed(&tiles_owner, &tiles_member).await?;
     let provider = reborn_crafty_fixture::Crafty::start().await?;
     let enrollment = json!({"base_revision":"0","connection":{"endpoint":provider.origin,"token":reborn_crafty_fixture::TOKEN,"ca_pem":provider.ca,"timezone":"UTC","servers":[{"id":reborn_crafty_fixture::ID,"name":"Restorable dedicated fixture","join":"play.example:25565"}]}});
     value(
@@ -1492,9 +1509,10 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     let initial_sessions =
         sessions_recovery::Witness::exercise(&sessions_owner, &password, &sessions_member).await?;
     docker(&["stop", "--time", "5", &first])?;
-    // Include public_ref and revoked rows in this same-schema13 proof. No raw
-    // verifier or selector is emitted in the public qualification report.
+    // Include the retained schema13 session selectors and revoked rows in this
+    // schema14 package proof. No raw verifier or selector is reported.
     let initial_sessions_fingerprint = sessions_recovery::database_fingerprint(&pg, "first")?;
+    let initial_tiles_fingerprint = tiles_recovery::database_fingerprint(&pg, "first")?;
     let dump = scope.root.join("database.dump");
     let dump_file = std::fs::OpenOptions::new()
         .write(true)
@@ -1576,6 +1594,8 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
         "ALTER TABLE users ADD COLUMN runtime_must_not_ddl integer",
         "ALTER TABLE dashboard_layouts ADD COLUMN runtime_must_not_ddl integer",
         "DELETE FROM dashboard_layouts",
+        "ALTER TABLE dashboard_tiles ADD COLUMN runtime_must_not_ddl integer",
+        "DELETE FROM dashboard_tiles",
         "ALTER TABLE provider_observations ADD COLUMN runtime_must_not_ddl integer",
         "UPDATE provider_observations SET checked_at=checked_at WHERE id=1",
         "UPDATE provider_server_observations SET players=players WHERE batch_id=1",
@@ -1642,8 +1662,28 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     if sessions_recovery::database_fingerprint(&restore_pg, "restored")?
         != initial_sessions_fingerprint
     {
-        return Err("matched schema13 restore changed session selectors or revocation");
+        return Err("matched schema14 restore changed retained session selectors or revocation");
     }
+    if tiles_recovery::database_fingerprint(&restore_pg, "restored")?
+        != initial_tiles_fingerprint
+    {
+        return Err("matched schema14 restore changed persisted account tile layouts");
+    }
+    let tiles_owner = tiles_recovery::Context {
+        client: &client,
+        origin: &origin,
+        session: &session,
+        binding,
+        account: &claimed["account"],
+    };
+    let tiles_member = tiles_recovery::Context {
+        client: &client,
+        origin: &origin,
+        session: &member_session,
+        binding: member_binding,
+        account: &member_login["account"],
+    };
+    initial_tiles.verify(&tiles_owner, &tiles_member).await?;
     let sessions_owner = sessions_recovery::Context {
         client: &client,
         origin: &origin,
@@ -1889,6 +1929,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     if saved["account"] != member_login["account"] || saved["layout"] != newer_member_layout {
         return Err("newer member layout receipt differs");
     }
+    let newer_tiles = initial_tiles.advance(&tiles_owner, &tiles_member).await?;
     value(
         admitted(
             &client,
@@ -2064,6 +2105,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     if invoke(args, &["serve"]).is_ok() {
         return Err("invalid candidate unexpectedly started");
     }
+    newer_tiles.verify(&tiles_owner, &tiles_member).await?;
     initial_sessions.verify(&sessions_owner).await?;
     newer_sessions.verify(&sessions_owner).await?;
     let preserved = value(
@@ -2199,6 +2241,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     // again, without replacing current data by the older recovery dump.
     docker(&["restart", "--time", "5", &restored])?;
     wait(&client, &origin).await?;
+    newer_tiles.verify(&tiles_owner, &tiles_member).await?;
     let requests_before_newer_media = media_provider.requests().len();
     for provider in ["jellyfin", "seerr"] {
         if media_status(&client, &origin, &session, binding, provider).await?
@@ -2285,7 +2328,8 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     initial_sessions.verify(&sessions_owner).await?;
     newer_sessions.verify(&sessions_owner).await?;
     sessions_member.status().await?;
-    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":13,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"restored_notifications_and_read_state":true,"restored_personal_layout_and_newer_edits":true,"restored_provider_observations_and_newer_samples":true,"restored_media_connections_and_observations":true,"restored_queue_connections_and_observations":true,"restored_discord_application_and_links":true,"restored_discord_newer_identity_writes":true,"discarded_unfinished_discord_attempts_on_restart":true,"restored_session_selectors_and_targeted_revocation":true,"preserved_newer_sessions_and_unrelated_access":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
+    newer_tiles.verify(&tiles_owner, &tiles_member).await?;
+    let report = json!({"format":1,"product":"keida-hub-reborn","image_id":image,"database_schema":14,"fresh_private_claim":true,"restored_native_session_note_and_encrypted_connection":true,"restored_directory_and_personal_pins":true,"restored_activity_and_newer_entries":true,"restored_notifications_and_read_state":true,"restored_personal_layout_and_newer_edits":true,"restored_account_tile_layouts":true,"preserved_newer_tile_edits_after_failed_candidate_and_restart":true,"restored_provider_observations_and_newer_samples":true,"restored_media_connections_and_observations":true,"restored_queue_connections_and_observations":true,"restored_discord_application_and_links":true,"restored_discord_newer_identity_writes":true,"discarded_unfinished_discord_attempts_on_restart":true,"restored_session_selectors_and_targeted_revocation":true,"preserved_newer_sessions_and_unrelated_access":true,"failed_candidate_preserved_newer_writes":true,"automatic_old_backup_restore":false,"dump_sha256":dump_sha,"separate_postgresql_instance":true,"runtime_role_cannot_migrate":true,"fixture_only":true});
     crate::write(
         &out.join("recovery-proof.json"),
         &serde_json::to_vec(&report).map_err(|_| "recovery proof encoding failed")?,
