@@ -1,10 +1,12 @@
 # Reborn current state
 
-Updated October 28, 2026, America/Chicago, for M5.3 foundation review.
-Accepted documentation source0.1.19 is
-`634774d2678a3a4178d976d38b4d41fb6525d609` (PR32); live/channel remain0.1.18.
-The new Rust foundation is unmerged. Fresh issue1 receipts and actual discovery
-govern later operations.
+Updated October28,2026, America/Chicago, for M5.4 admission review.
+Accepted source0.1.20 is `d3a26d9a5c13c15003e38a135692477db420f45f` (PR35),
+tree `d1074c3890f5538cb616cfdfa6c30df6d278d978`; live/channel remain0.1.18.
+Exact head76/main77 each passed24 steps/221 Rust tests; the [final source20
+receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6485954735)
+supersedes the older unmerged/source19 review checkpoints. M5.4 is unmerged.
+Fresh issue1 receipts and actual discovery govern later operations.
 
 ## Installed and qualified
 
@@ -52,18 +54,26 @@ precondition failure are retained honestly in the review.
 
 The first [Rust request/journal foundation](docs/M5_UPDATER_FOUNDATION.md),
 [issue33](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/33), is implemented
-and independently package-qualified in isolation: strict canonical request and
+and accepted with full exact-head/main CI: strict canonical request and
 installed-binding parsing, diagnostic-only CLI, permanent private lock/durable
 hash-linked journal/deduplication and uncertainty barriers. Pinned package
-fmt/all-target/Clippy-D/release and25 actual Linux tests pass. Full eventual-head
-workspace/HTTP/browser/recovery CI remains separate. Accepted-main CI75's retained
-Activity403 fixture failure is tracked under issue34; source0.1.19 changed only
-documents and no runtime was deployed.
+fmt/all-target/Clippy-D/release and25 actual Linux tests pass. Head76/main77 passed
+all retained workspace/HTTP/browser/recovery checks. CI75 attempt1's Activity403
+evidence is preserved; the exact original cause is unproved. Issue34's separate
+test-helper listener-ownership correction is accepted in PR35, preserving all69
+retained HTTP bodies/deadlines plus4 helper fixtures. One unchanged-source
+characterization rerun passed. No source20 runtime was deployed.
 
-Next qualify that review and implement the publisher/installed-generation/actual
-host executor boundary. There is no installable updater or activation-ready
-packet. Competing-owner/bootstrap/backup/current-data rollback/reboot/uninstall
-execution fixtures remain open.
+The next bounded [M5.4 contract](docs/M5_UPDATER_ADMISSION.md), issue36, checks
+sealed CURRENT-artifact evidence and a proposed installed-state adoption plan.
+It locally rehashes the supplied ZIP/original CI tar, checks fixed typed proofs,
+binds raw manual evidence independently and compares a sealed boot/identity/lock
+assessment. It reports only local agreement and preserves manual authority;
+opaque policy/inventory byte binding does not evaluate host policy/completeness.
+There is no actual adoption, executor or activation-ready packet. New independent
+fixtures/review and eventual exact-source CI remain required before acceptance.
+Competing-owner/bootstrap/backup/current-data rollback/reboot/uninstall execution
+fixtures remain open.
 Installation/activation requires separate approval of the completed exact packet;
 no daemon/scheduler/second writer is authorized here. Missing real provider
 credentials do not block independent preparation.
@@ -79,7 +89,7 @@ protected service restart or broad cleanup. Original/Rewrite and external work
 retain their owners; game-control and updater activation gates remain separate.
 
 Read [the full successor handoff](docs/HANDOFF.md). Its six-file documentation
-branch has no new accepted release identity and should join the next normal PR.
+branch was carried into normally reviewed PR32/source19 before PR35/source20.
 All13 tracker bodies and the Original379 shared checkpoint already record18;
 their historical text/open checkboxes remain preserved. Detailed hashes, exact
 host/cache/audit paths, retained17/final13 proof and no-replay facts are in the

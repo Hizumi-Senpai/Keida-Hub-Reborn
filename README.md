@@ -77,15 +77,17 @@ The **M5 host-updater contract and concrete bootstrap review** are frozen for
 implementation in [issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/31):
 [execution contract](docs/M5_HOST_UPDATER.md) and
 [actual host/source/binary/bootstrap review](docs/M5_UPDATER_BOOTSTRAP_REVIEW.md).
-Next implement and qualify the bounded Rust one-shot protocol in isolation.
 The first [request/journal foundation](docs/M5_UPDATER_FOUNDATION.md), issue33,
-now has a diagnostic-only Rust CLI, strict canonical parsers and durable private
-journals with25 passing independent package fixtures. Full eventual-head CI and
-the actual host executor remain open. Crash/reboot/recovery/uninstall evidence and
-a complete activation packet remain open. Installation/activation requires separate
-owner approval of that exact packet. No updater daemon, scheduler or second
-writer is activated here. Accepted documentation main is0.1.19; live/channel
-remain0.1.18/schema13, and this implementation is unmerged.
+is accepted as source0.1.20 (PR35); exact head76 and main77 each passed24 steps/
+221 Rust tests, including25 independent updater fixtures. The subsequent
+[sealed current-artifact/adoption-plan diagnostic](docs/M5_UPDATER_ADMISSION.md),
+issue36, is in review. It checks a fixed private local bundle and proposes
+generation1 while preserving manual authority. It cannot adopt state or execute
+a host operation. Full eventual-head/main evidence for that new slice and the
+actual executor remain separate. Crash/reboot/current-data rollback/bootstrap/
+uninstall evidence and a complete activation packet remain open. Installation
+requires separate owner approval of that exact packet. Live/channel remain
+0.1.18/schema13; no updater daemon, scheduler or second writer is activated.
 M5.1 browser refresh is already installed; do not repeat18's installation/cleanup.
 
 Dedicated Discord application enrollment/callback-query privacy and real owner

@@ -1,4 +1,4 @@
-//! Read-only request diagnostics, with no host command dispatcher.
+//! Read-only request/bundle diagnostics, with no host command dispatcher.
 use std::{
     ffi::CString,
     fs::File,
@@ -81,6 +81,22 @@ fn request_bytes(path: &Path) -> Result<Vec<u8>, ()> {
 
 fn run() -> Result<(), ()> {
     let args: Vec<_> = std::env::args_os().collect();
+    if args.get(1).is_some_and(|v| v == "check-bundle") {
+        let mode = match args.len() {
+            5 => reborn_host_updater::bundle_fs::TrustMode::RootSealed,
+            6 if args[5] == "--fixture" => reborn_host_updater::bundle_fs::TrustMode::Fixture,
+            _ => return Err(()),
+        };
+        let report = reborn_host_updater::check_bundle(
+            Path::new(&args[2]),
+            args[3].to_str().ok_or(())?,
+            args[4].to_str().ok_or(())?,
+            mode,
+        )
+        .map_err(|_| ())?;
+        println!("{}", serde_json::to_string(&report).map_err(|_| ())?);
+        return Ok(());
+    }
     if args.len() != 4 || args[1] != "check-request" {
         return Err(());
     }
@@ -103,7 +119,14 @@ fn main() -> std::process::ExitCode {
     match run() {
         Ok(()) => std::process::ExitCode::SUCCESS,
         Err(()) => {
-            eprintln!("request check refused; no effects authorized");
+            if std::env::args_os()
+                .nth(1)
+                .is_some_and(|v| v == "check-bundle")
+            {
+                eprintln!("bundle check refused; no effects authorized");
+            } else {
+                eprintln!("request check refused; no effects authorized");
+            }
             std::process::ExitCode::from(2)
         }
     }
