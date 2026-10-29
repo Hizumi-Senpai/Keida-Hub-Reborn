@@ -13,10 +13,10 @@ mod notifications;
 mod observations;
 mod queues;
 mod sessions;
-mod tiles;
 pub mod store;
 #[cfg(test)]
 mod store_contracts;
+mod tiles;
 mod workspace;
 mod workspace_assets;
 

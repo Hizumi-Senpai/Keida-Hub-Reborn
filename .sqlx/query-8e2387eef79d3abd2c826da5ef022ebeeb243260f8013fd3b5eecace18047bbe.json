@@ -1,0 +1,66 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT revision, tile_order, tile_sizes, array_dims(tile_order) AS order_dimensions, array_dims(tile_sizes) AS size_dimensions FROM dashboard_tiles WHERE account_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "revision",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "dashboard_tiles",
+            "name": "revision"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "tile_order",
+        "type_info": "TextArray",
+        "origin": {
+          "Table": {
+            "table": "dashboard_tiles",
+            "name": "tile_order"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "tile_sizes",
+        "type_info": "TextArray",
+        "origin": {
+          "Table": {
+            "table": "dashboard_tiles",
+            "name": "tile_sizes"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "order_dimensions",
+        "type_info": "Text",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "size_dimensions",
+        "type_info": "Text",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "8e2387eef79d3abd2c826da5ef022ebeeb243260f8013fd3b5eecace18047bbe"
+}

@@ -359,12 +359,20 @@ impl Browser {
     pub async fn fixture_home_screenshot(&self) -> Check<String> {
         let reply = self.call(Method::GET, "/screenshot", None).await?;
         let data = reply.as_str().ok_or("fixture Home PNG response")?;
-        let padding = if data.ends_with("==") { 2 } else if data.ends_with('=') { 1 } else { 0 };
+        let padding = if data.ends_with("==") {
+            2
+        } else if data.ends_with('=') {
+            1
+        } else {
+            0
+        };
         check(
             data.starts_with("iVBORw0KGgo")
                 && data.len().is_multiple_of(4)
                 && data.len() / 4 * 3 - padding <= 250 * 1024
-                && data.bytes().all(|b| b.is_ascii_alphanumeric() || b"+/=".contains(&b)),
+                && data
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b"+/=".contains(&b)),
             "bounded fixture Home PNG encoding",
         )?;
         Ok(data.to_owned())

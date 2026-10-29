@@ -35,10 +35,7 @@ async fn current_and_two_predecessor_generations_serve_exact_immutable_bytes() {
     let fixture = Fixture::new().await;
     fixture.init_key().await;
     let server = Server::start(&fixture, Some(&fixture.key_file)).await;
-    let output = completed(
-        fixture.command(&["artifact-info"], None).spawn().unwrap(),
-    )
-    .await;
+    let output = completed(fixture.command(&["artifact-info"], None).spawn().unwrap()).await;
     assert!(output.status.success());
     assert!(output.stderr.is_empty());
     let info: Value = serde_json::from_slice(&output.stdout).unwrap();
@@ -106,7 +103,13 @@ async fn retired_bootstrap_urls_are_gone_with_native_recovery_and_unknown_urls_s
         "/assets/workspace/0000000000000000000000000000000000000000000000000000000000000000.css",
     ] {
         assert_eq!(
-            server.client.get(server.url(unknown)).send().await.unwrap().status(),
+            server
+                .client
+                .get(server.url(unknown))
+                .send()
+                .await
+                .unwrap()
+                .status(),
             StatusCode::NOT_FOUND
         );
     }

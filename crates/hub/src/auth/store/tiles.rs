@@ -59,12 +59,7 @@ pub async fn read(pool: &PgPool, key: &[u8], verifier: &[u8]) -> Result<View, Er
     let (mut tx, state) = locked(pool).await?;
     checked_key(&state, key)?;
     let session = actor(&mut tx, verifier, state.now).await?;
-    let layout = layout(
-        &mut tx,
-        session.account.id,
-        session.account.role == "owner",
-    )
-    .await?;
+    let layout = layout(&mut tx, session.account.id, session.account.role == "owner").await?;
     tx.commit().await.map_err(|_| Error::Unavailable)?;
     Ok(View { session, layout })
 }

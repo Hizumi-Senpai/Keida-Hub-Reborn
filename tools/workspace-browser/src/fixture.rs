@@ -241,7 +241,13 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
     }
     let hold = {
         let mut held = proxy.hold.lock().expect("private fixture mutex");
-        if held.as_ref().is_some_and(|target| target.path == path && target.method.as_ref().is_none_or(|method| method == request.method())) {
+        if held.as_ref().is_some_and(|target| {
+            target.path == path
+                && target
+                    .method
+                    .as_ref()
+                    .is_none_or(|method| method == request.method())
+        }) {
             held.take().map(|target| target.gate)
         } else {
             None
@@ -911,7 +917,11 @@ impl Fixture {
             entered: Notify::new(),
             release: Notify::new(),
         });
-        *self.proxy.hold.lock().expect("fixture hold mutex") = Some(HeldResponse { path, method, gate: h.clone() });
+        *self.proxy.hold.lock().expect("fixture hold mutex") = Some(HeldResponse {
+            path,
+            method,
+            gate: h.clone(),
+        });
         h
     }
     pub fn callback_evidence(&self) -> (u64, bool) {

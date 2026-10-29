@@ -49,15 +49,29 @@ fn defaults(owner: bool) -> Value {
 fn scope(status: &Value, account: &Value) -> Result<()> {
     let owner = account["role"] == "owner";
     let ids: &[&str] = if owner {
-        &["games", "jellyfin", "requests", "downloads", "services", "note"]
+        &[
+            "games",
+            "jellyfin",
+            "requests",
+            "downloads",
+            "services",
+            "note",
+        ]
     } else {
         &["games", "services", "note"]
     };
     if !exact_keys(
         status,
         &[
-            "product", "contract", "schema", "account", "session_generation",
-            "tiles_contract", "catalog", "defaults", "layout",
+            "product",
+            "contract",
+            "schema",
+            "account",
+            "session_generation",
+            "tiles_contract",
+            "catalog",
+            "defaults",
+            "layout",
         ],
     ) || status["product"] != "keida-hub-reborn"
         || status["contract"] != "reborn-workspace-v1"
@@ -82,7 +96,9 @@ fn scope(status: &Value, account: &Value) -> Result<()> {
         || catalog.iter().zip(ids).any(|(row, id)| {
             !exact_keys(row, &["id", "label"])
                 || row["id"] != *id
-                || row["label"].as_str().is_none_or(|label| label.is_empty() || label.len() > 80)
+                || row["label"]
+                    .as_str()
+                    .is_none_or(|label| label.is_empty() || label.len() > 80)
         })
     {
         return Err("tile recovery catalog crossed the account role boundary");
@@ -107,14 +123,23 @@ fn scope(status: &Value, account: &Value) -> Result<()> {
 async fn bounded_value(mut response: Response, expected: u16) -> Result<Value> {
     if response.status().as_u16() != expected
         || response.headers().contains_key("set-cookie")
-        || !response.headers().get("cache-control").and_then(|value| value.to_str().ok())
+        || !response
+            .headers()
+            .get("cache-control")
+            .and_then(|value| value.to_str().ok())
             .is_some_and(|value| value.contains("no-store"))
-        || response.content_length().is_some_and(|length| length > BODY_LIMIT as u64)
+        || response
+            .content_length()
+            .is_some_and(|length| length > BODY_LIMIT as u64)
     {
         return Err("tile recovery HTTP outcome, private caching or cookie differs");
     }
     let mut body = Vec::new();
-    while let Some(chunk) = response.chunk().await.map_err(|_| "tile recovery response read failed")? {
+    while let Some(chunk) = response
+        .chunk()
+        .await
+        .map_err(|_| "tile recovery response read failed")?
+    {
         if chunk.len() > BODY_LIMIT.saturating_sub(body.len()) {
             return Err("tile recovery response exceeded its body bound");
         }
@@ -125,12 +150,23 @@ async fn bounded_value(mut response: Response, expected: u16) -> Result<Value> {
 
 impl Context<'_> {
     fn request(&self, method: Method) -> reqwest::RequestBuilder {
-        admitted(self.client, self.origin, PATH, method, self.session, self.binding, "reborn-workspace-v1")
-            .header("x-reborn-tiles-contract", CONTRACT)
+        admitted(
+            self.client,
+            self.origin,
+            PATH,
+            method,
+            self.session,
+            self.binding,
+            "reborn-workspace-v1",
+        )
+        .header("x-reborn-tiles-contract", CONTRACT)
     }
 
     async fn status(&self) -> Result<Value> {
-        let response = self.request(Method::GET).send().await
+        let response = self
+            .request(Method::GET)
+            .send()
+            .await
             .map_err(|_| "tile recovery read failed")?;
         let status = bounded_value(response, 200).await?;
         scope(&status, self.account)?;
@@ -138,13 +174,18 @@ impl Context<'_> {
     }
 
     async fn save(&self, base: &str, tiles: &Value) -> Result<Value> {
-        let response = self.request(Method::PUT)
-            .json(&json!({"base_revision":base,"tiles":tiles})).send().await
+        let response = self
+            .request(Method::PUT)
+            .json(&json!({"base_revision":base,"tiles":tiles}))
+            .send()
+            .await
             .map_err(|_| "tile recovery save failed")?;
         let status = bounded_value(response, 200).await?;
         scope(&status, self.account)?;
         if status["layout"]["tiles"] != *tiles
-            || status["layout"]["revision"].as_str().and_then(|v| v.parse::<u64>().ok())
+            || status["layout"]["revision"]
+                .as_str()
+                .and_then(|v| v.parse::<u64>().ok())
                 != base.parse::<u64>().ok().and_then(|v| v.checked_add(1))
         {
             return Err("tile recovery save did not retain the requested order and sizes");
@@ -154,8 +195,11 @@ impl Context<'_> {
 
     async fn stale(&self, base: &str, tiles: &Value) -> Result<()> {
         let before = self.status().await?;
-        let response = self.request(Method::PUT)
-            .json(&json!({"base_revision":base,"tiles":tiles})).send().await
+        let response = self
+            .request(Method::PUT)
+            .json(&json!({"base_revision":base,"tiles":tiles}))
+            .send()
+            .await
             .map_err(|_| "tile recovery stale save failed")?;
         if bounded_value(response, 409).await? != json!({"error":"conflict"})
             || self.status().await? != before
@@ -175,44 +219,71 @@ impl Witness {
     pub async fn seed(owner: &Context<'_>, member: &Context<'_>) -> Result<Self> {
         let owner_default = owner.status().await?;
         let member_default = member.status().await?;
-        if owner.account["role"] != "owner" || member.account["role"] != "member"
+        if owner.account["role"] != "owner"
+            || member.account["role"] != "member"
             || owner.account["id"] == member.account["id"]
             || owner_default["layout"] != json!({"revision":"0","tiles":defaults(true)})
             || member_default["layout"] != json!({"revision":"0","tiles":defaults(false)})
         {
             return Err("tile recovery initial account defaults were not independent");
         }
-        let owner_saved = owner.save("0", &json!([
-            {"id":"downloads","size":"normal"},{"id":"games","size":"wide"},
-            {"id":"jellyfin","size":"wide"},{"id":"note","size":"normal"}
-        ])).await?;
+        let owner_saved = owner
+            .save(
+                "0",
+                &json!([
+                    {"id":"downloads","size":"normal"},{"id":"games","size":"wide"},
+                    {"id":"jellyfin","size":"wide"},{"id":"note","size":"normal"}
+                ]),
+            )
+            .await?;
         if member.status().await? != member_default {
             return Err("tile recovery owner edit changed another account");
         }
-        let member_saved = member.save("0", &json!([
-            {"id":"note","size":"wide"},{"id":"services","size":"normal"},
-            {"id":"games","size":"normal"}
-        ])).await?;
-        let witness = Self { owner: owner_saved, member: member_saved };
+        let member_saved = member
+            .save(
+                "0",
+                &json!([
+                    {"id":"note","size":"wide"},{"id":"services","size":"normal"},
+                    {"id":"games","size":"normal"}
+                ]),
+            )
+            .await?;
+        let witness = Self {
+            owner: owner_saved,
+            member: member_saved,
+        };
         witness.verify(owner, member).await?;
         Ok(witness)
     }
 
     pub async fn advance(&self, owner: &Context<'_>, member: &Context<'_>) -> Result<Self> {
         self.verify(owner, member).await?;
-        let newer_owner = owner.save("1", &json!([
-            {"id":"services","size":"normal"},{"id":"requests","size":"wide"},
-            {"id":"games","size":"normal"}
-        ])).await?;
+        let newer_owner = owner
+            .save(
+                "1",
+                &json!([
+                    {"id":"services","size":"normal"},{"id":"requests","size":"wide"},
+                    {"id":"games","size":"normal"}
+                ]),
+            )
+            .await?;
         if member.status().await? != self.member {
             return Err("tile recovery newer owner edit changed another account");
         }
-        let newer_member = member.save("1", &json!([
-            {"id":"games","size":"wide"},{"id":"note","size":"normal"}
-        ])).await?;
+        let newer_member = member
+            .save(
+                "1",
+                &json!([
+                    {"id":"games","size":"wide"},{"id":"note","size":"normal"}
+                ]),
+            )
+            .await?;
         owner.stale("1", &self.owner["layout"]["tiles"]).await?;
         member.stale("1", &self.member["layout"]["tiles"]).await?;
-        let newer = Self { owner: newer_owner, member: newer_member };
+        let newer = Self {
+            owner: newer_owner,
+            member: newer_member,
+        };
         newer.verify(owner, member).await?;
         Ok(newer)
     }
@@ -232,12 +303,21 @@ pub(super) fn database_fingerprint(pg: &str, database: &str) -> Result<String> {
         return Err("tile recovery database scope rejected");
     }
     let rows = docker(&[
-        "exec", pg, "psql", "-X", "-v", "ON_ERROR_STOP=1", "-U",
-        "reborn_migrator", "-d", database, "-Atc",
+        "exec",
+        pg,
+        "psql",
+        "-X",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-U",
+        "reborn_migrator",
+        "-d",
+        database,
+        "-Atc",
         "SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY account_id),'[]'::jsonb) FROM dashboard_tiles t",
     ])?;
-    let values: Value = serde_json::from_slice(&rows)
-        .map_err(|_| "tile recovery persisted rows malformed")?;
+    let values: Value =
+        serde_json::from_slice(&rows).map_err(|_| "tile recovery persisted rows malformed")?;
     if values.as_array().is_none_or(|rows| rows.len() != 2) {
         return Err("tile recovery persisted account rows missing or duplicated");
     }

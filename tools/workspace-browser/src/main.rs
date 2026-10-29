@@ -1,7 +1,7 @@
 mod driver;
 mod fixture;
-mod workflows;
 mod tiles;
+mod workflows;
 
 type Check<T> = Result<T, &'static str>;
 fn check(ok: bool, message: &'static str) -> Check<()> {
@@ -23,7 +23,11 @@ async fn main() -> std::process::ExitCode {
     // Retain the original fifteen-workflow 240s admission unchanged. The new
     // real one-minute test has its own explicit120s admission. Home resources and
     // native recovery have a separate180s cap; no retained timeout is weakened.
-    let budget = match mode { "refresh" => 120, "tiles" => 180, _ => 240 };
+    let budget = match mode {
+        "refresh" => 120,
+        "tiles" => 180,
+        _ => 240,
+    };
     let run = async {
         match mode {
             "refresh" => workflows::run_refresh().await,

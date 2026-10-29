@@ -403,7 +403,7 @@ export function workspace(binding: string) {
     try {
       const response = await fetch(path, {
         method, credentials: 'same-origin', cache: 'no-store', redirect: 'error', signal: controller.signal,
-        headers: { 'X-Reborn-Product': PRODUCT, 'X-Reborn-Contract': CONTRACT, 'X-CSRF-Token': binding, ...(path === '/api/workspace/guide' ? { 'X-Reborn-Guide': 'identity-v1' } : {}), ...(path === '/api/workspace/tiles' ? { 'X-Reborn-Tiles-Contract': 'reborn-tiles-v1' } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
+        headers: { 'X-Reborn-Product': PRODUCT, 'X-Reborn-Contract': CONTRACT, 'X-CSRF-Token': binding, ...(path === '/api/workspace/guide' ? { 'X-Reborn-Guide': 'home-tiles-v1' } : {}), ...(path === '/api/workspace/tiles' ? { 'X-Reborn-Tiles-Contract': 'reborn-tiles-v1' } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
         body: body ? JSON.stringify(body) : undefined,
       });
       const value: unknown = response.ok ? await response.json() : undefined;

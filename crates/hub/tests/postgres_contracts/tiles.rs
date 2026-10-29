@@ -53,8 +53,12 @@ async fn schema_thirteen_data(db: &mut PgConnection) -> Vec<Value> {
 }
 
 async fn old_ledger(db: &mut PgConnection) -> Value {
-    sqlx::query_scalar("SELECT jsonb_agg(to_jsonb(m) ORDER BY version) FROM _sqlx_migrations m WHERE version<=13")
-        .fetch_one(db).await.unwrap()
+    sqlx::query_scalar(
+        "SELECT jsonb_agg(to_jsonb(m) ORDER BY version) FROM _sqlx_migrations m WHERE version<=13",
+    )
+    .fetch_one(db)
+    .await
+    .unwrap()
 }
 
 #[tokio::test]
@@ -62,11 +66,23 @@ async fn schema_thirteen_to_fourteen_adds_empty_tiles_and_preserves_all_prior_re
     let database = Database::create().await;
     let mut db = database.connect().await;
     let source = sqlx::migrate!("../../migrations");
-    let prior = source.iter().filter(|m| m.version <= 13).cloned().collect::<Vec<_>>();
+    let prior = source
+        .iter()
+        .filter(|m| m.version <= 13)
+        .cloned()
+        .collect::<Vec<_>>();
     assert_eq!(prior.len(), 13);
     sqlx::migrate::Migrator::with_migrations(prior.clone())
-        .run(&mut db).await.unwrap();
-    assert_eq!(sqlx::query_scalar::<_, i32>("SELECT schema_version FROM reborn_schema").fetch_one(&mut db).await.unwrap(), 13);
+        .run(&mut db)
+        .await
+        .unwrap();
+    assert_eq!(
+        sqlx::query_scalar::<_, i32>("SELECT schema_version FROM reborn_schema")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        13
+    );
 
     // Opaque owned-fixture bytes are intentionally not valid provider secrets.
     // Populate each relation so absence cannot masquerade as preservation.
@@ -104,24 +120,59 @@ async fn schema_thirteen_to_fourteen_adds_empty_tiles_and_preserves_all_prior_re
     let ledger = old_ledger(&mut db).await;
     assert_eq!(ledger.as_array().unwrap().len(), 13);
     assert_migrated(completed(database.migrate()).await);
-    assert_eq!(sqlx::query_scalar::<_, i32>("SELECT schema_version FROM reborn_schema").fetch_one(&mut db).await.unwrap(), 14);
+    assert_eq!(
+        sqlx::query_scalar::<_, i32>("SELECT schema_version FROM reborn_schema")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        14
+    );
     assert_eq!(schema_thirteen_data(&mut db).await, before);
     assert_eq!(old_ledger(&mut db).await, ledger);
-    assert_eq!(sqlx::query_scalar::<_, i64>("SELECT count(*) FROM dashboard_tiles").fetch_one(&mut db).await.unwrap(), 0);
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM dashboard_tiles")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        0
+    );
     for migration in prior {
-        let checksum = sqlx::query_scalar::<_, Vec<u8>>("SELECT checksum FROM _sqlx_migrations WHERE version=$1")
-            .bind(migration.version).fetch_one(&mut db).await.unwrap();
+        let checksum = sqlx::query_scalar::<_, Vec<u8>>(
+            "SELECT checksum FROM _sqlx_migrations WHERE version=$1",
+        )
+        .bind(migration.version)
+        .fetch_one(&mut db)
+        .await
+        .unwrap();
         assert_eq!(checksum, migration.checksum.as_ref());
     }
     assert_migrated(completed(database.migrate()).await);
     assert_eq!(schema_thirteen_data(&mut db).await, before);
     assert_eq!(old_ledger(&mut db).await, ledger);
-    assert_eq!(sqlx::query_scalar::<_, i64>("SELECT count(*) FROM dashboard_tiles").fetch_one(&mut db).await.unwrap(), 0);
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM dashboard_tiles")
+            .fetch_one(&mut db)
+            .await
+            .unwrap(),
+        0
+    );
 
     db.execute("INSERT INTO dashboard_tiles(account_id,revision,tile_order,tile_sizes) VALUES(1,1,ARRAY['games','services'],ARRAY['normal','wide'])").await.unwrap();
-    let tiles_before: Value = sqlx::query_scalar("SELECT to_jsonb(t) FROM dashboard_tiles t WHERE account_id=1").fetch_one(&mut db).await.unwrap();
+    let tiles_before: Value =
+        sqlx::query_scalar("SELECT to_jsonb(t) FROM dashboard_tiles t WHERE account_id=1")
+            .fetch_one(&mut db)
+            .await
+            .unwrap();
     assert_migrated(completed(database.migrate()).await);
     assert_eq!(schema_thirteen_data(&mut db).await, before);
     assert_eq!(old_ledger(&mut db).await, ledger);
-    assert_eq!(sqlx::query_scalar::<_, Value>("SELECT to_jsonb(t) FROM dashboard_tiles t WHERE account_id=1").fetch_one(&mut db).await.unwrap(), tiles_before);
+    assert_eq!(
+        sqlx::query_scalar::<_, Value>(
+            "SELECT to_jsonb(t) FROM dashboard_tiles t WHERE account_id=1"
+        )
+        .fetch_one(&mut db)
+        .await
+        .unwrap(),
+        tiles_before
+    );
 }

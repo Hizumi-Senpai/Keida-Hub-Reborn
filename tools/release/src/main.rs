@@ -62,7 +62,12 @@ impl Manifest {
             || self.assets.len() > 24
             || (self.database_schema == 14
                 && (self.assets.len() != 6
-                    || self.assets.iter().collect::<std::collections::BTreeSet<_>>().len() != 6))
+                    || self
+                        .assets
+                        .iter()
+                        .collect::<std::collections::BTreeSet<_>>()
+                        .len()
+                        != 6))
             || self.assets.iter().any(|v| !digest(v, 64))
         {
             return Err("invalid release manifest");

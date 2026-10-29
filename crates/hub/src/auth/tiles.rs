@@ -57,21 +57,15 @@ async fn save(
         let input = payload(body)?;
         let base = crate::directory::decimal(&input.base_revision, false)
             .ok_or(ApiError(StatusCode::BAD_REQUEST, "invalid_request"))?;
-        let saved = store::tiles::save(
-            &service.pool,
-            &service.key_id,
-            &p.hash,
-            base,
-            &input.tiles,
-        )
-        .await
-        .map_err(|error| {
-            if error == store::Error::Rejected {
-                ApiError(StatusCode::BAD_REQUEST, "invalid_request")
-            } else {
-                error.into()
-            }
-        })?;
+        let saved = store::tiles::save(&service.pool, &service.key_id, &p.hash, base, &input.tiles)
+            .await
+            .map_err(|error| {
+                if error == store::Error::Rejected {
+                    ApiError(StatusCode::BAD_REQUEST, "invalid_request")
+                } else {
+                    error.into()
+                }
+            })?;
         Ok::<_, ApiError>(wire(saved))
     }
     .await;

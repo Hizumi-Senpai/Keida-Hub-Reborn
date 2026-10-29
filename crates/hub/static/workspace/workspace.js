@@ -3374,7 +3374,7 @@ function ao(e) {
 					"X-Reborn-Product": la,
 					"X-Reborn-Contract": ua,
 					"X-CSRF-Token": e,
-					...t === "/api/workspace/guide" ? { "X-Reborn-Guide": "identity-v1" } : {},
+					...t === "/api/workspace/guide" ? { "X-Reborn-Guide": "home-tiles-v1" } : {},
 					...t === "/api/workspace/tiles" ? { "X-Reborn-Tiles-Contract": "reborn-tiles-v1" } : {},
 					...r ? { "Content-Type": "application/json" } : {}
 				},

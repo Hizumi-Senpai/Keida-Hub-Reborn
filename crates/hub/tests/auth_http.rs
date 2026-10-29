@@ -19,6 +19,8 @@ use std::{
 mod asset_retention_contracts;
 #[path = "support/discord_contracts.rs"]
 mod discord_contracts;
+#[path = "support/home_guide_contracts.rs"]
+mod home_guide_contracts;
 #[path = "support/media_contracts.rs"]
 mod media_contracts;
 #[path = "support/queues_contracts.rs"]

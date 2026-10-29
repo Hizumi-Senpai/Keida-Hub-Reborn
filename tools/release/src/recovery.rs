@@ -1664,9 +1664,7 @@ pub(super) async fn rehearse(image: &str, out: &Path) -> Result<()> {
     {
         return Err("matched schema14 restore changed retained session selectors or revocation");
     }
-    if tiles_recovery::database_fingerprint(&restore_pg, "restored")?
-        != initial_tiles_fingerprint
-    {
+    if tiles_recovery::database_fingerprint(&restore_pg, "restored")? != initial_tiles_fingerprint {
         return Err("matched schema14 restore changed persisted account tile layouts");
     }
     let tiles_owner = tiles_recovery::Context {
