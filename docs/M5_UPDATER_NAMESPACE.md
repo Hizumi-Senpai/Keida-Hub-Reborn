@@ -163,6 +163,59 @@ are prerequisites. A filesystem clone/snapshot restore, missing volume, replaced
 directory, stale handle, masked permission change or ambiguous topology requires
 new explicit recovery review, never automatic re-enrollment.
 
+
+## Bootstrap evidence records
+
+Both supporting records use the same16KiB canonical-byte/hash/type rules as the
+anchor, with the boot intent's narrow0600 profile and Btrfs origin evidence0400.
+No production record is created by this review. Freeze these shapes before an
+origin implementation; a successful M5.5 diagnostic is not one of these commits.
+
+bootstrap-intent.json has this closed field order:
+
+```text
+format,product,profile,installation_id,bootstrap_id,boot_id,observed_boottime_ns,
+manual_installed_sha256,manual_state_sha256,terminal_receipt_sha256,
+origin_binding_sha256,envelope_sha256,adoption_plan_sha256,policy_sha256,
+inventory_sha256,executable_sha256,authorization_receipt_sha256
+```
+
+format=1/product=keida-hub-reborn/profile=unraid-handle-bootstrap-intent-v1.
+bootstrap_id is a NEW32-lowercase-hex identity, independent of installation,
+plan and effect-operation IDs. boot_id is a canonical lowercase UUID;
+observed_boottime_ns is a positive u64. All remaining references are full
+64-lowercase-hex digests. The authorization receipt binds the separately approved
+exact bootstrap scope; its presence is not invented by this parser.
+
+installed/origin-receipt.json has this closed field order:
+
+```text
+format,product,profile,installation_id,bootstrap_id,state,bootstrap_intent_sha256,
+manual_installed_sha256,manual_state_sha256,terminal_receipt_sha256,
+origin_binding_sha256,envelope_sha256,adoption_plan_sha256,policy_sha256,
+inventory_sha256,executable_sha256,boot_id,observed_boottime_ns
+```
+
+profile=unraid-handle-origin-evidence-v1 and state=prepared-origin. Other types
+follow the intent. Match every shared field to the exact intent; the receipt
+hash binds the entire intent, including its authorization reference. Match
+installation/policy/executable/binding fields to the anchor and check the actual
+retained raw evidence and canonical generation1 bytes. Require the same current
+boot and a newly validated assessment within M5's60-second observation bound;
+expiry requires NEW reviewed preparation, not timestamp normalization.
+
+This receipt deliberately describes prepared origin evidence. It cannot claim
+that its later boot-anchor rename already happened. A committed authority is
+established only by the valid final anchor together with this evidence and the
+matching selector/journal state. The external terminal bootstrap receipt records
+the actual commit/sync outcome. It is not another installed selector.
+
+The hash graph is acyclic: raw inputs/binding/admission/policy/inventory and
+authorization reference -> bootstrap intent -> prepared origin receipt -> final
+anchor. The final anchor is never hashed into its own evidence. A changed intent,
+approval scope, raw manual record, binding or policy requires refusal; it cannot
+be silently rewritten under an existing bootstrap ID.
+
 ## Capability lifetime and existing Rust callers
 
 The eventual Rust namespace constructor has one fixed production authority source,
