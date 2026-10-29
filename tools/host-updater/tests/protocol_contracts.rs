@@ -99,6 +99,7 @@ fn hash_binding_is_checked_without_normalizing_the_expected_digest() {
         assert!(parse_installed_binding(INSTALLED.as_bytes(), &digest).is_err());
     }
     assert!(parse_request(APPLY.as_bytes(), &independent_hash(ROLLBACK.as_bytes())).is_err());
+    assert!(parse_installed_binding(INSTALLED.as_bytes(), &independent_hash(INSTALLED.as_bytes()).to_uppercase()).is_err());
 }
 
 #[test]

@@ -392,6 +392,10 @@ fn pending_evidence_bound_never_requires_deleting_history_to_repair_status() {
     fs::remove_file(fixture.status()).expect("simulate missing status");
     assert!(journal.read_status(ID).is_err(), "must not create a seventeenth pending record");
     assert_eq!(fs::read_dir(fixture.operation()).expect("pending evidence count").count(), 18);
+    for number in 0..16 {
+        let name = format!("status-{number:032x}.pending");
+        assert_eq!(fs::read(fixture.operation().join(name)).expect("each exact pending record retained"), b"{interrupted pending status");
+    }
 }
 
 #[test]
