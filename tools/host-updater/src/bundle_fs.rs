@@ -4,6 +4,10 @@
 //! semantic validation and calls [`Bundle::revalidate`]. Input paths never become
 //! commands, extraction destinations or journal roots. The two archives are
 //! hashed in bounded chunks and are never retained in memory or decompressed.
+//! Named inputs are first probed with `O_PATH|O_NOFOLLOW`, which invokes no
+//! device-open callback. Only an admitted regular inode is reopened for reading
+//! through its held, kernel-owned `/proc/self/fd/<decimal-fd>` reference. Both
+//! handles remain held; no caller-supplied proc path or process command exists.
 //! Root-sealed mode requires EUID0; explicit fixture mode always uses the calling
 //! UID, including when that UID happens to be root.
 
@@ -145,6 +149,7 @@ struct DirectoryPin {
 
 struct Input {
     spec: &'static FileSpec,
+    pin: File,
     file: File,
     before: Fingerprint,
     bytes: Option<Vec<u8>>,
@@ -189,17 +194,44 @@ fn opened_descriptor(descriptor: i32) -> Result<File> {
 
 fn open_child(parent: &File, name: &OsStr, directory: bool) -> Result<File> {
     let name = component(name)?;
-    let flags = libc::O_RDONLY
-        | libc::O_CLOEXEC
+    let flags = libc::O_CLOEXEC
         | libc::O_NOFOLLOW
-        | libc::O_NONBLOCK
-        | if directory { libc::O_DIRECTORY } else { 0 };
+        | if directory {
+            libc::O_RDONLY | libc::O_DIRECTORY | libc::O_NONBLOCK
+        } else {
+            libc::O_PATH
+        };
     // SAFETY: parent remains held and the CString is valid through openat.
     opened_descriptor(unsafe { libc::openat(parent.as_raw_fd(), name.as_ptr(), flags) })
 }
 
 fn metadata(file: &File) -> Result<Metadata> {
     file.metadata().map_err(|_| BundleError::Io)
+}
+
+fn read_handle(pin: &File, expected: Fingerprint, spec: &FileSpec, uid: u32) -> Result<File> {
+    let before = metadata(pin)?;
+    admitted_input(&before, spec, uid)?;
+    if Fingerprint::of(&before) != expected {
+        return Err(BundleError::Changed);
+    }
+    let handle = CString::new(format!("/proc/self/fd/{}", pin.as_raw_fd()))
+        .map_err(|_| BundleError::Io)?;
+    // SAFETY: this path is constructed only from our held O_PATH descriptor.
+    // Following this kernel FD reference reopens the already admitted regular
+    // inode, not a mutable bundle pathname; device nodes were refused earlier.
+    let file = opened_descriptor(unsafe {
+        libc::open(
+            handle.as_ptr(),
+            libc::O_RDONLY | libc::O_CLOEXEC | libc::O_NONBLOCK,
+        )
+    })?;
+    let current = metadata(&file)?;
+    admitted_input(&current, spec, uid)?;
+    if Fingerprint::of(&current) != expected || Fingerprint::of(&metadata(pin)?) != expected {
+        return Err(BundleError::Changed);
+    }
+    Ok(file)
 }
 
 fn safe_ancestor(metadata: &Metadata, uid: u32) -> Result<()> {
@@ -400,13 +432,16 @@ impl Bundle {
         fixed_names(root)?;
         let mut inputs = Vec::with_capacity(FILES.len());
         for spec in &FILES {
-            let file = open_child(root, OsStr::new(spec.name), false)?;
-            let before = metadata(&file)?;
+            let pin = open_child(root, OsStr::new(spec.name), false)?;
+            let before = metadata(&pin)?;
             admitted_input(&before, spec, uid)?;
+            let before = Fingerprint::of(&before);
+            let file = read_handle(&pin, before, spec, uid)?;
             inputs.push(Input {
                 spec,
+                pin,
                 file,
-                before: Fingerprint::of(&before),
+                before,
                 bytes: None,
                 digest: String::new(),
                 len: 0,
@@ -475,9 +510,11 @@ impl Bundle {
         private_root(&metadata(root)?, self.uid)?;
         fixed_names(root)?;
         for input in &self.inputs {
+            let pin = metadata(&input.pin)?;
+            admitted_input(&pin, input.spec, self.uid)?;
             let held = metadata(&input.file)?;
             admitted_input(&held, input.spec, self.uid)?;
-            if Fingerprint::of(&held) != input.before {
+            if Fingerprint::of(&pin) != input.before || Fingerprint::of(&held) != input.before {
                 return Err(BundleError::Changed);
             }
             let named = open_child(root, OsStr::new(input.spec.name), false)?;

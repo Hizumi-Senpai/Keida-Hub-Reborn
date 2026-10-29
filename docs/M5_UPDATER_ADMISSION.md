@@ -44,6 +44,12 @@ Hold directory/file descriptors through semantic validation and final recheck.
 Recheck path/ancestor/root identities, whitelist, file dev/inode/type/UID/mode/
 link count/size/mtime/ctime before and after reads; replacement or mutation refuses.
 The process never creates/removes a file or acquires/creates a production journal.
+Linux named-file admission first uses O_PATH|O_NOFOLLOW and validates its type,
+owner/mode/link/size before any read-open. Reopen only the pinned regular inode
+through a fixed /proc/self/fd/<held-decimal-fd> kernel handle, compare fingerprints
+and retain both descriptors. This prevents a rejected device/FIFO from receiving
+a read-open callback. Current-name rechecks likewise use O_PATH; no arbitrary
+proc path or process command is accepted.
 
 | File | Limit | Encoding |
 | --- | --- | --- |
