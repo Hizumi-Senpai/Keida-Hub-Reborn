@@ -319,6 +319,82 @@ fn pending_status_files_are_nonauthority_and_preserved_with_strict_names_and_bou
 }
 
 #[test]
+fn append_preserves_the_global_barrier_when_an_older_terminal_journal_changes() {
+    for corruption in 0..3 {
+        let fixture = Fixture::new();
+        let journal = fixture.open();
+        admit(&journal);
+        journal.append(ID, 0, Event::Terminal(Disposition::FailedSafe)).expect("terminal prior storage record");
+        let second_request = APPLY.replace(ID, OTHER);
+        journal.admit(second_request.as_bytes(), &digest(second_request.as_bytes())).expect("admit next fixture operation");
+        match corruption {
+            0 => overwrite_fixture(&fixture.event(1), b"{torn older event"),
+            1 => overwrite_fixture(&fixture.operation().join("request.json"), b"{torn older request"),
+            2 => {
+                // A fully coherent older journal for another installation is
+                // still a global policy conflict, not merely a torn-file case.
+                let prior = APPLY.replace("0123456789abcdef0123456789abcdef", "fedcba9876543210fedcba9876543210");
+                let hash = digest(prior.as_bytes());
+                let first = format!("{{\"format\":1,\"operation_id\":\"{ID}\",\"request_sha256\":\"{hash}\",\"sequence\":0,\"previous_sha256\":\"{}\",\"event\":{{\"phase\":\"accepted\"}}}}", "0".repeat(64));
+                let terminal = format!("{{\"format\":1,\"operation_id\":\"{ID}\",\"request_sha256\":\"{hash}\",\"sequence\":1,\"previous_sha256\":\"{}\",\"event\":{{\"terminal\":\"failed_safe\"}}}}", digest(first.as_bytes()));
+                let projection = format!("{{\"format\":1,\"status\":{{\"operation_id\":\"{ID}\",\"request_sha256\":\"{hash}\",\"sequence\":1,\"phase\":\"accepted\",\"disposition\":\"failed_safe\"}},\"last_event_sha256\":\"{}\"}}", digest(terminal.as_bytes()));
+                overwrite_fixture(&fixture.operation().join("request.json"), prior.as_bytes());
+                overwrite_fixture(&fixture.event(0), first.as_bytes());
+                overwrite_fixture(&fixture.event(1), terminal.as_bytes());
+                overwrite_fixture(&fixture.status(), projection.as_bytes());
+                assert_eq!(journal.read_status(ID).expect("coherent different-installation journal").disposition, Some(Disposition::FailedSafe));
+            },
+            _ => unreachable!(),
+        }
+        let second_events = fixture.root.join("operations").join(OTHER).join("events");
+        let second_initial = second_events.join("00000000000000000000.json");
+        let original_bytes = fs::read(&second_initial).expect("second initial event");
+        assert!(journal.append(OTHER, 0, Event::Phase(Phase::Preparing)).is_err(), "older conflict case {corruption} bypassed global barrier");
+        assert_eq!(fs::read_dir(&second_events).expect("second evidence").count(), 1);
+        assert_eq!(fs::read(&second_initial).expect("second initial event retained"), original_bytes);
+        assert_eq!(journal.read_status(OTHER).expect("second selected status remains readable").sequence, 0);
+    }
+}
+
+#[test]
+fn concurrent_threads_cannot_commit_the_same_expected_sequence_twice() {
+    let fixture = Fixture::new();
+    let journal = std::sync::Arc::new(fixture.open());
+    admit(&journal);
+    let gate = std::sync::Arc::new(std::sync::Barrier::new(3));
+    let mut children = Vec::new();
+    for _ in 0..2 {
+        let journal = journal.clone();
+        let gate = gate.clone();
+        children.push(thread::spawn(move || {
+            gate.wait();
+            journal.append(ID, 0, Event::Phase(Phase::Preparing))
+        }));
+    }
+    gate.wait();
+    let outcomes: Vec<_> = children.into_iter().map(|child| child.join().expect("fixture worker")).collect();
+    assert_eq!(outcomes.iter().filter(|result| result.is_ok()).count(), 1);
+    assert_eq!(outcomes.iter().filter(|result| result.is_err()).count(), 1);
+    assert_eq!(journal.read_status(ID).expect("single committed transition").sequence, 1);
+    assert_eq!(fs::read_dir(fixture.operation().join("events")).expect("event count").count(), 2);
+}
+
+#[test]
+fn pending_evidence_bound_never_requires_deleting_history_to_repair_status() {
+    let fixture = Fixture::new();
+    let journal = fixture.open();
+    admit(&journal);
+    for number in 0..16 {
+        let name = format!("status-{number:032x}.pending");
+        private_file(&fixture.operation().join(name), b"{interrupted pending status", 0o600);
+    }
+    assert_eq!(journal.read_status(ID).expect("current committed projection remains valid").sequence, 0);
+    fs::remove_file(fixture.status()).expect("simulate missing status");
+    assert!(journal.read_status(ID).is_err(), "must not create a seventeenth pending record");
+    assert_eq!(fs::read_dir(fixture.operation()).expect("pending evidence count").count(), 18);
+}
+
+#[test]
 fn permanent_lock_is_nonblocking_and_replaced_inode_blocks_all_mutations() {
     let fixture = Fixture::new();
     let journal = fixture.open();
