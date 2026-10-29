@@ -1,5 +1,20 @@
 # Reborn versions and safe updating
 
+## M5.6 namespace refinement — October29,2026
+
+The M5.3/M5.4 diagnostics are accepted through source0.1.21/PR37, with
+head78/main79 each24 steps/237 Rust tests. M5.5's real CURRENT18 packet passed
+without adopting authority. The [M5.6 namespace contract](M5_UPDATER_NAMESPACE.md)
+selects a proposed protected boot data anchor plus Btrfs opaque directory/file
+capabilities for the real Unraid ancestry. Generic path readers remain strict;
+no shared chmod/chown, mount, boot hook or installation occurs. The anchor is an
+origin/namespace enrollment, never a second current-release selector.
+
+Next issue41 is a fixed read-only Rust namespace probe. The private capability
+caller, actual origin transaction, executor/failure/reboot/rollback/uninstall
+and separate exact-packet installation approval remain open. Live/channel stay18.
+Historical preparation observations below retain their original scope.
+
 Status: deterministic source identity, immutable manual publication, matched
 recovery and M5.1 browser server-change discovery/draft-safe refresh are installed
 and runtime-qualified in **Reborn0.1.18/schema13**. [Exact18 evidence](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6482571904)
