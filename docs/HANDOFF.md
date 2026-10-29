@@ -1,5 +1,23 @@
 # Successor CORE handoff — installed 0.1.18
 
+## M5.4 review checkpoint — October28,2026
+
+The same successor CORE continues. PR35 is accepted as source0.1.20 at
+`d3a26d9a5c13c15003e38a135692477db420f45f`, tree
+`d1074c3890f5538cb616cfdfa6c30df6d278d978`; exact head76/main77 each passed24
+steps/221 Rust tests. [Final source20 receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6485954735).
+The predecessor six-file documentation was carried into PR32/source19. These facts
+supersede the older source19/unmerged-foundation descriptions preserved below.
+Live/channel remain18/schema13; no installation/cleanup was repeated.
+
+[M5.4](M5_UPDATER_ADMISSION.md), issue36, is a separately frozen local diagnostic
+review: check sealed CURRENT-artifact evidence and an adoption PLAN, retain manual
+authority, and report no execution readiness. Explicit fixture mode cannot claim
+root trust. It performs no host commands, adoption, production journal repair or
+selector writes. Full executor/bootstrap/rollback/reboot/uninstall evidence and
+separate installation approval remain open. Future actions refresh actual state;
+historical audit snapshots are evidence, never scripts to replay.
+
 ## M5.3 foundation review checkpoint — October28,2026
 
 The same successor CORE continues; this checkpoint is not another ownership

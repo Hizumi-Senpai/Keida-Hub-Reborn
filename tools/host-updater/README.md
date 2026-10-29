@@ -1,11 +1,13 @@
-# Updater protocol and durable-journal foundation
+# Updater protocol, journal and local evidence diagnostics
 
 This Rust1.99.1 tool is the bounded foundation slice in
 [issue33](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/33).
 Read the [frozen updater contract](../../docs/M5_HOST_UPDATER.md) and
 [concrete bootstrap review](../../docs/M5_UPDATER_BOOTSTRAP_REVIEW.md) for the
 complete execution and installation gates. This crate implements request checks
-and private journal storage. It does not implement a host updater executor.
+and private journal storage. The subsequent [M5.4 contract](../../docs/M5_UPDATER_ADMISSION.md),
+issue36, adds a sealed current-artifact/adoption-plan check. Neither implements a
+host updater executor or changes installed authority.
 
 ## Diagnostic CLI
 
@@ -13,7 +15,7 @@ and private journal storage. It does not implement a host updater executor.
 reborn-host-updater check-request /absolute/private/request.json EXPECTED_SHA256
 ```
 
-`check-request` is the only CLI command. It reads and validates the supplied file
+`check-request` reads and validates the supplied file
 without executing its request. The file must be a regular, same-effective-UID,
 0400 file with one link, at most16,384 bytes, inside an immediate same-UID0700
 directory. The path must be absolute. Componentwise descriptor-relative opens
@@ -31,6 +33,35 @@ daemon, scheduler or application/database action in this CLI.
 The request format recognizes `inspect`, `status`, `prepare`, `apply`, `reconcile`
 and `rollback`. These are validated data shapes; none is an executable CLI
 operation. In particular, an accepted `apply` request remains diagnostic input.
+
+## Sealed bundle diagnostic
+
+```text
+reborn-host-updater check-bundle /absolute/private/bundle ENVELOPE_SHA256 PLAN_SHA256 [--fixture]
+```
+
+The [exact21-file contract](../../docs/M5_UPDATER_ADMISSION.md) binds the CURRENT
+installed artifact, its original CI ZIP/tar, raw manifest/image/recovery proofs,
+sealed source/governance/artifact/compatibility qualifications and an adoption
+PLAN. Default requires root ownership/EUID0; explicit --fixture ALWAYS reports
+same-uid-fixture trust, even under root. Inputs are sameUID0400/singlelink in a
+sameUID0700 directory; descriptor-relative nofollow opens and retained metadata/
+path identity rechecks refuse replacement. Archives are streamed, not extracted.
+No ZIP containment or live Docker/GitHub/host observation is performed.
+
+The proposed binding's generation1 is an installation origin, independent of
+release ordinal. Manual authority stays unchanged. Raw manual/state/receipt and
+policy/inventory are opaque, hash-bound caller evidence; a sealed projection and
+assessment supply explicit assertions. This is not a generic legacy parser,
+policy evaluator, inventory completeness check or fresh executor admission.
+
+Success reports local archive_rehashed/zip_rehashed and
+manual_authority_retained:true, with effects_authorized:false,
+adoption_performed:false and execution_ready:false. Root trust means admitted
+root-sealed CORE input, not an invented signature; coherent fictional sealed
+history cannot be independently authenticated by this parser. Refusal exits2 with
+a generic message and preserves all input/production/journal files. It never calls
+Journal::open/read_status or creates/repairs status projections.
 
 ## Exact protocol bytes
 
@@ -103,7 +134,7 @@ The CLI has no journal-write command.
 
 ## Remaining execution gates
 
-Publisher/admission-envelope verification, installed-generation adoption and
+Fresh authenticated publisher/host admission, installed-generation adoption and
 ownership, host intent/result binding, bounded child execution, actual candidate
 replacement, final matched backup/current-data rollback, reboot recovery,
 bootstrap and uninstall are not implemented here. Their independent executor

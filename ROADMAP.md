@@ -35,9 +35,12 @@ and independently qualify its Rust one-shot protocol in isolation; no updater
 binary or activation-ready packet exists yet. Installation/activation needs
 separate authorization. See [successor handoff](docs/HANDOFF.md).
 The first [M5.3 request/journal foundation](docs/M5_UPDATER_FOUNDATION.md), issue33,
-is in review with pinned package checks and25 actual independent Linux fixtures
-passing. It has no host dispatcher. Retained main-CI fixture qualification is
-tracked under issue34; implementation and full updater activation remain separate.
+is accepted as source0.1.20/PR35 with head76/main77 each all24 steps/221 Rust tests,
+including25 independent updater fixtures. It has no host dispatcher. The next
+[M5.4 admission/adoption-plan contract](docs/M5_UPDATER_ADMISSION.md), issue36,
+is in review: fixed local evidence consistency, no authority transition or host
+effect. Fresh artifact/host admission, actual executor, current-data rollback,
+reboot/bootstrap/uninstall and full updater activation remain separate gates.
 Existing accepted functionality in
 another application is a behavior reference, not a completed Reborn milestone.
 

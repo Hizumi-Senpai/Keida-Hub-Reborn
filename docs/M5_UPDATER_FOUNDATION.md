@@ -7,9 +7,15 @@ The [bootstrap review](M5_UPDATER_BOOTSTRAP_REVIEW.md) and its installation gate
 remain open. See [the tool README](../tools/host-updater/README.md) for usage,
 literal formats, limits, repair/refusal and security boundaries.
 
+Accepted as source0.1.20/PR35, with exact head76/main77 each all24 steps/221 Rust
+tests, including25 updater fixtures. [Final receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6485954735).
+The later [M5.4 local admission/adoption-plan diagnostic](M5_UPDATER_ADMISSION.md)
+is a separate review slice; the foundation behavior below describes its accepted
+request/journal boundary and does not claim a host executor or authority transfer.
+
 ## Implemented boundary
 
-`reborn-host-updater check-request ABSOLUTE_FILE EXPECTED_SHA256` is the only CLI.
+M5.3 introduced only `reborn-host-updater check-request ABSOLUTE_FILE EXPECTED_SHA256`.
 It opens a private0400 single-link same-UID request through held descriptors,
 checks bounded canonical bytes and the externally supplied digest, and reports
 `effects_authorized:false`. It never dispatches the request. Errors echo no
