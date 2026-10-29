@@ -326,8 +326,8 @@ fn proc_endpoint(value: &str) -> Result<(Ipv4Addr, u16), &'static str> {
     if !hex(address, 8) || !hex(port, 4) {
         return Err("malformed fixture socket address");
     }
-    let address = u32::from_str_radix(address, 16)
-        .map_err(|_| "malformed fixture socket address")?;
+    let address =
+        u32::from_str_radix(address, 16).map_err(|_| "malformed fixture socket address")?;
     let port = u16::from_str_radix(port, 16).map_err(|_| "malformed fixture socket port")?;
     Ok((Ipv4Addr::from(address.to_ne_bytes()), port))
 }
@@ -372,10 +372,7 @@ fn owned_listener(
         if fields[3] != "0A" || !sockets.contains(&inode) {
             continue;
         }
-        if local.0 != Ipv4Addr::LOCALHOST
-            || local.1 == 0
-            || remote != (Ipv4Addr::UNSPECIFIED, 0)
-        {
+        if local.0 != Ipv4Addr::LOCALHOST || local.1 == 0 || remote != (Ipv4Addr::UNSPECIFIED, 0) {
             return Err("owned fixture listener is not the required loopback endpoint");
         }
         if found.is_some() {
@@ -416,7 +413,11 @@ fn child_listener(pid: u32) -> io::Result<Option<OwnedListener>> {
 #[test]
 fn fixture_listener_socket_links_require_canonical_kernel_inodes() {
     assert_eq!(socket_inode("socket:[42]"), Ok(Some(42)));
-    for other in ["/private/fixture-file", "pipe:[42]", "anon_inode:[eventpoll]"] {
+    for other in [
+        "/private/fixture-file",
+        "pipe:[42]",
+        "anon_inode:[eventpoll]",
+    ] {
         assert_eq!(socket_inode(other), Ok(None));
     }
     for malformed in [
@@ -512,9 +513,7 @@ fn fixture_listener_rejects_missing_or_malformed_proc_table_data() {
         "0: 0100007F:ABCD 00000000:0000 0A 0:0 0:0 0 1000 0 042",
         "0: 0100007F:ABCD 00000000:0000 0A 0:0 0:0 0 1000 0 18446744073709551616",
     ] {
-        assert!(
-            owned_listener(&BTreeSet::from([42]), &fixture_socket_table(&[row])).is_err()
-        );
+        assert!(owned_listener(&BTreeSet::from([42]), &fixture_socket_table(&[row])).is_err());
     }
 }
 
@@ -574,7 +573,9 @@ impl Server {
                         }
                         Ok(_) => panic!("auth fixture listener ownership changed during readiness"),
                         Err(error) if error.kind() == io::ErrorKind::NotFound => {}
-                        Err(_) => panic!("auth fixture listener ownership unavailable after readiness"),
+                        Err(_) => {
+                            panic!("auth fixture listener ownership unavailable after readiness")
+                        }
                     }
                 }
                 Ok(None) => {}
