@@ -1,9 +1,10 @@
 # Reborn current state
 
-Updated October 28, 2026, America/Chicago, by the successor CORE for M5.2 review.
-This documentation branch carries the six-file predecessor handoff and remains
-unmerged; accepted main and running release remain0.1.18. Fresh issue1 receipts
-and host discovery govern later operations.
+Updated October 28, 2026, America/Chicago, for M5.3 foundation review.
+Accepted documentation source0.1.19 is
+`634774d2678a3a4178d976d38b4d41fb6525d609` (PR32); live/channel remain0.1.18.
+The new Rust foundation is unmerged. Fresh issue1 receipts and actual discovery
+govern later operations.
 
 ## Installed and qualified
 
@@ -49,11 +50,20 @@ inspection supports this preparation. Exact18 and PG births, stopped17 and the
 final13 checksum index agree; the transient Docker CLI timeout and launcher
 precondition failure are retained honestly in the review.
 
-Next implement and independently qualify the Rust one-shot request/status/journal
-protocol in isolation: local qualified artifacts, exact Reborn app-only targets,
-schema13-compatible replacement, bounded uncertain-result reconciliation and
-current-data rollback. There is no updater binary/digest or activation-ready
-packet yet. Full competing-owner/bootstrap/reboot/uninstall fixtures remain open.
+The first [Rust request/journal foundation](docs/M5_UPDATER_FOUNDATION.md),
+[issue33](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/33), is implemented
+and independently package-qualified in isolation: strict canonical request and
+installed-binding parsing, diagnostic-only CLI, permanent private lock/durable
+hash-linked journal/deduplication and uncertainty barriers. Pinned package
+fmt/all-target/Clippy-D/release and25 actual Linux tests pass. Full eventual-head
+workspace/HTTP/browser/recovery CI remains separate. Accepted-main CI75's retained
+Activity403 fixture failure is tracked under issue34; source0.1.19 changed only
+documents and no runtime was deployed.
+
+Next qualify that review and implement the publisher/installed-generation/actual
+host executor boundary. There is no installable updater or activation-ready
+packet. Competing-owner/bootstrap/backup/current-data rollback/reboot/uninstall
+execution fixtures remain open.
 Installation/activation requires separate approval of the completed exact packet;
 no daemon/scheduler/second writer is authorized here. Missing real provider
 credentials do not block independent preparation.

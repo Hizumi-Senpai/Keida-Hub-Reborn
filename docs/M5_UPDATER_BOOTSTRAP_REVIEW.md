@@ -7,6 +7,12 @@ There is no host-updater source, executable, digest, launcher or end-to-end
 failure qualification yet. The actual source and binaries reviewed below are
 manual release tools. They must not be represented as an updater installation.
 
+Follow-up: [M5.3 foundation](M5_UPDATER_FOUNDATION.md), issue33, now adds a
+diagnostic-only parser/journal tool. Its exact preliminary binary/package
+qualification is recorded there. It supplies no host dispatcher or completed
+activation packet; the missing execution gates below remain open. This bootstrap
+review preserves its original preparation observations and manual-tool identities.
+
 This is authorized preparation only. It carries the six-file predecessor
 handoff into a normally reviewed documentation PR. Main and live remain
 **0.1.18/schema13**, source `697699187aca6780d8ba7b199dc2ba90b033bd67`, tree

@@ -1,5 +1,26 @@
 # Successor CORE handoff — installed 0.1.18
 
+## M5.3 foundation review checkpoint — October28,2026
+
+The same successor CORE continues; this checkpoint is not another ownership
+transfer. PR32's documentation is accepted as source0.1.19 at
+`634774d2678a3a4178d976d38b4d41fb6525d609`; headCI74 passed24 steps. Live/channel
+remain0.1.18/schema13. Accepted-main CI75 attempt1's retained Activity403 fixture
+failure is tracked under issue34, with original evidence and separate test-only
+listener-ownership qualification; it is not called proven product breakage or
+ignored as a random failure.
+
+The unmerged [M5.3 foundation](M5_UPDATER_FOUNDATION.md), issue33, adds strict
+request/installed-binding parsing, diagnostic-only CLI and durable private
+operation journals. Pinned Linux package fmt/all-target/Clippy-D/release and25
+independently frozen protocol/CLI/filesystem/process tests pass. Full eventual
+head/workspace/HTTP/browser/recovery CI and normal review remain separate.
+No actual host effect dispatcher, installed-generation adoption, publisher trust
+admission or complete bootstrap packet exists. Next qualify the source review,
+then implement those executor boundaries in isolation. Installation/activation
+still requires separate owner approval of the complete exact packet. No live
+deployment/retirement or external ownership transfer was performed.
+
 ## Successor preparation checkpoint — October28,2026
 
 The successor CORE has assumed integration ownership under the owner's explicit
