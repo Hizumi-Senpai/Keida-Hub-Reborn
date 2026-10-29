@@ -351,7 +351,10 @@ pub(crate) fn validate(
             return Err(());
         }
     }
-    let plan: Plan = canonical(bundle.bytes("adoption-plan.json").map_err(|_| ())?, PLAN_MAX)?;
+    let plan: Plan = canonical(
+        bundle.bytes("adoption-plan.json").map_err(|_| ())?,
+        PLAN_MAX,
+    )?;
     if !header(
         plan.format,
         &plan.product,
@@ -385,10 +388,8 @@ pub(crate) fn validate(
     if projection_bytes.len() > RECORD_MAX {
         return Err(());
     }
-    let projection: ManualProjection = canonical(
-        projection_bytes.strip_suffix(b"\n").ok_or(())?,
-        RECORD_MAX,
-    )?;
+    let projection: ManualProjection =
+        canonical(projection_bytes.strip_suffix(b"\n").ok_or(())?, RECORD_MAX)?;
     let binding = protocol::parse_installed_binding(
         bundle.bytes("installed-binding.json").map_err(|_| ())?,
         &plan.installed_binding_sha256,
@@ -405,20 +406,30 @@ pub(crate) fn validate(
         return Err(());
     }
     for (name, expected) in [
-        ("manual-installed.json", &observation.manual_installed_sha256),
+        (
+            "manual-installed.json",
+            &observation.manual_installed_sha256,
+        ),
         ("manual-operation.state", &observation.manual_state_sha256),
-        ("terminal-receipt.json", &observation.terminal_receipt_sha256),
-        ("manual-projection.json", &observation.manual_projection_sha256),
-        ("installed-binding.json", &observation.installed_binding_sha256),
+        (
+            "terminal-receipt.json",
+            &observation.terminal_receipt_sha256,
+        ),
+        (
+            "manual-projection.json",
+            &observation.manual_projection_sha256,
+        ),
+        (
+            "installed-binding.json",
+            &observation.installed_binding_sha256,
+        ),
     ] {
         if !digest_matches(bundle, name, expected)? {
             return Err(());
         }
     }
-    let assessment: Assessment = canonical(
-        bundle.bytes("assessment.json").map_err(|_| ())?,
-        RECORD_MAX,
-    )?;
+    let assessment: Assessment =
+        canonical(bundle.bytes("assessment.json").map_err(|_| ())?, RECORD_MAX)?;
     if !assessed_observation(&assessment, &observation)
         || !digest_matches(bundle, "observation.json", &assessment.observation_sha256)?
     {
@@ -449,7 +460,10 @@ pub(crate) fn validate(
         ("manual-installed.json", &transition.manual_installed_sha256),
         ("manual-operation.state", &transition.manual_state_sha256),
         ("terminal-receipt.json", &transition.terminal_receipt_sha256),
-        ("installed-binding.json", &transition.installed_binding_sha256),
+        (
+            "installed-binding.json",
+            &transition.installed_binding_sha256,
+        ),
         ("observation.json", &transition.observation_sha256),
         ("assessment.json", &transition.assessment_sha256),
     ] {

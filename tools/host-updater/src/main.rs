@@ -119,7 +119,10 @@ fn main() -> std::process::ExitCode {
     match run() {
         Ok(()) => std::process::ExitCode::SUCCESS,
         Err(()) => {
-            if std::env::args_os().nth(1).is_some_and(|v| v == "check-bundle") {
+            if std::env::args_os()
+                .nth(1)
+                .is_some_and(|v| v == "check-bundle")
+            {
                 eprintln!("bundle check refused; no effects authorized");
             } else {
                 eprintln!("request check refused; no effects authorized");

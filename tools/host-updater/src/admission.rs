@@ -549,7 +549,11 @@ fn validate_compatibility(
 /// Validate local byte/statement agreement for the fixed current-artifact bundle.
 /// No caller may treat success as independent publisher authentication or host
 /// adoption; the root caller still performs the final held-descriptor recheck.
-pub(crate) fn validate(bundle: &Bundle, envelope_sha256: &str, plan_sha256: &str) -> Result<(), ()> {
+pub(crate) fn validate(
+    bundle: &Bundle,
+    envelope_sha256: &str,
+    plan_sha256: &str,
+) -> Result<(), ()> {
     // Bind both external roots before using their dependent statements.
     reference(bundle, "admission.json", envelope_sha256)?;
     reference(bundle, "adoption-plan.json", plan_sha256)?;

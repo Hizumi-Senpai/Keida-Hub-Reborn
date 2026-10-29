@@ -34,27 +34,132 @@ struct FileSpec {
 }
 
 static FILES: [FileSpec; 21] = [
-    FileSpec { name: "admission.json", limit: 16 * KIB, archive: false, nonempty: false },
-    FileSpec { name: "adoption-plan.json", limit: 16 * KIB, archive: false, nonempty: false },
-    FileSpec { name: "installed-binding.json", limit: 4 * KIB, archive: false, nonempty: false },
-    FileSpec { name: "artifact.zip", limit: GIB, archive: true, nonempty: false },
-    FileSpec { name: "image.tar", limit: GIB, archive: true, nonempty: false },
-    FileSpec { name: "manifest.json", limit: 64 * KIB, archive: false, nonempty: false },
-    FileSpec { name: "image-proof.json", limit: 64 * KIB, archive: false, nonempty: false },
-    FileSpec { name: "recovery-proof.json", limit: 64 * KIB, archive: false, nonempty: false },
-    FileSpec { name: "source-qualification.json", limit: 64 * KIB, archive: false, nonempty: false },
-    FileSpec { name: "governance-qualification.json", limit: 64 * KIB, archive: false, nonempty: false },
-    FileSpec { name: "artifact-qualification.json", limit: 64 * KIB, archive: false, nonempty: false },
-    FileSpec { name: "compatibility-qualification.json", limit: 64 * KIB, archive: false, nonempty: false },
-    FileSpec { name: "manual-projection.json", limit: 64 * KIB, archive: false, nonempty: false },
-    FileSpec { name: "observation.json", limit: 64 * KIB, archive: false, nonempty: false },
-    FileSpec { name: "assessment.json", limit: 64 * KIB, archive: false, nonempty: false },
-    FileSpec { name: "authority-transition.json", limit: 64 * KIB, archive: false, nonempty: false },
-    FileSpec { name: "manual-installed.json", limit: 64 * KIB, archive: false, nonempty: true },
-    FileSpec { name: "manual-operation.state", limit: 64 * KIB, archive: false, nonempty: true },
-    FileSpec { name: "terminal-receipt.json", limit: 64 * KIB, archive: false, nonempty: true },
-    FileSpec { name: "policy.json", limit: 64 * KIB, archive: false, nonempty: true },
-    FileSpec { name: "inventory.json", limit: 64 * KIB, archive: false, nonempty: true },
+    FileSpec {
+        name: "admission.json",
+        limit: 16 * KIB,
+        archive: false,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "adoption-plan.json",
+        limit: 16 * KIB,
+        archive: false,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "installed-binding.json",
+        limit: 4 * KIB,
+        archive: false,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "artifact.zip",
+        limit: GIB,
+        archive: true,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "image.tar",
+        limit: GIB,
+        archive: true,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "manifest.json",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "image-proof.json",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "recovery-proof.json",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "source-qualification.json",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "governance-qualification.json",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "artifact-qualification.json",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "compatibility-qualification.json",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "manual-projection.json",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "observation.json",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "assessment.json",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "authority-transition.json",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: false,
+    },
+    FileSpec {
+        name: "manual-installed.json",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: true,
+    },
+    FileSpec {
+        name: "manual-operation.state",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: true,
+    },
+    FileSpec {
+        name: "terminal-receipt.json",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: true,
+    },
+    FileSpec {
+        name: "policy.json",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: true,
+    },
+    FileSpec {
+        name: "inventory.json",
+        limit: 64 * KIB,
+        archive: false,
+        nonempty: true,
+    },
 ];
 
 /// Trust labeling is explicit; fixture mode never upgrades itself under root.
@@ -215,8 +320,8 @@ fn read_handle(pin: &File, expected: Fingerprint, spec: &FileSpec, uid: u32) -> 
     if Fingerprint::of(&before) != expected {
         return Err(BundleError::Changed);
     }
-    let handle = CString::new(format!("/proc/self/fd/{}", pin.as_raw_fd()))
-        .map_err(|_| BundleError::Io)?;
+    let handle =
+        CString::new(format!("/proc/self/fd/{}", pin.as_raw_fd())).map_err(|_| BundleError::Io)?;
     // SAFETY: this path is constructed only from our held O_PATH descriptor.
     // Following this kernel FD reference reopens the already admitted regular
     // inode, not a mutable bundle pathname; device nodes were refused earlier.
