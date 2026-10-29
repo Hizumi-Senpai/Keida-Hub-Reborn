@@ -70,7 +70,12 @@ fn all_commands_preserve_their_literal_canonical_bytes_and_selectors() {
         (INSPECT, "inspect", None, None),
         (STATUS_CURRENT, "status", None, None),
         (STATUS_OPERATION, "status", Some(OPERATION), None),
-        (PREPARE, "prepare", None, Some("22222222222222222222222222222222")),
+        (
+            PREPARE,
+            "prepare",
+            None,
+            Some("22222222222222222222222222222222"),
+        ),
         (APPLY, "apply", Some(OPERATION), None),
         (RECONCILE, "reconcile", Some(OPERATION), None),
         (ROLLBACK, "rollback", Some(OPERATION), None),
@@ -99,7 +104,13 @@ fn hash_binding_is_checked_without_normalizing_the_expected_digest() {
         assert!(parse_installed_binding(INSTALLED.as_bytes(), &digest).is_err());
     }
     assert!(parse_request(APPLY.as_bytes(), &independent_hash(ROLLBACK.as_bytes())).is_err());
-    assert!(parse_installed_binding(INSTALLED.as_bytes(), &independent_hash(INSTALLED.as_bytes()).to_uppercase()).is_err());
+    assert!(
+        parse_installed_binding(
+            INSTALLED.as_bytes(),
+            &independent_hash(INSTALLED.as_bytes()).to_uppercase()
+        )
+        .is_err()
+    );
 }
 
 #[test]
@@ -110,7 +121,11 @@ fn json_and_canonical_encoding_ambiguity_is_rejected_with_a_matching_hash() {
         replace(INSPECT, "{\"format\":1,", "{\"format\":1,\"format\":1,"),
         replace(INSPECT, "{\"format\":1,", "{\"format\":1,\"format\":2,"),
         replace(INSPECT, "{\"format\":1,", "{\"format\":1,\"unexpected\":0,"),
-        replace(INSPECT, "\"format\":1,\"product\":\"keida-hub-reborn\"", "\"product\":\"keida-hub-reborn\",\"format\":1"),
+        replace(
+            INSPECT,
+            "\"format\":1,\"product\":\"keida-hub-reborn\"",
+            "\"product\":\"keida-hub-reborn\",\"format\":1",
+        ),
         replace(INSPECT, "\"format\":1", "\"format\": 1"),
         replace(INSPECT, "inspect", "\\u0069nspect"),
         replace(INSPECT, "keida-hub-reborn", "keida-hub-rébørn"),
@@ -145,36 +160,89 @@ fn command_fields_are_closed_typed_and_required() {
         (INSPECT, INSTALLATION, "../0123456789abcdef0123456789ab"),
         (STATUS_CURRENT, "current", "CURRENT"),
         (STATUS_CURRENT, "current", ""),
-        (STATUS_OPERATION, OPERATION, "1111111111111111111111111111111g"),
-        (APPLY, "\"expected_generation\":7", "\"expected_generation\":0"),
-        (APPLY, "\"expected_generation\":7", "\"expected_generation\":-7"),
-        (APPLY, "\"expected_generation\":7", "\"expected_generation\":7.0"),
-        (APPLY, "\"expected_generation\":7", "\"expected_generation\":7e0"),
-        (APPLY, "\"expected_generation\":7", "\"expected_generation\":18446744073709551616"),
+        (
+            STATUS_OPERATION,
+            OPERATION,
+            "1111111111111111111111111111111g",
+        ),
+        (
+            APPLY,
+            "\"expected_generation\":7",
+            "\"expected_generation\":0",
+        ),
+        (
+            APPLY,
+            "\"expected_generation\":7",
+            "\"expected_generation\":-7",
+        ),
+        (
+            APPLY,
+            "\"expected_generation\":7",
+            "\"expected_generation\":7.0",
+        ),
+        (
+            APPLY,
+            "\"expected_generation\":7",
+            "\"expected_generation\":7e0",
+        ),
+        (
+            APPLY,
+            "\"expected_generation\":7",
+            "\"expected_generation\":18446744073709551616",
+        ),
         (APPLY, "\"expected_generation\":7,", ""),
         (APPLY, "prepared_receipt_sha256", "admission_sha256"),
         (PREPARE, "plan_id", "operation_id"),
-        (RECONCILE, "expected_request_sha256", "prepared_receipt_sha256"),
-        (APPLY, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
-        (APPLY, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"),
+        (
+            RECONCILE,
+            "expected_request_sha256",
+            "prepared_receipt_sha256",
+        ),
+        (
+            APPLY,
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
+        (
+            APPLY,
+            "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        ),
     ] {
         refused_request(replace(source, old, new).as_bytes());
     }
     for source in [INSPECT, STATUS_CURRENT, PREPARE, APPLY, RECONCILE, ROLLBACK] {
-        let with_url = format!("{},\"url\":\"https://example.invalid/image\"}}", &source[..source.len() - 1]);
+        let with_url = format!(
+            "{},\"url\":\"https://example.invalid/image\"}}",
+            &source[..source.len() - 1]
+        );
         refused_request(with_url.as_bytes());
     }
-    let maximum = replace(APPLY, "\"expected_generation\":7", "\"expected_generation\":18446744073709551615");
+    let maximum = replace(
+        APPLY,
+        "\"expected_generation\":7",
+        "\"expected_generation\":18446744073709551615",
+    );
     assert!(parse_request(maximum.as_bytes(), &independent_hash(maximum.as_bytes())).is_ok());
 }
 
 #[test]
 fn installed_binding_is_literal_canonical_and_identity_coherent() {
-    let binding = parse_installed_binding(INSTALLED.as_bytes(), &independent_hash(INSTALLED.as_bytes()))
-        .expect("frozen canonical installed binding");
+    let binding = parse_installed_binding(
+        INSTALLED.as_bytes(),
+        &independent_hash(INSTALLED.as_bytes()),
+    )
+    .expect("frozen canonical installed binding");
     assert_eq!(binding.canonical_bytes(), INSTALLED.as_bytes());
-    let leap_day = replace(INSTALLED, "2026-10-28T21:18:09.639816887Z", "2024-02-29T00:00:00.000000000Z");
-    assert!(parse_installed_binding(leap_day.as_bytes(), &independent_hash(leap_day.as_bytes())).is_ok());
+    let leap_day = replace(
+        INSTALLED,
+        "2026-10-28T21:18:09.639816887Z",
+        "2024-02-29T00:00:00.000000000Z",
+    );
+    assert!(
+        parse_installed_binding(leap_day.as_bytes(), &independent_hash(leap_day.as_bytes()))
+            .is_ok()
+    );
     for (old, new) in [
         ("\"format\":1", "\"format\":2"),
         ("\"generation\":7", "\"generation\":0"),
@@ -186,15 +254,39 @@ fn installed_binding_is_literal_canonical_and_identity_coherent() {
         ("accepted", "development"),
         ("\"database_schema\":13", "\"database_schema\":12"),
         ("reborn-workspace-v1", "reborn-workspace-v2"),
-        ("697699187aca6780d8ba7b199dc2ba90b033bd67", "697699187aca6780d8ba7b199dc2ba90b033bd6G"),
+        (
+            "697699187aca6780d8ba7b199dc2ba90b033bd67",
+            "697699187aca6780d8ba7b199dc2ba90b033bd6G",
+        ),
         ("sha256:74231723", "sha512:74231723"),
-        ("2026-10-28T21:18:09.639816887Z", "2026-02-29T21:18:09.639816887Z"),
-        ("2026-10-28T21:18:09.639816887Z", "2026-10-28T24:18:09.639816887Z"),
-        ("2026-10-28T21:18:09.639816887Z", "2026-10-28T21:18:60.639816887Z"),
-        ("2026-10-28T21:18:09.639816887Z", "2026-10-28T21:18:09.63981688Z"),
-        ("2026-10-28T21:18:09.639816887Z", "2026-10-28T21:18:09.6398168870Z"),
-        ("2026-10-28T21:18:09.639816887Z", "2026-10-28T21:18:09.639816887+00:00"),
-        ("2026-10-28T21:18:09.639816887Z", "2026-10-28t21:18:09.639816887z"),
+        (
+            "2026-10-28T21:18:09.639816887Z",
+            "2026-02-29T21:18:09.639816887Z",
+        ),
+        (
+            "2026-10-28T21:18:09.639816887Z",
+            "2026-10-28T24:18:09.639816887Z",
+        ),
+        (
+            "2026-10-28T21:18:09.639816887Z",
+            "2026-10-28T21:18:60.639816887Z",
+        ),
+        (
+            "2026-10-28T21:18:09.639816887Z",
+            "2026-10-28T21:18:09.63981688Z",
+        ),
+        (
+            "2026-10-28T21:18:09.639816887Z",
+            "2026-10-28T21:18:09.6398168870Z",
+        ),
+        (
+            "2026-10-28T21:18:09.639816887Z",
+            "2026-10-28T21:18:09.639816887+00:00",
+        ),
+        (
+            "2026-10-28T21:18:09.639816887Z",
+            "2026-10-28t21:18:09.639816887z",
+        ),
         ("\"container_id\":", "\"public_cid\":"),
     ] {
         refused_installed(replace(INSTALLED, old, new).as_bytes());
@@ -213,7 +305,10 @@ impl PrivateFixture {
             std::process::id(),
             NEXT.fetch_add(1, Ordering::Relaxed)
         ));
-        DirBuilder::new().mode(0o700).create(&path).expect("new private fixture");
+        DirBuilder::new()
+            .mode(0o700)
+            .create(&path)
+            .expect("new private fixture");
         Self(path)
     }
 
@@ -242,19 +337,30 @@ fn cli_checks_request_without_authorizing_or_performing_the_named_operation() {
     let path = fixture.request("apply.json", APPLY.as_bytes());
     let before = fs::read_dir(&fixture.0).expect("fixture entries").count();
     let output = Command::new(env!("CARGO_BIN_EXE_reborn-host-updater"))
-        .args(["check-request", path.to_str().expect("ASCII fixture"), &independent_hash(APPLY.as_bytes())])
+        .args([
+            "check-request",
+            path.to_str().expect("ASCII fixture"),
+            &independent_hash(APPLY.as_bytes()),
+        ])
         .output()
         .expect("run actual diagnostic CLI");
     assert!(output.status.success(), "{:?}", output.stderr);
-    let response: serde_json::Value = serde_json::from_slice(&output.stdout).expect("sanitized JSON");
-    assert_eq!(response, serde_json::json!({
-        "format":1,
-        "product":"keida-hub-reborn",
-        "command":"apply",
-        "request_sha256": independent_hash(APPLY.as_bytes()),
-        "effects_authorized":false
-    }));
-    assert_eq!(fs::read_dir(&fixture.0).expect("fixture entries").count(), before);
+    let response: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("sanitized JSON");
+    assert_eq!(
+        response,
+        serde_json::json!({
+            "format":1,
+            "product":"keida-hub-reborn",
+            "command":"apply",
+            "request_sha256": independent_hash(APPLY.as_bytes()),
+            "effects_authorized":false
+        })
+    );
+    assert_eq!(
+        fs::read_dir(&fixture.0).expect("fixture entries").count(),
+        before
+    );
     assert_eq!(fs::read(path).expect("request unchanged"), APPLY.as_bytes());
 }
 
@@ -263,7 +369,14 @@ fn cli_refuses_effect_commands_and_unsafe_request_files() {
     let fixture = PrivateFixture::new();
     let path = fixture.request("inspect.json", INSPECT.as_bytes());
     let digest = independent_hash(INSPECT.as_bytes());
-    for command in ["apply", "prepare", "rollback", "reconcile", "install", "uninstall"] {
+    for command in [
+        "apply",
+        "prepare",
+        "rollback",
+        "reconcile",
+        "install",
+        "uninstall",
+    ] {
         let output = Command::new(env!("CARGO_BIN_EXE_reborn-host-updater"))
             .args([command, path.to_str().expect("ASCII"), &digest])
             .output()
@@ -276,7 +389,11 @@ fn cli_refuses_effect_commands_and_unsafe_request_files() {
     fs::hard_link(&path, &hardlink).expect("fixture hardlink");
     for unsafe_path in [&link, &hardlink, &path] {
         let output = Command::new(env!("CARGO_BIN_EXE_reborn-host-updater"))
-            .args(["check-request", unsafe_path.to_str().expect("ASCII"), &digest])
+            .args([
+                "check-request",
+                unsafe_path.to_str().expect("ASCII"),
+                &digest,
+            ])
             .output()
             .expect("actual CLI unsafe-file refusal");
         assert_eq!(output.status.code(), Some(2));

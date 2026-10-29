@@ -86,7 +86,8 @@ fn run() -> Result<(), ()> {
     }
     let expected_hash = args[3].to_str().ok_or(())?;
     let bytes = request_bytes(Path::new(&args[2]))?;
-    let request = reborn_host_updater::protocol::parse_request(&bytes, expected_hash).map_err(|_| ())?;
+    let request =
+        reborn_host_updater::protocol::parse_request(&bytes, expected_hash).map_err(|_| ())?;
     let output = serde_json::json!({
         "format": 1,
         "product": "keida-hub-reborn",

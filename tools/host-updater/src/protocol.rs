@@ -234,7 +234,9 @@ impl Request {
     pub fn expected_generation(&self) -> Option<u64> {
         match &self.command {
             Command::Prepare(prepare) => Some(prepare.expected_generation()),
-            Command::Apply(effect) | Command::Rollback(effect) => Some(effect.expected_generation()),
+            Command::Apply(effect) | Command::Rollback(effect) => {
+                Some(effect.expected_generation())
+            }
             _ => None,
         }
     }

@@ -289,8 +289,8 @@ fn exists(parent: &File, name: &str) -> Result<bool> {
 
 fn names(dir: &File, max: usize) -> Result<Vec<String>> {
     // The proc path resolves only this already-held descriptor, never a caller path.
-    let entries = fs::read_dir(format!("/proc/self/fd/{}", dir.as_raw_fd()))
-        .map_err(|_| JournalError::Io)?;
+    let entries =
+        fs::read_dir(format!("/proc/self/fd/{}", dir.as_raw_fd())).map_err(|_| JournalError::Io)?;
     let mut result = Vec::new();
     for entry in entries {
         if result.len() == max {
@@ -412,20 +412,24 @@ impl Journal {
         let root_file = absolute_dir(root, uid)?;
         private_dir(&root_file, uid)?;
         let lock_parent = operation_lock.parent().ok_or(JournalError::InvalidPath)?;
-        let lock_name = operation_lock.file_name().ok_or(JournalError::InvalidPath)?;
+        let lock_name = operation_lock
+            .file_name()
+            .ok_or(JournalError::InvalidPath)?;
         let lock_parent = absolute_dir(lock_parent, uid)?;
         let lock = open_at(&lock_parent, lock_name, libc::O_RDWR, 0)?;
         admitted_file(&lock, uid, 0o600, MAX_RECORD)?;
         // SAFETY: lock is held, valid and exclusively owned by this instance.
         if unsafe { libc::flock(lock.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
-            return Err(if matches!(
-                std::io::Error::last_os_error().raw_os_error(),
-                Some(libc::EWOULDBLOCK)
-            ) {
-                JournalError::Busy
-            } else {
-                JournalError::Io
-            });
+            return Err(
+                if matches!(
+                    std::io::Error::last_os_error().raw_os_error(),
+                    Some(libc::EWOULDBLOCK)
+                ) {
+                    JournalError::Busy
+                } else {
+                    JournalError::Io
+                },
+            );
         }
         let reopened = open_at(&lock_parent, lock_name, libc::O_RDWR, 0)?;
         admitted_file(&reopened, uid, 0o600, MAX_RECORD)?;
@@ -578,7 +582,12 @@ impl Journal {
         })
     }
 
-    fn write_projection(&self, operation_id: &str, operation: &File, loaded: &Loaded) -> Result<()> {
+    fn write_projection(
+        &self,
+        operation_id: &str,
+        operation: &File,
+        loaded: &Loaded,
+    ) -> Result<()> {
         self.validate_operation(operation_id, operation)?;
         if self.validate_entries(operation)? >= MAX_PENDING {
             return Err(JournalError::Limit);
@@ -615,7 +624,12 @@ impl Journal {
         operation.sync_all().map_err(|_| JournalError::Io)
     }
 
-    fn repair_projection(&self, operation_id: &str, operation: &File, loaded: &Loaded) -> Result<()> {
+    fn repair_projection(
+        &self,
+        operation_id: &str,
+        operation: &File,
+        loaded: &Loaded,
+    ) -> Result<()> {
         if !exists(operation, "status.json")? {
             return self.write_projection(operation_id, operation, loaded);
         }
@@ -628,7 +642,8 @@ impl Journal {
         {
             return Err(JournalError::Corrupt);
         }
-        let index = usize::try_from(projection.status.sequence).map_err(|_| JournalError::Corrupt)?;
+        let index =
+            usize::try_from(projection.status.sequence).map_err(|_| JournalError::Corrupt)?;
         let Some((expected_status, expected_hash)) = loaded.history.get(index) else {
             return Err(JournalError::Corrupt);
         };
@@ -671,8 +686,8 @@ impl Journal {
     pub fn admit(&self, request_bytes: &[u8], expected_sha256: &str) -> Result<Admission> {
         let _gate = self.gate.lock().map_err(|_| JournalError::Corrupt)?;
         self.validate_base()?;
-        let request =
-            parse_request(request_bytes, expected_sha256).map_err(|_| JournalError::InvalidRequest)?;
+        let request = parse_request(request_bytes, expected_sha256)
+            .map_err(|_| JournalError::InvalidRequest)?;
         if !matches!(request.command(), "apply" | "rollback") {
             return Err(JournalError::InvalidRequest);
         }
@@ -751,7 +766,12 @@ impl Journal {
         Ok(loaded.status)
     }
 
-    pub fn append(&self, operation_id: &str, expected_sequence: u64, event: Event) -> Result<Status> {
+    pub fn append(
+        &self,
+        operation_id: &str,
+        expected_sequence: u64,
+        event: Event,
+    ) -> Result<Status> {
         let _gate = self.gate.lock().map_err(|_| JournalError::Corrupt)?;
         self.validate_base()?;
         let operation = self.operation(operation_id)?;
