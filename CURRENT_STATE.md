@@ -17,9 +17,12 @@ M5 read-only probe41 remains open after this visible product correction.
 
 All six services were deliberately enrolled through normal native Opera/Reborn
 flows. [Final Radarr acceptance](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/39#issuecomment-6509463433)
-supersedes earlier deferred-enrollment text. Crafty is currently reported as managed
-sleep by the fresh independent Original worker; [bounded clarification](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/39#issuecomment-6509797658)
-does not prove every route or a fresh join cycle. Original owns wake/sleep.
+supersedes earlier deferred-enrollment text. At22:25Z the independent Original
+worker reported Crafty as managed sleep; [bounded clarification](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/39#issuecomment-6509797658)
+does not prove every route or a fresh join cycle. A later build preflight observed
+the same Crafty CID/image running with StartedAt2026-10-29T22:59:48.592364774Z.
+CORE issued no lifecycle command; actor/cause and actual join coverage remain
+unproven. Original owns wake/sleep.
 Jellyfin paging/count-context, actual mobile/owner/refresh, Discord and normal-use
 acceptance remain open. Historical observations below retain their dates.
 
