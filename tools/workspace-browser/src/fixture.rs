@@ -113,6 +113,7 @@ impl Drop for DiscordProxy {
 pub struct Hold {
     pub entered: Notify,
     pub release: Notify,
+    expected_status: StatusCode,
 }
 #[derive(Clone, Copy)]
 #[repr(u64)]
@@ -323,8 +324,8 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
                 body = serde_json::to_vec(&value).map_err(|_| ())?;
             }
         }
-        if status == StatusCode::OK
-            && let Some(held) = hold
+        if let Some(held) = hold
+            && status == held.expected_status
         {
             held.entered.notify_one();
             let _ = tokio::time::timeout(Duration::from_secs(12), held.release.notified()).await;
@@ -907,15 +908,24 @@ impl Fixture {
         .await
     }
     pub fn hold(&self, path: &'static str) -> Arc<Hold> {
-        self.hold_method(path, None)
+        self.hold_method(path, None, StatusCode::OK)
     }
     pub fn hold_write(&self, path: &'static str) -> Arc<Hold> {
-        self.hold_method(path, Some(axum::http::Method::PUT))
+        self.hold_method(path, Some(axum::http::Method::PUT), StatusCode::OK)
     }
-    fn hold_method(&self, path: &'static str, method: Option<axum::http::Method>) -> Arc<Hold> {
+    pub fn hold_conflict(&self, path: &'static str) -> Arc<Hold> {
+        self.hold_method(path, Some(axum::http::Method::PUT), StatusCode::CONFLICT)
+    }
+    fn hold_method(
+        &self,
+        path: &'static str,
+        method: Option<axum::http::Method>,
+        expected_status: StatusCode,
+    ) -> Arc<Hold> {
         let h = Arc::new(Hold {
             entered: Notify::new(),
             release: Notify::new(),
+            expected_status,
         });
         *self.proxy.hold.lock().expect("fixture hold mutex") = Some(HeldResponse {
             path,

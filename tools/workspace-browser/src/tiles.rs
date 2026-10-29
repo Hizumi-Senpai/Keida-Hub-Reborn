@@ -146,7 +146,7 @@ pub async fn arrangement() -> Check<()> {
     a.click(".save-tiles").await?;
     committed(&a).await?;
     stale.release.notify_one();
-    let rejected = f.hold_write("/api/workspace/tiles");
+    let rejected = f.hold_conflict("/api/workspace/tiles");
     b.click(".save-tiles").await?;
     tokio::time::timeout(Duration::from_secs(3), rejected.entered.notified())
         .await
