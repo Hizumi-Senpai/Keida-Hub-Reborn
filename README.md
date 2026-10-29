@@ -23,11 +23,15 @@ daily-use catalog, sampled Crafty history and Roadmap note are installed.
 records the self-hosted Commander policy. [Discord identity linking/status/local
 unlink](docs/M4_IDENTITY.md) is installed as0.1.16/schema12
 ([issue25](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/25)); dedicated
-real Discord setup/privacy/owner acceptance remains pending. The current
-independent slice is [server-change discovery and draft-safe refresh](docs/M5_BROWSER_REFRESH.md),
-[issue29](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/29). Personal
-session review/targeted sign-out is installed as0.1.17/schema13 (issue27). Source, packaged
-verification, installation and real owner/provider acceptance remain separate.
+real Discord setup/privacy/owner acceptance remains pending. Personal session
+review/targeted sign-out was introduced in0.1.17/schema13 (issue27).
+[Server-change discovery and draft-safe refresh](docs/M5_BROWSER_REFRESH.md),
+[issue29](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/29), is now installed
+and runtime/recovery/retention-qualified in **0.1.18/schema13** under the
+[exact18 receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6482571904).
+Source, fixture verification, installation and real owner/provider acceptance
+remain separate. The requested [successor handoff](docs/HANDOFF.md) records the
+next task and ownership transfer.
 
 ## Start here
 
@@ -69,12 +73,16 @@ Mobile retains a full useful 2D dashboard without downloading the 3D experience.
 
 ## What happens next
 
-Continue **M5 browser server-change discovery and deliberate draft-safe refresh**
-under frozen issue29. Compare the loaded page with the responding server, review
-unfinished forms and pending changes, and check current access before a deliberate
-GET refresh. Upgrades and rollbacks are both changes. No automatic reload or
-server updater is activated. Require exact head/main CI, image/browser checks and
-matched schema13 current-data recovery before ordinary manual installation.
+The **M5 host-updater contract and concrete bootstrap review** are frozen for
+implementation in [issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/31):
+[execution contract](docs/M5_HOST_UPDATER.md) and
+[actual host/source/binary/bootstrap review](docs/M5_UPDATER_BOOTSTRAP_REVIEW.md).
+Next implement and qualify the bounded Rust one-shot protocol in isolation.
+Actual updater source/binary, crash/reboot/recovery/uninstall evidence and a
+complete activation packet remain open. Installation/activation requires separate
+owner approval of that exact packet. No updater daemon, scheduler or second
+writer is activated here; main and live remain0.1.18 on this unmerged branch.
+M5.1 browser refresh is already installed; do not repeat18's installation/cleanup.
 
 Dedicated Discord application enrollment/callback-query privacy and real owner
 linking acceptance remain open, alongside earlier daily-use/Crafty/Media/Queues

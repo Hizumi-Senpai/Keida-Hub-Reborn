@@ -1,11 +1,12 @@
 # Keida Hub Reborn deployment contract
 
-Status: deployment contract. Reborn0.1.17/schema13 is the installed baseline under
-[the exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6466893195).
-Candidate browser-refresh source18 keeps schema13 and needs its own exact head/
-main, image/browser and current-data compatible upgrade/rollback qualification.
-The bootstrap examples below preserve planning context; fresh receipts and actual
-resource discovery override them. This slice activates no host updater.
+Status: deployment contract. **Reborn0.1.18/schema13** is installed and
+runtime/recovery/retention-qualified under [the exact18 receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6482571904).
+M5.1 browser-refresh head/main/image/browser checks, current13 compatibility and
+the final stopped-writer restore under17/18 passed. Useful17/matched13 recovery
+is retained; obsolete16 and owned temporary containers/network are already retired.
+The bootstrap examples below preserve historical planning context; fresh receipts
+and actual resource discovery override them. No host updater is activated.
 
 At this planning checkpoint, `https://rewrite.keida.me` serves **Keida Hub
 Rewrite v0.1.4**, not Reborn. Its eventual reuse for Reborn is reserved; creating
@@ -191,14 +192,23 @@ health/HTTP evidence, public/browser result and terminal success/failure/recover
 state. Record limitations and pending owner acceptance explicitly. Preserve prior
 checkpoint history rather than replacing it with an unqualified success claim.
 
-Current installed baseline: **Reborn0.1.17/schema13**, as recorded in the
-[exact receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6466893195).
-The current frozen source slice is [M5.1 browser refresh](M5_BROWSER_REFRESH.md),
-issue29. Expected18 keeps schema13 and requires current-data compatible17/18
-checks, all prior domain relations, four sequence states/is_called, the complete
-ledger1–13, matched key/configuration and newer-write preservation. Keep every
-22 baseline asset and add the new pair. Retain useful17/matched13 only after18
-qualification; retire only the exactly identified obsolete16 container then.
-Never restore an older dump over newer writes. Source/fixture, published artifact,
-installation, loaded owner browser, real provider and updater acceptance remain
-separate. Refresh issue1 and actual host ownership before any host operation.
+Current installed baseline: **Reborn0.1.18/schema13**, under the
+[exact18 receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6482571904).
+[M5.1 browser refresh](M5_BROWSER_REFRESH.md), issue29, is qualified through
+installation/retention. Current13 compatible17/18 checks and the final stopped-
+writer restore compared all18 prior domain relations, full sessions, four sequence
+states/is_called, ledger1–13 and matching key/configuration. Newer isolated writes
+survived rollback. All24 assets include every22 baseline asset. Useful stopped17
+and matched final13 recovery are retained; obsolete16 and earlier14 are already
+retired. Do not repeat that cleanup or restore an old dump over newer writes.
+Source/fixture, artifact, installation, loaded owner browser, real providers and
+updater acceptance remain separate. Next prepare the separately reviewed updater
+contract/bootstrap; activation requires its own approval. Refresh issue1, the
+[successor handoff](HANDOFF.md) and actual ownership before operations.
+
+The successor's M5.2 preparation is frozen in
+[issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/31), the
+[one-shot execution contract](M5_HOST_UPDATER.md) and
+[concrete host bootstrap review](M5_UPDATER_BOOTSTRAP_REVIEW.md). Those documents
+review actual manual tools/resources and identify the missing updater executable
+and failure qualification. They install nothing and grant no activation authority.

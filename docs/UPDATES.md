@@ -1,11 +1,17 @@
 # Reborn versions and safe updating
 
-Status: deterministic source identity, immutable manual release publication and
-matched packaged recovery are implemented. Reborn0.1.17/schema13 is the installed baseline;
-[issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6466893195)
-contains exact evidence. Browser server-change discovery/draft-safe refresh is the frozen issue29
-source slice, awaiting exact qualification. An automatic host updater remains
-separate work. No daemon is activated by the manual release CLI.
+Status: deterministic source identity, immutable manual publication, matched
+recovery and M5.1 browser server-change discovery/draft-safe refresh are installed
+and runtime-qualified in **Reborn0.1.18/schema13**. [Exact18 evidence](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6482571904)
+separates head/main CI, artifact, installation, recovery/retention and still-open
+owner/provider acceptance. The host-updater contract and concrete bootstrap review
+are now frozen for implementation in
+[issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/31),
+[M5_HOST_UPDATER.md](M5_HOST_UPDATER.md) and
+[M5_UPDATER_BOOTSTRAP_REVIEW.md](M5_UPDATER_BOOTSTRAP_REVIEW.md), under
+[the successor handoff](HANDOFF.md). No updater executable is qualified yet;
+actual implementation and isolated failure evidence are next. No daemon is
+activated by the manual release CLI; activation needs separate authorization.
 
 ## Numbered identity for every accepted main merge
 
@@ -204,5 +210,7 @@ No service, daemon, scheduler, privileged mount or bootstrap is activated here.
 
 Record implemented source, CI, published artifacts, installation receipts and
 owner/browser acceptance separately in the new repository's checkpoints/tracker.
-Preserve the existing Rewrite and original-Hub checkpoint histories. Until these
-gates pass, there is no qualified automatic updating or Reborn live deployment.
+Preserve the existing Rewrite and original-Hub checkpoint histories. The current
+manual18 installation is qualified under the receipt above; automatic host
+updating still needs its own concrete review, authorization and actual evidence.
+Neither installed source nor fixture CI closes real owner/provider acceptance.
