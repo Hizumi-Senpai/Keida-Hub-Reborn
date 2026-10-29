@@ -60,11 +60,16 @@ The public descriptor API supplies a deterministic substitution seam:
 `revalidate` must refuse. This exercises real descriptors and filesystem state,
 not a production test hook or a copied implementation policy.
 
+No-effects snapshots include file bytes, entry names/types, ownership, modes,
+inode/link identities and modification/change times; read access times are not
+treated as writes. CLI subprocesses use an owned-child pidfd with a native
+bounded wait, including the real FIFO refusal case.
+
 ## Execution evidence
 
 The new Rust tests are in
 [admission_contracts.rs](../tools/host-updater/tests/admission_contracts.rs).
-At the expectation freeze they are source fixtures awaiting pinned execution.
+The16 new test families are source fixtures awaiting pinned execution.
 Record exact source/binary, Rust1.99.1/Linux checks and actual outcomes in issue36;
 do not infer passing tests, complete CI or host-update acceptance from this file.
 No existing foundation expectation is replaced or relaxed.

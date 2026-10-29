@@ -10,7 +10,7 @@ use std::{
     collections::{BTreeMap, VecDeque},
     fs::{self, DirBuilder, File, OpenOptions},
     io::Write,
-    os::{fd::{AsRawFd, FromRawFd}, unix::fs::{DirBuilderExt, OpenOptionsExt, PermissionsExt, symlink}},
+    os::{fd::{AsRawFd, FromRawFd}, unix::fs::{DirBuilderExt, MetadataExt, OpenOptionsExt, PermissionsExt, symlink}},
     path::{Path, PathBuf},
     process::{Command, Output, Stdio},
     sync::atomic::{AtomicU64, Ordering},
@@ -54,6 +54,9 @@ fn object(fields: &[(&str, String)]) -> Vec<u8> {
 fn h(files: &Files, name: &str) -> String { q(&digest(files.get(name).expect("fixture leaf"))) }
 fn paths() -> Vec<String> {
     (1..=24).map(|number| format!("/assets/workspace/{number:064x}.{}", if number % 2 == 0 { "css" } else { "js" })).collect()
+}
+fn step_record(number: u64) -> String {
+    String::from_utf8(object(&[("number", n(number)), ("name", q(&format!("fixture required step {number}"))), ("conclusion", q("success"))])).expect("step JSON")
 }
 fn fixture_files() -> Files {
     let mut files = Files::new();
@@ -115,9 +118,7 @@ fn fixture_files() -> Files {
         ("qualified_main_sha", q(COMMIT)), ("workflow", q(WORKFLOW)), ("policy_sha256", h(&files, "policy.json")),
         ("governance_receipt_sha256", q(RECEIPT)), ("execution_sha256", q(REVIEW_EXECUTION)),
     ]));
-    let steps = (1..=20).chain([38, 39, 40, 41]).map(|number| {
-        String::from_utf8(object(&[("number", n(number)), ("name", q(&format!("fixture required step {number}"))), ("conclusion", q("success"))])).expect("step JSON")
-    }).collect::<Vec<_>>().join(",");
+    let steps = (1..=20).chain([38, 39, 40, 41]).map(step_record).collect::<Vec<_>>().join(",");
     files.insert("artifact-qualification.json", object(&[
         ("format", n(1)), ("product", q("keida-hub-reborn")), ("repository", q(REPOSITORY)),
         ("ci_run", n(1001)), ("ci_attempt", n(1)), ("head_sha", q(COMMIT)), ("head_branch", q("main")),
@@ -203,11 +204,14 @@ fn fixture_files() -> Files {
 }
 
 fn set_field(files: &mut Files, file: &'static str, key: &str, replacement: Value) {
+    set_raw_field(files, file, key, &serde_json::to_string(&replacement).expect("replacement field"));
+}
+fn set_raw_field(files: &mut Files, file: &'static str, key: &str, replacement: &str) {
     let bytes = files.get(file).expect("record");
-    let parsed: Value = serde_json::from_slice(bytes).expect("fixture JSON");
+    let parsed: BTreeMap<String, Box<serde_json::value::RawValue>> = serde_json::from_slice(bytes).expect("fixture JSON");
     let old = parsed.get(key).expect("known fixture field");
-    let old = format!("{}:{}", q(key), serde_json::to_string(old).expect("scalar field"));
-    let new = format!("{}:{}", q(key), serde_json::to_string(&replacement).expect("replacement field"));
+    let old = format!("{}:{}", q(key), old.get());
+    let new = format!("{}:{replacement}", q(key));
     let text = std::str::from_utf8(bytes).expect("record UTF8");
     assert!(text.contains(&old), "field replacement must preserve the published literal encoding: {file}/{key}");
     files.insert(file, text.replacen(&old, &new, 1).into_bytes());
@@ -320,14 +324,26 @@ fn bounded_output(mut command: Command) -> Output {
     child.wait_with_output().expect("reap exact diagnostic child")
 }
 
-fn snapshot(path: &Path) -> BTreeMap<PathBuf, Vec<u8>> {
+#[derive(Debug, Eq, PartialEq)]
+struct Evidence {
+    kind: &'static str, mode: u32, uid: u32, gid: u32, device: u64, inode: u64,
+    links: u64, mtime: (i64, i64), ctime: (i64, i64), bytes: Vec<u8>,
+}
+fn snapshot(path: &Path) -> BTreeMap<PathBuf, Evidence> {
     let mut result = BTreeMap::new();
-    fn visit(base: &Path, path: &Path, output: &mut BTreeMap<PathBuf, Vec<u8>>) {
+    fn visit(base: &Path, path: &Path, output: &mut BTreeMap<PathBuf, Evidence>) {
         for item in fs::read_dir(path).expect("owned snapshot directory") {
             let path = item.expect("snapshot entry").path();
             let metadata = fs::symlink_metadata(&path).expect("snapshot metadata");
+            let (kind, bytes) = if metadata.is_dir() { ("directory", Vec::new()) }
+                else if metadata.is_file() { ("file", fs::read(&path).expect("snapshot bytes")) }
+                else if metadata.file_type().is_symlink() { ("symlink", fs::read_link(&path).expect("snapshot symlink").as_os_str().as_encoded_bytes().to_vec()) }
+                else { ("special", Vec::new()) };
+            output.insert(path.strip_prefix(base).expect("owned relative path").to_path_buf(), Evidence {
+                kind, mode:metadata.mode(), uid:metadata.uid(), gid:metadata.gid(), device:metadata.dev(), inode:metadata.ino(),
+                links:metadata.nlink(), mtime:(metadata.mtime(),metadata.mtime_nsec()), ctime:(metadata.ctime(),metadata.ctime_nsec()), bytes,
+            });
             if metadata.is_dir() { visit(base, &path, output); }
-            else if metadata.is_file() { output.insert(path.strip_prefix(base).expect("owned relative path").to_path_buf(), fs::read(&path).expect("snapshot bytes")); }
         }
     }
     visit(path, path, &mut result); result
@@ -471,16 +487,34 @@ fn sealed_ci_artifact_source_governance_and_actual_compatibility_records_must_ag
     for (old, new) in [
         ("\"number\":1", "\"number\":2"), ("\"name\":\"fixture required step 1\"", "\"name\":\"\""),
         ("\"name\":\"fixture required step 1\"", "\"name\":\"invalid\\ncontrol\""), ("\"conclusion\":\"success\"", "\"conclusion\":\"skipped\""),
+        ("{\"number\":1,\"name\":\"fixture required step 1\",\"conclusion\":\"success\"}", "{\"number\":1,\"name\":\"fixture required step 1\",\"conclusion\":\"skipped\"}"),
     ] { let mut files = fixture_files(); replace_text(&mut files, "artifact-qualification.json", old, new); reseal_parents(&mut files, "artifact-qualification.json"); expect_refused(files); }
 }
 
 #[test]
 fn sealed_age_is_context_bound_including_exact_sixty_second_and_future_boundaries() {
     let base = fixture_files(); assert!(Fixture::new(base).check());
-    for (observed, assessed, accepts) in [(1, 1, true), (10_000_000_000, 70_000_000_000, true), (10_000_000_000, 70_000_000_001, false), (70_000_000_001, 70_000_000_000, false), (0, 1, false)] {
+    for (observed, assessed, accepts) in [(1_u64, 1_u64, true), (10_000_000_000, 70_000_000_000, true), (10_000_000_000, 70_000_000_001, false), (70_000_000_001, 70_000_000_000, false), (0, 1, false)] {
         let mut files = fixture_files(); set_field(&mut files, "observation.json", "observed_boottime_ns", json!(observed)); reseal_parents(&mut files, "observation.json");
         set_field(&mut files, "assessment.json", "assessed_boottime_ns", json!(assessed)); reseal_parents(&mut files, "assessment.json");
         if accepts { assert!(Fixture::new(files).check(), "valid sealed age refused"); } else { expect_refused(files); }
+    }
+}
+
+#[test]
+fn the_sealed_ci_record_requires_all_twenty_four_steps_in_the_exact_declared_order() {
+    for mutation in 0..4 {
+        let mut numbers: Vec<u64> = (1..=20).chain([38,39,40,41]).collect();
+        match mutation {
+            0 => { numbers.pop(); },
+            1 => numbers.push(42),
+            2 => numbers.swap(0,1),
+            3 => numbers[23] = 40,
+            _ => unreachable!(),
+        }
+        let steps = format!("[{}]", numbers.into_iter().map(step_record).collect::<Vec<_>>().join(","));
+        let mut files = fixture_files(); set_raw_field(&mut files, "artifact-qualification.json", "required_steps", &steps);
+        reseal_parents(&mut files, "artifact-qualification.json"); expect_refused(files);
     }
 }
 
