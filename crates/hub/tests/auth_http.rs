@@ -4,8 +4,10 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use sqlx::{Connection, PgConnection, Row};
 use std::{
+    collections::BTreeSet,
     fs::{self, DirBuilder, File},
-    net::TcpListener,
+    io::{self, Read},
+    net::{Ipv4Addr, TcpListener},
     os::unix::fs::{DirBuilderExt, PermissionsExt},
     path::{Path, PathBuf},
     process::{Child, Command, Output, Stdio},
@@ -284,18 +286,244 @@ struct Server {
     stderr: PathBuf,
 }
 
+// Native Linux fixture admission: the application chooses its port while binding.
+// A free-port reservation followed by health200 does not prove which child owns
+// that endpoint. Intersect the direct child's FD socket inodes with the kernel's
+// IPv4 LISTEN table instead; none of this is a production protocol or endpoint.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct OwnedListener {
+    inode: u64,
+    port: u16,
+}
+
+fn socket_inode(target: &str) -> Result<Option<u64>, &'static str> {
+    if !target.starts_with("socket:") {
+        return Ok(None);
+    }
+    let value = target
+        .strip_prefix("socket:[")
+        .and_then(|value| value.strip_suffix(']'))
+        .ok_or("malformed fixture socket link")?;
+    let inode = value
+        .parse::<u64>()
+        .map_err(|_| "malformed fixture socket inode")?;
+    if inode == 0 || inode.to_string() != value {
+        return Err("noncanonical fixture socket inode");
+    }
+    Ok(Some(inode))
+}
+
+fn proc_endpoint(value: &str) -> Result<(Ipv4Addr, u16), &'static str> {
+    let (address, port) = value
+        .split_once(':')
+        .ok_or("malformed fixture socket address")?;
+    let hex = |value: &str, length| {
+        value.len() == length
+            && value
+                .bytes()
+                .all(|byte| byte.is_ascii_digit() || (b'A'..=b'F').contains(&byte))
+    };
+    if !hex(address, 8) || !hex(port, 4) {
+        return Err("malformed fixture socket address");
+    }
+    let address =
+        u32::from_str_radix(address, 16).map_err(|_| "malformed fixture socket address")?;
+    let port = u16::from_str_radix(port, 16).map_err(|_| "malformed fixture socket port")?;
+    Ok((Ipv4Addr::from(address.to_ne_bytes()), port))
+}
+
+fn owned_listener(
+    sockets: &BTreeSet<u64>,
+    table: &str,
+) -> Result<Option<OwnedListener>, &'static str> {
+    let mut lines = table.lines();
+    let header: Vec<_> = lines
+        .next()
+        .ok_or("missing fixture socket table header")?
+        .split_whitespace()
+        .collect();
+    if header.len() < 12
+        || header[..4] != ["sl", "local_address", "rem_address", "st"]
+        || header[11] != "inode"
+    {
+        return Err("malformed fixture socket table header");
+    }
+    let mut found = None;
+    for line in lines {
+        let fields: Vec<_> = line.split_whitespace().collect();
+        if fields.len() < 10 {
+            return Err("truncated fixture socket table row");
+        }
+        let local = proc_endpoint(fields[1])?;
+        let remote = proc_endpoint(fields[2])?;
+        if fields[3].len() != 2
+            || !fields[3]
+                .bytes()
+                .all(|byte| byte.is_ascii_digit() || (b'A'..=b'F').contains(&byte))
+        {
+            return Err("malformed fixture socket state");
+        }
+        let inode = fields[9]
+            .parse::<u64>()
+            .map_err(|_| "malformed fixture table inode")?;
+        if inode.to_string() != fields[9] {
+            return Err("noncanonical fixture table inode");
+        }
+        if fields[3] != "0A" || !sockets.contains(&inode) {
+            continue;
+        }
+        if local.0 != Ipv4Addr::LOCALHOST || local.1 == 0 || remote != (Ipv4Addr::UNSPECIFIED, 0) {
+            return Err("owned fixture listener is not the required loopback endpoint");
+        }
+        if found.is_some() {
+            return Err("multiple owned fixture listeners");
+        }
+        found = Some(OwnedListener {
+            inode,
+            port: local.1,
+        });
+    }
+    Ok(found)
+}
+
+fn child_listener(pid: u32) -> io::Result<Option<OwnedListener>> {
+    let mut sockets = BTreeSet::new();
+    for (count, entry) in fs::read_dir(format!("/proc/{pid}/fd"))?.enumerate() {
+        if count >= 4096 {
+            return Err(io::Error::other("fixture descriptor bound exceeded"));
+        }
+        let target = fs::read_link(entry?.path())?;
+        if let Some(target) = target.to_str()
+            && let Some(inode) = socket_inode(target).map_err(io::Error::other)?
+        {
+            sockets.insert(inode);
+        }
+    }
+    const TABLE_BOUND: u64 = 4 * 1024 * 1024;
+    let mut table = String::new();
+    File::open("/proc/net/tcp")?
+        .take(TABLE_BOUND + 1)
+        .read_to_string(&mut table)?;
+    if table.len() as u64 > TABLE_BOUND {
+        return Err(io::Error::other("fixture socket table bound exceeded"));
+    }
+    owned_listener(&sockets, &table).map_err(io::Error::other)
+}
+
+#[test]
+fn fixture_listener_socket_links_require_canonical_kernel_inodes() {
+    assert_eq!(socket_inode("socket:[42]"), Ok(Some(42)));
+    for other in [
+        "/private/fixture-file",
+        "pipe:[42]",
+        "anon_inode:[eventpoll]",
+    ] {
+        assert_eq!(socket_inode(other), Ok(None));
+    }
+    for malformed in [
+        "socket:42",
+        "socket:[42",
+        "socket:[42]extra",
+        "socket:[0]",
+        "socket:[01]",
+        "socket:[+42]",
+        "socket:[x]",
+        "socket:[18446744073709551616]",
+    ] {
+        assert!(socket_inode(malformed).is_err());
+    }
+}
+
+fn fixture_socket_table(rows: &[&str]) -> String {
+    format!(
+        "sl local_address rem_address st tx_queue rx_queue tr tm->when retrnsmt uid timeout inode\n{}",
+        rows.join("\n")
+    )
+}
+
+#[test]
+fn fixture_listener_requires_the_child_inode_and_excludes_foreign_endpoints() {
+    let table = fixture_socket_table(&[
+        "0: 0100007F:ABCD 00000000:0000 0A 0:0 0:0 0 1000 0 42",
+        "1: 0100007F:ABCE 00000000:0000 0A 0:0 0:0 0 1000 0 99",
+        "2: 0100007F:ABCF 0100007F:5432 01 0:0 0:0 0 1000 0 43",
+    ]);
+    assert_eq!(
+        owned_listener(&BTreeSet::from([42, 43]), &table),
+        Ok(Some(OwnedListener {
+            inode: 42,
+            port: 43981,
+        }))
+    );
+    assert_eq!(owned_listener(&BTreeSet::new(), &table), Ok(None));
+    assert_eq!(owned_listener(&BTreeSet::from([7]), &table), Ok(None));
+    assert_eq!(owned_listener(&BTreeSet::from([43]), &table), Ok(None));
+    assert_eq!(
+        owned_listener(&BTreeSet::from([42]), &fixture_socket_table(&[])),
+        Ok(None)
+    );
+}
+
+#[test]
+fn fixture_listener_rejects_multiple_owned_or_non_loopback_listeners() {
+    let first = "0: 0100007F:ABCD 00000000:0000 0A 0:0 0:0 0 1000 0 42";
+    for second in [
+        "1: 0100007F:ABCE 00000000:0000 0A 0:0 0:0 0 1000 0 43",
+        "1: 0100007F:ABCD 00000000:0000 0A 0:0 0:0 0 1000 0 43",
+        first,
+    ] {
+        assert!(
+            owned_listener(
+                &BTreeSet::from([42, 43]),
+                &fixture_socket_table(&[first, second])
+            )
+            .is_err()
+        );
+    }
+    for inadmissible in [
+        "0: 00000000:ABCD 00000000:0000 0A 0:0 0:0 0 1000 0 42",
+        "0: 0200007F:ABCD 00000000:0000 0A 0:0 0:0 0 1000 0 42",
+        "0: 0100007F:0000 00000000:0000 0A 0:0 0:0 0 1000 0 42",
+        "0: 0100007F:ABCD 0100007F:0000 0A 0:0 0:0 0 1000 0 42",
+        "0: 0100007F:ABCD 00000000:0001 0A 0:0 0:0 0 1000 0 42",
+    ] {
+        assert!(
+            owned_listener(
+                &BTreeSet::from([42]),
+                &fixture_socket_table(&[inadmissible])
+            )
+            .is_err()
+        );
+    }
+}
+
+#[test]
+fn fixture_listener_rejects_missing_or_malformed_proc_table_data() {
+    for malformed in ["", "sl local_address rem_address st\n", "wrong header\n"] {
+        assert!(owned_listener(&BTreeSet::from([42]), malformed).is_err());
+    }
+    for row in [
+        "0: 0100007F:ABCD 00000000:0000 0A",
+        "0: 0100007G:ABCD 00000000:0000 0A 0:0 0:0 0 1000 0 42",
+        "0: 0100007F:ABCDE 00000000:0000 0A 0:0 0:0 0 1000 0 42",
+        "0: 0100007F:ABCD 0000000G:0000 0A 0:0 0:0 0 1000 0 42",
+        "0: 0100007F:ABCD 00000000:0000 A 0:0 0:0 0 1000 0 42",
+        "0: 0100007F:ABCD 00000000:0000 0G 0:0 0:0 0 1000 0 42",
+        "0: 0100007F:ABCD 00000000:0000 0A 0:0 0:0 0 1000 0 missing",
+        "0: 0100007F:ABCD 00000000:0000 0A 0:0 0:0 0 1000 0 042",
+        "0: 0100007F:ABCD 00000000:0000 0A 0:0 0:0 0 1000 0 18446744073709551616",
+    ] {
+        assert!(owned_listener(&BTreeSet::from([42]), &fixture_socket_table(&[row])).is_err());
+    }
+}
+
 impl Server {
     async fn start(fixture: &Fixture, key_file: Option<&Path>) -> Self {
-        let port = TcpListener::bind(("127.0.0.1", 0))
-            .expect("reserve auth fixture HTTP port")
-            .local_addr()
-            .expect("auth fixture socket address")
-            .port();
         let stdout = fixture.directory.join(format!("stdout-{}", unique()));
         let stderr = fixture.directory.join(format!("stderr-{}", unique()));
         let mut invocation = fixture.command(&["serve"], key_file);
         invocation
-            .env("REBORN_BIND", format!("127.0.0.1:{port}"))
+            .env("REBORN_BIND", "127.0.0.1:0")
             .stdout(Stdio::from(
                 File::create_new(&stdout).expect("private stdout capture"),
             ))
@@ -304,8 +532,9 @@ impl Server {
             ));
         let mut server = Self {
             child: invocation.spawn().expect("start auth HTTP fixture"),
-            origin: format!("http://127.0.0.1:{port}"),
+            origin: String::new(),
             client: Client::builder()
+                .no_proxy()
                 .timeout(Duration::from_secs(4))
                 .redirect(reqwest::redirect::Policy::none())
                 .build()
@@ -315,10 +544,6 @@ impl Server {
         };
         let deadline = Instant::now() + Duration::from_secs(5);
         loop {
-            if let Ok(response) = server.client.get(server.url("/api/health")).send().await {
-                assert_eq!(response.status(), StatusCode::OK);
-                return server;
-            }
             assert!(
                 server
                     .child
@@ -327,6 +552,36 @@ impl Server {
                     .is_none(),
                 "auth fixture exited before listening"
             );
+            match child_listener(server.child.id()) {
+                Ok(Some(listener)) => {
+                    server.origin = format!("http://127.0.0.1:{}", listener.port);
+                    let response = server.client.get(server.url("/api/health")).send().await;
+                    assert!(
+                        server
+                            .child
+                            .try_wait()
+                            .expect("inspect auth fixture server after readiness")
+                            .is_none(),
+                        "auth fixture exited during readiness"
+                    );
+                    match child_listener(server.child.id()) {
+                        Ok(Some(current)) if current == listener => {
+                            if let Ok(response) = response {
+                                assert_eq!(response.status(), StatusCode::OK);
+                                return server;
+                            }
+                        }
+                        Ok(_) => panic!("auth fixture listener ownership changed during readiness"),
+                        Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+                        Err(_) => {
+                            panic!("auth fixture listener ownership unavailable after readiness")
+                        }
+                    }
+                }
+                Ok(None) => {}
+                Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+                Err(_) => panic!("auth fixture listener ownership unavailable before readiness"),
+            }
             assert!(
                 Instant::now() < deadline,
                 "auth fixture listener deadline exceeded"

@@ -13,6 +13,13 @@ are now frozen for implementation in
 actual implementation and isolated failure evidence are next. No daemon is
 activated by the manual release CLI; activation needs separate authorization.
 
+Follow-up [M5.3 foundation](M5_UPDATER_FOUNDATION.md), issue33, implements strict
+request/installed-binding parsing and private durable journals with a read-only
+diagnostic CLI. Pinned package checks and25 independent actual Linux fixtures
+pass; full eventual-head CI remains a separate gate. It does not dispatch host
+effects or complete the bootstrap packet. Source0.1.19 accepts the preceding
+documentation only; installed/published0.1.18 remains unchanged.
+
 ## Numbered identity for every accepted main merge
 
 Use the development series **0.1.N**, where `N` is the number of first-parent main

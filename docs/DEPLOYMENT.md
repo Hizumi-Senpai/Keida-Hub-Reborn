@@ -212,3 +212,8 @@ The successor's M5.2 preparation is frozen in
 [concrete host bootstrap review](M5_UPDATER_BOOTSTRAP_REVIEW.md). Those documents
 review actual manual tools/resources and identify the missing updater executable
 and failure qualification. They install nothing and grant no activation authority.
+
+The [M5.3 request/journal foundation](M5_UPDATER_FOUNDATION.md), issue33, is a
+subsequent diagnostic/storage slice. Its passing package fixtures exercise no
+host replacement; actual executor/adoption/backup/recovery/bootstrap and full
+eventual-source CI remain separate gates.

@@ -1381,6 +1381,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "reborn-host-updater"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "getrandom 0.4.3",
+ "libc",
+ "serde",
+ "serde_json",
+ "sha2 0.11.1",
+]
+
+[[package]]
 name = "reborn-release"
 version = "0.1.0"
 dependencies = [

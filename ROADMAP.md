@@ -34,6 +34,10 @@ contract is frozen in [issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Rebor
 and independently qualify its Rust one-shot protocol in isolation; no updater
 binary or activation-ready packet exists yet. Installation/activation needs
 separate authorization. See [successor handoff](docs/HANDOFF.md).
+The first [M5.3 request/journal foundation](docs/M5_UPDATER_FOUNDATION.md), issue33,
+is in review with pinned package checks and25 actual independent Linux fixtures
+passing. It has no host dispatcher. Retained main-CI fixture qualification is
+tracked under issue34; implementation and full updater activation remain separate.
 Existing accepted functionality in
 another application is a behavior reference, not a completed Reborn milestone.
 

@@ -78,10 +78,14 @@ implementation in [issue31](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/is
 [execution contract](docs/M5_HOST_UPDATER.md) and
 [actual host/source/binary/bootstrap review](docs/M5_UPDATER_BOOTSTRAP_REVIEW.md).
 Next implement and qualify the bounded Rust one-shot protocol in isolation.
-Actual updater source/binary, crash/reboot/recovery/uninstall evidence and a
-complete activation packet remain open. Installation/activation requires separate
+The first [request/journal foundation](docs/M5_UPDATER_FOUNDATION.md), issue33,
+now has a diagnostic-only Rust CLI, strict canonical parsers and durable private
+journals with25 passing independent package fixtures. Full eventual-head CI and
+the actual host executor remain open. Crash/reboot/recovery/uninstall evidence and
+a complete activation packet remain open. Installation/activation requires separate
 owner approval of that exact packet. No updater daemon, scheduler or second
-writer is activated here; main and live remain0.1.18 on this unmerged branch.
+writer is activated here. Accepted documentation main is0.1.19; live/channel
+remain0.1.18/schema13, and this implementation is unmerged.
 M5.1 browser refresh is already installed; do not repeat18's installation/cleanup.
 
 Dedicated Discord application enrollment/callback-query privacy and real owner
