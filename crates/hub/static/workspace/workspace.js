@@ -6499,7 +6499,9 @@ function Dl(e, t) {
 		} : void 0;
 	}), Ri(() => {
 		let e = x;
-		x = void 0, e && H(g) === "home" && r().phase === "ready" && e.scope === ne() && e.element.isConnected && (H(v)?.contains(e.element) || H(y)?.contains(e.element)) && document.activeElement === document.body && document.visibilityState === "visible" && document.hasFocus() && e.element.getClientRects().length > 0 && (e.element instanceof HTMLButtonElement && e.element.disabled ? e.element.closest("[data-tile-row]") : e.element)?.focus({ preventScroll: !0 });
+		if (x = void 0, !e) return;
+		let t = e.element instanceof HTMLButtonElement && e.element.disabled;
+		H(g) === "home" && r().phase === "ready" && e.scope === ne() && e.element.isConnected && (H(v)?.contains(e.element) || H(y)?.contains(e.element)) && (document.activeElement === document.body || t && document.activeElement === e.element) && document.visibilityState === "visible" && document.hasFocus() && e.element.getClientRects().length > 0 && (t ? e.element.closest("[data-tile-row]") : e.element)?.focus({ preventScroll: !0 });
 	}), Fi(d.start), wn(() => n(), () => {
 		I(s, n().draft?.tiles ?? n().value?.layout.tiles ?? []);
 	}), wn(() => (r(), H(g), H(s)), () => {
