@@ -1,11 +1,10 @@
 # Keida Hub Reborn
 
-Installed: **0.1.23/schema14**, with [configurable Home tiles](docs/HOME_TILES.md)
+Installed: **0.1.24/schema14**, with [configurable Home tiles](docs/HOME_TILES.md),
+[direct Home sign-in, automatic tile loading and confirmed managed sleep](docs/HOME_CONVENIENCE.md),
 and [finite browser assets](docs/BROWSER_ASSET_RETENTION.md).
-[Issue45](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/45) prepares
-[direct Home sign-in, automatic tile loading and confirmed managed sleep](docs/HOME_CONVENIENCE.md).
-The sidebar keeps detailed views and administration. Exact candidate qualification
-and installation remain separate from source preparation.
+The sidebar keeps detailed views and administration.
+[Exact live24 delivery and terminal receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6534997311).
 
 A fresh Rust-centered Keida Hub, authorized on **2026-10-25 America/Chicago**.
 The goal is a fast, reliable, feature-rich self-hosted dashboard and control platform
@@ -33,7 +32,7 @@ unlink](docs/M4_IDENTITY.md) is installed as0.1.16/schema12
 real Discord setup/privacy/owner acceptance remains pending. Personal session
 review/targeted sign-out was introduced in0.1.17/schema13 (issue27).
 [Server-change discovery and draft-safe refresh](docs/M5_BROWSER_REFRESH.md),
-[issue29](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/29), is now installed
+[issue29](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/29), was introduced
 and runtime/recovery/retention-qualified in **0.1.18/schema13** under the
 [exact18 receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6482571904).
 Source, fixture verification, installation and real owner/provider acceptance
@@ -89,16 +88,17 @@ as source0.1.21/PR37, with head78/main79 each24 steps/237 Rust tests.
 review packet while retaining manual authority and all effect/adoption/readiness
 flagsfalse.
 
-The next [M5.6 durable namespace/origin contract](docs/M5_UPDATER_NAMESPACE.md),
+The [M5.6 durable namespace/origin contract](docs/M5_UPDATER_NAMESPACE.md),
 [issue40](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/40), selects a proposed protected
 boot data anchor and persistent Btrfs directory/file capabilities without generic
-ancestor exceptions, shared permission changes, mounts or boot hooks. The smallest
-next code task is [issue41](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/41), a fixed
-read-only Rust namespace probe. Actual origin adoption, executor, crash/reboot,
+ancestor exceptions, shared permission changes, mounts or boot hooks. [Issue41](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/41) implements the fixed
+[read-only Rust namespace probe](docs/M5_NAMESPACE_PROBE.md). Its pinned package
+checks and actual-root/Btrfs observation have [fresh evidence](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/41#issuecomment-6535660145);
+normal eventual-head/main CI remains part of source acceptance. Actual origin adoption, executor, crash/reboot,
 current-data rollback and uninstall qualification remain open. Complete the exact
 source/binary/bootstrap packet before asking for separate installation approval.
-Live/channel stay0.1.18/schema13. Owner service enrollment waits until home;
-do not repeat18's installation or cleanup.
+Live remains0.1.24/schema14. All six services are enrolled; preserve them and
+do not replay credentials, rotate keys or repeat earlier installation/cleanup.
 
 Dedicated Discord application enrollment/callback-query privacy and real owner
 linking acceptance remain open, alongside earlier daily-use/Crafty/Media/Queues

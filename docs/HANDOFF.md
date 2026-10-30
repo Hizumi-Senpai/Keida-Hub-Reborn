@@ -1,5 +1,45 @@
 # CORE continuation checkpoints and historical handoffs
 
+## Installed24 and M5.7 source qualification — October30,2026 UTC
+
+The same sole CORE continues; this is not an ownership transfer or a pause.
+PR46 is merged as accepted24/source
+`e8facba9f4af81dee25f171b3603a1c47dec7ec7`, tree
+`45ff4a4d500955d0e6da23474a4141a205190cd6`. Exact head108/main109 passed all
+retained gates. **0.1.24/schema14 is installed and independently terminal-qualified**:
+[complete delivery receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6534997311).
+Direct Home sign-in, automatic tile loading and confirmed managed Sleeping /
+Join to wake are delivered. All six service enrollments are preserved.
+Real owner/mobile/refresh, Jellyfin paging/count-context, normal joins/wake and
+Discord acceptance remain open.
+
+M5 issue41 continues on `work/rust-namespace-probe-41`.
+The [read-only Rust probe](M5_NAMESPACE_PROBE.md) has passed pinned package fmt/
+all-target checks,49 tests, Clippy-D/release and NEW actual-root/Btrfs qualification:
+[reviewed source/binary/native proof](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/41#issuecomment-6535660145).
+Full eventual-head/main CI remains a required source gate. Read current issue41
+and its later receipts for the final head/result, rather than assuming this
+dated preparation is final acceptance. The private source's formatted bytes are
+authoritative; do not overwrite them with earlier scratch drafts.
+
+The next M5 slice is the private validated capability constructor and one actual
+journal caller, then the origin transaction and executor/failure/reboot/current-
+data rollback/uninstall evidence. No updater installation/activation is performed
+or implied. Keep the historical CURRENT18/schema13 packet and strict stored-path
+APIs unchanged. Both proposed updater paths remain absent.
+
+Preserve stopped compatible23/18, useful stopped17 and matched final13/current14
+recovery. Old17/18 cannot serve14. The old owned43 compile fixture requires
+reconciliation before any retirement. No old dump over newer writes, broad cleanup,
+game/shared-service restart, credential replay, re-enrollment or key rotation.
+Only self-hosted Commander, refreshed identities/ownership and NEW complete
+immutable/hash/inode-verified audited execution under the permanent app lock
+are authorized. Historical commands/grants are evidence, never execution authority.
+
+The following checkpoints retain their original dates and are superseded by this
+checkpoint and later issue receipts. They do not direct a repeat installation,
+enrollment or predecessor six-file handoff.
+
 ## Installed23 and owner convenience correction — October30,2026 UTC
 
 The same sole CORE continues. Source23/PR44 is accepted at

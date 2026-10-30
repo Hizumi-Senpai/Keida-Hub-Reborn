@@ -1,11 +1,27 @@
 # Reborn versions and safe updating
 
-The owner-directed [Home candidate](HOME_TILES.md) introduces the
+The installed [Home tiles](HOME_TILES.md) use the
 [finite browser asset support/retirement policy](BROWSER_ASSET_RETENTION.md).
 Its schema14 migration is forward-only for prior17/18 binaries; legacy browser
 API compatibility and retained browser bytes are separate from binary rollback.
 Historical CURRENT18 updater diagnostics remain fixed to their reviewed schema13
-packet; this candidate does not extend updater adoption or activate an executor.
+packet; current14 does not extend that adoption contract or activate an executor.
+
+## Current M5.7 diagnostic and live24 — October30,2026
+
+**0.1.24/schema14 is live** with direct Home sign-in, automatic tile reads and
+confirmed managed sleep. [Exact delivered artifact/install/recovery receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6534997311).
+
+This source implements the fixed [Rust namespace probe](M5_NAMESPACE_PROBE.md).
+Pinned package and actual-root/Btrfs evidence are [retained in issue41](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/41#issuecomment-6535660145);
+exact-head/main CI remains required. The probe observes fixed metadata, FAT
+volume/mount, Btrfs identity, opaque handle reopen and proposed-path presence.
+It grants no writer role, does not call the journal and never installs/adopts
+authority. Full capability/journal caller, origin, executor/reboot/rollback/
+uninstall and complete-packet installation/activation approval remain separate.
+
+Everything in the following October29 preparation section records that date.
+Its installed18 observations do not supersede the current24 delivery receipt.
 
 ## M5.6 namespace refinement — October29,2026
 

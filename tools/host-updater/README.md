@@ -9,6 +9,27 @@ and private journal storage. The subsequent [M5.4 contract](../../docs/M5_UPDATE
 issue36, adds a sealed current-artifact/adoption-plan check. Neither implements a
 host updater executor or changes installed authority.
 
+## Fixed Unraid namespace probe
+
+```text
+reborn-host-updater probe-namespace
+```
+
+[Issue41's bounded diagnostic](../../docs/M5_NAMESPACE_PROBE.md) is Linux x86_64/
+root-only and accepts no extra argument, user path, FD, handle, fixture mode or
+environment-selected root. It reports only actual fixed namespace metadata and
+opaque handles, current boot/boottime, FAT volume/mount and Btrfs identity.
+All effect/adoption/execution-ready flags stayfalse, as does writer_lock_acquired.
+It neither acquires nor claims a production writer lock; its NEW audited operator
+launch may independently retain the real permanent lock.
+
+Refusal exits2 with exactly `namespace probe refused; no effects authorized`,
+no path/payload echo and no partial JSON. The complete report is formed only
+after before/after checks; more than2 seconds elapsed refuses. Operator execution
+also uses a bounded child deadline. This is an observation, not an authority
+enrollment, reboot guarantee or updater installation. Existing request/bundle/
+journal interfaces below retain their strict path and schema13 contracts.
+
 ## Diagnostic CLI
 
 ```text

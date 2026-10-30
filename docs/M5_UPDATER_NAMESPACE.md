@@ -3,8 +3,11 @@
 Frozen preparation for [issue40](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/40),
 October 29, 2026, America/Chicago. This refines the path/bootstrap portion of
 [M5](M5_HOST_UPDATER.md); it does not implement or authorize installation.
-The next concrete Rust slice is [issue41](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/41).
-All future implementation and failure/reboot qualification below remain open.
+The concrete Rust slice is [issue41](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/41),
+the [fixed read-only namespace probe](M5_NAMESPACE_PROBE.md). Its October30 package
+and actual-root/Btrfs evidence are recorded there and in the tracker; final
+head/main CI remains required. The capability/origin/executor and failure/reboot
+qualification proposed below remain open. The October29 observations are history.
 
 ## Actual problem and selected profile
 
