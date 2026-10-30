@@ -62,9 +62,17 @@ pub async fn run() -> Check<()> {
     // Tile-only transitions must update an already-open review without another
     // form input, workspace read or refresh-control transition.
     b.click(".cancel-tiles").await?;
-    b.wait("return !document.querySelector('[data-refresh-drafts]');", json!([])).await?;
+    b.wait(
+        "return !document.querySelector('[data-refresh-drafts]');",
+        json!([]),
+    )
+    .await?;
     b.click(".customize-tiles").await?;
-    b.wait("return !!document.querySelector('[data-refresh-drafts]');", json!([])).await?;
+    b.wait(
+        "return !!document.querySelector('[data-refresh-drafts]');",
+        json!([]),
+    )
+    .await?;
     b.click(".refresh-stay").await?;
     // The normal cancel control owns the arrangement; refresh does not replace it.
     b.click(".cancel-tiles").await?;
