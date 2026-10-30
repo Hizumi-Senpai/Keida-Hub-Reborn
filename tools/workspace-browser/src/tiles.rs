@@ -492,8 +492,24 @@ async fn resources_and_native_recovery() -> Check<()> {
         mobile_nav[11].as_f64().unwrap_or(-1.0),
         mobile_nav[12].as_f64().unwrap_or(-1.0),
     );
+    // Native focus scrolling may still be moving when WebDriver's key action
+    // returns. Observe the same outcome within the existing nine-second wait;
+    // do not manufacture it with scrollIntoView or another focus operation.
+    let navigation_settled = b.wait("const nav=document.querySelector('.main-nav'),last=nav.lastElementChild,n=nav.getBoundingClientRect(),r=last.getBoundingClientRect();return document.activeElement===last&&r.left>=n.left&&r.right<=n.right&&document.documentElement.scrollWidth<=innerWidth+1;",json!([])).await;
+    let final_nav = b.evaluate("const nav=document.querySelector('.main-nav'),last=nav.lastElementChild,n=nav.getBoundingClientRect(),r=last.getBoundingClientRect();return [document.activeElement===last,r.left>=n.left,r.right<=n.right,document.documentElement.scrollWidth<=innerWidth+1,r.right,n.right,nav.scrollLeft];",json!([])).await?;
+    println!(
+        "RUST_BROWSER_MOBILE_NAV_SETTLED focus={} left={} right={} overflow={} button_right={} nav_right={} scroll={}",
+        final_nav[0] == true,
+        final_nav[1] == true,
+        final_nav[2] == true,
+        final_nav[3] == true,
+        final_nav[4].as_f64().unwrap_or(-1.0),
+        final_nav[5].as_f64().unwrap_or(-1.0),
+        final_nav[6].as_f64().unwrap_or(-1.0),
+    );
+    navigation_settled?;
     check(
-        (0..4).all(|i| mobile_nav[i] == true),
+        (0..4).all(|i| final_nav[i] == true),
         "native Tab reveals the final mobile navigation control without page overflow",
     )?;
     b.click(".version summary").await?;
