@@ -116,4 +116,3 @@ async fn retired_bootstrap_urls_are_gone_with_native_recovery_and_unknown_urls_s
         );
     }
 }
-

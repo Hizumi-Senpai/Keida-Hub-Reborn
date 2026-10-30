@@ -4,9 +4,9 @@ mod activity;
 mod connections;
 pub mod crypto;
 mod directory;
-mod games;
 mod discord;
 mod discord_flow;
+mod games;
 mod guide;
 mod layout;
 mod media;
@@ -85,9 +85,14 @@ impl Service {
         // no packets and never changes the existing encrypted Crafty enrollment.
         let route_path = key_path.with_file_name("game-routes.json");
         let game_routes = match std::fs::symlink_metadata(&route_path) {
-            Ok(_) => crate::providers::game_status::Routes::parse(&crypto::read_private_text(&route_path, 16384)?)
-                .map_err(|_| CryptoError::Invalid)?,
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => crate::providers::game_status::Routes::default(),
+            Ok(_) => crate::providers::game_status::Routes::parse(&crypto::read_private_text(
+                &route_path,
+                16384,
+            )?)
+            .map_err(|_| CryptoError::Invalid)?,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                crate::providers::game_status::Routes::default()
+            }
             Err(_) => return Err(CryptoError::Unavailable),
         };
         Ok(Self {

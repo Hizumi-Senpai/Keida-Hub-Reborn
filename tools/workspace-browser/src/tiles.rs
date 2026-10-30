@@ -526,7 +526,9 @@ async fn resources_and_native_recovery() -> Check<()> {
     observe_home(&b, "requests", "Requested movie").await?;
     observe_home(&b, "downloads", "Fixture transfer").await?;
     check(
-        media.requests().len() > provider_counts.0 && qbit.requests().len() > provider_counts.1 && f.writes() == writes,
+        media.requests().len() > provider_counts.0
+            && qbit.requests().len() > provider_counts.1
+            && f.writes() == writes,
         "restoring visible tiles automatically refreshes their summaries through the existing resource owner without writes",
     )?;
 
@@ -591,7 +593,10 @@ async fn resources_and_native_recovery() -> Check<()> {
         "member Home initialization cannot contact owner-only providers",
     )?;
     b.close().await?;
-    { f.close().await?; gateway.close().await }?;
+    {
+        f.close().await?;
+        gateway.close().await
+    }?;
     println!(
         "PASS Rust browser: real Home game/media/request/download summaries, GET-only resources, hidden-tile poll ownership,390px/Axe, member isolation and native/manual scoped draft recovery"
     );

@@ -2539,4 +2539,3 @@ async fn held_provider_io_has_no_db_transaction_and_rechecks_configuration_and_r
     let result = read.await.expect("revoked read completion");
     assert_eq!(result["error"], "invalid_session");
 }
-
