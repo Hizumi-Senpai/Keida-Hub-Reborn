@@ -356,7 +356,16 @@ pub async fn run() -> Check<()> {
 }
 
 async fn observe_home(b: &Browser, id: &'static str, expected: &'static str) -> Check<()> {
-    b.wait("return document.querySelector('[data-home-tile='+arguments[0]+']')?.textContent.includes(arguments[1]);",json!([id,expected])).await
+    println!("RUST_BROWSER_STEP Home await automatic {id} summary");
+    let observed = b.wait("return document.querySelector('[data-home-tile='+arguments[0]+']')?.textContent.includes(arguments[1]);",json!([id,expected])).await;
+    if observed.is_err() {
+        let diagnostic = b.evaluate("const t=document.querySelector('[data-home-tile='+arguments[0]+']');return [document.hasFocus(),document.visibilityState==='visible',!!t,!!t&&t.getClientRects().length>0&&!t.closest('[hidden]'),!!t&&t.textContent.includes(arguments[1]),document.querySelector('.main-nav button:first-child')?.getAttribute('aria-current')==='page',!!document.querySelector('.customize-tiles')&&!document.querySelector('.customize-tiles').disabled];",json!([id,expected])).await;
+        println!(
+            "RUST_BROWSER_HOME_SUMMARY tile={id} flags={}",
+            diagnostic.unwrap_or(json!(null))
+        );
+    }
+    observed
 }
 
 async fn export_home_fixture_png(b: &Browser, viewport: &'static str) -> Check<()> {
@@ -418,13 +427,26 @@ async fn resources_and_native_recovery() -> Check<()> {
     b.wait("return !!document.querySelector('#jellyfin-token') && !!document.querySelector('#seerr-token');",json!([])).await?;
     media_enroll(&b, &media, "jellyfin").await?;
     media_enroll(&b, &media, "seerr").await?;
+    step("Home provider setup open Queues through normal navigation");
     b.click(".main-nav button:nth-child(10)").await?;
-    b.wait("return document.querySelector('[data-queue-provider=qbittorrent]')?.dataset.queuePhase==='ready';",json!([])).await?;
+    step("Home provider setup await current qBittorrent enrollment status");
+    let queues_ready = b.wait("return document.querySelector('[data-queue-provider=qbittorrent]')?.dataset.queuePhase==='ready';",json!([])).await;
+    if queues_ready.is_err() {
+        let diagnostic = b.evaluate("return [document.hasFocus(),document.visibilityState==='visible',document.querySelector('.main-nav button:nth-child(10)')?.getAttribute('aria-current')==='page',...['qbittorrent','sonarr','radarr'].flatMap(p=>{const s=document.querySelector('[data-queue-provider='+p+']');return [!!s,!!s&&s.getClientRects().length>0&&!s.closest('[hidden]'),s?.dataset.queuePhase==='ready',s?.dataset.queuePhase==='loading',s?.dataset.queuePhase==='error',s?.dataset.queueConfigured==='true',!!s?.querySelector('.queue-save')&&!s.querySelector('.queue-save').disabled]})];",json!([])).await;
+        println!(
+            "RUST_BROWSER_HOME_QUEUE_ENTRY flags={}",
+            diagnostic.unwrap_or(json!(null))
+        );
+    }
+    queues_ready?;
+    step("Home provider setup enroll qBittorrent using native form");
     queue_enroll(&b, &qbit, "qbittorrent").await?;
+    step("Home provider setup verify no implicit queue sample");
     check(
         qbit.requests().is_empty(),
         "queue enrollment and detail status cannot implicitly collect a provider sample",
     )?;
+    step("Home provider setup return to Home with all fixture enrollments saved");
     b.click(".main-nav button:first-child").await?;
     ready(&b).await?;
     let writes = f.writes();

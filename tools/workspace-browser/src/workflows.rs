@@ -181,11 +181,19 @@ pub(super) async fn media_enroll(
     b.click(&format!("[data-media-provider={name}] .media-save"))
         .await?;
     println!("RUST_BROWSER_STEP media enrollment {name} wait-committed-and-cleared");
-    b.wait(
+    let committed = b.wait(
         "const s=document.querySelector('[data-media-provider='+arguments[0]+']');return s?.dataset.mediaRevision===arguments[1] && s.dataset.mediaConfigured==='true' && document.querySelector('#'+arguments[0]+'-token').value==='' && document.querySelector('#'+arguments[0]+'-endpoint').value==='' && document.querySelector('#'+arguments[0]+'-ca').value==='';",
         json!([name, (revision + 1).to_string()]),
     )
-    .await
+    .await;
+    if committed.is_err() {
+        let diagnostic = b.evaluate("const s=document.querySelector('[data-media-provider='+arguments[0]+']');return [document.hasFocus(),document.visibilityState==='visible',!!s,s?.dataset.mediaRevision===arguments[1],s?.dataset.mediaConfigured==='true',document.querySelector('#'+arguments[0]+'-token')?.value==='',document.querySelector('#'+arguments[0]+'-endpoint')?.value==='',document.querySelector('#'+arguments[0]+'-ca')?.value==='',s?.dataset.mediaPhase==='ready',s?.dataset.mediaPhase==='loading',s?.dataset.mediaSave==='saving',s?.dataset.mediaSave==='uncertain'];",json!([name,(revision+1).to_string()])).await;
+        println!(
+            "RUST_BROWSER_MEDIA_ENROLLMENT provider={name} flags={}",
+            diagnostic.unwrap_or(json!(null))
+        );
+    }
+    committed
 }
 
 pub(super) async fn media_observed(b: &Browser, name: &'static str, expected: &str) -> Check<()> {
