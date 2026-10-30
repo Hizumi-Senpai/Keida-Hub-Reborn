@@ -356,19 +356,7 @@ pub async fn run() -> Check<()> {
 }
 
 async fn observe_home(b: &Browser, id: &'static str, expected: &'static str) -> Check<()> {
-    let deadline = tokio::time::Instant::now() + Duration::from_secs(8);
-    loop {
-        if b.evaluate("return document.querySelector('[data-home-tile='+arguments[0]+']')?.textContent.includes(arguments[1]);",json!([id,expected])).await?==true {return Ok(());}
-        check(
-            tokio::time::Instant::now() < deadline,
-            "bounded user-driven Home observation completion",
-        )?;
-        let selector = format!(".tile-observe[data-observe-tile={id}]");
-        if b.evaluate("const e=document.querySelector('.tile-observe[data-observe-tile='+arguments[0]+']');return !!e&&!e.disabled;",json!([id])).await?==true {
-            b.click(&selector).await?;
-        }
-        tokio::time::sleep(Duration::from_millis(150)).await;
-    }
+    b.wait("return document.querySelector('[data-home-tile='+arguments[0]+']')?.textContent.includes(arguments[1]);",json!([id,expected])).await
 }
 
 async fn export_home_fixture_png(b: &Browser, viewport: &'static str) -> Check<()> {
@@ -388,8 +376,9 @@ async fn export_home_fixture_png(b: &Browser, viewport: &'static str) -> Check<(
 
 async fn resources_and_native_recovery() -> Check<()> {
     use reborn_crafty_fixture::{self as c, media as m, queues as q};
-    step("Home tiles use existing real provider observations and bounded GET resources");
-    let f = Fixture::new().await?;
+    step("Home automatically loads selected real provider summaries without per-tile clicks");
+    let gateway = crate::game_status::Gateway::start().await?;
+    let f = Fixture::with_game_routes(gateway.address, c::ID).await?;
     let crafty = c::Crafty::start().await?;
     let media = m::Media::start().await?;
     let qbit = q::Queues::start("qbittorrent")
@@ -443,7 +432,7 @@ async fn resources_and_native_recovery() -> Check<()> {
     observe_home(&b, "jellyfin", "Fixture movie").await?;
     observe_home(&b, "requests", "Requested movie").await?;
     observe_home(&b, "downloads", "Fixture transfer").await?;
-    check(b.evaluate("const games=document.querySelector('[data-home-tile=games]'),j=document.querySelector('[data-home-tile=jellyfin]'),r=document.querySelector('[data-home-tile=requests]'),d=document.querySelector('[data-home-tile=downloads]');return games.textContent.includes('0 players')&&games.textContent.includes('Collected')&&games.textContent.includes('play.example:25565')&&j.textContent.includes('1 playing')&&j.textContent.includes('1 paused')&&j.querySelectorAll('.tile-item-list li').length===4&&j.textContent.includes('Showing up to 4 items from page 1')&&r.querySelectorAll('.tile-item-list li').length===4&&d.textContent.includes('Partial sample')&&d.textContent.includes('2 transfers on this sample page')&&d.querySelector('[data-tile-queue=qbittorrent]').textContent.includes('25.0%')&&!d.textContent.includes('90.0%')&&!j.querySelector('form')&&!r.querySelector('form')&&!d.querySelector('form');",json!([])).await?==true,"Home renders real bounded game/player, library/playback, request and wanted-byte queue summaries without enrollment forms")?;
+    check(b.evaluate("const games=document.querySelector('[data-home-tile=games]'),j=document.querySelector('[data-home-tile=jellyfin]'),r=document.querySelector('[data-home-tile=requests]'),d=document.querySelector('[data-home-tile=downloads]');return games.textContent.includes('Sleeping')&&games.textContent.includes('Join to wake')&&!games.textContent.includes('0 players')&&!games.textContent.includes('Players unknown')&&!games.textContent.includes('Provider unavailable')&&games.textContent.includes('Updated')&&games.textContent.includes('play.example:25565')&&j.textContent.includes('1 playing')&&j.textContent.includes('1 paused')&&j.querySelectorAll('.tile-item-list li').length===4&&j.textContent.includes('Showing up to 4 items')&&r.querySelectorAll('.tile-item-list li').length===4&&d.textContent.includes('Partial sample')&&d.textContent.includes('2 transfers on this sample page')&&d.querySelector('[data-tile-queue=qbittorrent]').textContent.includes('25.0%')&&!d.textContent.includes('90.0%')&&!j.querySelector('form')&&!r.querySelector('form')&&!d.querySelector('form');",json!([])).await?==true,"Home renders real bounded game/player, library/playback, request and wanted-byte queue summaries without enrollment forms")?;
     check(b.evaluate("return window.__homeResourceNote===document.querySelector('#workspace-note')&&window.__homeResourceNote.value===arguments[0];",json!([draft])).await?==true,"provider summary reads preserve the actual unfinished note editor")?;
     check(
         f.writes() == writes,
@@ -459,6 +448,7 @@ async fn resources_and_native_recovery() -> Check<()> {
         "all Home provider effects remain bounded observation GET requests",
     )?;
     check(b.evaluate("const values=[document.body.textContent,...[...document.querySelectorAll('input,textarea')].map(e=>e.value),...Object.values(sessionStorage),...Object.values(localStorage)];return arguments[0].every(secret=>values.every(v=>!v.includes(secret)));",json!([[c::TOKEN,m::TOKEN,q::TOKEN,&crafty.origin,&media.origin,&qbit.origin,&crafty.ca,&media.ca,&qbit.ca,"PRIVATE_QUEUE","/private/queue-"]])).await?==true,"Home observations expose no keys, private origins, certificates or raw queue paths in DOM, fields or storage")?;
+    gateway.checked()?;
     accessibility(&b).await?;
     export_home_fixture_png(&b, "desktop").await?;
     b.mobile().await?;
@@ -532,9 +522,12 @@ async fn resources_and_native_recovery() -> Check<()> {
     )?;
     b.click(".cancel-tiles").await?;
     selected(&b, &DEFAULT_OWNER).await?;
+    observe_home(&b, "jellyfin", "Fixture movie").await?;
+    observe_home(&b, "requests", "Requested movie").await?;
+    observe_home(&b, "downloads", "Fixture transfer").await?;
     check(
-        (media.requests().len(), qbit.requests().len()) == provider_counts,
-        "restoring the tile selection creates no implicit provider collection",
+        media.requests().len() > provider_counts.0 && qbit.requests().len() > provider_counts.1 && f.writes() == writes,
+        "restoring visible tiles automatically refreshes their summaries through the existing resource owner without writes",
     )?;
 
     step("fresh document keeps native module-failure recovery and scoped note drafts");
@@ -598,7 +591,7 @@ async fn resources_and_native_recovery() -> Check<()> {
         "member Home initialization cannot contact owner-only providers",
     )?;
     b.close().await?;
-    f.close().await?;
+    { f.close().await?; gateway.close().await }?;
     println!(
         "PASS Rust browser: real Home game/media/request/download summaries, GET-only resources, hidden-tile poll ownership,390px/Axe, member isolation and native/manual scoped draft recovery"
     );

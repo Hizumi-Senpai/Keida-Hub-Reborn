@@ -6,7 +6,8 @@ const PRODUCT = 'keida-hub-reborn';
 const CONTRACT = 'reborn-workspace-v1';
 const MAX_REVISION = 9223372036854775807n;
 type Note = { body: string; revision: string };
-export type Crafty = { revision: string; configured: boolean; checked_at: number | null; error: string | null; history_error?: 'unavailable' | null; servers: Array<{ name: string; join: string; state: string; players: number | null; capacity: number | null; collected_at: number | null; provider_at: number | null; freshness: string; error: string | null }> };
+export type GameStatus = { source: 'join-gateway-v1'; state: 'sleeping' | 'starting' | 'updating' | 'online' | 'unavailable'; checked_at: number; freshness: 'fresh' | 'stale'; players: number | null; capacity: number | null; error: string | null };
+export type Crafty = { revision: string; configured: boolean; checked_at: number | null; error: string | null; history_error?: 'unavailable' | null; servers: Array<{ name: string; join: string; state: string; players: number | null; capacity: number | null; collected_at: number | null; provider_at: number | null; freshness: string; error: string | null; gateway?: GameStatus }> };
 export type ServiceLink = { id: string; name: string; category: string; description: string; url: string };
 export type Directory = { revision: string; services: ServiceLink[]; pins_revision: string; pins: string[] };
 export type HomePanel = { id: 'note' | 'connections' | 'pins'; visible: boolean };
@@ -188,7 +189,12 @@ function snapshot(value: unknown): Snapshot {
         || (c.history_error !== undefined && c.history_error !== null && c.history_error !== 'unavailable') || !Array.isArray(c.servers) || c.servers.length > 8
         || c.servers.some((s: unknown) => !record(s) || typeof s.name !== 'string' || s.name.length > 80 || typeof s.join !== 'string' || s.join.length > 253
           || !['running', 'stopped', 'unknown'].includes(String(s.state)) || !['fresh', 'stale', 'unknown'].includes(String(s.freshness))
-          || !count(s.players) || !count(s.capacity) || !count(s.collected_at) || !count(s.provider_at) || !message(s.error))) throw new Error('Invalid connection response');
+          || !count(s.players) || !count(s.capacity) || !count(s.collected_at) || !count(s.provider_at) || !message(s.error)
+          || (s.gateway !== undefined && (!record(s.gateway) || s.gateway.source !== 'join-gateway-v1'
+            || !['sleeping', 'starting', 'updating', 'online', 'unavailable'].includes(String(s.gateway.state))
+            || !['fresh', 'stale'].includes(String(s.gateway.freshness)) || !count(s.gateway.checked_at) || s.gateway.checked_at === null
+            || !count(s.gateway.players) || !count(s.gateway.capacity) || !message(s.gateway.error)
+            || (s.gateway.state !== 'online' && (s.gateway.players !== null || s.gateway.capacity !== null)))))) throw new Error('Invalid connection response');
   }
   notifications(value.notifications);
   layout(value.layout);
@@ -326,6 +332,9 @@ export function workspace(binding: string) {
   let admitted: AccessScope | undefined;
   let connectionPending = false, connectionUncertain = false;
   let observationResourceKey = '';
+  let observationView = '';
+  let homeSelection: TileId[] = [];
+  const homeReadAt = new Map<TileId, number>();
   const state = () => get(model);
   const tiles = tileController({ request, scope: () => {
     const s = state(); return !disposed && !terminal && s.phase === 'ready' && document.visibilityState === 'visible' ? s.snapshot : undefined;
@@ -364,7 +373,7 @@ export function workspace(binding: string) {
     catch { model.update((m) => ({ ...m, storageLimited: true })); }
   }
   function cancel(): void {
-    tiles.clear(); observationResourceKey = '';
+    tiles.clear(); observationResourceKey = ''; observationView = ''; homeSelection = []; homeReadAt.clear();
     ++epoch; mediaActive = false; queuesActive = false; identityActive = false; sessionsActive = false;
     ++sessionsSerial; sessionsReading?.abort(); sessionsSaving?.abort(); sessionsReading = undefined; sessionsSaving = undefined;
     ++identitySerial; identityReading?.abort(); identitySaving?.abort(); identityReading = undefined; identitySaving = undefined;
@@ -491,7 +500,7 @@ export function workspace(binding: string) {
           if (pending?.error === 'checking' && !queueReading[provider] && !queueSaving[provider] && !queueStatusReading[provider]) void loadQueues(provider, pending.offset);
         }
       }
-      void updates.discover(); schedule();
+      refreshHome(); void updates.discover(); schedule();
     } catch {
       if (reading === controller && current === epoch && !disposed) invalidate('Your workspace could not be checked. Open workspace again to retry deliberately.', true);
     } finally { if (reading === controller) reading = undefined; }
@@ -736,11 +745,36 @@ export function workspace(binding: string) {
     const owner = state().phase === 'ready' && state().snapshot?.account.role === 'owner';
     const mediaWanted = owner && (view === 'media' || view === 'home' && selected.some(id => id === 'jellyfin' || id === 'requests'));
     const queuesWanted = owner && (view === 'queues' || view === 'home' && selected.includes('downloads'));
-    const key = `${view}:${owner}:${mediaWanted}:${queuesWanted}`;
+    const selection = [...new Set(selected)].sort();
+    const key = `${view}:${owner}:${selection.join(',')}`;
     if (key === observationResourceKey) return;
     observationResourceKey = key;
+    if (observationView === 'home') {
+      for (const [id, provider] of [['jellyfin', 'jellyfin'], ['requests', 'seerr']] as const) {
+        if (homeSelection.includes(id) && (view !== 'home' || !selection.includes(id))) {
+          clearMediaRead(provider); ++mediaStatusSerial[provider]; mediaStatusReading[provider]?.abort(); delete mediaStatusReading[provider];
+        }
+      }
+    }
+    observationView = view; homeSelection = selection;
     if (!mediaWanted && mediaActive) closeMedia(false); else if (mediaWanted) mediaActive = true;
     if (!queuesWanted && queuesActive) closeQueues(false); else if (queuesWanted) queuesActive = true;
+    refreshHome();
+  }
+  function refreshHome(): void {
+    if (observationView !== 'home' || !ownerSnapshot()) return;
+    const at = performance.now();
+    for (const id of homeSelection) {
+      if (!['jellyfin', 'requests', 'downloads'].includes(id) || at - (homeReadAt.get(id) ?? -Infinity) < 14000) continue;
+      if (id === 'jellyfin' || id === 'requests') {
+        const provider = id === 'jellyfin' ? 'jellyfin' : 'seerr';
+        if (mediaReading[provider] || mediaStatusReading[provider] || mediaSaving[provider] || state().media[provider].save !== 'idle') continue;
+        homeReadAt.set(id, at); void loadMedia(provider, 0);
+      } else {
+        if (queueProviders.some(provider => queueReading[provider] || queueStatusReading[provider] || queueSaving[provider] || state().queues[provider].save !== 'idle')) continue;
+        homeReadAt.set(id, at); void Promise.all(queueProviders.map(provider => loadQueues(provider, 0)));
+      }
+    }
   }
   async function checkHome(id: TileId): Promise<void> {
     if (id === 'games') { await read(true); return; }

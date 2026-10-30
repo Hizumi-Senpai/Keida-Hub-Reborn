@@ -687,7 +687,7 @@ async fn claim(fixture: &Fixture, server: &Server, secret: &str) -> Actor {
         Some(secret),
     );
     let response = actor.post("/account/claim", &fields).await;
-    redirected(&response, "/account");
+    redirected(&response, "/workspace");
     assert!(
         actor
             .cookies
@@ -1055,7 +1055,7 @@ async fn strict_native_decoding_and_admission_reject_before_owner_claim_effects(
         )
         .body(encoded(&final_fields));
     let response = actor.send(request).await;
-    redirected(&response, "/account");
+    redirected(&response, "/workspace");
     final_fields.clear();
     server.private_logs(&[&setup, OWNER_PASSWORD]);
 }
@@ -1184,7 +1184,7 @@ async fn failed_native_login_preserves_old_account_and_success_switches_only_the
     let response = actor
         .post("/account/sign-in?next=https://untrusted.example", &fields)
         .await;
-    redirected(&response, "/account");
+    redirected(&response, "/workspace");
     assert_eq!(
         actor.api_session(StatusCode::OK).await["account"]["username"],
         "native_member"
@@ -2536,3 +2536,4 @@ async fn held_provider_io_has_no_db_transaction_and_rechecks_configuration_and_r
     let result = read.await.expect("revoked read completion");
     assert_eq!(result["error"], "invalid_session");
 }
+

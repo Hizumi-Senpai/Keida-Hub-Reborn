@@ -142,7 +142,7 @@
   </aside>
   <main id="workspace-content" class="workspace-content">
     <header class="page-header"><div><p class="eyebrow">YOUR OWN CORNER OF KEIDA</p><h1 tabindex="-1" bind:this={heading}>{view === 'home' ? 'Welcome home.' : view === 'note' ? 'A little space to think.' : view === 'connections' ? 'Your servers, at a glance.' : view === 'directory' ? 'Everything within reach.' : view === 'activity' ? 'Pick up the thread.' : view === 'notifications' ? 'Catch up at your pace.' : view === 'integrations' ? 'Make the right connections.' : view === 'media' ? 'A window into your media.' : view === 'queues' ? 'See what’s in motion.' : view === 'identity' ? 'An identity you choose.' : view === 'sessions' ? 'Your active sign-ins.' : 'See what comes next.'}</h1></div><span class="connection-state"><span aria-hidden="true">●</span>{$model.phase === 'ready' ? 'Session checked' : $model.phase === 'checking' ? 'Checking access' : 'Access paused'}</span></header>
-    <p class="workspace-status" role="status">{$model.message}</p>
+    <p class="workspace-status" class:status-quiet={$model.phase === 'ready' && $model.message === 'Workspace checked.'} role="status">{$model.message}</p>
     <RefreshNotice control={controller.updates} inspect={controller.refreshStatus} workspaceModel={$model} tileState={$tileModel} />
     {#if $model.phase !== 'ready'}
       <section class="recovery card"><p class="eyebrow">A CLEAR WAY BACK</p><h2>Check access to your workspace</h2><p>Your private content is hidden. Use a fresh document to check your account and recover a compatible draft.</p><div class="button-row"><a class="button primary" href="/workspace">Open workspace again</a><a class="button secondary" href="/account">Your account</a></div></section>

@@ -17,7 +17,7 @@ pub(super) async fn claim(f: &Fixture, b: &Browser) -> Check<()> {
     b.fill("input[name=username]", &f.username).await?;
     b.fill("input[name=password]", &f.password).await?;
     b.click("form.credential-form button[type=submit]").await?;
-    b.wait("return location.pathname === '/account'", json!([]))
+    b.wait("return location.pathname === '/workspace'", json!([]))
         .await
 }
 pub(super) async fn sign_in(f: &Fixture, b: &Browser, user: &str, password: &str) -> Check<()> {
@@ -25,7 +25,7 @@ pub(super) async fn sign_in(f: &Fixture, b: &Browser, user: &str, password: &str
     b.fill("input[name=username]", user).await?;
     b.fill("input[name=password]", password).await?;
     b.click("form.credential-form button[type=submit]").await?;
-    b.wait("return location.pathname === '/account'", json!([]))
+    b.wait("return location.pathname === '/workspace'", json!([]))
         .await
 }
 pub(super) async fn workspace(f: &Fixture, b: &Browser) -> Check<()> {

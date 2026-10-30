@@ -145,6 +145,8 @@ pub struct Server {
     pub provider_at: Option<i64>,
     pub freshness: &'static str,
     pub error: Option<&'static str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gateway: Option<super::game_status::Status>,
     // Cached display freshness may age. Retained history uses the original
     // collection classification instead of rewriting a past sample's meaning.
     #[serde(skip)]
@@ -182,6 +184,7 @@ fn unknown(s: &Selected, error: &'static str) -> Server {
         provider_at: None,
         freshness: "unknown",
         error: Some(error),
+        gateway: None,
         sampled_freshness: "unknown",
     }
 }
@@ -404,19 +407,26 @@ fn age_cached(value: &Overview) -> Overview {
     let mut out = value.clone();
     for server in &mut out.servers {
         server.freshness = fresh(server.provider_at, now());
+        if let Some(status) = &mut server.gateway { status.age(); }
     }
     out
 }
 pub struct Observer {
     cache: Mutex<Option<Cached>>,
     flight: Semaphore,
+    game_routes: super::game_status::Routes,
 }
 impl Observer {
     pub fn new() -> Self {
         Self {
             cache: Mutex::new(None),
             flight: Semaphore::new(1),
+            game_routes: super::game_status::Routes::default(),
         }
+    }
+    pub fn with_game_routes(mut self, routes: super::game_status::Routes) -> Self {
+        self.game_routes = routes;
+        self
     }
     pub async fn observe(&self, config: &Enrollment, revision: i64) -> Overview {
         {
@@ -445,7 +455,14 @@ impl Observer {
                 return age_cached(&c.value);
             }
         }
-        let out = collect(config, revision).await;
+        let selected: Vec<String> = config.servers.iter().map(|s| s.id.clone()).collect();
+        let (mut out, gateway) = tokio::join!(collect(config, revision), self.game_routes.collect(&selected));
+        for (selected, row) in config.servers.iter().zip(&mut out.servers) {
+            row.gateway = gateway.get(&selected.id).cloned();
+            if row.join.is_empty() {
+                row.join = self.game_routes.public_join(&selected.id).unwrap_or_default();
+            }
+        }
         *self.cache.lock().await = Some(Cached {
             revision,
             at: Instant::now(),

@@ -14,6 +14,13 @@ async function nativeValidity(page: Page, kind: 'claim' | 'sign-in'): Promise<vo
   expect(valid, 'native credential form is valid before deliberate submit').toBe(true);
 }
 
+// Authentication lands on Home. These retained account-specific workflows
+// then explicitly visit Account to exercise its independent recovery controls.
+async function homeThenAccount(account: AccountFixture, page: Page): Promise<void> {
+  await page.waitForURL(`${account.origin}/workspace`);
+  await page.goto('/account');
+}
+
 async function claim(account: AccountFixture, page: Page): Promise<void> {
   await page.goto('/account/claim');
   await page.getByLabel('Setup secret', { exact: true }).fill(account.setupSecret);
@@ -23,7 +30,7 @@ async function claim(account: AccountFixture, page: Page): Promise<void> {
   const posted = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/account/claim');
   await page.getByRole('button', { name: 'Create owner', exact: true }).click();
   expect((await posted).headers()['origin'] === account.origin, 'native browser sends the exact configured Origin').toBe(true);
-  await page.waitForURL(`${account.origin}/account`);
+  await homeThenAccount(account, page);
   await expect(page.getByRole('heading', { name: 'Your account', exact: true })).toBeVisible();
 }
 
@@ -32,7 +39,13 @@ async function signIn(account: AccountFixture, page: Page, username: string, pas
   await page.getByLabel('Username', { exact: true }).fill(username);
   await page.getByLabel('Password', { exact: true }).fill(password);
   await nativeValidity(page, 'sign-in');
+  const submitted = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === '/account/sign-in');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  const response = await submitted;
+  if (response.status() === 303) {
+    expect(response.headers()['location'], 'native sign-in opens Home directly').toBe('/workspace');
+    await homeThenAccount(account, page);
+  }
 }
 
 async function sessionIdentity(page: Page): Promise<{ status: number; username?: string; role?: string }> {
@@ -82,7 +95,7 @@ test('native HTTPS owner claim, cookies, refresh and sign out work without JavaS
   const posted = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/account/claim');
   await page.getByRole('button', { name: 'Create owner', exact: true }).click();
   expect((await posted).headers()['origin'] === account.origin, 'native browser sends the exact configured Origin').toBe(true);
-  await page.waitForURL(`${account.origin}/account`);
+  await homeThenAccount(account, page);
   await expect(page.getByRole('heading', { name: 'Your account', exact: true })).toBeVisible();
   const cookies = await page.context().cookies(account.origin);
   const session = cookies.find((cookie) => cookie.name === SESSION);

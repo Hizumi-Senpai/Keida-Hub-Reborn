@@ -9,8 +9,8 @@ const STYLE: &[u8] = include_bytes!("../../static/workspace/workspace.css");
 // plus these two explicitly reviewed predecessors is the complete shipping set.
 const COMPATIBILITY: [(&[u8], &[u8]); 2] = [
     (
-        include_bytes!("../../static/workspace-compat/0.1.17.js"),
-        include_bytes!("../../static/workspace-compat/0.1.17.css"),
+        include_bytes!("../../static/workspace-compat/0.1.23.js"),
+        include_bytes!("../../static/workspace-compat/0.1.23.css"),
     ),
     (
         include_bytes!("../../static/workspace-compat/0.1.18.js"),
@@ -18,9 +18,11 @@ const COMPATIBILITY: [(&[u8], &[u8]); 2] = [
     ),
 ];
 
-// Exact retired 0.1.6–0.1.16 bootstrap URLs remain recognizable without shipping
+// Exact retired 0.1.6–0.1.17 bootstrap URLs remain recognizable without shipping
 // their bundles. This is asset retirement, not selective v1 API admission.
-const RETIRED: [&str; 20] = [
+const RETIRED: [&str; 22] = [
+    "/assets/workspace/c7c1eb39825396b76fc6c74bf982b072f8872a9c5303ef92ae9eb5b5ee51618c.js",
+    "/assets/workspace/bfd9c23272f6750691cef66ddf2962ea00bc36c98c0e09610c6f0e7a20085b98.css",
     "/assets/workspace/2ed55c5caecd26c1cf60ea605da31f0ec60c3546228ce3ecd0e8d9a672785727.js",
     "/assets/workspace/237c02df71ef34fcdec8a6c7b273f29930cade9b713c4c2d788346381f606552.css",
     "/assets/workspace/4b0e06a1f63ef1842f930697029a8bfbb51c911e0fe3648c31c1270fb092dbc7.js",
@@ -101,7 +103,7 @@ mod tests {
             assert_eq!(path, url(bytes, extension));
             assert!(!retired(&path));
         }
-        assert_eq!(RETIRED.iter().collect::<BTreeSet<_>>().len(), 20);
+        assert_eq!(RETIRED.iter().collect::<BTreeSet<_>>().len(), 22);
         for path in RETIRED {
             assert!(retired(path));
             assert!(find(path).is_none());
@@ -111,11 +113,11 @@ mod tests {
     }
 
     #[test]
-    fn prior17_and_live18_compatibility_bytes_remain_immutable() {
+    fn prior23_and_18_compatibility_bytes_remain_immutable() {
         for ((script, style), expected) in COMPATIBILITY.into_iter().zip([
             [
-                "/assets/workspace/c7c1eb39825396b76fc6c74bf982b072f8872a9c5303ef92ae9eb5b5ee51618c.js",
-                "/assets/workspace/bfd9c23272f6750691cef66ddf2962ea00bc36c98c0e09610c6f0e7a20085b98.css",
+                "/assets/workspace/8a20b75c96a3e13db593acefe75b9bccae89a825c5a8a7bffa4dc1f730958ab3.js",
+                "/assets/workspace/d5608ad2a1333a42b738e6a6ffc07955f88252f6b177dc7b639db647caf6f826.css",
             ],
             [
                 "/assets/workspace/669fbfd32bccda4c9e26262c75813f456a466a7ac5102fdd77cf1bbbb4d9bcd5.js",

@@ -1,7 +1,9 @@
 //! Real HTTP distribution boundaries for retained and retired browser generations.
 use super::*;
 
-const RETIRED: [&str; 20] = [
+const RETIRED: [&str; 22] = [
+    "/assets/workspace/c7c1eb39825396b76fc6c74bf982b072f8872a9c5303ef92ae9eb5b5ee51618c.js",
+    "/assets/workspace/bfd9c23272f6750691cef66ddf2962ea00bc36c98c0e09610c6f0e7a20085b98.css",
     "/assets/workspace/2ed55c5caecd26c1cf60ea605da31f0ec60c3546228ce3ecd0e8d9a672785727.js",
     "/assets/workspace/237c02df71ef34fcdec8a6c7b273f29930cade9b713c4c2d788346381f606552.css",
     "/assets/workspace/4b0e06a1f63ef1842f930697029a8bfbb51c911e0fe3648c31c1270fb092dbc7.js",
@@ -24,8 +26,8 @@ const RETIRED: [&str; 20] = [
     "/assets/workspace/d1c2fe64aafc3376063502c4f6be5348d8f9e67c2ff692d269b45d6bb6691626.css",
 ];
 const RETAINED: [&str; 4] = [
-    "/assets/workspace/c7c1eb39825396b76fc6c74bf982b072f8872a9c5303ef92ae9eb5b5ee51618c.js",
-    "/assets/workspace/bfd9c23272f6750691cef66ddf2962ea00bc36c98c0e09610c6f0e7a20085b98.css",
+    "/assets/workspace/8a20b75c96a3e13db593acefe75b9bccae89a825c5a8a7bffa4dc1f730958ab3.js",
+    "/assets/workspace/d5608ad2a1333a42b738e6a6ffc07955f88252f6b177dc7b639db647caf6f826.css",
     "/assets/workspace/669fbfd32bccda4c9e26262c75813f456a466a7ac5102fdd77cf1bbbb4d9bcd5.js",
     "/assets/workspace/aa0346c141e1bce1ae356a56b33c121fb090c2534c4374dd5c89586502ea5ec4.css",
 ];
@@ -44,7 +46,7 @@ async fn current_and_two_predecessor_generations_serve_exact_immutable_bytes() {
     let paths: BTreeSet<_> = assets.iter().map(|value| value.as_str().unwrap()).collect();
     assert_eq!(paths.len(), 6);
     for expected in RETAINED {
-        assert!(paths.contains(expected), "retained17/18 bytes were dropped");
+        assert!(paths.contains(expected), "retained23/18 bytes were dropped");
     }
     for path in paths {
         let response = server.client.get(server.url(path)).send().await.unwrap();
@@ -114,3 +116,4 @@ async fn retired_bootstrap_urls_are_gone_with_native_recovery_and_unknown_urls_s
         );
     }
 }
+
