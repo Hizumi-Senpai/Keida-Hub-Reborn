@@ -1,18 +1,18 @@
 # Browser asset support and retirement
 
-Status: candidate implementation for [issue43](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/43).
-This contract does not establish publication, installation or owner acceptance.
-The live0.1.18 installation and its historical receipts remain unchanged.
+Installed23 qualified issue43's finite window. The issue45 candidate rotates it
+to current/23/18. This contract does not establish candidate publication,
+installation or real owner acceptance. [Current receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6527378051).
 
 ## Finite shipping window
 
 Ship at most three distinct browser generations: the current workspace bundle
 and two explicitly reviewed predecessor bundles. Each generation is one immutable
 JavaScript/CSS pair, so the shipping window has at most six unique URLs. This
-tile candidate changes both outputs and its artifact manifest has exactly six.
+Home-convenience candidate changes both outputs and its artifact manifest has exactly six.
 Source-only merges do not create a browser generation or extend this window.
 
-The tile candidate retains the exact0.1.17 and0.1.18 pairs. Rust tests pin their
+The Home-convenience candidate retains the exact0.1.23 and0.1.18 pairs. Rust tests pin their
 four SHA256 URLs independently of the current frontend build. The supported
 native account/recovery assets and historical guide response profiles remain
 available. No runtime asset archive or external asset fetch is introduced.
@@ -40,8 +40,8 @@ another unique URL is not a valid retention policy.
 
 ## Retired bootstrap assets and continuing API admission
 
-This candidate retires the ten browser generations0.1.6,0.1.7,0.1.8,0.1.9,
-0.1.10,0.1.11,0.1.12,0.1.13,0.1.14 and0.1.16. Their twenty exact hashed
+This candidate retires the eleven browser generations0.1.6,0.1.7,0.1.8,0.1.9,
+0.1.10,0.1.11,0.1.12,0.1.13,0.1.14,0.1.16 and0.1.17. Their twenty-two exact hashed
 bootstrap URLs return410 Gone, no-store and a small fixed native recovery
 document linking to /workspace and /account. Unknown asset URLs return404.
 A retired URL is never redirected to or served with newer module bytes.
@@ -80,7 +80,7 @@ schema14/newer-write qualification; no old backup may overwrite newer writes.
 ## Evidence required
 
 - Serve every active URL with immutable cache semantics and verify its body hash,
-  including exact17/18 bytes. Public manifest and packaged asset window agree.
+  including exact23/18 bytes. Public manifest and packaged asset window agree.
 - Return410 with native recovery and no cookie effects for all twenty exact
   retired URLs; unknown paths stay404. HEAD has the same status and no body.
 - Keep native Account/sign-out available when workspace startup fails. A fresh

@@ -192,7 +192,7 @@ function snapshot(value: unknown): Snapshot {
         || (c.history_error !== undefined && c.history_error !== null && c.history_error !== 'unavailable') || !Array.isArray(c.servers) || c.servers.length > 8
         || c.servers.some((s: unknown) => !record(s) || typeof s.name !== 'string' || s.name.length > 80 || typeof s.join !== 'string' || s.join.length > 253
           || !['running', 'stopped', 'unknown'].includes(String(s.state)) || !['fresh', 'stale', 'unknown'].includes(String(s.freshness))
-          || !count(s.players) || !count(s.capacity) || !count(s.collected_at) || !count(s.provider_at) || !message(s.error)))) throw new Error('Invalid connection response');
+          || !count(s.players) || !count(s.capacity) || !count(s.collected_at) || !count(s.provider_at) || !message(s.error))) throw new Error('Invalid connection response');
   }
   notifications(value.notifications);
   layout(value.layout);

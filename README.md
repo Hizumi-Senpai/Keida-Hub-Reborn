@@ -1,10 +1,11 @@
 # Keida Hub Reborn
 
-Active product candidate: [useful configurable Home tiles](docs/HOME_TILES.md)
-and [finite generated browser asset retention](docs/BROWSER_ASSET_RETENTION.md),
-tracked in [issue43](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/43).
-The sidebar keeps detailed views and administration. Live remains0.1.18/schema13
-until the candidate is independently qualified and installed.
+Installed: **0.1.23/schema14**, with [configurable Home tiles](docs/HOME_TILES.md)
+and [finite browser assets](docs/BROWSER_ASSET_RETENTION.md).
+[Issue45](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/45) prepares
+[direct Home sign-in, automatic tile loading and confirmed managed sleep](docs/HOME_CONVENIENCE.md).
+The sidebar keeps detailed views and administration. Exact candidate qualification
+and installation remain separate from source preparation.
 
 A fresh Rust-centered Keida Hub, authorized on **2026-10-25 America/Chicago**.
 The goal is a fast, reliable, feature-rich self-hosted dashboard and control platform
@@ -14,7 +15,7 @@ with an optional editable 3D room and companion.
 artifact, independent PostgreSQL/key recovery and public HTTP receipts are in
 [deployment issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1).
 The owner reports successful sign-in; wider desktop/mobile workflow acceptance and
-real dedicated Crafty enrollment remain separate open gates. The original
+normal-use provider acceptance remain separate open gates. All six services are enrolled; preserve those configurations. The original
 https://keida.me stays live and unchanged, and the independent Rewrite installation
 is preserved for route reversal.
 

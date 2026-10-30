@@ -1,7 +1,8 @@
 # Useful Home tiles
 
-Status: candidate implementation for [issue43](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/43).
-Live remains0.1.18/schema13 until exact source, image, upgrade, recovery and installation qualification.
+Installed23/schema14 delivered issue43. [Issue45](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/45)
+prepares [direct Home landing, automatic observations and managed sleep](HOME_CONVENIENCE.md).
+Qualification and installation receipts remain separate from source changes.
 
 Home returns to the useful tile dashboard from the Original Hub. The sidebar
 keeps detailed provider views, setup and administration. A large note-led welcome
@@ -34,8 +35,8 @@ grants provider access or silently rewrites an earlier owner's saved selection.
 ## Observation and browser ownership
 
 Tiles summarize existing Rust provider observations and link to the sidebar
-details. Home offers deliberate observation reads through the existing bounded
-GET paths. There is one resource owner and the existing authorization poller;
+details. Home automatically reads its selected eligible tiles through bounded GET paths;
+Refresh is optional. There is one resource owner and the existing authorization poller;
 Home must not add provider polling loops or disguise a view transition to open
 and close provider resources. Generic note/workspace snapshots perform no new
 provider IO. Enrollment forms and credentials stay in their existing workflows.
@@ -67,7 +68,7 @@ restart. Old17/18 binaries cannot use schema14 current data. Preserve useful
 stopped17 and matched final13; a prior dump never overwrites newer writes
 automatically. Exact image, accepted-head/main CI and actual installation remain
 separate receipts. The [finite asset policy](BROWSER_ASSET_RETENTION.md) preserves
-17/18 browser bytes, native startup recovery and deliberate note-draft recovery.
+23/18 browser bytes in the issue45 candidate, native startup recovery and deliberate note-draft recovery.
 
 Rust continues to own domain rules, providers, permissions, persistence and
 operational verification. Svelte/TypeScript owns browser presentation, interaction

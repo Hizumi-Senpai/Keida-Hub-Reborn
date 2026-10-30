@@ -25,6 +25,9 @@ const OWNER_PASSWORD: &str = "Native owner fixture password 71!";
 const MEMBER_PASSWORD: &str = "Native member fixture password 82!";
 static COUNTER: AtomicU64 = AtomicU64::new(0);
 
+#[path = "support/home_games_contracts.rs"]
+mod home_games_contracts;
+
 fn unique() -> String {
     format!(
         "{}_{:x}_{:x}",
