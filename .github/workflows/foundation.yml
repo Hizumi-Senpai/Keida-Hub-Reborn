@@ -119,6 +119,7 @@ jobs:
           "$REBORN_CHROMEDRIVER" --version
           cargo +1.99.1 run -p reborn-workspace-browser --release --locked
           cargo +1.99.1 run -p reborn-workspace-browser --release --locked -- --refresh
+          cargo +1.99.1 run -p reborn-workspace-browser --release --locked -- --tiles
       - name: Repeat Rust HTTPS browser contracts through the exact packaged image
         env:
           REBORN_BROWSER_BINARY: ${{ github.workspace }}/target/release/keida-hub-reborn
@@ -129,10 +130,11 @@ jobs:
           export REBORN_CHROMEDRIVER="$RUNNER_TEMP/reborn-chromedriver/chromedriver-linux64/chromedriver"
           cargo +1.99.1 run -p reborn-workspace-browser --release --locked
           cargo +1.99.1 run -p reborn-workspace-browser --release --locked -- --refresh
+          cargo +1.99.1 run -p reborn-workspace-browser --release --locked -- --tiles
       - name: Rehearse packaged private install and matched PostgreSQL recovery
         run: |
           target/release/reborn-release rehearse-image "$(cat "$RUNNER_TEMP/reborn-image-id")" "$RUNNER_TEMP/reborn-package"
-          jq -e '.database_schema == 13 and .restored_session_selectors_and_targeted_revocation == true and .preserved_newer_sessions_and_unrelated_access == true and .fresh_private_claim == true and .restored_native_session_note_and_encrypted_connection == true and .restored_directory_and_personal_pins == true and .restored_activity_and_newer_entries == true and .restored_notifications_and_read_state == true and .restored_personal_layout_and_newer_edits == true and .restored_provider_observations_and_newer_samples == true and .restored_media_connections_and_observations == true and .restored_queue_connections_and_observations == true and .restored_discord_application_and_links == true and .restored_discord_newer_identity_writes == true and .discarded_unfinished_discord_attempts_on_restart == true and .failed_candidate_preserved_newer_writes == true and .automatic_old_backup_restore == false and .separate_postgresql_instance == true and .runtime_role_cannot_migrate == true and .fixture_only == true' "$RUNNER_TEMP/reborn-package/recovery-proof.json" > /dev/null
+          jq -e '.database_schema == 14 and .restored_account_tile_layouts == true and .preserved_newer_tile_edits_after_failed_candidate_and_restart == true and .restored_session_selectors_and_targeted_revocation == true and .preserved_newer_sessions_and_unrelated_access == true and .fresh_private_claim == true and .restored_native_session_note_and_encrypted_connection == true and .restored_directory_and_personal_pins == true and .restored_activity_and_newer_entries == true and .restored_notifications_and_read_state == true and .restored_personal_layout_and_newer_edits == true and .restored_provider_observations_and_newer_samples == true and .restored_media_connections_and_observations == true and .restored_queue_connections_and_observations == true and .restored_discord_application_and_links == true and .restored_discord_newer_identity_writes == true and .discarded_unfinished_discord_attempts_on_restart == true and .failed_candidate_preserved_newer_writes == true and .automatic_old_backup_restore == false and .separate_postgresql_instance == true and .runtime_role_cannot_migrate == true and .fixture_only == true' "$RUNNER_TEMP/reborn-package/recovery-proof.json" > /dev/null
       - name: Real Chromium HTTPS account workflows including elapsed form expiry
         working-directory: web
         env:

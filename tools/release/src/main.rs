@@ -47,7 +47,7 @@ impl Manifest {
             || self.ordinal == 0
             || self.channel != "accepted"
             || self.contract != "reborn-workspace-v1"
-            || !(4..=13).contains(&self.database_schema)
+            || !(4..=14).contains(&self.database_schema)
             || !digest(&self.commit, 40)
             || !digest(&self.tree, 40)
             || !digest(&self.binary_sha256, 64)
@@ -60,6 +60,14 @@ impl Manifest {
             || self.ci_run == 0
             || self.assets.is_empty()
             || self.assets.len() > 24
+            || (self.database_schema == 14
+                && (self.assets.len() != 6
+                    || self
+                        .assets
+                        .iter()
+                        .collect::<std::collections::BTreeSet<_>>()
+                        .len()
+                        != 6))
             || self.assets.iter().any(|v| !digest(v, 64))
         {
             return Err("invalid release manifest");
@@ -444,11 +452,27 @@ mod tests {
         manifest.assets.push("1".repeat(64));
         assert!(manifest.validate().is_err());
         manifest.assets.pop();
-        manifest.database_schema = 14;
+        manifest.database_schema = 15;
         assert!(manifest.validate().is_err());
         manifest.database_schema = 12;
         manifest.assets.truncate(20);
         assert!(manifest.validate().is_ok());
+    }
+    #[test]
+    fn schema14_manifest_requires_the_six_unique_shipping_assets() {
+        let (_root, _archive, mut manifest) = fixture();
+        manifest.ordinal = 23;
+        manifest.version = "0.1.23".into();
+        manifest.database_schema = 14;
+        manifest.assets = (0..6).map(|value| format!("{value:064x}")).collect();
+        assert!(manifest.validate().is_ok());
+        manifest.assets.push("a".repeat(64));
+        assert!(manifest.validate().is_err());
+        manifest.assets.pop();
+        manifest.assets[1] = manifest.assets[0].clone();
+        assert!(manifest.validate().is_err());
+        manifest.assets.pop();
+        assert!(manifest.validate().is_err());
     }
     #[test]
     fn create_once_retries_conflicts_and_actual_archive_tamper() {

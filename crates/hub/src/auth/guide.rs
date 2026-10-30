@@ -11,21 +11,22 @@ async fn read(State(service): State<Service>, headers: HeaderMap) -> Response {
     let result = async {
         let p = workspace::bound(&service, &headers, false).await?;
         // Retained clients accept their exact catalog capability snapshots.
-        // Queue entries require an explicit new-client opt-in.
+        // New capabilities and dated guidance require an explicit client opt-in.
         let mut capabilities = headers.get_all("x-reborn-guide").iter();
-        let (media, queues, identity) = match (capabilities.next(), capabilities.next()) {
-            (None, None) => (false, false, false),
-            (Some(value), None) if value == "media-v1" => (true, false, false),
-            (Some(value), None) if value == "queues-v1" => (true, true, false),
-            (Some(value), None) if value == "identity-v1" => (true, true, true),
+        let (media, queues, identity, home_tiles) = match (capabilities.next(), capabilities.next()) {
+            (None, None) => (false, false, false, false),
+            (Some(value), None) if value == "media-v1" => (true, false, false, false),
+            (Some(value), None) if value == "queues-v1" => (true, true, false, false),
+            (Some(value), None) if value == "identity-v1" => (true, true, true, false),
+            (Some(value), None) if value == "home-tiles-v1" => (true, true, true, true),
             _ => return Err(ApiError(StatusCode::UPGRADE_REQUIRED, "upgrade_required")),
         };
         let current = store::guide_session(&service.pool, &service.key_id, &p.hash).await?;
         Ok::<_, ApiError>(Json(json!({
             "product":"keida-hub-reborn", "contract":"reborn-workspace-v1", "schema":1,
             "account":account(current.account), "session_generation":current.generation.to_string(),
-            "catalog":if identity {identity_catalog()} else if queues {queue_catalog()} else {catalog(media)},
-            "roadmap":if identity {identity_roadmap()} else if queues {queue_roadmap()} else {roadmap(media)}
+            "catalog":if home_tiles {home_tiles_catalog()} else if identity {identity_catalog()} else if queues {queue_catalog()} else {catalog(media)},
+            "roadmap":if home_tiles {home_tiles_roadmap()} else if identity {identity_roadmap()} else if queues {queue_roadmap()} else {roadmap(media)}
         })).into_response())
     }
     .await;
@@ -176,5 +177,36 @@ fn identity_roadmap() -> Value {
     out["milestones"][4] = json!({"id":"M4","title":"Friends, identity and Discord","status":"In progress; real Discord acceptance pending",
         "delivered":["Identity linking with S256/state, separate local confirmation, immutable Discord IDs and local unlink while preserving local sign-in and recovery."],
         "remaining":["Dedicated real application registration/enrollment, callback query-log privacy review, owner browser acceptance and recovery/session acceptance.","Friends, guild policy, Discord sign-in and deliberately enrolled bot workflows need separate design and acceptance."]});
+    out
+}
+
+// Keep every retained profile's dated payload unchanged. Only the new Home
+// client receives the tile milestone and current preparation priorities.
+fn home_tiles_catalog() -> Value {
+    let mut out = identity_catalog();
+    out[1]["requirements"][0] = json!(
+        "An owner deliberately enrolls dedicated access, valid HTTPS and a selected library or an all-library root."
+    );
+    out
+}
+
+fn home_tiles_roadmap() -> Value {
+    let mut out = identity_roadmap();
+    out["as_of"] = json!("2026-10-29");
+    out["priorities"] = json!([
+        "Use Home tiles for games, media, requests, downloads and pinned services; customize their order, add or remove tiles, and choose normal or wide widths.",
+        "Check actual provider observations and freshness, including valid zero, stale and unknown data; complete desktop, mobile and keyboard acceptance of the useful dashboard.",
+        "Review deliberately enrolled access and broad-key privacy; complete real Discord linking, callback privacy and owner acceptance on each installation.",
+        "Resume the read-only Rust namespace probe in issue41, then qualify the remaining host updater; installation and activation require separate approval."
+    ]);
+    out["milestones"][2] = json!({"id":"M2","title":"Daily Hub workflows","status":"In progress; owner acceptance remains open",
+        "delivered":["Useful Home tiles with per-account add, remove, order and normal or wide sizing, Rust-owned defaults, explicit save conflicts and read-only provider summaries.","Private notes, service directory, categories/search, pins, Activity, notifications, retained observation history and detailed sidebar views remain available."],
+        "remaining":["Complete actual desktop, mobile, keyboard and normal-use acceptance; preserve honest provider freshness and account-scoped drafts."]});
+    out["milestones"][3]["remaining"][0] = json!(
+        "Review deliberately enrolled real provider access, supported versions, TLS, broad-key privacy, the selected Jellyfin library or all-library root, and actual library/request/queue/transfer freshness."
+    );
+    out["milestones"][5] = json!({"id":"M5","title":"Install, upgrade and recover","status":"Partly implemented; host updater preparation remains open",
+        "delivered":["Manual exact-source artifacts, PostgreSQL/key/configuration backups and isolated recovery rehearsals.","Server-change discovery and deliberate draft-safe browser refresh.","A finite browser-asset window retains exact 0.1.17, 0.1.18 and current assets; retired asset URLs provide a native recovery path.","Candidate schema14 matched-recovery checks include personal tile arrangements and preserved newer writes; actual installation requires its own receipt."],
+        "remaining":["Complete candidate installation and current-data upgrade/recovery acceptance separately from source or fixture completion.","Implement and qualify the read-only Rust namespace probe in issue41, then the capability caller, authority-origin transaction and remaining executor/recovery work.","A concrete host-updater installation packet and separate installation and activation approval remain required."]});
     out
 }

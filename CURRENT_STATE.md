@@ -1,9 +1,30 @@
 # Reborn current state
 
-Updated October29,2026, America/Chicago, for the M5.6 namespace contract.
+Updated October29,2026, America/Chicago, for the owner-directed Home correction.
 The exact current accepted commit/ordinal and eventual head/main CI are recorded
 in [deployment issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1); a documentation merge
 advances source identity without deploying the website.
+
+## Active candidate and accepted source
+
+Accepted main is source0.1.22,4ee5679e5656be621e247473f50c869c1577ecd8
+(PR42; exact head81/main82 qualified). The owner now prioritizes
+[issue43](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/43): useful configurable
+[Home tiles](docs/HOME_TILES.md) and [finite generated asset retention](docs/BROWSER_ASSET_RETENTION.md).
+The candidate adds schema14; source/CI/image/upgrade/recovery/install acceptance
+are tracked separately. No candidate deployment or updater activation is claimed.
+M5 read-only probe41 remains open after this visible product correction.
+
+All six services were deliberately enrolled through normal native Opera/Reborn
+flows. [Final Radarr acceptance](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/39#issuecomment-6509463433)
+supersedes earlier deferred-enrollment text. At22:25Z the independent Original
+worker reported Crafty as managed sleep; [bounded clarification](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/39#issuecomment-6509797658)
+does not prove every route or a fresh join cycle. A later build preflight observed
+the same Crafty CID/image running with StartedAt2026-10-29T22:59:48.592364774Z.
+CORE issued no lifecycle command; actor/cause and actual join coverage remain
+unproven. Original owns wake/sleep.
+Jellyfin paging/count-context, actual mobile/owner/refresh, Discord and normal-use
+acceptance remain open. Historical observations below retain their dates.
 
 ## Installed and qualified
 
@@ -72,10 +93,10 @@ no Crafty lifecycle command; actor/cause remains unresolved. This is not a new
 approved mutation/ownership baseline or zero-player evidence. Reconcile external
 work before dependent host effects; independent read-only preparation continues.
 
-Owner service enrollment[issue39](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/39) waits
-until home for private sign-in on Bazzite. The last actual controlled Firefox
-observation was the ordinary Reborn sign-in form. No connection is claimed
-accepted and no credential/session/header is reusable. No cloud browser fallback.
+Earlier deferred-enrollment observations are superseded by issue39 receipts above.
+All browser helpers were shut down after enrollment. A future native Opera
+connection needs fresh owner Allow; no credential/session/header is reusable.
+No cloud browser fallback.
 
 One successor CORE continues integration; this is not another handoff. Use only
 self-hosted Keida Commander, refreshed identity/ownership and NEW immutable

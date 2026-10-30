@@ -22,6 +22,9 @@ GRANT SELECT, INSERT, UPDATE ON notification_groups TO reborn_app;
 -- Personal layouts can be replaced but never erased by the runtime role.
 GRANT SELECT, INSERT, UPDATE ON dashboard_layouts TO reborn_app;
 
+-- Tile preferences are additive; ordinary runtime cannot delete or alter them.
+GRANT SELECT, INSERT, UPDATE ON dashboard_tiles TO reborn_app;
+
 -- Observation metadata is immutable. Only its bounded retention may erase old
 -- batches; dependent rows are removed by that table's own foreign-key cascade.
 GRANT SELECT, INSERT, DELETE ON provider_observations TO reborn_app;

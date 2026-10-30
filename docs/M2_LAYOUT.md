@@ -1,5 +1,10 @@
 # Personal Home arrangement
 
+This is the retained legacy three-panel contract. The owner-directed
+[Home tiles candidate](HOME_TILES.md) adds a separate account layout/API and
+preserves these stored values and legacy responses. The new current Home does
+not need a second legacy arrangement editor.
+
 Scope frozen in [issue16](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/16)
 after installed0.1.10/schema7. This is a candidate slice; source, exact artifact,
 installation and actual-owner browser acceptance remain separate.

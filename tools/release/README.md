@@ -2,9 +2,16 @@
 
 `reborn-release` is CORE operational tooling, not an application endpoint,
 installation daemon, host updater or game controller. Its actual CI caller is
-`.github/workflows/foundation.yml`; the current session slice is frozen in
+`.github/workflows/foundation.yml`; the historical session slice is frozen in
 [M4_SESSIONS.md](../../docs/M4_SESSIONS.md), alongside the retained provider and
 Discord recovery contracts.
+
+The current schema14 tile candidate ships the current workspace generation plus
+exact17/18 browser pairs: six unique active asset URLs. See the bounded
+[browser asset support and retirement contract](../../docs/BROWSER_ASSET_RETENTION.md).
+The schema13/24-asset inspection path and existing historical ledger manifests
+remain valid for CURRENT18 review. The dated session/refresh asset counts below
+describe those earlier releases; they are not the new candidate's shipping set.
 
 `inspect-image IMAGE_ID COMMIT TREE VERSION CHANNEL PRIVATE_OUTPUT` verifies the
 repository Docker image's default UID65532, entrypoint/healthcheck, OCI labels,
@@ -64,9 +71,9 @@ database dumps, keys, credentials, authenticated screenshots or storage state.
 Linux is the executed platform. Windows, native iPhone/Safari, outside-LAN game
 joining, real provider acceptance and workload performance stay separate.
 
-The sessions slice keeps the same workspace contract and retains all20 baseline
+The historical0.1.17 sessions slice kept the same workspace contract and retained all20 baseline
 workspace assets plus its new hashed JS/CSS pair. Image inspection requires the
-current22-asset manifest. Retaining assets does not qualify the prior
+then-current22-asset manifest. Retaining assets does not qualify the prior
 schema12 binary on schema13. Actual12→13 qualification must compare every legacy
 session column without treating the newly backfilled `public_ref` as an old
 column; full schema13 recovery includes and preserves it. Upgrades must qualify
@@ -78,6 +85,6 @@ Primary contracts: Crafty's official [OpenAPI](https://docs.craftycontrol.com/pa
 [PostgreSQL backup](https://www.postgresql.org/docs/16/backup-dump.html), and
 the pinned GitHub [artifact uploader](https://github.com/actions/upload-artifact/tree/cf430e030ddbb5b0abf93d22962f4752f3646cd9).
 
-The browser-refresh slice keeps schema13 and all22 existing assets, adding its
+The historical0.1.18 browser-refresh slice kept schema13 and all22 existing assets, adding its
 new pair for a24-asset manifest. Its supported prior17 binary must be checked
 against current schema13 data and newer writes; no schema migration is needed.

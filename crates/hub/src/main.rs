@@ -5,6 +5,7 @@ mod database;
 mod directory;
 mod identity;
 mod providers;
+mod tiles;
 
 use axum::{
     Json, Router,
@@ -46,7 +47,7 @@ async fn run() -> Result<(), String> {
     if command == "artifact-info" && args.len() == 2 {
         println!(
             "{}",
-            serde_json::json!({"identity":identity::compiled(),"workspace_contract":"reborn-workspace-v1","database_schema":13,"assets":auth::artifact_assets()})
+            serde_json::json!({"identity":identity::compiled(),"workspace_contract":"reborn-workspace-v1","database_schema":14,"assets":auth::artifact_assets()})
         );
         return Ok(());
     }

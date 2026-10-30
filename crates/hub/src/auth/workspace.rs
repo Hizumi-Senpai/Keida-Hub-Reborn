@@ -123,6 +123,12 @@ async fn asset(Path(file): Path<String>) -> Response {
             bytes,
         )
             .into_response(),
+        None if assets::retired(&path) => (
+            StatusCode::GONE,
+            [(header::CACHE_CONTROL, "no-store")],
+            Html("<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><title>Workspace version retired</title><main><h1>This workspace version has retired</h1><p>Open a fresh document when you are ready. Unsaved work is never submitted automatically.</p><p><a href=\"/workspace\">Open current workspace</a> · <a href=\"/account\">Your account</a></p></main></html>"),
+        )
+            .into_response(),
         None => StatusCode::NOT_FOUND.into_response(),
     }
 }

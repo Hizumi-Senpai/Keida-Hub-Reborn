@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO dashboard_tiles (account_id, revision, tile_order, tile_sizes) VALUES ($1, $2, $3, $4) ON CONFLICT (account_id) DO UPDATE SET revision = EXCLUDED.revision, tile_order = EXCLUDED.tile_order, tile_sizes = EXCLUDED.tile_sizes",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "TextArray",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "56e01a1fd020137675d8b45423d6c4e50a334ea6a065a942f35eca05d33a6308"
+}

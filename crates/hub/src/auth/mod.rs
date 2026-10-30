@@ -16,6 +16,7 @@ mod sessions;
 pub mod store;
 #[cfg(test)]
 mod store_contracts;
+mod tiles;
 mod workspace;
 mod workspace_assets;
 
@@ -141,6 +142,7 @@ pub fn router(service: Service) -> Router {
         .merge(observations::router(service.clone()))
         .merge(discord::router(service.clone()))
         .merge(sessions::router(service.clone()))
+        .merge(tiles::router(service.clone()))
         .merge(workspace::router(service))
 }
 

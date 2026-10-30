@@ -15,8 +15,12 @@ use std::{
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
+#[path = "support/asset_retention_contracts.rs"]
+mod asset_retention_contracts;
 #[path = "support/discord_contracts.rs"]
 mod discord_contracts;
+#[path = "support/home_guide_contracts.rs"]
+mod home_guide_contracts;
 #[path = "support/media_contracts.rs"]
 mod media_contracts;
 #[path = "support/queues_contracts.rs"]
@@ -25,6 +29,8 @@ mod queues_contracts;
 mod refresh_contracts;
 #[path = "support/sessions_contracts.rs"]
 mod sessions_contracts;
+#[path = "support/tiles_contracts.rs"]
+mod tiles_contracts;
 
 const BINARY: &str = env!("CARGO_BIN_EXE_keida-hub-reborn");
 const ORIGIN: &str = "https://reborn.example";

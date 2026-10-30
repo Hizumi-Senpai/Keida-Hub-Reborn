@@ -307,7 +307,7 @@ async fn schema_eleven_upgrade_preserves_sixteen_relations_four_sequences_and_el
             .fetch_one(&mut db)
             .await
             .unwrap(),
-        13
+        14
     );
     assert_eq!(
         sqlx::query_as::<_, (i64, Option<Vec<u8>>)>(

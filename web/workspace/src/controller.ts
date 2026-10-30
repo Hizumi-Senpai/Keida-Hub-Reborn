@@ -1,6 +1,7 @@
 import { writable, get } from 'svelte/store';
 import { flushSync } from 'svelte';
 import { refresh, type AccessScope } from './refresh';
+import { tileController, type TileId } from './tiles';
 const PRODUCT = 'keida-hub-reborn';
 const CONTRACT = 'reborn-workspace-v1';
 const MAX_REVISION = 9223372036854775807n;
@@ -10,8 +11,6 @@ export type ServiceLink = { id: string; name: string; category: string; descript
 export type Directory = { revision: string; services: ServiceLink[]; pins_revision: string; pins: string[] };
 export type HomePanel = { id: 'note' | 'connections' | 'pins'; visible: boolean };
 export type Layout = { revision: string; panels: HomePanel[] };
-export const defaultPanels = (): HomePanel[] => [{ id: 'note', visible: true }, { id: 'connections', visible: true }, { id: 'pins', visible: true }];
-export const panelLabel = (id: HomePanel['id']): string => id === 'note' ? 'Workspace note' : id === 'connections' ? 'Connections' : 'Pinned services';
 export type Notifications = { unread_groups: number; groups: Array<{ category: 'services' | 'connections'; revision: string; read_through: string; unread: string; latest: { kind: string; label: string; source_revision: string; occurred_at: string } }> };
 type Snapshot = { schema: 1; account: { id: string; username: string; role: 'owner' | 'member' }; session_generation: string; note: Note; crafty?: Crafty | null; directory: Directory; notifications: Notifications; layout: Layout };
 type Draft = { body: string; base: string };
@@ -63,11 +62,9 @@ export type Model = {
   storageLimited: boolean; activity: Activity;
   notificationSave: 'idle' | 'saving' | 'uncertain'; notificationMessage: string;
   directorySave: 'idle' | 'saving' | 'conflict' | 'uncertain'; directoryMessage: string;
-  layoutDraft?: { base: string; panels: HomePanel[] };
-  layoutSave: 'idle' | 'saving' | 'checking-conflict' | 'conflict' | 'uncertain'; layoutMessage: string;
   guide: GuideState; observations: ObservationState; media: Record<MediaProvider, MediaState>; queues: Record<QueueProvider, QueueState>; identity: IdentityState; sessions: SessionsState;
 };
-const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '', layoutSave: 'idle', layoutMessage: '', guide: emptyGuide(), observations: emptyObservations(), media: emptyMedia(), queues: emptyQueues(), identity: emptyIdentity(), sessions: emptySessions() });
+const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '', guide: emptyGuide(), observations: emptyObservations(), media: emptyMedia(), queues: emptyQueues(), identity: emptyIdentity(), sessions: emptySessions() });
 const record = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const decimal = (v: unknown, positive = false): v is string => typeof v === 'string' && /^(0|[1-9][0-9]{0,18})$/.test(v) && BigInt(v) <= MAX_REVISION && (!positive || v !== '0');
 const text = (v: unknown): v is string => typeof v === 'string' && !v.includes('\0') && new TextEncoder().encode(v).length <= 4096;
@@ -170,7 +167,6 @@ function sessionList(v: Record<string, unknown>): SessionList {
   // provider, credential or device metadata becomes retained browser state.
   return { checked_at: v.checked_at, sessions: v.sessions.map(r => ({ id: r.id as string, created_at: r.created_at as string, expires_at: r.expires_at as string, current: r.current as boolean })) };
 }
-const samePanels = (a: HomePanel[], b: HomePanel[]): boolean => a.length === b.length && a.every((p, i) => p.id === b[i].id && p.visible === b[i].visible);
 function snapshot(value: unknown): Snapshot {
   if (!record(value) || value.product !== PRODUCT || value.contract !== CONTRACT || value.schema !== 1
       || !record(value.account) || !decimal(value.account.id, true)
@@ -299,7 +295,6 @@ export function workspace(binding: string) {
   let guideReading: AbortController | undefined;
   let observationsReading: AbortController | undefined;
   let marking: AbortController | undefined;
-  let arranging: AbortController | undefined;
   let historySerial = 0;
   let guideSerial = 0;
   let observationsSerial = 0;
@@ -330,14 +325,18 @@ export function workspace(binding: string) {
   let terminal = false;
   let admitted: AccessScope | undefined;
   let connectionPending = false, connectionUncertain = false;
+  let observationResourceKey = '';
   const state = () => get(model);
-  const refreshBusy = (): boolean => !!saving || !!editing || !!marking || !!arranging || !!identitySaving || !!sessionsSaving
+  const tiles = tileController({ request, scope: () => {
+    const s = state(); return !disposed && !terminal && s.phase === 'ready' && document.visibilityState === 'visible' ? s.snapshot : undefined;
+  }, blocked: status => invalidate(rejected(status), true) });
+  const refreshBusy = (): boolean => tiles.busy() || !!saving || !!editing || !!marking || !!identitySaving || !!sessionsSaving
     || connectionPending || connectionUncertain || mediaProviders.some(p => !!mediaSaving[p]) || queueProviders.some(p => !!queueSaving[p])
-    || [state().save, state().directorySave, state().layoutSave, state().notificationSave, state().identity.save, state().sessions.save,
+    || [state().save, state().directorySave, state().notificationSave, state().identity.save, state().sessions.save,
       ...mediaProviders.map(p => state().media[p].save), ...queueProviders.map(p => state().queues[p].save)].includes('uncertain');
   function refreshDrafts(): boolean {
     const s = state();
-    if (s.dirty || s.recovery || s.layoutDraft) return true;
+    if (s.dirty || s.recovery || tiles.drafts()) return true;
     // Inspect only whether a form has work. Never retain or copy its values.
     return Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('#workspace-root form input, #workspace-root form textarea, #workspace-root form select')).some(element => {
       if (element instanceof HTMLInputElement && ['hidden', 'submit', 'button'].includes(element.type) || element.id === 'workspace-note') return false;
@@ -365,6 +364,7 @@ export function workspace(binding: string) {
     catch { model.update((m) => ({ ...m, storageLimited: true })); }
   }
   function cancel(): void {
+    tiles.clear(); observationResourceKey = '';
     ++epoch; mediaActive = false; queuesActive = false; identityActive = false; sessionsActive = false;
     ++sessionsSerial; sessionsReading?.abort(); sessionsSaving?.abort(); sessionsReading = undefined; sessionsSaving = undefined;
     ++identitySerial; identityReading?.abort(); identitySaving?.abort(); identityReading = undefined; identitySaving = undefined;
@@ -386,7 +386,6 @@ export function workspace(binding: string) {
     ++guideSerial; guideReading?.abort(); guideReading = undefined;
     ++observationsSerial; observationsReading?.abort(); observationsReading = undefined;
     marking?.abort(); marking = undefined;
-    arranging?.abort(); arranging = undefined;
   }
   function invalidate(message: string, blocked = false): void {
     updates.pause(blocked); cancel(); terminal ||= blocked;
@@ -394,7 +393,7 @@ export function workspace(binding: string) {
   }
   function schedule(): void {
     if (timer) clearTimeout(timer);
-    if (!disposed && !terminal && state().phase === 'ready' && state().notificationSave !== 'uncertain' && state().layoutSave !== 'uncertain' && document.visibilityState === 'visible') {
+    if (!disposed && !terminal && state().phase === 'ready' && state().notificationSave !== 'uncertain' && document.visibilityState === 'visible') {
       timer = setTimeout(() => { timer = undefined; ageMedia(); ageQueues(); void read(); }, 15000);
     }
   }
@@ -404,7 +403,7 @@ export function workspace(binding: string) {
     try {
       const response = await fetch(path, {
         method, credentials: 'same-origin', cache: 'no-store', redirect: 'error', signal: controller.signal,
-        headers: { 'X-Reborn-Product': PRODUCT, 'X-Reborn-Contract': CONTRACT, 'X-CSRF-Token': binding, ...(path === '/api/workspace/guide' ? { 'X-Reborn-Guide': 'identity-v1' } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
+        headers: { 'X-Reborn-Product': PRODUCT, 'X-Reborn-Contract': CONTRACT, 'X-CSRF-Token': binding, ...(path === '/api/workspace/guide' ? { 'X-Reborn-Guide': 'home-tiles-v1' } : {}), ...(path === '/api/workspace/tiles' ? { 'X-Reborn-Tiles-Contract': 'reborn-tiles-v1' } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
         body: body ? JSON.stringify(body) : undefined,
       });
       const value: unknown = response.ok ? await response.json() : undefined;
@@ -444,7 +443,7 @@ export function workspace(binding: string) {
     return { crafty, observations: { ...emptyObservations(), message: 'Connection enrollment changed. Check newest observations for the current scope.' }, changed: true };
   }
   async function read(deliberate = false): Promise<void> {
-    if (disposed || terminal || reading || saving || editing || marking || arranging || (!deliberate && state().layoutSave === 'uncertain') || document.visibilityState !== 'visible') return;
+    if (disposed || terminal || reading || saving || editing || marking || document.visibilityState !== 'visible') return;
     const controller = new AbortController(); reading = controller; const current = epoch;
     try {
       const response = await request('/api/workspace/snapshot', controller);
@@ -459,14 +458,8 @@ export function workspace(binding: string) {
       if (before.phase === 'ready') {
         const connection = mergeCrafty(before, next.crafty);
         const conflict = before.dirty && next.note.revision !== before.base;
-        const layoutMatches = !!before.layoutDraft && samePanels(before.layoutDraft.panels, next.layout.panels);
-        const layoutResolved = layoutMatches && deliberate && ['uncertain', 'checking-conflict'].includes(before.layoutSave);
-        const layoutConflict = !!before.layoutDraft && !layoutResolved && before.layoutDraft.base !== next.layout.revision;
         const checked: Model = { ...before, snapshot: { ...next, crafty: connection.crafty },
           observations: connection.observations,
-          layoutDraft: layoutResolved ? undefined : before.layoutDraft,
-          layoutSave: layoutConflict ? 'conflict' : ['uncertain', 'checking-conflict'].includes(before.layoutSave) || layoutResolved ? 'idle' : before.layoutSave,
-          layoutMessage: layoutResolved ? 'Saved layout checked. The current layout matches your changes.' : layoutConflict ? 'A newer layout was saved. Your arrangement is unchanged; compare before saving.' : before.layoutSave === 'uncertain' ? 'The saved layout was checked. Review your arrangement before saving deliberately.' : before.layoutMessage,
           draft: before.dirty ? before.draft : next.note.body,
           base: before.dirty ? before.base : next.note.revision,
           save: conflict ? 'conflict' : ['uncertain', 'checking-conflict'].includes(before.save) ? 'idle' : before.save,
@@ -485,6 +478,7 @@ export function workspace(binding: string) {
         if (draft?.body === next.note.body) { removeDraft(); draft = undefined; }
         model.set({ ...empty('ready', 'Workspace checked.'), snapshot: next, draft: next.note.body, base: next.note.revision, recovery: draft, storageLimited: limited });
       }
+      tiles.admit({ account: next.account, session_generation: next.session_generation });
       if (mediaActive && state().snapshot?.account.role === 'owner') {
         for (const provider of mediaProviders) {
           const pending = state().media[provider].observation;
@@ -522,7 +516,7 @@ export function workspace(binding: string) {
   }
   async function save(): Promise<void> {
     const s = state();
-    if (s.phase !== 'ready' || !s.dirty || !text(s.draft) || ['conflict', 'checking-conflict', 'uncertain'].includes(s.save) || saving || marking || arranging || s.layoutSave === 'checking-conflict') return;
+    if (s.phase !== 'ready' || !s.dirty || !text(s.draft) || ['conflict', 'checking-conflict', 'uncertain'].includes(s.save) || saving || marking) return;
     reading?.abort(); reading = undefined;
     if (timer) clearTimeout(timer); timer = undefined;
     const controller = new AbortController(); saving = controller; const current = epoch;
@@ -556,7 +550,7 @@ export function workspace(binding: string) {
   }
   async function directoryMutation(path: string, payload: unknown): Promise<boolean> {
     const s = state();
-    if (s.phase !== 'ready' || !s.snapshot || editing || marking || arranging || s.layoutSave === 'checking-conflict' || s.directorySave === 'uncertain') return false;
+    if (s.phase !== 'ready' || !s.snapshot || editing || marking || s.directorySave === 'uncertain') return false;
     reading?.abort(); reading = undefined;
     const controller = new AbortController(); editing = controller; const current = epoch;
     model.update((m) => ({ ...m, directorySave: 'saving', directoryMessage: 'Saving your change…' }));
@@ -593,7 +587,7 @@ export function workspace(binding: string) {
   }
   async function markNotification(category: string, through: string): Promise<void> {
     const s = state();
-    if (disposed || terminal || s.phase !== 'ready' || !s.snapshot || marking || saving || editing || arranging || s.layoutSave === 'checking-conflict' || s.notificationSave !== 'idle'
+    if (disposed || terminal || s.phase !== 'ready' || !s.snapshot || marking || saving || editing || s.notificationSave !== 'idle'
         || !['services', 'connections'].includes(category) || !decimal(through, true)) return;
     reading?.abort(); reading = undefined;
     if (timer) clearTimeout(timer); timer = undefined;
@@ -624,80 +618,6 @@ export function workspace(binding: string) {
     }
   }
 
-  function beginLayout(): void {
-    const s = state();
-    if (s.phase !== 'ready' || !s.snapshot || s.layoutDraft || saving || editing || marking || arranging) return;
-    reading?.abort(); reading = undefined;
-    if (timer) clearTimeout(timer); timer = undefined;
-    model.set({ ...s, layoutDraft: { base: s.snapshot.layout.revision, panels: s.snapshot.layout.panels.map(p => ({ ...p })) }, layoutSave: 'idle', layoutMessage: 'Arrange your Home panels, then save to your account.' });
-    schedule();
-  }
-  function changeLayout(panels: HomePanel[]): void {
-    const s = state();
-    if (s.phase !== 'ready' || !s.layoutDraft || ['saving', 'checking-conflict', 'uncertain'].includes(s.layoutSave)) return;
-    model.set({ ...s, layoutDraft: { ...s.layoutDraft, panels }, layoutMessage: 'Your arrangement is unsaved.' });
-  }
-  function moveLayout(id: HomePanel['id'], offset: -1 | 1): void {
-    const panels = state().layoutDraft?.panels.map(p => ({ ...p })); if (!panels) return;
-    const index = panels.findIndex(p => p.id === id), next = index + offset;
-    if (index < 0 || next < 0 || next >= panels.length) return;
-    [panels[index], panels[next]] = [panels[next], panels[index]]; changeLayout(panels);
-  }
-  function toggleLayout(id: HomePanel['id']): void {
-    const panels = state().layoutDraft?.panels.map(p => ({ ...p })); if (!panels) return;
-    const panel = panels.find(p => p.id === id); if (!panel || (panel.visible && panels.filter(p => p.visible).length === 1)) return;
-    panel.visible = !panel.visible; changeLayout(panels);
-  }
-  function resetLayout(): void { changeLayout(defaultPanels()); }
-  function cancelLayout(): void {
-    const s = state();
-    if (s.phase !== 'ready' || ['saving', 'checking-conflict', 'uncertain'].includes(s.layoutSave)) return;
-    model.set({ ...s, layoutDraft: undefined, layoutSave: 'idle', layoutMessage: 'Your saved Home layout is in use.' }); schedule();
-  }
-  function resolveLayout(useSaved: boolean): void {
-    const s = state(); if (s.phase !== 'ready' || !s.snapshot || !s.layoutDraft || s.layoutSave !== 'conflict') return;
-    if (useSaved) { cancelLayout(); return; }
-    model.set({ ...s, layoutDraft: { ...s.layoutDraft, base: s.snapshot.layout.revision }, layoutSave: 'idle', layoutMessage: 'Your arrangement is kept against the checked saved layout. Review, then save deliberately.' });
-  }
-  async function saveLayout(): Promise<void> {
-    const s = state();
-    if (disposed || terminal || s.phase !== 'ready' || !s.snapshot || !s.layoutDraft || s.layoutSave !== 'idle' || saving || editing || marking || arranging) return;
-    const submitted = { base: s.layoutDraft.base, panels: s.layoutDraft.panels.map(p => ({ ...p })) };
-    if (!submitted.panels.some(p => p.visible) || samePanels(submitted.panels, s.snapshot.layout.panels)) return;
-    reading?.abort(); reading = undefined;
-    if (timer) clearTimeout(timer); timer = undefined;
-    const controller = new AbortController(); arranging = controller; const current = epoch;
-    model.update(m => ({ ...m, layoutSave: 'saving', layoutMessage: 'Saving your Home layout…' }));
-    let conflict = false;
-    try {
-      const response = await request('/api/workspace/layout', controller, { base_revision: submitted.base, panels: submitted.panels });
-      if (disposed || controller.signal.aborted || current !== epoch) return;
-      if (document.visibilityState !== 'visible') { invalidate('Workspace hidden. Checking access on return.'); return; }
-      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
-      if (response.status === 409) {
-        conflict = true;
-        model.update(m => ({ ...m, layoutSave: 'checking-conflict', layoutMessage: 'Another layout was saved first. Checking the saved arrangement before comparing; your changes are unchanged.' }));
-      } else if ([400, 413, 429].includes(response.status)) {
-        model.update(m => ({ ...m, layoutSave: 'idle', layoutMessage: 'The layout was not accepted. Keep at least one panel visible and review your changes.' }));
-      } else {
-        const v = response.value;
-        if (response.status !== 200 || !record(v)) throw new Error('Layout unavailable');
-        if (v.product !== PRODUCT || v.contract !== CONTRACT || v.schema !== 1 || !record(v.account)
-            || v.account.id !== s.snapshot.account.id || v.account.username !== s.snapshot.account.username
-            || v.account.role !== s.snapshot.account.role || v.session_generation !== s.snapshot.session_generation) {
-          invalidate('Your account scope changed. Open a fresh workspace.', true); return;
-        }
-        const next = layout(v.layout);
-        if (BigInt(next.revision) !== BigInt(submitted.base) + 1n || !samePanels(next.panels, submitted.panels)) throw new Error('Unqualified layout result');
-        model.update(m => ({ ...m, snapshot: m.snapshot ? { ...m.snapshot, layout: next } : undefined, layoutDraft: undefined, layoutSave: 'idle', layoutMessage: 'Layout saved to your account.' }));
-      }
-    } catch {
-      if (arranging === controller && current === epoch && !disposed) model.update(m => ({ ...m, layoutSave: 'uncertain', layoutMessage: 'The layout may have saved. Check the saved layout before saving again; your changes have not been sent again.' }));
-    } finally {
-      if (arranging === controller) arranging = undefined;
-      if (current === epoch && !disposed) { if (conflict) await read(true); else schedule(); }
-    }
-  }
   async function activity(category = state().activity.category, query = state().activity.query, older = false): Promise<void> {
     const s = state();
     if (disposed || terminal || s.phase !== 'ready' || !s.snapshot || document.visibilityState !== 'visible') return;
@@ -812,16 +732,37 @@ export function workspace(binding: string) {
     const s = state();
     return !disposed && !terminal && s.phase === 'ready' && s.snapshot?.account.role === 'owner' && document.visibilityState === 'visible' ? s.snapshot : undefined;
   }
+  function setObservationView(view: string, selected: TileId[]): void {
+    const owner = state().phase === 'ready' && state().snapshot?.account.role === 'owner';
+    const mediaWanted = owner && (view === 'media' || view === 'home' && selected.some(id => id === 'jellyfin' || id === 'requests'));
+    const queuesWanted = owner && (view === 'queues' || view === 'home' && selected.includes('downloads'));
+    const key = `${view}:${owner}:${mediaWanted}:${queuesWanted}`;
+    if (key === observationResourceKey) return;
+    observationResourceKey = key;
+    if (!mediaWanted && mediaActive) closeMedia(false); else if (mediaWanted) mediaActive = true;
+    if (!queuesWanted && queuesActive) closeQueues(false); else if (queuesWanted) queuesActive = true;
+  }
+  async function checkHome(id: TileId): Promise<void> {
+    if (id === 'games') { await read(true); return; }
+    if (!ownerSnapshot()) return;
+    if (id === 'jellyfin' || id === 'requests') await checkMedia(id === 'jellyfin' ? 'jellyfin' : 'seerr');
+    else if (id === 'downloads') await Promise.all(queueProviders.map(async provider => {
+      if (queueReading[provider] || queueStatusReading[provider] || queueSaving[provider]) return;
+      // Home uses the same bounded first-page reader as the detail view. No
+      // additional timer, credential copy, enrollment write or provider control.
+      await loadQueues(provider, 0);
+    }));
+  }
   function clearMediaRead(provider: MediaProvider): void {
     ++mediaSerial[provider]; mediaReading[provider]?.abort(); delete mediaReading[provider];
   }
-  function closeMedia(): void {
+  function closeMedia(flush = true): void {
     mediaActive = false;
     for (const provider of mediaProviders) {
       clearMediaRead(provider); ++mediaStatusSerial[provider]; mediaStatusReading[provider]?.abort(); delete mediaStatusReading[provider];
       const prior = state().media[provider], savingNow = !!mediaSaving[provider];
       mediaSaving[provider]?.abort(); delete mediaSaving[provider];
-      setMedia(provider, { phase: 'idle', save: savingNow ? 'uncertain' : prior.save, message: savingNow ? 'The save may have completed. Check the connection state before another change.' : prior.save === 'uncertain' || prior.save === 'conflict' ? prior.message : '' }, true);
+      setMedia(provider, { phase: 'idle', save: savingNow ? 'uncertain' : prior.save, message: savingNow ? 'The save may have completed. Check the connection state before another change.' : prior.save === 'uncertain' || prior.save === 'conflict' ? prior.message : '' }, flush);
     }
   }
   async function checkMedia(provider: MediaProvider, observe = true): Promise<void> {
@@ -924,13 +865,13 @@ export function workspace(binding: string) {
   function clearQueueRead(provider: QueueProvider): void {
     ++queueSerial[provider]; queueReading[provider]?.abort(); delete queueReading[provider];
   }
-  function closeQueues(): void {
+  function closeQueues(flush = true): void {
     queuesActive = false;
     for (const provider of queueProviders) {
       clearQueueRead(provider); ++queueStatusSerial[provider]; queueStatusReading[provider]?.abort(); delete queueStatusReading[provider];
       const prior = state().queues[provider], savingNow = !!queueSaving[provider];
       queueSaving[provider]?.abort(); delete queueSaving[provider];
-      setQueue(provider, { ...emptyQueue(), save: savingNow ? 'uncertain' : prior.save, message: savingNow ? 'The save may have completed. Check the connection state before another change.' : prior.save === 'uncertain' || prior.save === 'conflict' ? prior.message : '' }, true);
+      setQueue(provider, { ...emptyQueue(), save: savingNow ? 'uncertain' : prior.save, message: savingNow ? 'The save may have completed. Check the connection state before another change.' : prior.save === 'uncertain' || prior.save === 'conflict' ? prior.message : '' }, flush);
     }
   }
   async function checkQueues(provider: QueueProvider): Promise<void> {
@@ -1183,5 +1124,5 @@ export function workspace(binding: string) {
       document.removeEventListener('visibilitychange', visibility);
     };
   }
-  return { model, updates, refreshStatus, connectionMutation, start, edit, recover, resolve, save, signOut, check: () => read(true), editService, pins, activity, markNotification, beginLayout, moveLayout, toggleLayout, resetLayout, cancelLayout, resolveLayout, saveLayout, checkLayout: () => read(true), loadGuide, observations, openMedia, closeMedia, checkMedia, loadMedia, saveMedia, openQueues, closeQueues, checkQueues, loadQueues, saveQueues, openIdentity, closeIdentity, checkIdentity, identityAction, saveDiscordApplication, openSessions, closeSessions, checkSessions, revokeSession };
+  return { model, tiles, updates, refreshStatus, connectionMutation, start, edit, recover, resolve, save, signOut, check: () => read(true), editService, pins, activity, markNotification, loadGuide, observations, setObservationView, checkHome, openMedia, closeMedia, checkMedia, loadMedia, saveMedia, openQueues, closeQueues, checkQueues, loadQueues, saveQueues, openIdentity, closeIdentity, checkIdentity, identityAction, saveDiscordApplication, openSessions, closeSessions, checkSessions, revokeSession };
 }
