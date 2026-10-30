@@ -97,6 +97,14 @@ fn special_files_remain_metadata_only_and_never_receive_a_directory_read_open() 
         assert!(filesystem(&held).is_err());
         assert!(fat(&held).is_err());
     }
+    let device = path(Path::new("/dev/null"));
+    assert_eq!(
+        identity(&device).unwrap().mode & libc::S_IFMT,
+        libc::S_IFCHR
+    );
+    assert!(readable_directory(&device).is_err());
+    assert!(filesystem(&device).is_err());
+    assert!(fat(&device).is_err());
     assert_eq!(std::fs::read(f.0.join("regular")).unwrap(), b"retained");
 }
 

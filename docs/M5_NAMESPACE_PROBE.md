@@ -92,7 +92,7 @@ do not claim to prevent a malicious root or all uncooperative rename races.
 retains exact source/binary hashes and immutable audits. Pinned Rust1.99.1 package
 fmt/all-target checks,49 tests, Clippy-D and locked release passed. The eight new
 checks comprise actual CLI argument/nonroot refusal and six disposable OS cases:
-held-parent rename/substitution; metadata-only FIFO/socket/symlink admission;
+held-parent rename/substitution; metadata-only FIFO/device/socket/symlink admission;
 hardlinked/symlink/replaced lock refusal; mode/owner/metadata disagreement;
 absence versus non-directory errors; and explicit unsupported tmpfs refusal.
 
