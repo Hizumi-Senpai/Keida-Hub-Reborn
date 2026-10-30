@@ -355,6 +355,11 @@ pub async fn run() -> Check<()> {
     Ok(())
 }
 
+async fn home_provider_read_counts(b: &Browser) -> Check<[u64; 3]> {
+    let counts = b.evaluate("return ['/api/workspace/media/jellyfin','/api/workspace/media/seerr','/api/workspace/queues/qbittorrent'].map(path=>performance.getEntriesByType('resource').filter(e=>new URL(e.name).pathname===path&&e.initiatorType==='fetch').length);",json!([])).await?;
+    serde_json::from_value(counts).map_err(|_| "three fixed Home observation resource counts")
+}
+
 async fn observe_home(b: &Browser, id: &'static str, expected: &'static str) -> Check<()> {
     println!("RUST_BROWSER_STEP Home await automatic {id} summary");
     let observed = b.wait("return document.querySelector('[data-home-tile='+arguments[0]+']')?.textContent.includes(arguments[1]);",json!([id,expected])).await;
@@ -550,23 +555,35 @@ async fn resources_and_native_recovery() -> Check<()> {
         b.click(&format!("button[aria-label='Remove {label}']"))
             .await?;
     }
-    // Cross one actual existing workspace scheduler interval. No fake clock and
-    // no source assertion substitutes for observing absence of provider IO.
+    b.wait("return !['jellyfin','requests','downloads'].some(id=>document.querySelector('[data-home-tile='+id+']'));",json!([])).await?;
+    b.evaluate(
+        "return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r(true))));",
+        json!([]),
+    )
+    .await?;
+    let hidden_reads = home_provider_read_counts(&b).await?;
+    // Cross one actual existing workspace scheduler interval. Check application
+    // GETs as well as provider IO: a fresh server cache must not hide a poller.
     tokio::time::sleep(Duration::from_millis(15_500)).await;
     check(
-        (media.requests().len(), qbit.requests().len()) == provider_counts && f.writes() == writes,
-        "a real workspace tick with hidden provider tiles cannot poll those providers or write a preview",
+        home_provider_read_counts(&b).await? == hidden_reads
+            && (media.requests().len(), qbit.requests().len()) == provider_counts
+            && f.writes() == writes,
+        "a real workspace tick with hidden provider tiles cannot poll their APIs or providers or write a preview",
     )?;
     b.click(".cancel-tiles").await?;
     selected(&b, &DEFAULT_OWNER).await?;
     observe_home(&b, "jellyfin", "Fixture movie").await?;
     observe_home(&b, "requests", "Requested movie").await?;
     observe_home(&b, "downloads", "Fixture transfer").await?;
+    let restored_reads = home_provider_read_counts(&b).await?;
     check(
-        media.requests().len() > provider_counts.0
-            && qbit.requests().len() > provider_counts.1
+        restored_reads
+            .iter()
+            .zip(hidden_reads)
+            .all(|(after, before)| *after > before)
             && f.writes() == writes,
-        "restoring visible tiles automatically refreshes their summaries through the existing resource owner without writes",
+        "restoring visible tiles automatically reads their populated summaries through the existing resource owner without writes or forcing uncached provider IO",
     )?;
 
     step("fresh document keeps native module-failure recovery and scoped note drafts");
