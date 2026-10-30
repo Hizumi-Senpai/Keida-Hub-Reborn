@@ -4030,10 +4030,11 @@ function so(e) {
 		if (s !== he) {
 			he = s;
 			for (let t of _e) e === "home" && o.includes(t) || k.delete(t);
-			if (e === "home" && o.includes("games") || (++d, u?.abort(), u = void 0, t.update((e) => ({
+			e === "home" && o.includes("games") || (++d, u?.abort(), u = void 0, t.update((e) => ({
 				...e,
 				games: fa()
-			}))), ge === "home") for (let [t, n] of [["jellyfin", "jellyfin"], ["requests", "seerr"]]) _e.includes(t) && (e !== "home" || !o.includes(t)) && (Qe(n), ++x[n], v[n]?.abort(), delete v[n]);
+			})));
+			for (let [t, n] of [["jellyfin", "jellyfin"], ["requests", "seerr"]]) r && (e === "media" || e === "home" && o.includes(t)) || (Qe(n), ++x[n], v[n]?.abort(), delete v[n]);
 			ge = e, _e = o, !i && g ? $e(!1) : i && (g = !0), !a && ne ? st(!1) : a && (ne = !0), Ye();
 		}
 	}

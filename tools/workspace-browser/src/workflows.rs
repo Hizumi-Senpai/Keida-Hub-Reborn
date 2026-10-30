@@ -1313,6 +1313,7 @@ async fn owner_media_observations() -> Check<()> {
     step("media phase05a second browser signs in directly to Home");
     sign_in(&f, &other, &f.username, &f.password).await?;
     workspace(&f, &other).await?;
+    other.wait("return !!document.querySelector('[data-home-tile=jellyfin]') && !!document.querySelector('[data-home-tile=requests]');", json!([])).await?;
     step("media phase05b second browser opens Media from Home");
     other.click(".main-nav button:nth-child(9)").await?;
     other.wait("return document.querySelector('[data-media-provider=jellyfin]')?.dataset.mediaConfigured==='true';", json!([])).await?;

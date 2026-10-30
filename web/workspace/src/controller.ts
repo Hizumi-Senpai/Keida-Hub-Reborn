@@ -772,11 +772,12 @@ export function workspace(binding: string) {
       ++gamesSerial; gamesReading?.abort(); gamesReading = undefined;
       model.update(m => ({ ...m, games: emptyGames() }));
     }
-    if (observationView === 'home') {
-      for (const [id, provider] of [['jellyfin', 'jellyfin'], ['requests', 'seerr']] as const) {
-        if (homeSelection.includes(id) && (view !== 'home' || !selection.includes(id))) {
-          clearMediaRead(provider); ++mediaStatusSerial[provider]; mediaStatusReading[provider]?.abort(); delete mediaStatusReading[provider];
-        }
+    // Navigation may already have started a detail read before Svelte updates
+    // this resource owner. Preserve readers still wanted by the destination.
+    for (const [id, provider] of [['jellyfin', 'jellyfin'], ['requests', 'seerr']] as const) {
+      const wanted = owner && (view === 'media' || view === 'home' && selection.includes(id));
+      if (!wanted) {
+        clearMediaRead(provider); ++mediaStatusSerial[provider]; mediaStatusReading[provider]?.abort(); delete mediaStatusReading[provider];
       }
     }
     observationView = view; homeSelection = selection;
