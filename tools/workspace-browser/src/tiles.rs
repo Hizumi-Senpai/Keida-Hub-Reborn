@@ -5,6 +5,18 @@ use std::time::Duration;
 
 const DEFAULT_OWNER: [&str; 5] = ["games", "jellyfin", "requests", "downloads", "services"];
 const ARRANGED: [&str; 5] = ["services", "games", "requests", "downloads", "note"];
+const BROWSER_A: &str = "home-tiles-a";
+const BROWSER_B: &str = "home-tiles-b";
+
+async fn mark_browser(b: &Browser, marker: &'static str) -> Check<()> {
+    b.cdp("Network.enable", json!({})).await?;
+    b.cdp(
+        "Network.setExtraHTTPHeaders",
+        json!({"headers":{(crate::fixture::BROWSER_MARKER):marker}}),
+    )
+    .await?;
+    Ok(())
+}
 
 pub(super) async fn ready(b: &Browser) -> Check<()> {
     b.wait("const c=document.querySelector('.customize-tiles');return !!c && !c.disabled && document.querySelectorAll('[data-home-tile]').length>=2;",json!([])).await
@@ -61,6 +73,7 @@ pub async fn arrangement() -> Check<()> {
     step("tiles arrangement native defaults, selection, width, order and draft lifetimes");
     let f = Fixture::new().await?;
     let mut a = f.browser(true).await?;
+    mark_browser(&a, BROWSER_A).await?;
     claim(&f, &a).await?;
     let (member, password) = f.enroll_member(&a).await?;
     workspace(&f, &a).await?;
@@ -124,6 +137,7 @@ pub async fn arrangement() -> Check<()> {
 
     step("tiles reload, stale concurrent edit and explicit conflict comparison");
     let mut b = f.browser(true).await?;
+    mark_browser(&b, BROWSER_B).await?;
     sign_in(&f, &b, &f.username, &f.password).await?;
     workspace(&f, &b).await?;
     ready(&b).await?;
@@ -132,7 +146,7 @@ pub async fn arrangement() -> Check<()> {
     b.click("button[aria-label='Remove Requests']").await?;
     // Hold a real read of the old revision. The editor's base stays pinned
     // while another actual browser commits a different arrangement.
-    let stale = f.hold("/api/workspace/tiles");
+    let stale = f.hold_browser_get("/api/workspace/tiles", BROWSER_B);
     b.evaluate(
         "window.dispatchEvent(new Event('focus'));return true;",
         json!([]),
@@ -220,7 +234,7 @@ pub async fn arrangement() -> Check<()> {
     b.click(".reset-tiles").await?;
     b.click(".save-tiles").await?;
     committed(&b).await?;
-    let refreshed = f.hold("/api/workspace/tiles");
+    let refreshed = f.hold_browser_get("/api/workspace/tiles", BROWSER_A);
     a.evaluate("window.__tileReadStart=performance.now();window.dispatchEvent(new Event('focus'));return true;",json!([])).await?;
     tokio::time::timeout(Duration::from_secs(3), refreshed.entered.notified())
         .await
@@ -275,7 +289,7 @@ pub async fn arrangement() -> Check<()> {
     step("tiles privacy boundary rejects an obsolete authorized read after revocation");
     edit(&b).await?;
     b.click("button[aria-label='Add Workspace note']").await?;
-    let private = f.hold("/api/workspace/tiles");
+    let private = f.hold_browser_get("/api/workspace/tiles", BROWSER_B);
     b.evaluate(
         "window.dispatchEvent(new Event('focus'));return true;",
         json!([]),

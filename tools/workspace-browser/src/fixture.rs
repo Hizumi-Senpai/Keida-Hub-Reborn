@@ -133,10 +133,29 @@ pub enum RefreshMode {
     IdentityRace,
     Legacy17,
 }
+// Nonsecret test routing only. Never forward this marker to the application.
+pub(super) const BROWSER_MARKER: &str = "x-reborn-browser-fixture";
 struct HeldResponse {
     path: &'static str,
     method: Option<axum::http::Method>,
+    browser: Option<&'static str>,
     gate: Arc<Hold>,
+}
+impl HeldResponse {
+    fn matches(
+        &self,
+        path: &str,
+        method: &axum::http::Method,
+        headers: &axum::http::HeaderMap,
+    ) -> bool {
+        self.path == path
+            && self.method.as_ref().is_none_or(|expected| expected == method)
+            && self.browser.is_none_or(|expected| {
+                let mut markers = headers.get_all(BROWSER_MARKER).iter();
+                markers.next().and_then(|value| value.to_str().ok()) == Some(expected)
+                    && markers.next().is_none()
+            })
+    }
 }
 struct Proxy {
     upstream: String,
@@ -242,13 +261,10 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
     }
     let hold = {
         let mut held = proxy.hold.lock().expect("private fixture mutex");
-        if held.as_ref().is_some_and(|target| {
-            target.path == path
-                && target
-                    .method
-                    .as_ref()
-                    .is_none_or(|method| method == request.method())
-        }) {
+        if held
+            .as_ref()
+            .is_some_and(|target| target.matches(path, request.method(), request.headers()))
+        {
             held.take().map(|target| target.gate)
         } else {
             None
@@ -258,6 +274,7 @@ async fn forward(State(proxy): State<Arc<Proxy>>, request: Request) -> Response 
         let (parts, body) = request.into_parts();
         let body = to_bytes(body, 8192).await.map_err(|_| ())?;
         let mut headers = parts.headers;
+        headers.remove(BROWSER_MARKER);
         for name in ["host", "connection", "content-length", "transfer-encoding"] {
             headers.remove(name);
         }
@@ -908,18 +925,27 @@ impl Fixture {
         .await
     }
     pub fn hold(&self, path: &'static str) -> Arc<Hold> {
-        self.hold_method(path, None, StatusCode::OK)
+        self.hold_method(path, None, None, StatusCode::OK)
+    }
+    pub fn hold_browser_get(&self, path: &'static str, browser: &'static str) -> Arc<Hold> {
+        self.hold_method(
+            path,
+            Some(axum::http::Method::GET),
+            Some(browser),
+            StatusCode::OK,
+        )
     }
     pub fn hold_write(&self, path: &'static str) -> Arc<Hold> {
-        self.hold_method(path, Some(axum::http::Method::PUT), StatusCode::OK)
+        self.hold_method(path, Some(axum::http::Method::PUT), None, StatusCode::OK)
     }
     pub fn hold_conflict(&self, path: &'static str) -> Arc<Hold> {
-        self.hold_method(path, Some(axum::http::Method::PUT), StatusCode::CONFLICT)
+        self.hold_method(path, Some(axum::http::Method::PUT), None, StatusCode::CONFLICT)
     }
     fn hold_method(
         &self,
         path: &'static str,
         method: Option<axum::http::Method>,
+        browser: Option<&'static str>,
         expected_status: StatusCode,
     ) -> Arc<Hold> {
         let h = Arc::new(Hold {
@@ -930,6 +956,7 @@ impl Fixture {
         *self.proxy.hold.lock().expect("fixture hold mutex") = Some(HeldResponse {
             path,
             method,
+            browser,
             gate: h.clone(),
         });
         h
@@ -1388,6 +1415,63 @@ fn stop_container(cid_file: &Path) {
             .stderr(Stdio::null())
             .status();
         let _ = fs::remove_file(cid_file);
+    }
+}
+
+#[cfg(test)]
+mod held_response_tests {
+    use super::*;
+    use axum::http::{HeaderMap, HeaderValue, Method};
+
+    fn target(method: Option<Method>, browser: Option<&'static str>) -> HeldResponse {
+        HeldResponse {
+            path: "/api/workspace/tiles",
+            method,
+            browser,
+            gate: Arc::new(Hold {
+                entered: Notify::new(),
+                release: Notify::new(),
+                expected_status: StatusCode::OK,
+            }),
+        }
+    }
+
+    #[test]
+    fn browser_read_gate_rejects_other_clients_writes_and_ambiguous_markers() {
+        let target = target(Some(Method::GET), Some("home-tiles-b"));
+        let mut headers = HeaderMap::new();
+        assert!(!target.matches("/api/workspace/tiles", &Method::GET, &headers));
+        headers.insert(BROWSER_MARKER, HeaderValue::from_static("home-tiles-a"));
+        assert!(!target.matches("/api/workspace/tiles", &Method::GET, &headers));
+        headers.insert(BROWSER_MARKER, HeaderValue::from_static("home-tiles-b"));
+        assert!(target.matches("/api/workspace/tiles", &Method::GET, &headers));
+        assert!(!target.matches("/api/workspace/snapshot", &Method::GET, &headers));
+        for method in [Method::PUT, Method::POST, Method::HEAD] {
+            assert!(!target.matches("/api/workspace/tiles", &method, &headers));
+        }
+        headers.append(BROWSER_MARKER, HeaderValue::from_static("home-tiles-b"));
+        assert!(!target.matches("/api/workspace/tiles", &Method::GET, &headers));
+        headers.insert(
+            BROWSER_MARKER,
+            HeaderValue::from_static("home-tiles-b,home-tiles-b"),
+        );
+        assert!(!target.matches("/api/workspace/tiles", &Method::GET, &headers));
+        headers.insert(BROWSER_MARKER, HeaderValue::from_bytes(&[0x80]).unwrap());
+        assert!(!target.matches("/api/workspace/tiles", &Method::GET, &headers));
+    }
+
+    #[test]
+    fn retained_unscoped_gates_keep_their_existing_method_behavior() {
+        let mut headers = HeaderMap::new();
+        let any = target(None, None);
+        assert!(any.matches("/api/workspace/tiles", &Method::GET, &headers));
+        assert!(any.matches("/api/workspace/tiles", &Method::PUT, &headers));
+        headers.insert(BROWSER_MARKER, HeaderValue::from_static("unrelated-browser"));
+        assert!(any.matches("/api/workspace/tiles", &Method::GET, &headers));
+        assert!(!any.matches("/api/workspace/snapshot", &Method::GET, &headers));
+        let write = target(Some(Method::PUT), None);
+        assert!(write.matches("/api/workspace/tiles", &Method::PUT, &headers));
+        assert!(!write.matches("/api/workspace/tiles", &Method::GET, &headers));
     }
 }
 
