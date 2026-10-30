@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, beforeUpdate, afterUpdate, flushSync, tick } from 'svelte';
+  import { onMount, onDestroy, beforeUpdate, afterUpdate, flushSync, tick } from 'svelte';
   import { workspace } from './controller';
   import HomeTiles from './HomeTiles.svelte';
   import TileEditor from './TileEditor.svelte';
@@ -55,6 +55,27 @@
   $: if (view !== 'sessions' || $model.phase !== 'ready') sessionsOpened = false;
   $: if (view === 'sessions' && $model.phase === 'ready' && !sessionsOpened) { sessionsOpened = true; void controller.openSessions(); }
   const focusScope = () => $model.snapshot ? `${$model.snapshot.account.id}:${$model.snapshot.session_generation}:${$model.snapshot.account.role}` : '';
+  let navigationFrame: number | undefined;
+  function revealNavigationFocus(event: FocusEvent): void {
+    if (navigationFrame !== undefined) cancelAnimationFrame(navigationFrame);
+    navigationFrame = undefined;
+    const nav = event.currentTarget, target = event.target;
+    if (!(nav instanceof HTMLElement) || !(target instanceof HTMLButtonElement) || !nav.contains(target)
+        || !matchMedia('(max-width: 600px)').matches) return;
+    const scope = focusScope();
+    // Run once after native focus handling, and only for the still-focused node.
+    navigationFrame = requestAnimationFrame(() => {
+      navigationFrame = undefined;
+      if (scope !== focusScope() || !nav.isConnected || !target.isConnected || !nav.contains(target)
+          || document.activeElement !== target || document.visibilityState !== 'visible' || !document.hasFocus()
+          || !matchMedia('(max-width: 600px)').matches) return;
+      const viewport = nav.getBoundingClientRect(), button = target.getBoundingClientRect();
+      const left = viewport.left + 8, right = viewport.right - 8;
+      const delta = button.left < left ? button.left - left : button.right > right ? button.right - right : 0;
+      if (delta) nav.scrollBy({ left: delta, behavior: 'instant' });
+    });
+  }
+  onDestroy(() => { if (navigationFrame !== undefined) cancelAnimationFrame(navigationFrame); });
   async function finishTileEditing(action: () => void | Promise<void>): Promise<void> {
     const scope = focusScope();
     await action(); await tick();
@@ -91,7 +112,7 @@
   <aside class="sidebar" aria-label="Workspace sidebar">
     <a class="brand" href="/workspace"><span class="brand-mark" aria-hidden="true">K</span><span>Keida <small>REBORN</small></span></a>
     <p class="nav-label">YOUR SPACE</p>
-    <nav class="main-nav" aria-label="Workspace views">
+    <nav class="main-nav" aria-label="Workspace views" onfocusin={revealNavigationFocus}>
       <button class:active={view === 'home'} aria-current={view === 'home' ? 'page' : undefined} onclick={() => navigate('home')}><span aria-hidden="true">⌂</span>Home</button>
       <button class:active={view === 'note'} aria-current={view === 'note' ? 'page' : undefined} onclick={() => navigate('note')}><span aria-hidden="true">▤</span>Workspace note<span class="draft-dot" class:visible={$model.dirty} aria-hidden="true"></span></button>
       <button class:active={view === 'connections'} aria-current={view === 'connections' ? 'page' : undefined} onclick={() => navigate('connections')}><span aria-hidden="true">◇</span>Connections</button>
