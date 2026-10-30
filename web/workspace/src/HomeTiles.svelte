@@ -1,9 +1,10 @@
 <script lang="ts">
-  import type { Crafty, Directory, MediaProvider, MediaState, QueueProvider, QueueState } from './controller';
+  import type { Crafty, Directory, GameStatus, GamesState, MediaProvider, MediaState, QueueProvider, QueueState } from './controller';
   import type { Tile, TileId, TileCatalogEntry } from './tiles';
   export let tiles: Tile[];
   export let catalog: TileCatalogEntry[];
   export let crafty: Crafty | null | undefined;
+  export let games: GamesState;
   export let directory: Directory | undefined;
   export let media: Record<MediaProvider, MediaState>;
   export let queues: Record<QueueProvider, QueueState>;
@@ -21,7 +22,11 @@
   const queueLabel = (provider: QueueProvider) => provider === 'sonarr' ? 'Sonarr' : provider === 'radarr' ? 'Radarr' : 'qBittorrent';
   const providerLabel = (id: TileId) => id === 'requests' ? 'Seerr' : 'Jellyfin';
   const queueProviders: QueueProvider[] = ['sonarr', 'radarr', 'qbittorrent'];
-  type GameServer = NonNullable<Crafty>['servers'][number];
+  type GameServer = NonNullable<Crafty>['servers'][number] & { gateway?: GameStatus | null };
+  $: gameServers = (crafty?.servers ?? []).map((server, index): GameServer => {
+    const observed = games.value?.revision === crafty?.revision && games.value?.configured === crafty?.configured ? games.value?.servers[index] : undefined;
+    return observed?.name === server.name ? { ...server, join: server.join || observed.join, gateway: observed.gateway } : server;
+  });
   const gateway = (server: GameServer) => server.gateway?.freshness === 'fresh'
     && Date.now() / 1000 - server.gateway.checked_at <= 45 && Date.now() / 1000 - server.gateway.checked_at >= -5 ? server.gateway : undefined;
   const gameState = (server: GameServer) => gateway(server)?.state === 'sleeping' ? 'Sleeping'
@@ -45,7 +50,7 @@
             <p>No game connection enrolled yet.</p><p class="field-help">Choose which servers to display in Connections.</p>
           {:else}
             <ul class="game-tile-list">
-              {#each crafty.servers as server}
+              {#each gameServers as server}
                 {@const status = gameState(server)}
                 {@const players = gamePlayers(server)}
                 {@const capacity = gameCapacity(server)}

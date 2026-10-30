@@ -2,11 +2,44 @@
 //! Only handshake next-state1 and status are sent; no login/wake operation exists.
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, net::SocketAddr, time::Duration};
-use tokio::{io::{AsyncReadExt, AsyncWriteExt}, net::TcpStream, task::JoinSet};
+use tokio::{io::{AsyncReadExt, AsyncWriteExt}, net::TcpStream, task::JoinSet, sync::{Mutex, Semaphore}};
 
 const LIMIT: usize = 65536;
 const DEADLINE: Duration = Duration::from_millis(1200);
 const PROTOCOL: u32 = 767;
+
+pub struct Observer {
+    routes: Routes,
+    cache: Mutex<Option<Cache>>,
+    flight: Semaphore,
+}
+struct Cache {
+    revision: i64,
+    ids: Vec<String>,
+    at: std::time::Instant,
+    value: BTreeMap<String, Status>,
+}
+impl Observer {
+    pub fn new(routes: Routes) -> Self {
+        Self { routes, cache: Mutex::new(None), flight: Semaphore::new(1) }
+    }
+    pub fn public_join(&self, id: &str) -> Option<String> { self.routes.public_join(id) }
+    async fn cached(&self, revision: i64, ids: &[String]) -> Option<BTreeMap<String, Status>> {
+        self.cache.lock().await.as_ref().filter(|v| v.revision == revision && v.ids == ids && v.at.elapsed() < Duration::from_secs(15)).map(|v| {
+            let mut value = v.value.clone();
+            for status in value.values_mut() { status.age(); }
+            value
+        })
+    }
+    pub async fn observe(&self, revision: i64, ids: &[String]) -> Option<BTreeMap<String, Status>> {
+        if let Some(value) = self.cached(revision, ids).await { return Some(value); }
+        let Ok(_permit) = self.flight.try_acquire() else { return None; };
+        if let Some(value) = self.cached(revision, ids).await { return Some(value); }
+        let value = self.routes.collect(ids).await;
+        *self.cache.lock().await = Some(Cache { revision, ids: ids.to_vec(), at: std::time::Instant::now(), value: value.clone() });
+        Some(value)
+    }
+}
 
 #[derive(Default)]
 pub struct Routes { endpoint: Option<SocketAddr>, routes: BTreeMap<String, Route> }

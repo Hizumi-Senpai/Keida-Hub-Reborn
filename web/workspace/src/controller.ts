@@ -7,7 +7,10 @@ const CONTRACT = 'reborn-workspace-v1';
 const MAX_REVISION = 9223372036854775807n;
 type Note = { body: string; revision: string };
 export type GameStatus = { source: 'join-gateway-v1'; state: 'sleeping' | 'starting' | 'updating' | 'online' | 'unavailable'; checked_at: number; freshness: 'fresh' | 'stale'; players: number | null; capacity: number | null; error: string | null };
-export type Crafty = { revision: string; configured: boolean; checked_at: number | null; error: string | null; history_error?: 'unavailable' | null; servers: Array<{ name: string; join: string; state: string; players: number | null; capacity: number | null; collected_at: number | null; provider_at: number | null; freshness: string; error: string | null; gateway?: GameStatus }> };
+export type GamesValue = { revision: string; configured: boolean; checking: boolean; servers: Array<{ name: string; join: string; gateway: GameStatus | null }> };
+export type GamesState = { phase: 'idle' | 'loading' | 'ready' | 'error'; value?: GamesValue; message: string };
+const emptyGames = (): GamesState => ({ phase: 'idle', message: '' });
+export type Crafty = { revision: string; configured: boolean; checked_at: number | null; error: string | null; history_error?: 'unavailable' | null; servers: Array<{ name: string; join: string; state: string; players: number | null; capacity: number | null; collected_at: number | null; provider_at: number | null; freshness: string; error: string | null }> };
 export type ServiceLink = { id: string; name: string; category: string; description: string; url: string };
 export type Directory = { revision: string; services: ServiceLink[]; pins_revision: string; pins: string[] };
 export type HomePanel = { id: 'note' | 'connections' | 'pins'; visible: boolean };
@@ -63,9 +66,9 @@ export type Model = {
   storageLimited: boolean; activity: Activity;
   notificationSave: 'idle' | 'saving' | 'uncertain'; notificationMessage: string;
   directorySave: 'idle' | 'saving' | 'conflict' | 'uncertain'; directoryMessage: string;
-  guide: GuideState; observations: ObservationState; media: Record<MediaProvider, MediaState>; queues: Record<QueueProvider, QueueState>; identity: IdentityState; sessions: SessionsState;
+  guide: GuideState; games: GamesState; observations: ObservationState; media: Record<MediaProvider, MediaState>; queues: Record<QueueProvider, QueueState>; identity: IdentityState; sessions: SessionsState;
 };
-const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '', guide: emptyGuide(), observations: emptyObservations(), media: emptyMedia(), queues: emptyQueues(), identity: emptyIdentity(), sessions: emptySessions() });
+const empty = (phase: Model['phase'], message: string): Model => ({ phase, message, draft: '', base: '0', dirty: false, save: 'idle', storageLimited: false, directorySave: 'idle', directoryMessage: '', activity: emptyActivity(), notificationSave: 'idle', notificationMessage: '', guide: emptyGuide(), games: emptyGames(), observations: emptyObservations(), media: emptyMedia(), queues: emptyQueues(), identity: emptyIdentity(), sessions: emptySessions() });
 const record = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const decimal = (v: unknown, positive = false): v is string => typeof v === 'string' && /^(0|[1-9][0-9]{0,18})$/.test(v) && BigInt(v) <= MAX_REVISION && (!positive || v !== '0');
 const text = (v: unknown): v is string => typeof v === 'string' && !v.includes('\0') && new TextEncoder().encode(v).length <= 4096;
@@ -189,12 +192,7 @@ function snapshot(value: unknown): Snapshot {
         || (c.history_error !== undefined && c.history_error !== null && c.history_error !== 'unavailable') || !Array.isArray(c.servers) || c.servers.length > 8
         || c.servers.some((s: unknown) => !record(s) || typeof s.name !== 'string' || s.name.length > 80 || typeof s.join !== 'string' || s.join.length > 253
           || !['running', 'stopped', 'unknown'].includes(String(s.state)) || !['fresh', 'stale', 'unknown'].includes(String(s.freshness))
-          || !count(s.players) || !count(s.capacity) || !count(s.collected_at) || !count(s.provider_at) || !message(s.error)
-          || (s.gateway !== undefined && (!record(s.gateway) || s.gateway.source !== 'join-gateway-v1'
-            || !['sleeping', 'starting', 'updating', 'online', 'unavailable'].includes(String(s.gateway.state))
-            || !['fresh', 'stale'].includes(String(s.gateway.freshness)) || !count(s.gateway.checked_at) || s.gateway.checked_at === null
-            || !count(s.gateway.players) || !count(s.gateway.capacity) || !message(s.gateway.error)
-            || (s.gateway.state !== 'online' && (s.gateway.players !== null || s.gateway.capacity !== null)))))) throw new Error('Invalid connection response');
+          || !count(s.players) || !count(s.capacity) || !count(s.collected_at) || !count(s.provider_at) || !message(s.error)))) throw new Error('Invalid connection response');
   }
   notifications(value.notifications);
   layout(value.layout);
@@ -210,6 +208,22 @@ function stored(value: string | null): Draft | undefined {
 
 const mediaError = (v: unknown): v is string | null => v === null || (typeof v === 'string' && ['checking', 'unavailable', 'invalid_configuration', 'timeout', 'transport', 'denied', 'provider_error', 'oversized', 'malformed'].includes(v));
 const boundedNumber = (v: unknown, max: number, min = 0): v is number => typeof v === 'number' && Number.isSafeInteger(v) && v >= min && v <= max;
+function gamesValue(v: Record<string, unknown>): GamesValue {
+  if (!decimal(v.revision) || typeof v.configured !== 'boolean' || typeof v.checking !== 'boolean'
+      || !Array.isArray(v.servers) || v.servers.length > 8 || (!v.configured && v.servers.length !== 0)
+      || v.servers.some((s: unknown) => !record(s) || !field(s.name, 80, true) || !field(s.join, 259)
+        || (s.gateway !== null && (!record(s.gateway) || s.gateway.source !== 'join-gateway-v1'
+          || !['sleeping', 'starting', 'updating', 'online', 'unavailable'].includes(String(s.gateway.state))
+          || !['fresh', 'stale'].includes(String(s.gateway.freshness)) || !boundedNumber(s.gateway.checked_at, 253402300799)
+          || !providerCount(s.gateway.players) || !providerCount(s.gateway.capacity) || !providerError(s.gateway.error)
+          || (s.gateway.state !== 'online' && (s.gateway.players !== null || s.gateway.capacity !== null)))))) throw new Error('Invalid game status');
+  const value = v as unknown as GamesValue;
+  return { revision: value.revision, configured: value.configured, checking: value.checking,
+    servers: value.servers.map(s => ({ name: s.name, join: s.join, gateway: s.gateway === null ? null : {
+      source: s.gateway.source, state: s.gateway.state, checked_at: s.gateway.checked_at, freshness: s.gateway.freshness,
+      players: s.gateway.players, capacity: s.gateway.capacity, error: s.gateway.error,
+    } })) };
+}
 const mediaOffset = (v: unknown): v is number => boundedNumber(v, 48) && v % 12 === 0;
 function agedMediaObservation(value: MediaObservation, at = Math.floor(Date.now() / 1000)): MediaObservation {
   const collected = value.checked_at;
@@ -300,6 +314,8 @@ export function workspace(binding: string) {
   let historyReading: AbortController | undefined;
   let guideReading: AbortController | undefined;
   let observationsReading: AbortController | undefined;
+  let gamesReading: AbortController | undefined;
+  let gamesSerial = 0;
   let marking: AbortController | undefined;
   let historySerial = 0;
   let guideSerial = 0;
@@ -374,6 +390,7 @@ export function workspace(binding: string) {
   }
   function cancel(): void {
     tiles.clear(); observationResourceKey = ''; observationView = ''; homeSelection = []; homeReadAt.clear();
+    ++gamesSerial; gamesReading?.abort(); gamesReading = undefined;
     ++epoch; mediaActive = false; queuesActive = false; identityActive = false; sessionsActive = false;
     ++sessionsSerial; sessionsReading?.abort(); sessionsSaving?.abort(); sessionsReading = undefined; sessionsSaving = undefined;
     ++identitySerial; identityReading?.abort(); identitySaving?.abort(); identityReading = undefined; identitySaving = undefined;
@@ -449,6 +466,7 @@ export function workspace(binding: string) {
       && (BigInt(incoming.revision) < BigInt(prior.revision) || (keepMatching && incoming.revision === prior.revision)) ? prior : incoming;
     if (prior?.revision === crafty?.revision) return { crafty, observations: before.observations, changed: false };
     ++observationsSerial; observationsReading?.abort(); observationsReading = undefined;
+    ++gamesSerial; gamesReading?.abort(); gamesReading = undefined; homeReadAt.delete('games');
     return { crafty, observations: { ...emptyObservations(), message: 'Connection enrollment changed. Check newest observations for the current scope.' }, changed: true };
   }
   async function read(deliberate = false): Promise<void> {
@@ -468,7 +486,7 @@ export function workspace(binding: string) {
         const connection = mergeCrafty(before, next.crafty);
         const conflict = before.dirty && next.note.revision !== before.base;
         const checked: Model = { ...before, snapshot: { ...next, crafty: connection.crafty },
-          observations: connection.observations,
+          observations: connection.observations, games: connection.changed ? emptyGames() : before.games,
           draft: before.dirty ? before.draft : next.note.body,
           base: before.dirty ? before.base : next.note.revision,
           save: conflict ? 'conflict' : ['uncertain', 'checking-conflict'].includes(before.save) ? 'idle' : before.save,
@@ -749,6 +767,11 @@ export function workspace(binding: string) {
     const key = `${view}:${owner}:${selection.join(',')}`;
     if (key === observationResourceKey) return;
     observationResourceKey = key;
+    for (const id of homeSelection) if (view !== 'home' || !selection.includes(id)) homeReadAt.delete(id);
+    if (view !== 'home' || !selection.includes('games')) {
+      ++gamesSerial; gamesReading?.abort(); gamesReading = undefined;
+      model.update(m => ({ ...m, games: emptyGames() }));
+    }
     if (observationView === 'home') {
       for (const [id, provider] of [['jellyfin', 'jellyfin'], ['requests', 'seerr']] as const) {
         if (homeSelection.includes(id) && (view !== 'home' || !selection.includes(id))) {
@@ -762,10 +785,15 @@ export function workspace(binding: string) {
     refreshHome();
   }
   function refreshHome(): void {
-    if (observationView !== 'home' || !ownerSnapshot()) return;
+    if (observationView !== 'home' || disposed || terminal || state().phase !== 'ready' || document.visibilityState !== 'visible') return;
     const at = performance.now();
     for (const id of homeSelection) {
-      if (!['jellyfin', 'requests', 'downloads'].includes(id) || at - (homeReadAt.get(id) ?? -Infinity) < 14000) continue;
+      if (at - (homeReadAt.get(id) ?? -Infinity) < 14000) continue;
+      if (id === 'games') {
+        if (!gamesReading) { homeReadAt.set(id, at); void loadGames(); }
+        continue;
+      }
+      if (!ownerSnapshot() || !['jellyfin', 'requests', 'downloads'].includes(id)) continue;
       if (id === 'jellyfin' || id === 'requests') {
         const provider = id === 'jellyfin' ? 'jellyfin' : 'seerr';
         if (mediaReading[provider] || mediaStatusReading[provider] || mediaSaving[provider] || state().media[provider].save !== 'idle') continue;
@@ -776,8 +804,34 @@ export function workspace(binding: string) {
       }
     }
   }
+  async function loadGames(): Promise<void> {
+    const captured = state().snapshot;
+    if (!captured || disposed || terminal || state().phase !== 'ready' || gamesReading
+        || document.visibilityState !== 'visible' || observationView !== 'home' || !homeSelection.includes('games')) return;
+    const controller = new AbortController(); gamesReading = controller;
+    const serial = ++gamesSerial, current = epoch;
+    model.update(m => ({ ...m, games: { ...m.games, phase: 'loading', message: '' } }));
+    try {
+      const response = await request('/api/workspace/games', controller);
+      if (disposed || controller.signal.aborted || serial !== gamesSerial || current !== epoch || !currentScope(captured)) return;
+      if ([401, 403, 426].includes(response.status)) { invalidate(rejected(response.status), true); return; }
+      if (response.status === 409) {
+        model.update(m => ({ ...m, games: { phase: 'error', message: 'Server details changed. Checking for an update.' } }));
+        return;
+      }
+      if (response.status !== 200) throw new Error('Game status unavailable');
+      if (!scoped(response.value, captured)) { invalidate('Your account scope changed. Open a fresh workspace.', true); return; }
+      const value = gamesValue(response.value), revision = state().snapshot?.crafty?.revision;
+      if (revision && BigInt(value.revision) < BigInt(revision)) throw new Error('Older server scope');
+      model.update(m => ({ ...m, games: { phase: 'ready', value, message: '' } }));
+    } catch {
+      if (!disposed && serial === gamesSerial && current === epoch && currentScope(captured)) {
+        model.update(m => ({ ...m, games: { phase: 'error', message: 'Status is taking a little longer. It will be checked again.' } }));
+      }
+    } finally { if (gamesReading === controller) gamesReading = undefined; }
+  }
   async function checkHome(id: TileId): Promise<void> {
-    if (id === 'games') { await read(true); return; }
+    if (id === 'games') { await read(true); await loadGames(); return; }
     if (!ownerSnapshot()) return;
     if (id === 'jellyfin' || id === 'requests') await checkMedia(id === 'jellyfin' ? 'jellyfin' : 'seerr');
     else if (id === 'downloads') await Promise.all(queueProviders.map(async provider => {

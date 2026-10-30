@@ -4,6 +4,7 @@ mod activity;
 mod connections;
 pub mod crypto;
 mod directory;
+mod games;
 mod discord;
 mod discord_flow;
 mod guide;
@@ -64,6 +65,7 @@ pub struct Service {
     key_id: Arc<Vec<u8>>,
     origin: Arc<str>,
     observer: Arc<crate::providers::crafty::Observer>,
+    game_observer: Arc<crate::providers::game_status::Observer>,
     media_observer: Arc<crate::providers::media::Observer>,
     queue_observer: Arc<crate::providers::queues::Observer>,
     discord_client: Arc<crate::providers::discord::Client>,
@@ -93,7 +95,8 @@ impl Service {
             secrets,
             key_id,
             origin: origin.into(),
-            observer: Arc::new(crate::providers::crafty::Observer::new().with_game_routes(game_routes)),
+            observer: Arc::new(crate::providers::crafty::Observer::new()),
+            game_observer: Arc::new(crate::providers::game_status::Observer::new(game_routes)),
             media_observer: Arc::new(crate::providers::media::Observer::new()),
             queue_observer: Arc::new(crate::providers::queues::Observer::new()),
             discord_client: Arc::new(client),
@@ -143,6 +146,7 @@ pub fn router(service: Service) -> Router {
         .merge(connections::router(service.clone()))
         .merge(directory::router(service.clone()))
         .merge(guide::router(service.clone()))
+        .merge(games::router(service.clone()))
         .merge(activity::router(service.clone()))
         .merge(notifications::router(service.clone()))
         .merge(layout::router(service.clone()))
