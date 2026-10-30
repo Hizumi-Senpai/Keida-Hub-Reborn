@@ -493,12 +493,12 @@ textarea::placeholder {
   .sidebar {
     border-right:0;
     border-bottom:1px solid var(--line);
-    padding:20px;
+    padding:16px 20px;
     gap:0
   }
   .brand {
     font-size:22px;
-    margin-bottom:20px
+    margin-bottom:10px
   }
   .brand small {
     display:inline;
@@ -514,23 +514,35 @@ textarea::placeholder {
     display:none
   }
   .main-nav {
-    grid-template-columns:1fr 1fr;
-    gap:10px
+    display:flex;
+    min-width:0;
+    max-width:100%;
+    overflow-x:auto;
+    overscroll-behavior-x:contain;
+    padding:8px;
+    scroll-padding-inline:8px;
+    gap:6px
   }
   .main-nav button {
+    flex:0 0 auto;
+    min-height:44px;
+    scroll-margin-inline:8px;
+    white-space:nowrap;
     padding:9px 11px;
     font-size:12px
   }
   .sidebar-bottom {
-    margin-top:18px;
+    margin-top:10px;
+    min-width:0;
     padding-top:0;
     display:grid;
     grid-template-columns:minmax(0,1fr) auto;
     align-items:center;
-    column-gap:20px
+    gap:8px 14px
   }
   .account-link {
     border:0;
+    min-height:44px;
     padding:0
   }
   .account-link small {
@@ -538,14 +550,26 @@ textarea::placeholder {
   }
   .sign-out {
     margin:0;
+    min-height:44px;
     font-size:11px;
     gap:10px
   }
   .version {
-    grid-column:1/-1;
+    min-width:0;
     font-size:9px;
-    margin-top:15px;
-    padding-top:10px
+    border:0;
+    margin:0;
+    padding:0
+  }
+  .version summary {
+    min-height:44px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:3px
+  }
+  .version[open] {
+    grid-column:1/-1
   }
   .workspace-content {
     padding:30px 20px 22px
@@ -833,6 +857,10 @@ textarea::placeholder {
 
 .refresh-control { display: grid; gap: .35rem; margin-top: .7rem; }
 .refresh-control .text-button { justify-self: start; }
+@media (max-width: 600px) {
+  .refresh-control { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: .7rem; margin-top: 0; }
+  .refresh-control .text-button, .review-sessions { min-height: 44px; }
+}
 .refresh-notice { margin-bottom: 1.5rem; }
 .refresh-notice h2 { margin-top: 0; }
 .refresh-builds { display: grid; grid-template-columns: auto 1fr; gap: .4rem 1rem; overflow-wrap: anywhere; }

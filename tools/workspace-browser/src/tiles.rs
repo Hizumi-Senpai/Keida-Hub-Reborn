@@ -78,6 +78,7 @@ async fn arrange_steps(b: &Browser) -> Check<()> {
     check(b.evaluate("const e=document.querySelector('button[aria-label=\"Move Pinned services up\"]');e.focus();return document.activeElement===e;",json!([])).await?==true,"the final move to the first row starts on its native keyboard control")?;
     b.keys("\u{e007}").await?;
     b.wait("return document.activeElement?.closest('[data-tile-row]')?.dataset.tileRow==='services'&&document.querySelector('button[aria-label=\"Move Pinned services up\"]').disabled;",json!([])).await?;
+    check(b.evaluate("return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(document.activeElement?.closest('[data-tile-row]')?.dataset.tileRow==='services'&&document.querySelector('button[aria-label=\"Move Pinned services up\"]').disabled))));",json!([])).await?==true,"the first-row keyboard move retains row focus after two rendered frames")?;
     // Native keyboard selection changes the actual select and its bound state.
     step("tiles arrange native width selection");
     b.click("select[aria-label='Game servers tile width']")
@@ -377,6 +378,9 @@ async fn export_home_fixture_png(b: &Browser, viewport: &'static str) -> Check<(
     )?;
     check(b.evaluate("const home=document.querySelector('section.home-view');return location.pathname==='/workspace'&&document.querySelector('.main-nav button:first-child')?.getAttribute('aria-current')==='page'&&!!home&&home.getClientRects().length>0&&!home.closest('[hidden]')&&!document.querySelector('.tiles-editor')&&home.textContent.includes('Reviewed Home fixture game')&&home.textContent.includes('Fixture movie')&&home.textContent.includes('Requested movie')&&home.textContent.includes('Fixture transfer')&&[...document.querySelectorAll('input,textarea')].filter(e=>e.type!=='hidden'&&e.id!=='workspace-note').every(e=>!e.value||e.type==='checkbox')&&![...document.querySelectorAll('form.credential-form,[type=password]')].some(e=>e.getClientRects().length>0&&!e.closest('[hidden]'));",json!([])).await?==true,"only the fixed fictional Home fixture with closed cleared provider forms may be exported")?;
     b.evaluate("window.scrollTo(0,0);return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r(true))));",json!([])).await?;
+    if viewport == "mobile" {
+        check(b.evaluate("const tile=document.querySelector('[data-home-tile=games]')?.getBoundingClientRect();return innerWidth===390&&!!tile&&tile.top>=0&&tile.top+120<=innerHeight&&document.documentElement.scrollWidth<=innerWidth+1;",json!([])).await?==true,"mobile Home shows useful game-tile content in the first viewport without horizontal page overflow")?;
+    }
     let png = b.fixture_home_screenshot().await?;
     println!("SAFE_HOME_FIXTURE_PNG {viewport} {png}");
     Ok(())
@@ -469,6 +473,12 @@ async fn resources_and_native_recovery() -> Check<()> {
         "populated Home observations remain useful at390px",
     )?;
     export_home_fixture_png(&b, "mobile").await?;
+    check(b.evaluate("const first=document.querySelector('.main-nav button');first.focus();return document.activeElement===first;",json!([])).await?==true,"mobile navigation starts with actual Home button focus")?;
+    b.keys(&"\u{e004}".repeat(10)).await?;
+    check(b.evaluate("const nav=document.querySelector('.main-nav'),last=nav.lastElementChild,n=nav.getBoundingClientRect(),r=last.getBoundingClientRect();return document.activeElement===last&&r.left>=n.left&&r.right<=n.right&&document.documentElement.scrollWidth<=innerWidth+1;",json!([])).await?==true,"native Tab reveals the final mobile navigation control without page overflow")?;
+    b.click(".version summary").await?;
+    b.wait("const v=document.querySelector('.version'),r=v.getBoundingClientRect();return v.open&&r.left>=0&&r.right<=innerWidth&&document.documentElement.scrollWidth<=innerWidth+1;",json!([])).await?;
+    b.click(".version summary").await?;
 
     step("hidden Home provider tiles do not acquire a second observation poller");
     let provider_counts = (media.requests().len(), qbit.requests().len());

@@ -69,12 +69,16 @@
   });
   afterUpdate(() => {
     const prior = movedFocus; movedFocus = undefined;
+    if (!prior) return;
+    const disabledButton = prior.element instanceof HTMLButtonElement && prior.element.disabled;
     // Keyed moves can temporarily blur a focused descendant. This render cycle
-    // restores only a visible same-account node when focus fell back to body.
-    if (prior && view === 'home' && $model.phase === 'ready' && prior.scope === focusScope() && prior.element.isConnected
-        && (panelGrid?.contains(prior.element) || tileEditor?.contains(prior.element)) && document.activeElement === document.body && document.visibilityState === 'visible'
+    // also hands focus off a newly disabled button before the browser blurs it.
+    // A different focused control always keeps focus.
+    if (view === 'home' && $model.phase === 'ready' && prior.scope === focusScope() && prior.element.isConnected
+        && (panelGrid?.contains(prior.element) || tileEditor?.contains(prior.element))
+        && (document.activeElement === document.body || disabledButton && document.activeElement === prior.element) && document.visibilityState === 'visible'
         && document.hasFocus() && prior.element.getClientRects().length > 0) {
-      const target = prior.element instanceof HTMLButtonElement && prior.element.disabled
+      const target = disabledButton
         ? prior.element.closest<HTMLElement>('[data-tile-row]') : prior.element;
       target?.focus({ preventScroll: true });
     }
