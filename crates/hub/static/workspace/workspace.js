@@ -6486,8 +6486,25 @@ function Dl(e, t) {
 			I(g, e);
 		}) : I(g, e), H(_)?.focus(), e === "activity" && d.activity(), e === "notifications" && d.check(), (e === "integrations" || e === "roadmap") && d.loadGuide(), e === "media" && d.openMedia(), e === "queues" && d.openQueues();
 	}
-	let ee = /* @__PURE__ */ F(!1), te = /* @__PURE__ */ F(!1), ne = () => r().snapshot ? `${r().snapshot.account.id}:${r().snapshot.session_generation}:${r().snapshot.account.role}` : "";
-	async function re(e) {
+	let ee = /* @__PURE__ */ F(!1), te = /* @__PURE__ */ F(!1), ne = () => r().snapshot ? `${r().snapshot.account.id}:${r().snapshot.session_generation}:${r().snapshot.account.role}` : "", re;
+	function ie(e) {
+		re !== void 0 && cancelAnimationFrame(re), re = void 0;
+		let t = e.currentTarget, n = e.target;
+		if (!(t instanceof HTMLElement) || !(n instanceof HTMLButtonElement) || !t.contains(n) || !matchMedia("(max-width: 600px)").matches) return;
+		let r = ne();
+		re = requestAnimationFrame(() => {
+			if (re = void 0, r !== ne() || !t.isConnected || !n.isConnected || !t.contains(n) || document.activeElement !== n || document.visibilityState !== "visible" || !document.hasFocus() || !matchMedia("(max-width: 600px)").matches) return;
+			let e = t.getBoundingClientRect(), i = n.getBoundingClientRect(), a = e.left + 8, o = e.right - 8, s = i.left < a ? i.left - a : i.right > o ? i.right - o : 0;
+			s && t.scrollBy({
+				left: s,
+				behavior: "instant"
+			});
+		});
+	}
+	Ii(() => {
+		re !== void 0 && cancelAnimationFrame(re);
+	});
+	async function ae(e) {
 		let t = ne();
 		await e(), await pr(), t && t === ne() && H(g) === "home" && r().phase === "ready" && !n().draft && document.activeElement === document.body && document.visibilityState === "visible" && document.hasFocus() && H(b)?.isConnected && !H(b).disabled && H(b).getClientRects().length > 0 && H(b).focus({ preventScroll: !0 });
 	}
@@ -6524,33 +6541,31 @@ function Dl(e, t) {
 	}), wn(() => (H(g), r(), H(te)), () => {
 		H(g) === "sessions" && r().phase === "ready" && !H(te) && (I(te, !0), d.openSessions());
 	}), Tn(), wi();
-	var ie = El(), ae = B(R(ie), 2), oe = L(ae), se = B(L(oe), 4), ce = L(se);
-	let le;
-	var D = B(ce, 2);
+	var oe = El(), se = B(R(oe), 2), ce = L(se), le = B(L(ce), 4), D = L(le);
 	let ue;
-	var de = B(L(D), 2);
+	var de = B(D, 2);
 	let fe;
-	j(D);
-	var pe = B(D, 2);
+	var pe = B(L(de), 2);
 	let me;
-	var O = B(pe, 2);
+	j(de);
+	var O = B(de, 2);
 	let he;
 	var ge = B(O, 2);
 	let _e;
 	var k = B(ge, 2);
 	let ve;
-	var A = B(L(k), 2), ye = (e) => {
+	var A = B(k, 2);
+	let ye;
+	var be = B(L(A), 2), M = (e) => {
 		var t = _l(), n = z(t, !0);
 		V(() => {
 			X(t, "aria-label", (r(), U(() => `${r().snapshot.notifications.unread_groups} unread groups`))), J(n, (r(), U(() => r().snapshot.notifications.unread_groups)));
 		}), q(e, t);
 	};
-	Y(A, (e) => {
-		r(), U(() => r().snapshot?.notifications.unread_groups) && e(ye);
-	}), j(k);
-	var be = B(k, 2);
-	let M;
-	var Se = B(be, 2);
+	Y(be, (e) => {
+		r(), U(() => r().snapshot?.notifications.unread_groups) && e(M);
+	}), j(A);
+	var Se = B(A, 2);
 	let Ce;
 	var we = B(Se, 2);
 	let Te;
@@ -6558,35 +6573,37 @@ function Dl(e, t) {
 	let De;
 	var Oe = B(Ee, 2);
 	let ke;
-	j(se);
-	var Ae = B(se, 2), je = L(Ae), Me = B(L(je)), Ne = L(Me), Pe = z(Ne, !0), Fe = z(B(Ne), !0);
-	j(Me), j(je);
-	var Ie = B(je, 2), Le = B(Ie, 2), Re = B(B(L(Le), 2), 2);
-	pi(Re), xe(2), j(Le);
-	var ze = B(Le, 2), Be = L(ze), Ve = L(Be, !0);
-	xe(), j(Be);
-	var He = B(Be, 2), Ge = B(L(He)), Ke = L(Ge), qe = (e) => {
+	var Ae = B(Oe, 2);
+	let je;
+	j(le);
+	var Me = B(le, 2), Ne = L(Me), Pe = B(L(Ne)), Fe = L(Pe), Ie = z(Fe, !0), Le = z(B(Fe), !0);
+	j(Pe), j(Ne);
+	var Re = B(Ne, 2), ze = B(Re, 2), Be = B(B(L(ze), 2), 2);
+	pi(Be), xe(2), j(ze);
+	var Ve = B(ze, 2), He = L(Ve), Ge = L(He, !0);
+	xe(), j(He);
+	var Ke = B(He, 2), qe = B(L(Ke)), Je = L(qe), Ye = (e) => {
 		var t = vl(), n = z(t, !0);
 		V(() => {
 			X(t, "href", `https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/commit/${C}`), J(n, C);
 		}), q(e, t);
-	}, Je = /* @__PURE__ */ pt(() => U(() => /^[a-f0-9]{40}$/.test(C))), Ye = (e) => {
+	}, Xe = /* @__PURE__ */ pt(() => U(() => /^[a-f0-9]{40}$/.test(C))), Ze = (e) => {
 		var t = Mr();
 		V(() => J(t, C)), q(e, t);
 	};
-	Y(Ke, (e) => {
-		H(Je) ? e(qe) : e(Ye, -1);
-	}), j(Ge);
-	var Xe = B(Ge, 2), Ze = z(Xe, !0), Qe = z(B(Xe, 2), !0);
-	xe(2), j(He), j(ze);
-	var $e = B(ze, 2), et = L($e), nt = z(et, !0), rt = B(et);
-	j($e), j(Ae), j(oe);
-	var it = B(oe, 2), at = L(it), ot = L(at), st = B(L(ot)), ct = z(st, !0);
-	Ci(st, (e) => I(_, e), () => H(_)), j(ot);
-	var lt = B(ot), ut = B(L(lt), 1, !0);
-	j(lt), j(at);
-	var dt = B(at, 2), ft = z(dt, !0), mt = B(dt, 2);
-	gl(mt, {
+	Y(Je, (e) => {
+		H(Xe) ? e(Ye) : e(Ze, -1);
+	}), j(qe);
+	var Qe = B(qe, 2), $e = z(Qe, !0), et = z(B(Qe, 2), !0);
+	xe(2), j(Ke), j(Ve);
+	var nt = B(Ve, 2), rt = L(nt), it = z(rt, !0), at = B(rt);
+	j(nt), j(Me), j(ce);
+	var ot = B(ce, 2), st = L(ot), ct = L(st), lt = B(L(ct)), ut = z(lt, !0);
+	Ci(lt, (e) => I(_, e), () => H(_)), j(ct);
+	var dt = B(ct), ft = B(L(dt), 1, !0);
+	j(dt), j(st);
+	var mt = B(st, 2), ht = z(mt, !0), gt = B(mt, 2);
+	gl(gt, {
 		get control() {
 			return U(() => d.updates);
 		},
@@ -6600,32 +6617,32 @@ function Dl(e, t) {
 			return n();
 		}
 	});
-	var ht = B(mt, 2), gt = (e) => {
+	var _t = B(gt, 2), vt = (e) => {
 		q(e, yl());
 	};
-	Y(ht, (e) => {
-		r(), U(() => r().phase !== "ready") && e(gt);
+	Y(_t, (e) => {
+		r(), U(() => r().phase !== "ready") && e(vt);
 	});
-	var _t = B(ht, 2), vt = L(_t), yt = L(vt), P = z(yt, !0), bt = B(yt);
-	Ci(bt, (e) => I(b, e), () => H(b)), j(vt);
-	var xt = B(vt, 2), St = L(xt);
+	var yt = B(_t, 2), P = L(yt), bt = L(P), xt = z(bt, !0), St = B(bt);
+	Ci(St, (e) => I(b, e), () => H(b)), j(P);
+	var Ct = B(P, 2), wt = L(Ct);
 	{
 		let e = /* @__PURE__ */ N(() => (r(), U(() => r().phase === "ready")));
-		Ho(St, {
+		Ho(wt, {
 			get state() {
 				return n();
 			},
 			get control() {
 				return m;
 			},
-			finish: re,
+			finish: ae,
 			get authorized() {
 				return H(e);
 			}
 		});
 	}
-	j(xt), Ci(xt, (e) => I(y, e), () => H(y));
-	var Ct = B(xt, 2), wt = (e) => {
+	j(Ct), Ci(Ct, (e) => I(y, e), () => H(y));
+	var Tt = B(Ct, 2), Et = (e) => {
 		{
 			let t = /* @__PURE__ */ N(() => (r(), U(() => r().snapshot?.crafty))), i = /* @__PURE__ */ N(() => (r(), U(() => r().snapshot?.directory))), a = /* @__PURE__ */ N(() => (r(), U(() => r().snapshot?.note.revision !== "0"))), o = /* @__PURE__ */ N(() => (r(), U(() => r().phase === "ready"))), c = /* @__PURE__ */ N(() => (r(), U(() => r().snapshot?.account.role === "owner")));
 			No(e, {
@@ -6672,19 +6689,19 @@ function Dl(e, t) {
 				$$legacy: !0
 			});
 		}
-	}, Tt = (e) => {
+	}, Dt = (e) => {
 		var t = bl(), r = L(t), i = z(r, !0), a = B(r, 2), o = L(a);
 		xe(), j(a), j(t), V(() => {
 			J(i, (n(), U(() => n().phase === "error" ? "Your tiles could not be loaded" : "Getting your tiles ready"))), o.disabled = (n(), U(() => n().phase === "loading"));
 		}), G("click", o, () => void m.check()), q(e, t);
 	};
-	Y(Ct, (e) => {
-		r(), n(), U(() => r().phase === "ready" && n().value) ? e(wt) : (r(), U(() => r().phase === "ready") && e(Tt, 1));
-	}), j(_t);
-	var Et = B(_t, 2), Dt = L(Et);
+	Y(Tt, (e) => {
+		r(), n(), U(() => r().phase === "ready" && n().value) ? e(Et) : (r(), U(() => r().phase === "ready") && e(Dt, 1));
+	}), j(yt);
+	var Ot = B(yt, 2), kt = L(Ot);
 	{
 		let e = /* @__PURE__ */ N(() => (r(), U(() => r().snapshot?.directory))), t = /* @__PURE__ */ N(() => (r(), U(() => r().phase === "ready"))), n = /* @__PURE__ */ N(() => (r(), U(() => r().snapshot?.account.role === "owner")));
-		Es(Dt, {
+		Es(kt, {
 			get directory() {
 				return H(e);
 			},
@@ -6713,54 +6730,54 @@ function Dl(e, t) {
 			}
 		});
 	}
-	j(Et);
-	var Ot = B(Et, 2), kt = L(Ot), jt = z(B(L(kt)), !0);
-	j(kt);
-	var Mt = B(kt, 2), Nt = (e) => {
+	j(Ot);
+	var jt = B(Ot, 2), Mt = L(jt), Nt = z(B(L(Mt)), !0);
+	j(Mt);
+	var Pt = B(Mt, 2), Ft = (e) => {
 		var t = xl(), n = B(L(t), 2), r = L(n), i = B(r);
 		j(n), j(t), G("click", r, function(...e) {
 			d.recover?.apply(this, e);
 		}), G("click", i, () => d.resolve(!0)), q(e, t);
 	};
-	Y(Mt, (e) => {
-		r(), U(() => r().recovery) && e(Nt);
+	Y(Pt, (e) => {
+		r(), U(() => r().recovery) && e(Ft);
 	});
-	var Pt = B(Mt, 2), Ft = B(L(Pt), 2);
-	tt(Ft);
-	var It = B(Ft, 4), Lt = L(It);
-	let Rt;
-	var zt = z(Lt), Bt = B(Lt), Vt = z(Bt, !0);
-	j(It), j(Pt);
-	var Ht = B(Pt, 2), Ut = (e) => {
+	var It = B(Pt, 2), Lt = B(L(It), 2);
+	tt(Lt);
+	var Rt = B(Lt, 4), zt = L(Rt);
+	let Bt;
+	var Vt = z(zt), Ht = B(zt), Ut = z(Ht, !0);
+	j(Rt), j(It);
+	var Wt = B(It, 2), Gt = (e) => {
 		q(e, Sl());
 	};
-	Y(Ht, (e) => {
-		r(), U(() => r().storageLimited) && e(Ut);
-	});
-	var Wt = B(Ht, 2), Gt = (e) => {
-		q(e, Cl());
-	};
 	Y(Wt, (e) => {
-		H(c) > 4096 && e(Gt);
+		r(), U(() => r().storageLimited) && e(Gt);
 	});
 	var Kt = B(Wt, 2), qt = (e) => {
+		q(e, Cl());
+	};
+	Y(Kt, (e) => {
+		H(c) > 4096 && e(qt);
+	});
+	var Jt = B(Kt, 2), Yt = (e) => {
 		var t = wl(), n = B(L(t), 2), i = z(n, !0), a = B(n), o = L(a), s = B(o);
 		j(a), j(t), V(() => J(i, (r(), U(() => r().snapshot?.note.body)))), G("click", o, () => d.resolve(!1)), G("click", s, () => d.resolve(!0)), q(e, t);
 	};
-	Y(Kt, (e) => {
-		r(), U(() => r().save === "conflict") && e(qt);
+	Y(Jt, (e) => {
+		r(), U(() => r().save === "conflict") && e(Yt);
 	});
-	var Jt = B(Kt, 2), Yt = (e) => {
+	var Xt = B(Jt, 2), Zt = (e) => {
 		var t = Tl(), n = B(L(t), 2);
 		j(t), G("click", n, () => d.check()), q(e, t);
 	};
-	Y(Jt, (e) => {
-		r(), U(() => r().save === "uncertain") && e(Yt);
-	}), j(Ot);
-	var Xt = B(Ot, 2), Zt = L(Xt);
+	Y(Xt, (e) => {
+		r(), U(() => r().save === "uncertain") && e(Zt);
+	}), j(jt);
+	var Qt = B(jt, 2), $t = L(Qt);
 	{
 		let e = /* @__PURE__ */ N(() => (r(), U(() => r().snapshot?.crafty))), t = /* @__PURE__ */ N(() => (r(), U(() => r().snapshot?.account.role === "owner"))), n = /* @__PURE__ */ N(() => (H(g), r(), U(() => H(g) === "connections" && r().phase === "ready")));
-		ls(Zt, {
+		ls($t, {
 			get mutationState() {
 				return U(() => d.connectionMutation);
 			},
@@ -6790,11 +6807,11 @@ function Dl(e, t) {
 			}
 		});
 	}
-	j(Xt);
-	var Qt = B(Xt, 2), $t = L(Qt);
+	j(Qt);
+	var en = B(Qt, 2), tn = L(en);
 	{
 		let e = /* @__PURE__ */ N(() => (r(), U(() => r().phase === "ready")));
-		Ns($t, {
+		Ns(tn, {
 			get state() {
 				return r(), U(() => r().activity);
 			},
@@ -6806,11 +6823,11 @@ function Dl(e, t) {
 			}
 		});
 	}
-	j(Qt);
-	var en = B(Qt, 2), tn = L(en);
+	j(en);
+	var nn = B(en, 2), rn = L(nn);
 	{
 		let e = /* @__PURE__ */ N(() => (r(), U(() => r().snapshot?.notifications))), t = /* @__PURE__ */ N(() => (r(), U(() => r().phase === "ready")));
-		Rs(tn, {
+		Rs(rn, {
 			get value() {
 				return H(e);
 			},
@@ -6831,11 +6848,11 @@ function Dl(e, t) {
 			}
 		});
 	}
-	j(en);
-	var nn = B(en, 2), rn = L(nn);
+	j(nn);
+	var an = B(nn, 2), on = L(an);
 	{
 		let e = /* @__PURE__ */ N(() => H(g) === "roadmap" ? "roadmap" : "catalog"), t = /* @__PURE__ */ N(() => (r(), U(() => r().phase === "ready"))), n = /* @__PURE__ */ N(() => (r(), U(() => r().snapshot?.account.role === "owner")));
-		ec(rn, {
+		ec(on, {
 			get mode() {
 				return H(e);
 			},
@@ -6855,11 +6872,11 @@ function Dl(e, t) {
 			}
 		});
 	}
-	j(nn);
-	var an = B(nn, 2), on = L(an);
+	j(an);
+	var sn = B(an, 2), cn = L(sn);
 	{
 		let e = /* @__PURE__ */ N(() => (r(), U(() => r().snapshot?.account.role === "owner"))), t = /* @__PURE__ */ N(() => (H(g), r(), U(() => H(g) === "media" && r().phase === "ready")));
-		gc(on, {
+		gc(cn, {
 			get state() {
 				return r(), U(() => r().media);
 			},
@@ -6880,11 +6897,11 @@ function Dl(e, t) {
 			}
 		});
 	}
-	j(an);
-	var sn = B(an, 2), cn = L(sn);
+	j(sn);
+	var ln = B(sn, 2), un = L(ln);
 	{
 		let e = /* @__PURE__ */ N(() => (r(), U(() => r().snapshot?.account.role === "owner"))), t = /* @__PURE__ */ N(() => (H(g), r(), U(() => H(g) === "queues" && r().phase === "ready")));
-		Fc(cn, {
+		Fc(un, {
 			get state() {
 				return r(), U(() => r().queues);
 			},
@@ -6905,11 +6922,11 @@ function Dl(e, t) {
 			}
 		});
 	}
-	j(sn);
-	var ln = B(sn, 2), un = L(ln);
+	j(ln);
+	var dn = B(ln, 2), fn = L(dn);
 	{
 		let e = /* @__PURE__ */ N(() => (r(), U(() => r().snapshot?.account.role === "owner"))), t = /* @__PURE__ */ N(() => (H(g), r(), U(() => H(g) === "identity" && r().phase === "ready")));
-		Yc(un, {
+		Yc(fn, {
 			get binding() {
 				return u();
 			},
@@ -6933,11 +6950,11 @@ function Dl(e, t) {
 			}
 		});
 	}
-	j(ln);
-	var dn = B(ln, 2), fn = L(dn);
+	j(dn);
+	var pn = B(dn, 2), mn = L(pn);
 	{
 		let e = /* @__PURE__ */ N(() => (H(g), r(), U(() => H(g) === "sessions" && r().phase === "ready")));
-		rl(fn, {
+		rl(mn, {
 			get state() {
 				return r(), U(() => r().sessions);
 			},
@@ -6952,17 +6969,21 @@ function Dl(e, t) {
 			}
 		});
 	}
-	j(dn), xe(2), j(it), j(ae), V(() => {
-		X(ce, "aria-current", H(g) === "home" ? "page" : void 0), le = ti(ce, 1, "", null, le, { active: H(g) === "home" }), X(D, "aria-current", H(g) === "note" ? "page" : void 0), ue = ti(D, 1, "", null, ue, { active: H(g) === "note" }), fe = ti(de, 1, "draft-dot", null, fe, { visible: r().dirty }), X(pe, "aria-current", H(g) === "connections" ? "page" : void 0), me = ti(pe, 1, "", null, me, { active: H(g) === "connections" }), X(O, "aria-current", H(g) === "directory" ? "page" : void 0), he = ti(O, 1, "", null, he, { active: H(g) === "directory" }), X(ge, "aria-current", H(g) === "activity" ? "page" : void 0), _e = ti(ge, 1, "", null, _e, { active: H(g) === "activity" }), X(k, "aria-current", H(g) === "notifications" ? "page" : void 0), ve = ti(k, 1, "", null, ve, { active: H(g) === "notifications" }), X(be, "aria-current", H(g) === "integrations" ? "page" : void 0), M = ti(be, 1, "", null, M, { active: H(g) === "integrations" }), X(Se, "aria-current", H(g) === "roadmap" ? "page" : void 0), Ce = ti(Se, 1, "", null, Ce, { active: H(g) === "roadmap" }), X(we, "aria-current", H(g) === "media" ? "page" : void 0), Te = ti(we, 1, "", null, Te, { active: H(g) === "media" }), X(Ee, "aria-current", H(g) === "queues" ? "page" : void 0), De = ti(Ee, 1, "", null, De, { active: H(g) === "queues" }), X(Oe, "aria-current", H(g) === "identity" ? "page" : void 0), ke = ti(Oe, 1, "", null, ke, { active: H(g) === "identity" }), J(Pe, (r(), U(() => r().snapshot?.account.username ?? "Your account"))), J(Fe, (r(), U(() => r().snapshot?.account.role === "owner" ? "Owner" : r().snapshot?.account.role === "member" ? "Member" : "Check account access"))), Ie.disabled = (r(), U(() => r().phase !== "ready")), X(Ie, "aria-current", H(g) === "sessions" ? "page" : void 0), mi(Re, u()), J(Ve, S), J(Ze, w), J(Qe, T), J(nt, (i(), U(() => i().phase === "changed" ? "Server changed" : i().phase === "current" ? "Page matches server" : i().phase === "checking" ? "Checking server version" : "Page and server versions"))), J(ct, H(g) === "home" ? "Welcome home." : H(g) === "note" ? "A little space to think." : H(g) === "connections" ? "Your servers, at a glance." : H(g) === "directory" ? "Everything within reach." : H(g) === "activity" ? "Pick up the thread." : H(g) === "notifications" ? "Catch up at your pace." : H(g) === "integrations" ? "Make the right connections." : H(g) === "media" ? "A window into your media." : H(g) === "queues" ? "See what’s in motion." : H(g) === "identity" ? "An identity you choose." : H(g) === "sessions" ? "Your active sign-ins." : "See what comes next."), J(ut, (r(), U(() => r().phase === "ready" ? "Session checked" : r().phase === "checking" ? "Checking access" : "Access paused"))), J(ft, (r(), U(() => r().message))), X(_t, "hidden", (H(g), r(), U(() => H(g) !== "home" || r().phase !== "ready"))), J(P, (n(), U(() => n().message || "Your games, media and services in one place."))), bt.disabled = (r(), n(), U(() => r().phase !== "ready" || !n().value || !!n().draft || n().save !== "idle")), X(Et, "hidden", (H(g), r(), U(() => H(g) !== "directory" || r().phase !== "ready"))), X(Ot, "hidden", (H(g), r(), U(() => H(g) !== "note" || r().phase !== "ready"))), J(jt, (r(), U(() => r().dirty ? "Unsaved changes" : "Up to date"))), mi(Ft, (r(), U(() => r().draft))), Ft.disabled = (r(), U(() => r().phase !== "ready")), Rt = ti(Lt, 1, "", null, Rt, { "over-limit": H(c) > 4096 }), J(zt, `${H(c) ?? ""} / 4096 bytes`), Bt.disabled = !H(l), J(Vt, (r(), U(() => r().save === "saving" ? "Saving…" : "Save note"))), X(Xt, "hidden", (H(g), r(), U(() => H(g) !== "connections" || r().phase !== "ready"))), X(Qt, "hidden", (H(g), r(), U(() => H(g) !== "activity" || r().phase !== "ready"))), X(en, "hidden", (H(g), r(), U(() => H(g) !== "notifications" || r().phase !== "ready"))), X(nn, "hidden", (H(g), r(), U(() => H(g) !== "integrations" && H(g) !== "roadmap" || r().phase !== "ready"))), X(nn, "aria-label", H(g) === "roadmap" ? "Roadmap note" : "Integration catalog"), X(an, "hidden", (H(g), r(), U(() => H(g) !== "media" || r().phase !== "ready"))), X(sn, "hidden", (H(g), r(), U(() => H(g) !== "queues" || r().phase !== "ready"))), X(ln, "hidden", (H(g), r(), U(() => H(g) !== "identity" || r().phase !== "ready"))), X(dn, "hidden", (H(g), r(), U(() => H(g) !== "sessions" || r().phase !== "ready")));
-	}), G("click", ce, () => E("home")), G("click", D, () => E("note")), G("click", pe, () => E("connections")), G("click", O, () => E("directory")), G("click", ge, () => E("activity")), G("click", k, () => E("notifications")), G("click", be, () => E("integrations")), G("click", Se, () => E("roadmap")), G("click", we, () => E("media")), G("click", Ee, () => E("queues")), G("click", Oe, () => E("identity")), G("click", Ie, () => E("sessions")), Cr("submit", Le, () => d.signOut()), G("click", rt, function(...e) {
+	j(pn), xe(2), j(ot), j(se), V(() => {
+		X(D, "aria-current", H(g) === "home" ? "page" : void 0), ue = ti(D, 1, "", null, ue, { active: H(g) === "home" }), X(de, "aria-current", H(g) === "note" ? "page" : void 0), fe = ti(de, 1, "", null, fe, { active: H(g) === "note" }), me = ti(pe, 1, "draft-dot", null, me, { visible: r().dirty }), X(O, "aria-current", H(g) === "connections" ? "page" : void 0), he = ti(O, 1, "", null, he, { active: H(g) === "connections" }), X(ge, "aria-current", H(g) === "directory" ? "page" : void 0), _e = ti(ge, 1, "", null, _e, { active: H(g) === "directory" }), X(k, "aria-current", H(g) === "activity" ? "page" : void 0), ve = ti(k, 1, "", null, ve, { active: H(g) === "activity" }), X(A, "aria-current", H(g) === "notifications" ? "page" : void 0), ye = ti(A, 1, "", null, ye, { active: H(g) === "notifications" }), X(Se, "aria-current", H(g) === "integrations" ? "page" : void 0), Ce = ti(Se, 1, "", null, Ce, { active: H(g) === "integrations" }), X(we, "aria-current", H(g) === "roadmap" ? "page" : void 0), Te = ti(we, 1, "", null, Te, { active: H(g) === "roadmap" }), X(Ee, "aria-current", H(g) === "media" ? "page" : void 0), De = ti(Ee, 1, "", null, De, { active: H(g) === "media" }), X(Oe, "aria-current", H(g) === "queues" ? "page" : void 0), ke = ti(Oe, 1, "", null, ke, { active: H(g) === "queues" }), X(Ae, "aria-current", H(g) === "identity" ? "page" : void 0), je = ti(Ae, 1, "", null, je, { active: H(g) === "identity" }), J(Ie, (r(), U(() => r().snapshot?.account.username ?? "Your account"))), J(Le, (r(), U(() => r().snapshot?.account.role === "owner" ? "Owner" : r().snapshot?.account.role === "member" ? "Member" : "Check account access"))), Re.disabled = (r(), U(() => r().phase !== "ready")), X(Re, "aria-current", H(g) === "sessions" ? "page" : void 0), mi(Be, u()), J(Ge, S), J($e, w), J(et, T), J(it, (i(), U(() => i().phase === "changed" ? "Server changed" : i().phase === "current" ? "Page matches server" : i().phase === "checking" ? "Checking server version" : "Page and server versions"))), J(ut, H(g) === "home" ? "Welcome home." : H(g) === "note" ? "A little space to think." : H(g) === "connections" ? "Your servers, at a glance." : H(g) === "directory" ? "Everything within reach." : H(g) === "activity" ? "Pick up the thread." : H(g) === "notifications" ? "Catch up at your pace." : H(g) === "integrations" ? "Make the right connections." : H(g) === "media" ? "A window into your media." : H(g) === "queues" ? "See what’s in motion." : H(g) === "identity" ? "An identity you choose." : H(g) === "sessions" ? "Your active sign-ins." : "See what comes next."), J(ft, (r(), U(() => r().phase === "ready" ? "Session checked" : r().phase === "checking" ? "Checking access" : "Access paused"))), J(ht, (r(), U(() => r().message))), X(yt, "hidden", (H(g), r(), U(() => H(g) !== "home" || r().phase !== "ready"))), J(xt, (n(), U(() => n().message || "Your games, media and services in one place."))), St.disabled = (r(), n(), U(() => r().phase !== "ready" || !n().value || !!n().draft || n().save !== "idle")), X(Ot, "hidden", (H(g), r(), U(() => H(g) !== "directory" || r().phase !== "ready"))), X(jt, "hidden", (H(g), r(), U(() => H(g) !== "note" || r().phase !== "ready"))), J(Nt, (r(), U(() => r().dirty ? "Unsaved changes" : "Up to date"))), mi(Lt, (r(), U(() => r().draft))), Lt.disabled = (r(), U(() => r().phase !== "ready")), Bt = ti(zt, 1, "", null, Bt, { "over-limit": H(c) > 4096 }), J(Vt, `${H(c) ?? ""} / 4096 bytes`), Ht.disabled = !H(l), J(Ut, (r(), U(() => r().save === "saving" ? "Saving…" : "Save note"))), X(Qt, "hidden", (H(g), r(), U(() => H(g) !== "connections" || r().phase !== "ready"))), X(en, "hidden", (H(g), r(), U(() => H(g) !== "activity" || r().phase !== "ready"))), X(nn, "hidden", (H(g), r(), U(() => H(g) !== "notifications" || r().phase !== "ready"))), X(an, "hidden", (H(g), r(), U(() => H(g) !== "integrations" && H(g) !== "roadmap" || r().phase !== "ready"))), X(an, "aria-label", H(g) === "roadmap" ? "Roadmap note" : "Integration catalog"), X(sn, "hidden", (H(g), r(), U(() => H(g) !== "media" || r().phase !== "ready"))), X(ln, "hidden", (H(g), r(), U(() => H(g) !== "queues" || r().phase !== "ready"))), X(dn, "hidden", (H(g), r(), U(() => H(g) !== "identity" || r().phase !== "ready"))), X(pn, "hidden", (H(g), r(), U(() => H(g) !== "sessions" || r().phase !== "ready")));
+	}), G("focusin", le, ie), G("click", D, () => E("home")), G("click", de, () => E("note")), G("click", O, () => E("connections")), G("click", ge, () => E("directory")), G("click", k, () => E("activity")), G("click", A, () => E("notifications")), G("click", Se, () => E("integrations")), G("click", we, () => E("roadmap")), G("click", Ee, () => E("media")), G("click", Oe, () => E("queues")), G("click", Ae, () => E("identity")), G("click", Re, () => E("sessions")), Cr("submit", ze, () => d.signOut()), G("click", at, function(...e) {
 		d.updates.review?.apply(this, e);
-	}), G("click", bt, function(...e) {
+	}), G("click", St, function(...e) {
 		m.begin?.apply(this, e);
-	}), Cr("submit", Pt, (e) => {
+	}), Cr("submit", It, (e) => {
 		e.preventDefault(), d.save();
-	}), G("input", Ft, (e) => d.edit(e.currentTarget.value)), q(e, ie), We(), o();
+	}), G("input", Lt, (e) => d.edit(e.currentTarget.value)), q(e, oe), We(), o();
 }
-wr(["click", "input"]);
+wr([
+	"focusin",
+	"click",
+	"input"
+]);
 // src/main.ts
 var Ol = document.getElementById("workspace-root"), kl = document.querySelector("meta[name=\"reborn-session-binding\"]")?.content, Al = document.querySelector("meta[name=\"reborn-workspace-contract\"]")?.content;
 if (Ol && kl && /^[a-f0-9]{64}$/.test(kl) && Al === "reborn-workspace-v1") {
