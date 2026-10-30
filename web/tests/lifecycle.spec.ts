@@ -3,13 +3,22 @@ import type { Page } from '@playwright/test';
 import { test, expect } from '../fixture/test.ts';
 import type { AccountFixture } from '../fixture/app.ts';
 
+// A successful native claim/sign-in lands on Home. These lifecycle cases then
+// deliberately open Account to exercise its independent recovery enhancement.
+async function homeThenAccount(account: AccountFixture, page: Page): Promise<void> {
+  process.stdout.write('BROWSER_STEP lifecycle await native Home landing\n');
+  await page.waitForURL(`${account.origin}/workspace`);
+  process.stdout.write('BROWSER_STEP lifecycle open fresh Account recovery document\n');
+  await page.goto('/account');
+}
+
 async function owner(account: AccountFixture, page: Page): Promise<void> {
   await page.goto('/account/claim');
   await page.getByLabel('Setup secret', { exact: true }).fill(account.setupSecret);
   await page.getByLabel('Username', { exact: true }).fill(account.ownerName);
   await page.getByLabel('Password', { exact: true }).fill(account.password);
   await page.getByRole('button', { name: 'Create owner', exact: true }).click();
-  await page.waitForURL(`${account.origin}/account`);
+  await homeThenAccount(account, page);
   await page.bringToFront();
   await expect(page.locator('#account-private')).toBeVisible();
   expect(await page.locator('[data-account-name]').textContent() === account.ownerName, 'fresh session probe populates current owner').toBe(true);
@@ -49,7 +58,7 @@ test('cross-tab account switching rejects a held old-session response and requir
   await switched.getByLabel('Username', { exact: true }).fill(memberName);
   await switched.getByLabel('Password', { exact: true }).fill(memberPassword);
   await switched.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await switched.waitForURL(`${account.origin}/account`);
+  await homeThenAccount(account, switched);
   await expect(switched.locator('#account-private')).toBeVisible();
   expect(await switched.locator('[data-account-name]').textContent() === memberName, 'new document shows selected member').toBe(true);
   await empty(original);
@@ -155,7 +164,7 @@ test('optional probe network failure hides identity while native sign out remain
   await page.getByLabel('Username', { exact: true }).fill(account.ownerName);
   await page.getByLabel('Password', { exact: true }).fill(account.password);
   await page.getByRole('button', { name: 'Create owner', exact: true }).click();
-  await page.waitForURL(`${account.origin}/account`);
+  await homeThenAccount(account, page);
   await expect(page.locator('[data-account-status]')).toContainText(/could not|unavailable|retry/i);
   await empty(page);
   await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeEnabled();
