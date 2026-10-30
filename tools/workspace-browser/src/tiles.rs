@@ -475,7 +475,27 @@ async fn resources_and_native_recovery() -> Check<()> {
     export_home_fixture_png(&b, "mobile").await?;
     check(b.evaluate("const first=document.querySelector('.main-nav button');first.focus();return document.activeElement===first;",json!([])).await?==true,"mobile navigation starts with actual Home button focus")?;
     b.keys(&"\u{e004}".repeat(10)).await?;
-    check(b.evaluate("const nav=document.querySelector('.main-nav'),last=nav.lastElementChild,n=nav.getBoundingClientRect(),r=last.getBoundingClientRect();return document.activeElement===last&&r.left>=n.left&&r.right<=n.right&&document.documentElement.scrollWidth<=innerWidth+1;",json!([])).await?==true,"native Tab reveals the final mobile navigation control without page overflow")?;
+    let mobile_nav = b.evaluate("const nav=document.querySelector('.main-nav'),last=nav.lastElementChild,n=nav.getBoundingClientRect(),r=last.getBoundingClientRect();return [document.activeElement===last,r.left>=n.left,r.right<=n.right,document.documentElement.scrollWidth<=innerWidth+1,nav.contains(document.activeElement),[...nav.children].indexOf(document.activeElement),r.left,r.right,n.left,n.right,nav.scrollLeft,nav.scrollWidth,nav.clientWidth];",json!([])).await?;
+    println!(
+        "RUST_BROWSER_MOBILE_NAV focus={} left={} right={} overflow={} in_nav={} index={} button_left={} button_right={} nav_left={} nav_right={} scroll={} content_width={} client_width={}",
+        mobile_nav[0] == true,
+        mobile_nav[1] == true,
+        mobile_nav[2] == true,
+        mobile_nav[3] == true,
+        mobile_nav[4] == true,
+        mobile_nav[5].as_i64().unwrap_or(-1),
+        mobile_nav[6].as_f64().unwrap_or(-1.0),
+        mobile_nav[7].as_f64().unwrap_or(-1.0),
+        mobile_nav[8].as_f64().unwrap_or(-1.0),
+        mobile_nav[9].as_f64().unwrap_or(-1.0),
+        mobile_nav[10].as_f64().unwrap_or(-1.0),
+        mobile_nav[11].as_f64().unwrap_or(-1.0),
+        mobile_nav[12].as_f64().unwrap_or(-1.0),
+    );
+    check(
+        (0..4).all(|i| mobile_nav[i] == true),
+        "native Tab reveals the final mobile navigation control without page overflow",
+    )?;
     b.click(".version summary").await?;
     b.wait("const v=document.querySelector('.version'),r=v.getBoundingClientRect();return v.open&&r.left>=0&&r.right<=innerWidth&&document.documentElement.scrollWidth<=innerWidth+1;",json!([])).await?;
     b.click(".version summary").await?;
