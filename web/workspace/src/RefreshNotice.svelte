@@ -2,12 +2,14 @@
   import { onMount, tick } from 'svelte';
   import type { Model } from './controller';
   import type { refresh } from './refresh';
+  import type { TileState } from './tiles';
   export let control: ReturnType<typeof refresh>;
   export let inspect: () => { busy: boolean; drafts: boolean };
   export let workspaceModel: Model;
+  export let tileState: TileState;
   const updates = control.model;
   let flags = { busy: false, drafts: false }, revision = 0;
-  $: { void workspaceModel; void revision; flags = inspect(); }
+  $: { void workspaceModel; void tileState; void revision; flags = inspect(); }
   onMount(() => {
     const changed = () => { void tick().then(() => { ++revision; }); };
     document.addEventListener('input', changed); document.addEventListener('change', changed);
