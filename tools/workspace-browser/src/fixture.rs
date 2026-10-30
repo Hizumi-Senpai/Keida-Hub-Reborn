@@ -149,7 +149,10 @@ impl HeldResponse {
         headers: &axum::http::HeaderMap,
     ) -> bool {
         self.path == path
-            && self.method.as_ref().is_none_or(|expected| expected == method)
+            && self
+                .method
+                .as_ref()
+                .is_none_or(|expected| expected == method)
             && self.browser.is_none_or(|expected| {
                 let mut markers = headers.get_all(BROWSER_MARKER).iter();
                 markers.next().and_then(|value| value.to_str().ok()) == Some(expected)
@@ -939,7 +942,12 @@ impl Fixture {
         self.hold_method(path, Some(axum::http::Method::PUT), None, StatusCode::OK)
     }
     pub fn hold_conflict(&self, path: &'static str) -> Arc<Hold> {
-        self.hold_method(path, Some(axum::http::Method::PUT), None, StatusCode::CONFLICT)
+        self.hold_method(
+            path,
+            Some(axum::http::Method::PUT),
+            None,
+            StatusCode::CONFLICT,
+        )
     }
     fn hold_method(
         &self,
@@ -1466,7 +1474,10 @@ mod held_response_tests {
         let any = target(None, None);
         assert!(any.matches("/api/workspace/tiles", &Method::GET, &headers));
         assert!(any.matches("/api/workspace/tiles", &Method::PUT, &headers));
-        headers.insert(BROWSER_MARKER, HeaderValue::from_static("unrelated-browser"));
+        headers.insert(
+            BROWSER_MARKER,
+            HeaderValue::from_static("unrelated-browser"),
+        );
         assert!(any.matches("/api/workspace/tiles", &Method::GET, &headers));
         assert!(!any.matches("/api/workspace/snapshot", &Method::GET, &headers));
         let write = target(Some(Method::PUT), None);
