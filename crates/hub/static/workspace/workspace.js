@@ -6367,23 +6367,23 @@ wr(["click"]);
 var il = /* @__PURE__ */ K("<dt>Loaded page</dt><dd> <span class=\"field-help\"> </span></dd>", 1), al = /* @__PURE__ */ K("<dt>Running server</dt><dd> <span class=\"field-help\"> <!></span></dd>", 1), ol = /* @__PURE__ */ K("<dl class=\"refresh-builds\"><!> <!></dl>"), sl = /* @__PURE__ */ K("<p data-refresh-drafts=\"\">There is unfinished work in your note, arrangement or a form. You can stay and finish it, or deliberately discard it.</p>"), cl = /* @__PURE__ */ K("<p data-refresh-busy=\"\">A change is pending or its result needs checking. Finish it or check the saved state before refreshing. It will not be sent again.</p>"), ll = /* @__PURE__ */ K("<button class=\"button secondary refresh-cancel\">Cancel refresh checks</button>"), ul = /* @__PURE__ */ K("<button class=\"button primary refresh-navigate\"> </button>"), dl = /* @__PURE__ */ K("<button class=\"button primary refresh-prepare\">Check access for refresh</button>"), fl = /* @__PURE__ */ K("<p class=\"field-help\">Private content is hidden. <a href=\"/account\">Open your account</a> to choose a fresh document. Review any unfinished work before leaving.</p>"), pl = /* @__PURE__ */ K("<p>Save or finish work in this page before refreshing. Unsaved forms do not move to the next document.</p> <!> <!> <div class=\"button-row\"><!> <button class=\"text-button refresh-stay\">Stay on this page</button></div> <!>", 1), ml = /* @__PURE__ */ K("<button class=\"button secondary refresh-review\">Review refresh</button>"), hl = /* @__PURE__ */ K("<section class=\"refresh-notice notice\" aria-label=\"Workspace refresh\"><p class=\"eyebrow\">YOUR PAGE, YOUR CHOICE</p> <h2>Refresh when you are ready.</h2> <p role=\"status\" data-refresh-status=\"\"> </p> <!> <!></section>");
 function gl(e, t) {
 	Ue(t, !1);
-	let n = () => Mi(c, "$updates", r), [r, i] = Ni(), a = Z(t, "control", 8), o = Z(t, "inspect", 8), s = Z(t, "workspaceModel", 8), c = a().model, l = /* @__PURE__ */ F({
+	let n = () => Mi(l, "$updates", r), [r, i] = Ni(), a = Z(t, "control", 8), o = Z(t, "inspect", 8), s = Z(t, "workspaceModel", 8), c = Z(t, "tileState", 8), l = a().model, u = /* @__PURE__ */ F({
 		busy: !1,
 		drafts: !1
-	}), u = /* @__PURE__ */ F(0);
+	}), d = /* @__PURE__ */ F(0);
 	Fi(() => {
 		let e = () => {
 			pr().then(() => {
-				qt(u);
+				qt(d);
 			});
 		};
 		return document.addEventListener("input", e), document.addEventListener("change", e), () => {
 			document.removeEventListener("input", e), document.removeEventListener("change", e);
 		};
-	}), wn(() => (W(s()), H(u), W(o())), () => {
-		s(), H(u), I(l, o()());
+	}), wn(() => (W(s()), W(c()), H(d), W(o())), () => {
+		s(), c(), H(d), I(u, o()());
 	}), Tn(), wi();
-	var d = Nr(), f = R(d), p = (e) => {
+	var f = Nr(), p = R(f), m = (e) => {
 		var t = hl(), r = B(L(t), 4), i = z(r, !0), o = B(r, 2), s = (e) => {
 			var t = ol(), r = L(t), i = (e) => {
 				var t = il(), r = B(R(t)), i = L(r), a = z(B(i), !0);
@@ -6412,20 +6412,20 @@ function gl(e, t) {
 		Y(o, (e) => {
 			n(), U(() => n().loaded || n().running) && e(s);
 		});
-		var c = B(o, 2), u = (e) => {
+		var c = B(o, 2), l = (e) => {
 			var t = pl(), r = B(R(t), 2), i = (e) => {
 				q(e, sl());
 			};
 			Y(r, (e) => {
-				H(l), U(() => H(l).drafts) && e(i);
+				H(u), U(() => H(u).drafts) && e(i);
 			});
 			var o = B(r, 2), s = (e) => {
 				q(e, cl());
 			};
 			Y(o, (e) => {
-				H(l), U(() => H(l).busy) && e(s);
+				H(u), U(() => H(u).busy) && e(s);
 			});
-			var c = B(o, 2), u = L(c), d = (e) => {
+			var c = B(o, 2), l = L(c), d = (e) => {
 				var t = ll();
 				G("click", t, function(...e) {
 					a().cancel?.apply(this, e);
@@ -6433,16 +6433,16 @@ function gl(e, t) {
 			}, f = (e) => {
 				var t = ul(), n = z(t, !0);
 				V(() => {
-					t.disabled = (H(l), U(() => H(l).busy)), J(n, (H(l), U(() => H(l).drafts ? "Discard unsaved work and refresh" : "Refresh workspace")));
-				}), G("click", t, () => a().navigate(H(l).drafts)), q(e, t);
+					t.disabled = (H(u), U(() => H(u).busy)), J(n, (H(u), U(() => H(u).drafts ? "Discard unsaved work and refresh" : "Refresh workspace")));
+				}), G("click", t, () => a().navigate(H(u).drafts)), q(e, t);
 			}, p = (e) => {
 				var t = dl();
-				V(() => t.disabled = (H(l), U(() => H(l).busy))), G("click", t, () => void a().reconnect()), q(e, t);
+				V(() => t.disabled = (H(u), U(() => H(u).busy))), G("click", t, () => void a().reconnect()), q(e, t);
 			};
-			Y(u, (e) => {
+			Y(l, (e) => {
 				n(), U(() => n().phase === "reconnecting") ? e(d) : (n(), U(() => n().phase === "compatible-ready") ? e(f, 1) : (n(), U(() => n().phase !== "sign-in-required" && n().phase !== "incompatible") && e(p, 2)));
 			});
-			var m = B(u, 2);
+			var m = B(l, 2);
 			j(c);
 			var h = B(c, 2), g = (e) => {
 				q(e, fl());
@@ -6459,20 +6459,20 @@ function gl(e, t) {
 			}), q(e, t);
 		};
 		Y(c, (e) => {
-			n(), U(() => n().review) ? e(u) : e(d, -1);
+			n(), U(() => n().review) ? e(l) : e(d, -1);
 		}), j(t), V(() => {
 			X(t, "data-refresh-phase", (n(), U(() => n().phase))), J(i, (n(), U(() => n().message)));
 		}), q(e, t);
-	}, m = /* @__PURE__ */ pt(() => (n(), U(() => n().review || [
+	}, h = /* @__PURE__ */ pt(() => (n(), U(() => n().review || [
 		"changed",
 		"unavailable",
 		"sign-in-required",
 		"incompatible",
 		"could-not-reconnect"
 	].includes(n().phase))));
-	Y(f, (e) => {
-		H(m) && e(p);
-	}), q(e, d), We(), i();
+	Y(p, (e) => {
+		H(h) && e(m);
+	}), q(e, f), We(), i();
 }
 wr(["click"]);
 // src/App.svelte
@@ -6588,9 +6588,14 @@ function Dl(e, t) {
 		get control() {
 			return U(() => d.updates);
 		},
-		inspect: () => (n(), d.refreshStatus()),
+		get inspect() {
+			return U(() => d.refreshStatus);
+		},
 		get workspaceModel() {
 			return r();
+		},
+		get tileState() {
+			return n();
 		}
 	});
 	var ht = B(mt, 2), gt = (e) => {
