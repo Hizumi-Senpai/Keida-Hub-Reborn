@@ -203,10 +203,15 @@ pub(super) async fn media_observed(b: &Browser, name: &'static str, expected: &s
         {
             return Ok(());
         }
-        check(
-            tokio::time::Instant::now() < deadline,
-            "bounded user-driven media observation completion",
-        )?;
+        if tokio::time::Instant::now() >= deadline {
+            // Closed booleans/count only: no credentials or account/provider text.
+            let diagnostic = b.evaluate("const s=document.querySelector('[data-media-provider='+arguments[0]+']'),b=s?.querySelector('.media-check-observations');return [document.hasFocus(),document.visibilityState==='visible',!!s,!!s&&s.getClientRects().length>0&&!s.closest('[hidden]'),s?.dataset.mediaPhase==='loading',s?.dataset.mediaPhase==='ready',s?.dataset.mediaConfigured==='true',s?.dataset.mediaSave==='idle',s?.dataset.mediaError==='checking',!!s&&s.textContent.includes(arguments[1]),s?.querySelectorAll('[data-media-item]').length??-1,!!b,b?.disabled===true];",json!([name,expected])).await;
+            println!(
+                "RUST_BROWSER_MEDIA_COMPLETION provider={name} flags={}",
+                diagnostic.unwrap_or(json!(null))
+            );
+            return Err("bounded user-driven media observation completion");
+        }
         let selector = format!("[data-media-provider={name}] .media-check-observations");
         if b
             .evaluate(
@@ -1305,11 +1310,15 @@ async fn owner_media_observations() -> Check<()> {
 
     step("media phase05 obsolete authorized response cannot survive enrollment removal");
     let mut other = f.browser(true).await?;
+    step("media phase05a second browser signs in directly to Home");
     sign_in(&f, &other, &f.username, &f.password).await?;
     workspace(&f, &other).await?;
+    step("media phase05b second browser opens Media from Home");
     other.click(".main-nav button:nth-child(9)").await?;
     other.wait("return document.querySelector('[data-media-provider=jellyfin]')?.dataset.mediaConfigured==='true';", json!([])).await?;
+    step("media phase05c second browser completes Jellyfin read");
     media_observed(&other, "jellyfin", "Fixture movie").await?;
+    step("media phase05d second browser completes Seerr read");
     media_observed(&other, "seerr", "Requested movie").await?;
     let held = f.hold("/api/workspace/media/jellyfin");
     owner
