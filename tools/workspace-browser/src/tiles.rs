@@ -450,6 +450,21 @@ async fn resources_and_native_recovery() -> Check<()> {
     b.click(".main-nav button:first-child").await?;
     ready(&b).await?;
     let writes = f.writes();
+    // First reads start the bounded Rust collectors and may return checking.
+    // Observe one real existing workspace tick before requiring completed rows;
+    // retain the ordinary nine-second DOM waits and the180-second total cap.
+    step("Home initial automatic reads return enrolled collection state");
+    b.wait("return ['jellyfin','seerr'].every(p=>{const s=document.querySelector('[data-media-provider='+p+']');return s?.dataset.mediaConfigured==='true'&&(s.dataset.mediaError==='checking'||s.querySelectorAll('[data-media-item]').length>0)})&&(()=>{const s=document.querySelector('[data-queue-provider=qbittorrent]');return s?.dataset.queueConfigured==='true'&&(s.dataset.queueError==='checking'||s.querySelectorAll('[data-queue-item]').length>0)})();",json!([])).await?;
+    b.evaluate(
+        "window.__homeAutomaticTickStart=performance.now();return true;",
+        json!([]),
+    )
+    .await?;
+    step(
+        "Home completes collection through one actual existing fifteen-second tick without Refresh clicks",
+    );
+    tokio::time::sleep(Duration::from_millis(15_500)).await;
+    b.wait("return performance.getEntriesByType('resource').some(e=>new URL(e.name).pathname==='/api/workspace/snapshot'&&e.initiatorType==='fetch'&&e.startTime>=window.__homeAutomaticTickStart);",json!([])).await?;
     observe_home(&b, "games", "Reviewed Home fixture game").await?;
     observe_home(&b, "jellyfin", "Fixture movie").await?;
     observe_home(&b, "requests", "Requested movie").await?;
