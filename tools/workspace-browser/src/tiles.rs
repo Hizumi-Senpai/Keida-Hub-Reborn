@@ -36,9 +36,34 @@ async fn committed(b: &Browser) -> Check<()> {
 }
 
 async fn arrange(b: &Browser) -> Check<()> {
+    let result = arrange_steps(b).await;
+    if result.is_err() {
+        // Fixed booleans only: never print DOM, form values or protocol replies.
+        let diagnostic = b.evaluate("return [document.hasFocus(),document.visibilityState==='visible',!!document.querySelector('.tiles-editor:not([hidden])'),document.activeElement?.closest('[data-tile-row]')?.dataset.tileRow==='services',document.querySelector('[data-tile-row]')?.dataset.tileRow==='services',document.querySelector('button[aria-label=\"Move Pinned services up\"]')?.disabled===true,[...document.querySelectorAll('[data-home-tile]')].filter(e=>e.getClientRects().length>0&&!e.closest('[hidden]')).map(e=>e.dataset.homeTile).join(',')==='services,games,requests,downloads,note',document.querySelector('[data-home-tile=games]')?.dataset.tileSize==='normal'];",json!([])).await;
+        if let Ok(state) = diagnostic {
+            println!(
+                "RUST_BROWSER_TILE_ARRANGE focus={} visible={} editor={} services_focus={} services_first={} up_disabled={} order={} width={}",
+                state[0] == true,
+                state[1] == true,
+                state[2] == true,
+                state[3] == true,
+                state[4] == true,
+                state[5] == true,
+                state[6] == true,
+                state[7] == true,
+            );
+        }
+    }
+    result
+}
+
+async fn arrange_steps(b: &Browser) -> Check<()> {
+    step("tiles arrange open editor");
     edit(b).await?;
+    step("tiles arrange add note and remove Jellyfin");
     b.click("button[aria-label='Add Workspace note']").await?;
     b.click("button[aria-label='Remove Jellyfin']").await?;
+    step("tiles arrange first keyboard move and focus wait");
     check(b.evaluate("const e=document.querySelector('button[aria-label=\"Move Pinned services up\"]');e.focus();return document.activeElement===e;",json!([])).await?==true,"tile reorder command receives actual keyboard focus")?;
     b.keys("\u{e007}").await?;
     b.wait(
@@ -46,15 +71,19 @@ async fn arrange(b: &Browser) -> Check<()> {
         json!([]),
     )
     .await?;
+    step("tiles arrange second move by native click");
     b.click("button[aria-label='Move Pinned services up']")
         .await?;
+    step("tiles arrange final keyboard move and first-row focus wait");
     check(b.evaluate("const e=document.querySelector('button[aria-label=\"Move Pinned services up\"]');e.focus();return document.activeElement===e;",json!([])).await?==true,"the final move to the first row starts on its native keyboard control")?;
     b.keys("\u{e007}").await?;
     b.wait("return document.activeElement?.closest('[data-tile-row]')?.dataset.tileRow==='services'&&document.querySelector('button[aria-label=\"Move Pinned services up\"]').disabled;",json!([])).await?;
     // Native keyboard selection changes the actual select and its bound state.
+    step("tiles arrange native width selection");
     b.click("select[aria-label='Game servers tile width']")
         .await?;
     b.keys("\u{e011}\u{e007}").await?;
+    step("tiles arrange preview order and width checks");
     selected(b, &ARRANGED).await?;
     check(
         b.evaluate(
@@ -193,12 +222,14 @@ pub async fn arrangement() -> Check<()> {
 
     step("tiles committed lost response reconciles by read without another save");
     arrange(&b).await?;
+    step("tiles lost response install held save and click Save");
     let writes = f.writes();
     let lost = f.hold_write("/api/workspace/tiles");
     b.click(".save-tiles").await?;
     tokio::time::timeout(Duration::from_secs(3), lost.entered.notified())
         .await
         .map_err(|_| "committed tile save entered")?;
+    step("tiles lost response committed upstream; await uncertain UI");
     b.wait(
         "return !!document.querySelector('section[aria-label=\"Uncertain tile save\"]');",
         json!([]),
@@ -213,8 +244,10 @@ pub async fn arrangement() -> Check<()> {
             == true,
         "uncertain tile save cannot be automatically or deliberately resubmitted",
     )?;
+    step("tiles lost response release held reply and deliberately check saved tiles");
     lost.release.notify_one();
     b.click(".check-tiles").await?;
+    step("tiles lost response await read reconciliation and exact one-write check");
     committed(&b).await?;
     selected(&b, &ARRANGED).await?;
     check(
