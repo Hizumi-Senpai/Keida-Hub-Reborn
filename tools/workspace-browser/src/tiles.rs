@@ -161,13 +161,13 @@ pub async fn arrangement() -> Check<()> {
     )
     .await?;
     rejected.release.notify_one();
-    b.wait("return !!document.querySelector('section[aria-label=\"Tile layout conflict\"] .check-tiles')&&document.querySelector('.save-tiles').disabled;",json!([])).await?;
+    b.wait("const c=document.querySelector('section[aria-label=\"Tile layout conflict\"] .check-tiles');return !!c&&!c.disabled&&document.querySelector('.save-tiles').disabled;",json!([])).await?;
     selected(&b, &["services", "games", "downloads", "note"]).await?;
     check(b.evaluate("const s=document.querySelector('section[aria-label=\"Tile layout conflict\"]');return !!s && s.textContent.includes('latest saved layout still needs checking') && !s.querySelector('button:not(.check-tiles)');",json!([])).await?==true,"a failed canonical conflict read retains the draft and check control without offering stale comparison choices")?;
     b.cdp("Network.setBlockedURLs", json!({"urls":[]})).await?;
     b.click(".tiles-editor .check-tiles").await?;
     b.wait(
-        "return !!document.querySelector('section[aria-label=\"Tile layout conflict\"]');",
+        "const s=document.querySelector('section[aria-label=\"Tile layout conflict\"]');return !!s&&s.querySelectorAll('button').length===2&&!s.querySelector('.check-tiles');",
         json!([]),
     )
     .await?;
