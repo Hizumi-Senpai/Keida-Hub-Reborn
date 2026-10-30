@@ -333,7 +333,7 @@ async fn submit(
                     authenticate_login(&service, &headers, LoginInput { username, password })
                         .await?
                 };
-                let mut response = Redirect::to("/account").into_response();
+                let mut response = Redirect::to("/workspace").into_response();
                 session_cookies(&mut response, &authenticated.token);
                 response
             }

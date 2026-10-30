@@ -1,5 +1,6 @@
 mod driver;
 mod fixture;
+mod game_status;
 mod tiles;
 mod workflows;
 

@@ -490,12 +490,22 @@ pub struct Fixture {
 }
 impl Fixture {
     pub async fn new() -> Check<Self> {
-        Self::new_inner(false).await
+        Self::new_inner(false, None).await
     }
     pub async fn with_discord() -> Check<Self> {
-        Self::new_inner(true).await
+        Self::new_inner(true, None).await
     }
-    async fn new_inner(with_discord: bool) -> Check<Self> {
+    pub async fn with_game_routes(endpoint: SocketAddr, id: &'static str) -> Check<Self> {
+        check(
+            endpoint.ip().is_loopback() && endpoint.port() != 0,
+            "closed game gateway fixture",
+        )?;
+        Self::new_inner(false, Some((endpoint, id))).await
+    }
+    async fn new_inner(
+        with_discord: bool,
+        game_route: Option<(SocketAddr, &'static str)>,
+    ) -> Check<Self> {
         let admin = std::env::var("REBORN_TEST_DATABASE_URL")
             .map_err(|_| "local PostgreSQL prerequisite missing")?;
         let mut url = url::Url::parse(&admin).map_err(|_| "fixture URL")?;
@@ -705,6 +715,13 @@ impl Fixture {
             "qualified binary/source required",
         )?;
         let key = root.join("instance.key");
+        if let Some((endpoint, id)) = game_route {
+            let path = root.join("game-routes.json");
+            let bytes=serde_json::to_vec(&serde_json::json!({"format":1,"endpoint":endpoint.to_string(),"routes":[{"server_id":id,"hostname":"play.example","public_port":25565}]})).map_err(|_| "game route fixture encoding")?;
+            fs::write(&path, bytes).map_err(|_| "game route fixture write")?;
+            fs::set_permissions(&path, fs::Permissions::from_mode(0o600))
+                .map_err(|_| "game route fixture permissions")?;
+        }
         let setup_path = root.join("setup.token");
         let image = std::env::var("REBORN_BROWSER_IMAGE").ok();
         if let Some(ref image) = image {

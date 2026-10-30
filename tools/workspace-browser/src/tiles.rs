@@ -355,20 +355,22 @@ pub async fn run() -> Check<()> {
     Ok(())
 }
 
+async fn home_provider_read_counts(b: &Browser) -> Check<[u64; 3]> {
+    let counts = b.evaluate("return ['/api/workspace/media/jellyfin','/api/workspace/media/seerr','/api/workspace/queues/qbittorrent'].map(path=>performance.getEntriesByType('resource').filter(e=>new URL(e.name).pathname===path&&e.initiatorType==='fetch').length);",json!([])).await?;
+    serde_json::from_value(counts).map_err(|_| "three fixed Home observation resource counts")
+}
+
 async fn observe_home(b: &Browser, id: &'static str, expected: &'static str) -> Check<()> {
-    let deadline = tokio::time::Instant::now() + Duration::from_secs(8);
-    loop {
-        if b.evaluate("return document.querySelector('[data-home-tile='+arguments[0]+']')?.textContent.includes(arguments[1]);",json!([id,expected])).await?==true {return Ok(());}
-        check(
-            tokio::time::Instant::now() < deadline,
-            "bounded user-driven Home observation completion",
-        )?;
-        let selector = format!(".tile-observe[data-observe-tile={id}]");
-        if b.evaluate("const e=document.querySelector('.tile-observe[data-observe-tile='+arguments[0]+']');return !!e&&!e.disabled;",json!([id])).await?==true {
-            b.click(&selector).await?;
-        }
-        tokio::time::sleep(Duration::from_millis(150)).await;
+    println!("RUST_BROWSER_STEP Home await automatic {id} summary");
+    let observed = b.wait("return document.querySelector('[data-home-tile='+arguments[0]+']')?.textContent.includes(arguments[1]);",json!([id,expected])).await;
+    if observed.is_err() {
+        let diagnostic = b.evaluate("const t=document.querySelector('[data-home-tile='+arguments[0]+']');return [document.hasFocus(),document.visibilityState==='visible',!!t,!!t&&t.getClientRects().length>0&&!t.closest('[hidden]'),!!t&&t.textContent.includes(arguments[1]),document.querySelector('.main-nav button:first-child')?.getAttribute('aria-current')==='page',!!document.querySelector('.customize-tiles')&&!document.querySelector('.customize-tiles').disabled];",json!([id,expected])).await;
+        println!(
+            "RUST_BROWSER_HOME_SUMMARY tile={id} flags={}",
+            diagnostic.unwrap_or(json!(null))
+        );
     }
+    observed
 }
 
 async fn export_home_fixture_png(b: &Browser, viewport: &'static str) -> Check<()> {
@@ -388,8 +390,9 @@ async fn export_home_fixture_png(b: &Browser, viewport: &'static str) -> Check<(
 
 async fn resources_and_native_recovery() -> Check<()> {
     use reborn_crafty_fixture::{self as c, media as m, queues as q};
-    step("Home tiles use existing real provider observations and bounded GET resources");
-    let f = Fixture::new().await?;
+    step("Home automatically loads selected real provider summaries without per-tile clicks");
+    let gateway = crate::game_status::Gateway::start().await?;
+    let f = Fixture::with_game_routes(gateway.address, c::ID).await?;
     let crafty = c::Crafty::start().await?;
     let media = m::Media::start().await?;
     let qbit = q::Queues::start("qbittorrent")
@@ -429,21 +432,49 @@ async fn resources_and_native_recovery() -> Check<()> {
     b.wait("return !!document.querySelector('#jellyfin-token') && !!document.querySelector('#seerr-token');",json!([])).await?;
     media_enroll(&b, &media, "jellyfin").await?;
     media_enroll(&b, &media, "seerr").await?;
+    step("Home provider setup open Queues through normal navigation");
     b.click(".main-nav button:nth-child(10)").await?;
-    b.wait("return document.querySelector('[data-queue-provider=qbittorrent]')?.dataset.queuePhase==='ready';",json!([])).await?;
+    step("Home provider setup await current qBittorrent enrollment status");
+    let queues_ready = b.wait("return document.querySelector('[data-queue-provider=qbittorrent]')?.dataset.queuePhase==='ready';",json!([])).await;
+    if queues_ready.is_err() {
+        let diagnostic = b.evaluate("return [document.hasFocus(),document.visibilityState==='visible',document.querySelector('.main-nav button:nth-child(10)')?.getAttribute('aria-current')==='page',...['qbittorrent','sonarr','radarr'].flatMap(p=>{const s=document.querySelector('[data-queue-provider='+p+']');return [!!s,!!s&&s.getClientRects().length>0&&!s.closest('[hidden]'),s?.dataset.queuePhase==='ready',s?.dataset.queuePhase==='loading',s?.dataset.queuePhase==='error',s?.dataset.queueConfigured==='true',!!s?.querySelector('.queue-save')&&!s.querySelector('.queue-save').disabled]})];",json!([])).await;
+        println!(
+            "RUST_BROWSER_HOME_QUEUE_ENTRY flags={}",
+            diagnostic.unwrap_or(json!(null))
+        );
+    }
+    queues_ready?;
+    step("Home provider setup enroll qBittorrent using native form");
     queue_enroll(&b, &qbit, "qbittorrent").await?;
+    step("Home provider setup verify no implicit queue sample");
     check(
         qbit.requests().is_empty(),
         "queue enrollment and detail status cannot implicitly collect a provider sample",
     )?;
+    step("Home provider setup return to Home with all fixture enrollments saved");
     b.click(".main-nav button:first-child").await?;
     ready(&b).await?;
     let writes = f.writes();
+    // First reads start the bounded Rust collectors and may return checking.
+    // Observe one real existing workspace tick before requiring completed rows;
+    // retain the ordinary nine-second DOM waits and the180-second total cap.
+    step("Home initial automatic reads return enrolled collection state");
+    b.wait("return ['jellyfin','seerr'].every(p=>{const s=document.querySelector('[data-media-provider='+p+']');return s?.dataset.mediaConfigured==='true'&&(s.dataset.mediaError==='checking'||s.querySelectorAll('[data-media-item]').length>0)})&&(()=>{const s=document.querySelector('[data-queue-provider=qbittorrent]');return s?.dataset.queueConfigured==='true'&&(s.dataset.queueError==='checking'||s.querySelectorAll('[data-queue-item]').length>0)})();",json!([])).await?;
+    b.evaluate(
+        "window.__homeAutomaticTickStart=performance.now();return true;",
+        json!([]),
+    )
+    .await?;
+    step(
+        "Home completes collection through one actual existing fifteen-second tick without Refresh clicks",
+    );
+    tokio::time::sleep(Duration::from_millis(15_500)).await;
+    b.wait("return performance.getEntriesByType('resource').some(e=>new URL(e.name).pathname==='/api/workspace/snapshot'&&e.initiatorType==='fetch'&&e.startTime>=window.__homeAutomaticTickStart);",json!([])).await?;
     observe_home(&b, "games", "Reviewed Home fixture game").await?;
     observe_home(&b, "jellyfin", "Fixture movie").await?;
     observe_home(&b, "requests", "Requested movie").await?;
     observe_home(&b, "downloads", "Fixture transfer").await?;
-    check(b.evaluate("const games=document.querySelector('[data-home-tile=games]'),j=document.querySelector('[data-home-tile=jellyfin]'),r=document.querySelector('[data-home-tile=requests]'),d=document.querySelector('[data-home-tile=downloads]');return games.textContent.includes('0 players')&&games.textContent.includes('Collected')&&games.textContent.includes('play.example:25565')&&j.textContent.includes('1 playing')&&j.textContent.includes('1 paused')&&j.querySelectorAll('.tile-item-list li').length===4&&j.textContent.includes('Showing up to 4 items from page 1')&&r.querySelectorAll('.tile-item-list li').length===4&&d.textContent.includes('Partial sample')&&d.textContent.includes('2 transfers on this sample page')&&d.querySelector('[data-tile-queue=qbittorrent]').textContent.includes('25.0%')&&!d.textContent.includes('90.0%')&&!j.querySelector('form')&&!r.querySelector('form')&&!d.querySelector('form');",json!([])).await?==true,"Home renders real bounded game/player, library/playback, request and wanted-byte queue summaries without enrollment forms")?;
+    check(b.evaluate("const games=document.querySelector('[data-home-tile=games]'),j=document.querySelector('[data-home-tile=jellyfin]'),r=document.querySelector('[data-home-tile=requests]'),d=document.querySelector('[data-home-tile=downloads]');return games.textContent.includes('Sleeping')&&games.textContent.includes('Join to wake')&&!games.textContent.includes('0 players')&&!games.textContent.includes('Players unknown')&&!games.textContent.includes('Provider unavailable')&&games.textContent.includes('Updated')&&games.textContent.includes('play.example:25565')&&j.textContent.includes('1 playing')&&j.textContent.includes('1 paused')&&j.querySelectorAll('.tile-item-list li').length===4&&j.textContent.includes('Showing up to 4 items')&&r.querySelectorAll('.tile-item-list li').length===4&&d.textContent.includes('Partial sample')&&d.textContent.includes('2 transfers on this sample page')&&d.querySelector('[data-tile-queue=qbittorrent]').textContent.includes('25.0%')&&!d.textContent.includes('90.0%')&&!j.querySelector('form')&&!r.querySelector('form')&&!d.querySelector('form');",json!([])).await?==true,"Home renders real bounded game/player, library/playback, request and wanted-byte queue summaries without enrollment forms")?;
     check(b.evaluate("return window.__homeResourceNote===document.querySelector('#workspace-note')&&window.__homeResourceNote.value===arguments[0];",json!([draft])).await?==true,"provider summary reads preserve the actual unfinished note editor")?;
     check(
         f.writes() == writes,
@@ -459,6 +490,7 @@ async fn resources_and_native_recovery() -> Check<()> {
         "all Home provider effects remain bounded observation GET requests",
     )?;
     check(b.evaluate("const values=[document.body.textContent,...[...document.querySelectorAll('input,textarea')].map(e=>e.value),...Object.values(sessionStorage),...Object.values(localStorage)];return arguments[0].every(secret=>values.every(v=>!v.includes(secret)));",json!([[c::TOKEN,m::TOKEN,q::TOKEN,&crafty.origin,&media.origin,&qbit.origin,&crafty.ca,&media.ca,&qbit.ca,"PRIVATE_QUEUE","/private/queue-"]])).await?==true,"Home observations expose no keys, private origins, certificates or raw queue paths in DOM, fields or storage")?;
+    gateway.checked()?;
     accessibility(&b).await?;
     export_home_fixture_png(&b, "desktop").await?;
     b.mobile().await?;
@@ -523,18 +555,35 @@ async fn resources_and_native_recovery() -> Check<()> {
         b.click(&format!("button[aria-label='Remove {label}']"))
             .await?;
     }
-    // Cross one actual existing workspace scheduler interval. No fake clock and
-    // no source assertion substitutes for observing absence of provider IO.
+    b.wait("return !['jellyfin','requests','downloads'].some(id=>document.querySelector('[data-home-tile='+id+']'));",json!([])).await?;
+    b.evaluate(
+        "return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r(true))));",
+        json!([]),
+    )
+    .await?;
+    let hidden_reads = home_provider_read_counts(&b).await?;
+    // Cross one actual existing workspace scheduler interval. Check application
+    // GETs as well as provider IO: a fresh server cache must not hide a poller.
     tokio::time::sleep(Duration::from_millis(15_500)).await;
     check(
-        (media.requests().len(), qbit.requests().len()) == provider_counts && f.writes() == writes,
-        "a real workspace tick with hidden provider tiles cannot poll those providers or write a preview",
+        home_provider_read_counts(&b).await? == hidden_reads
+            && (media.requests().len(), qbit.requests().len()) == provider_counts
+            && f.writes() == writes,
+        "a real workspace tick with hidden provider tiles cannot poll their APIs or providers or write a preview",
     )?;
     b.click(".cancel-tiles").await?;
     selected(&b, &DEFAULT_OWNER).await?;
+    observe_home(&b, "jellyfin", "Fixture movie").await?;
+    observe_home(&b, "requests", "Requested movie").await?;
+    observe_home(&b, "downloads", "Fixture transfer").await?;
+    let restored_reads = home_provider_read_counts(&b).await?;
     check(
-        (media.requests().len(), qbit.requests().len()) == provider_counts,
-        "restoring the tile selection creates no implicit provider collection",
+        restored_reads
+            .iter()
+            .zip(hidden_reads)
+            .all(|(after, before)| *after > before)
+            && f.writes() == writes,
+        "restoring visible tiles automatically reads their populated summaries through the existing resource owner without writes or forcing uncached provider IO",
     )?;
 
     step("fresh document keeps native module-failure recovery and scoped note drafts");
@@ -598,7 +647,10 @@ async fn resources_and_native_recovery() -> Check<()> {
         "member Home initialization cannot contact owner-only providers",
     )?;
     b.close().await?;
-    f.close().await?;
+    {
+        f.close().await?;
+        gateway.close().await
+    }?;
     println!(
         "PASS Rust browser: real Home game/media/request/download summaries, GET-only resources, hidden-tile poll ownership,390px/Axe, member isolation and native/manual scoped draft recovery"
     );

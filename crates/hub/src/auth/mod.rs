@@ -6,6 +6,7 @@ pub mod crypto;
 mod directory;
 mod discord;
 mod discord_flow;
+mod games;
 mod guide;
 mod layout;
 mod media;
@@ -64,6 +65,7 @@ pub struct Service {
     key_id: Arc<Vec<u8>>,
     origin: Arc<str>,
     observer: Arc<crate::providers::crafty::Observer>,
+    game_observer: Arc<crate::providers::game_status::Observer>,
     media_observer: Arc<crate::providers::media::Observer>,
     queue_observer: Arc<crate::providers::queues::Observer>,
     discord_client: Arc<crate::providers::discord::Client>,
@@ -79,12 +81,27 @@ impl Service {
     ) -> Result<Self, CryptoError> {
         let secrets = Secrets::from_file(key_path)?;
         let key_id = Arc::new(secrets.fingerprint());
+        // Optional, host-reviewed public join metadata. Missing enrollment sends
+        // no packets and never changes the existing encrypted Crafty enrollment.
+        let route_path = key_path.with_file_name("game-routes.json");
+        let game_routes = match std::fs::symlink_metadata(&route_path) {
+            Ok(_) => crate::providers::game_status::Routes::parse(&crypto::read_private_text(
+                &route_path,
+                16384,
+            )?)
+            .map_err(|_| CryptoError::Invalid)?,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                crate::providers::game_status::Routes::default()
+            }
+            Err(_) => return Err(CryptoError::Unavailable),
+        };
         Ok(Self {
             pool,
             secrets,
             key_id,
             origin: origin.into(),
             observer: Arc::new(crate::providers::crafty::Observer::new()),
+            game_observer: Arc::new(crate::providers::game_status::Observer::new(game_routes)),
             media_observer: Arc::new(crate::providers::media::Observer::new()),
             queue_observer: Arc::new(crate::providers::queues::Observer::new()),
             discord_client: Arc::new(client),
@@ -134,6 +151,7 @@ pub fn router(service: Service) -> Router {
         .merge(connections::router(service.clone()))
         .merge(directory::router(service.clone()))
         .merge(guide::router(service.clone()))
+        .merge(games::router(service.clone()))
         .merge(activity::router(service.clone()))
         .merge(notifications::router(service.clone()))
         .merge(layout::router(service.clone()))

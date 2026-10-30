@@ -25,6 +25,9 @@ const OWNER_PASSWORD: &str = "Native owner fixture password 71!";
 const MEMBER_PASSWORD: &str = "Native member fixture password 82!";
 static COUNTER: AtomicU64 = AtomicU64::new(0);
 
+#[path = "support/home_games_contracts.rs"]
+mod home_games_contracts;
+
 fn unique() -> String {
     format!(
         "{}_{:x}_{:x}",
@@ -687,7 +690,7 @@ async fn claim(fixture: &Fixture, server: &Server, secret: &str) -> Actor {
         Some(secret),
     );
     let response = actor.post("/account/claim", &fields).await;
-    redirected(&response, "/account");
+    redirected(&response, "/workspace");
     assert!(
         actor
             .cookies
@@ -1055,7 +1058,7 @@ async fn strict_native_decoding_and_admission_reject_before_owner_claim_effects(
         )
         .body(encoded(&final_fields));
     let response = actor.send(request).await;
-    redirected(&response, "/account");
+    redirected(&response, "/workspace");
     final_fields.clear();
     server.private_logs(&[&setup, OWNER_PASSWORD]);
 }
@@ -1184,7 +1187,7 @@ async fn failed_native_login_preserves_old_account_and_success_switches_only_the
     let response = actor
         .post("/account/sign-in?next=https://untrusted.example", &fields)
         .await;
-    redirected(&response, "/account");
+    redirected(&response, "/workspace");
     assert_eq!(
         actor.api_session(StatusCode::OK).await["account"]["username"],
         "native_member"

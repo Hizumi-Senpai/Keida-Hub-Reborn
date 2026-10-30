@@ -3,6 +3,7 @@ use super::{Error, actor, checked_key, locked};
 use sqlx::PgPool;
 
 pub struct Captured {
+    pub session: super::Session,
     pub revision: i64,
     pub sealed: Option<Vec<u8>>,
 }
@@ -25,6 +26,7 @@ pub async fn capture(
         .map_err(|_| Error::Unavailable)?;
     tx.commit().await.map_err(|_| Error::Unavailable)?;
     Ok(Captured {
+        session,
         revision: row.revision,
         sealed: row.sealed,
     })

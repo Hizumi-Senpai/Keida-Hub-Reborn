@@ -866,3 +866,12 @@ textarea::placeholder {
 .refresh-builds { display: grid; grid-template-columns: auto 1fr; gap: .4rem 1rem; overflow-wrap: anywhere; }
 .refresh-builds dd { margin: 0; }
 .refresh-builds .field-help { display: inline-block; margin-left: .35rem; }
+
+
+/* Home stays quiet while the existing access/resource owner keeps it current. */
+.status-quiet { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.state-chip.is-sleeping { color: #c3d9f5; border-color: #4b657c; background: #1b2b3b; }
+.game-hint { color: var(--muted); font-size: .8rem; margin: .3rem 0 .65rem; }
+.game-tile-list > li { display: flex; flex-direction: column; gap: .25rem; }
+.game-tile-list .tile-collected { margin-top: auto; padding-top: .5rem; }
+.tile-actions > button { min-height: 44px; }

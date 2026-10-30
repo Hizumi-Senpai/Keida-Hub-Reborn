@@ -1,4 +1,31 @@
-# Successor CORE handoff — installed 0.1.18
+# CORE continuation checkpoints and historical handoffs
+
+## Installed23 and owner convenience correction — October30,2026 UTC
+
+The same sole CORE continues. Source23/PR44 is accepted at
+`129c195b49539a6fd9fb9a830d3e4711df3e591b`, tree
+`d85b7272021f92a3f75519367805082259224b59`. Exact head CI99 and main CI100 passed
+all24 steps/256 Rust tests and retained browser/provider/recovery gates. Actual
+current13/key upgrade and matched14/newer-write recovery preceded installed23.
+[Installation and fresh terminal receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6527378051).
+Live is23/schema14. Stopped18, useful17 and matched final13 remain preserved;
+17/18 cannot use current14 data. No old dump is restored over newer writes.
+
+The owner prioritizes [issue45](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/45):
+direct Home after login, automatic selected-tile loading and quiet, confirmed
+managed sleep. Continue the same issue45 branch. M5 issue41 pauses at private
+source preparation until this product delivery. All six provider enrollments
+remain intact. Real owner/mobile/refresh, Jellyfin paging/count-context and
+Discord acceptance remain open. No updater installation/activation is approved.
+Use only self-hosted Commander, fresh host/account/ownership and new immutable,
+hash/inode-verified audited execution with the permanent application lock.
+Historical receipts and browser grants are never commands to replay.
+
+Everything below records its original date and is superseded where this current
+checkpoint and issue1's later receipts say so; it does not require repeating old
+enrollment, installation, cleanup or the predecessor's already-carried six files.
+
+## Historical successor CORE handoff — installed 0.1.18
 
 ## M5.6 continuation checkpoint — October29,2026
 

@@ -17,7 +17,7 @@ pub(super) async fn claim(f: &Fixture, b: &Browser) -> Check<()> {
     b.fill("input[name=username]", &f.username).await?;
     b.fill("input[name=password]", &f.password).await?;
     b.click("form.credential-form button[type=submit]").await?;
-    b.wait("return location.pathname === '/account'", json!([]))
+    b.wait("return location.pathname === '/workspace'", json!([]))
         .await
 }
 pub(super) async fn sign_in(f: &Fixture, b: &Browser, user: &str, password: &str) -> Check<()> {
@@ -25,7 +25,7 @@ pub(super) async fn sign_in(f: &Fixture, b: &Browser, user: &str, password: &str
     b.fill("input[name=username]", user).await?;
     b.fill("input[name=password]", password).await?;
     b.click("form.credential-form button[type=submit]").await?;
-    b.wait("return location.pathname === '/account'", json!([]))
+    b.wait("return location.pathname === '/workspace'", json!([]))
         .await
 }
 pub(super) async fn workspace(f: &Fixture, b: &Browser) -> Check<()> {
@@ -181,11 +181,19 @@ pub(super) async fn media_enroll(
     b.click(&format!("[data-media-provider={name}] .media-save"))
         .await?;
     println!("RUST_BROWSER_STEP media enrollment {name} wait-committed-and-cleared");
-    b.wait(
+    let committed = b.wait(
         "const s=document.querySelector('[data-media-provider='+arguments[0]+']');return s?.dataset.mediaRevision===arguments[1] && s.dataset.mediaConfigured==='true' && document.querySelector('#'+arguments[0]+'-token').value==='' && document.querySelector('#'+arguments[0]+'-endpoint').value==='' && document.querySelector('#'+arguments[0]+'-ca').value==='';",
         json!([name, (revision + 1).to_string()]),
     )
-    .await
+    .await;
+    if committed.is_err() {
+        let diagnostic = b.evaluate("const s=document.querySelector('[data-media-provider='+arguments[0]+']');return [document.hasFocus(),document.visibilityState==='visible',!!s,s?.dataset.mediaRevision===arguments[1],s?.dataset.mediaConfigured==='true',document.querySelector('#'+arguments[0]+'-token')?.value==='',document.querySelector('#'+arguments[0]+'-endpoint')?.value==='',document.querySelector('#'+arguments[0]+'-ca')?.value==='',s?.dataset.mediaPhase==='ready',s?.dataset.mediaPhase==='loading',s?.dataset.mediaSave==='saving',s?.dataset.mediaSave==='uncertain'];",json!([name,(revision+1).to_string()])).await;
+        println!(
+            "RUST_BROWSER_MEDIA_ENROLLMENT provider={name} flags={}",
+            diagnostic.unwrap_or(json!(null))
+        );
+    }
+    committed
 }
 
 pub(super) async fn media_observed(b: &Browser, name: &'static str, expected: &str) -> Check<()> {
@@ -203,10 +211,15 @@ pub(super) async fn media_observed(b: &Browser, name: &'static str, expected: &s
         {
             return Ok(());
         }
-        check(
-            tokio::time::Instant::now() < deadline,
-            "bounded user-driven media observation completion",
-        )?;
+        if tokio::time::Instant::now() >= deadline {
+            // Closed booleans/count only: no credentials or account/provider text.
+            let diagnostic = b.evaluate("const s=document.querySelector('[data-media-provider='+arguments[0]+']'),b=s?.querySelector('.media-check-observations');return [document.hasFocus(),document.visibilityState==='visible',!!s,!!s&&s.getClientRects().length>0&&!s.closest('[hidden]'),s?.dataset.mediaPhase==='loading',s?.dataset.mediaPhase==='ready',s?.dataset.mediaConfigured==='true',s?.dataset.mediaSave==='idle',s?.dataset.mediaError==='checking',!!s&&s.textContent.includes(arguments[1]),s?.querySelectorAll('[data-media-item]').length??-1,!!b,b?.disabled===true];",json!([name,expected])).await;
+            println!(
+                "RUST_BROWSER_MEDIA_COMPLETION provider={name} flags={}",
+                diagnostic.unwrap_or(json!(null))
+            );
+            return Err("bounded user-driven media observation completion");
+        }
         let selector = format!("[data-media-provider={name}] .media-check-observations");
         if b
             .evaluate(
@@ -1305,11 +1318,16 @@ async fn owner_media_observations() -> Check<()> {
 
     step("media phase05 obsolete authorized response cannot survive enrollment removal");
     let mut other = f.browser(true).await?;
+    step("media phase05a second browser signs in directly to Home");
     sign_in(&f, &other, &f.username, &f.password).await?;
     workspace(&f, &other).await?;
+    other.wait("return !!document.querySelector('[data-home-tile=jellyfin]') && !!document.querySelector('[data-home-tile=requests]');", json!([])).await?;
+    step("media phase05b second browser opens Media from Home");
     other.click(".main-nav button:nth-child(9)").await?;
     other.wait("return document.querySelector('[data-media-provider=jellyfin]')?.dataset.mediaConfigured==='true';", json!([])).await?;
+    step("media phase05c second browser completes Jellyfin read");
     media_observed(&other, "jellyfin", "Fixture movie").await?;
+    step("media phase05d second browser completes Seerr read");
     media_observed(&other, "seerr", "Requested movie").await?;
     let held = f.hold("/api/workspace/media/jellyfin");
     owner
