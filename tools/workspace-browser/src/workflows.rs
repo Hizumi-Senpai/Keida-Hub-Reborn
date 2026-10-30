@@ -1859,13 +1859,17 @@ async fn directory_and_personal_pins() -> Check<()> {
         .map_err(|_| "actual committed pin response hold")?;
     b.wait("return document.querySelector('.directory-status').textContent.includes('may have completed')",json!([])).await?;
     held.release.notify_one();
-    b.click("section[aria-label=Services] > .notice button")
+    b.click("section[aria-label='Service directory view'] > .notice button")
         .await?;
     b.wait("return document.querySelector('.directory-status').textContent.includes('checked') && !!document.querySelector('button[aria-label=\"Pin My Games\"]')",json!([])).await?;
     check(
         f.writes() == writes + 1,
         "lost pin response is reconciled without mutation replay",
     )?;
+    b.click(".main-nav button:first-child").await?;
+    crate::tiles::ready(&b).await?;
+    check(b.evaluate("const tile=document.querySelector('[data-home-tile=services]'),links=tile?.querySelectorAll('.service-tile-links li');return !!tile&&tile.getClientRects().length>0&&!tile.closest('[hidden]')&&links.length===1&&links[0].textContent.includes('My Library')&&!tile.querySelector('.pin-service')&&window.__directoryEditor===document.querySelector('#workspace-note')&&window.__linkForm===document.querySelector('#service-name')&&window.__linkForm.value==='An unfinished service draft';",json!([])).await?==true,"reconciled pins appear in the actual Home tile while service controls and the unfinished editor remain in Services")?;
+    b.click(".main-nav button:nth-child(4)").await?;
     step("directory privacy and refresh persistence");
     check(b.evaluate("window.dispatchEvent(new Event('pagehide'));return !document.querySelector('#service-name') && document.querySelector('#service-search').value==='' && !document.querySelector('.service-card')",json!([])).await?==true,"privacy clearing removes service drafts, search, links and pin state synchronously")?;
     workspace(&f, &b).await?;
