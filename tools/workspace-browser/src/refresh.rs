@@ -248,9 +248,25 @@ pub async fn run() -> Check<()> {
         "fresh document navigation replays no mutation",
     )?;
     step("refresh phase11 actual application revocation refuses the old browser bearer");
+    // This case exercises the explicit refresh access check. Leave Home's
+    // automatic provider reads through normal navigation before revoking, so
+    // their independent401 handling cannot remove the control under test.
+    step("refresh phase11a select the retained Note workflow");
+    note(&b).await?;
+    step("refresh phase11b open explicit refresh review");
     review(&b).await?;
+    step("refresh phase11c revoke actual application authority");
     f.revoke_all(&b).await?;
-    b.click(".refresh-prepare").await?;
+    step("refresh phase11d check the revoked bearer deliberately");
+    let prepare = b.click(".refresh-prepare").await;
+    if prepare.is_err() {
+        let diagnostic = b.evaluate("return [document.hasFocus(),document.visibilityState==='visible',!!document.querySelector('.refresh-open'),!!document.querySelector('.refresh-prepare'),document.querySelector('[data-refresh-phase]')?.dataset.refreshPhase==='sign-in-required',document.querySelector('#workspace-note')?.value==='',!!document.querySelector('.refresh-navigate')];",json!([])).await;
+        println!(
+            "RUST_BROWSER_REFRESH_REVOKED flags={}",
+            diagnostic.unwrap_or(json!(null))
+        );
+    }
+    prepare?;
     phase(&b, "sign-in-required").await?;
     check(b.evaluate("return document.querySelector('#workspace-note')?.value==='' && !document.querySelector('.refresh-navigate') && !document.body.textContent.includes(arguments[0]);",json!(["Committed during refresh review"])).await?==true,"real revoked authority clears private content and cannot prepare refresh")?;
     b.close().await?;
