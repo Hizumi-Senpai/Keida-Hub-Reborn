@@ -7,7 +7,7 @@ of the original or the independent rewrite.
 
 [Live acceptance tracker](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/2),
 [exact deployment/ownership receipts](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1),
-and [immediate M0 task](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/3).
+and [foundation tracker](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/3).
 
 **M0/M1 live acceptance remains in progress.** Accepted source and current API work are in
 [CURRENT_STATE.md](CURRENT_STATE.md); the milestone remains open. Exact installation/acceptance receipts are in issues1/3; no benchmark or complete
@@ -41,8 +41,10 @@ accepted through source0.1.21/PR37; head78/main79 each passed24 steps/237 Rust t
 review packet without adopting authority. [M5.6](docs/M5_UPDATER_NAMESPACE.md),
 issue40, freezes a proposed protected boot-data anchor and Btrfs capabilities for
 the actual writable Unraid ancestry. The anchor/state paths remain unallocated.
-Next [issue41](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/41) implements the smallest
-read-only Rust probe before a separately qualified capability/journal caller,
+[Issue41](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/41) implements the
+[fixed read-only Rust probe](docs/M5_NAMESPACE_PROBE.md), with pinned package and
+fresh actual-root/Btrfs evidence. Exact-head/main CI remains a source gate.
+This precedes a separately qualified capability/journal caller,
 authority-origin transaction and executor. Full current-data rollback, reboot,
 uninstall and exact installation approval gates stay open.
 Existing accepted functionality in
@@ -53,25 +55,34 @@ data, original game controllers, listeners, bot jobs, backup/update workers and
 unpublished external work retain their owners. A new repository, roadmap or
 read-only adapter transfers no operational authority or hostname.
 
-## Current product priority — convenient Home
+## Current priorities — useful Home and qualified delivery
 
 [Issue43](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/43) delivered
-[configurable tiles](docs/HOME_TILES.md) and [finite browser assets](docs/BROWSER_ASSET_RETENTION.md)
-as installed23/schema14. The owner's follow-up [issue45](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/45)
-prioritizes direct Home landing after sign-in, automatic selected-tile reads and
-simple confirmed game sleep status. [The bounded contract](docs/HOME_CONVENIENCE.md)
-keeps Rust authority, persistent Svelte, current provider permissions and Original's
-wake-on-join ownership. This candidate adds no schema or lifecycle transfer.
+[configurable tiles](docs/HOME_TILES.md) and [finite browser assets](docs/BROWSER_ASSET_RETENTION.md).
+[Issue45](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/45)/PR46 then
+delivered direct Home sign-in, automatic selected-tile reads and confirmed managed
+sleep in **installed0.1.24/schema14**.
+[Full delivery receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6534997311). All six service configurations are
+preserved; Original still owns wake-on-join and game operations.
 
-M5 issue41 yields priority until this visible product correction is qualified
-and delivered. Full updater installation/activation still needs its separate
-complete concrete approval packet. Real owner/mobile/provider acceptance remains
-open; fictional browser evidence is not a substitute.
+The concrete order now is:
+
+1. Finish issue41's namespace-probe source qualification and eventual-head/main CI.
+2. Continue M5 with the private capability/journal caller, authority origin, then
+   controlled update execution and interrupted/current-data recovery. The full
+   exact installation/activation packet needs separate approval.
+3. Alongside M5, close real phone/login/refresh, provider/Jellyfin paging and
+   count-context, normal join/wake and Discord acceptance gaps. Ship scoped
+   convenience fixes found through real use; fictional images are not owner acceptance.
+4. M6 starts with one game and transfers control responsibilities individually.
+5. M7 adds the optional room/avatar while preserving the useful 2D dashboard.
+6. M8 is an owner-approved replacement decision after required workflow and
+   recovery acceptance; no primary-hostname switch is automatic.
 
 ## Delivery order
 
-M0 and the first useful M1 slice are the immediate work. M2–M5 can advance in
-independent slices after the foundation. M6 needs accepted read-only evidence,
+Foundation and useful M1–M4 slices are installed; their remaining live acceptance
+gates stay open. M2–M5 can advance in independent scoped slices. M6 needs accepted read-only evidence,
 recovery and a separately authorized ownership handover. M7's contracts begin in
 M0, but its renderer/editor is later work. Optional companion work does not block
 ordinary dashboard/game use or silently enlarge M8's replacement gate.

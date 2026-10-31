@@ -79,8 +79,18 @@ fn request_bytes(path: &Path) -> Result<Vec<u8>, ()> {
     Ok(bytes)
 }
 
+mod namespace;
+
 fn run() -> Result<(), ()> {
     let args: Vec<_> = std::env::args_os().collect();
+    if args.get(1).is_some_and(|v| v == "probe-namespace") {
+        if args.len() != 2 {
+            return Err(());
+        }
+        let report = namespace::probe()?;
+        println!("{}", serde_json::to_string(&report).map_err(|_| ())?);
+        return Ok(());
+    }
     if args.get(1).is_some_and(|v| v == "check-bundle") {
         let mode = match args.len() {
             5 => reborn_host_updater::bundle_fs::TrustMode::RootSealed,
@@ -120,6 +130,11 @@ fn main() -> std::process::ExitCode {
         Ok(()) => std::process::ExitCode::SUCCESS,
         Err(()) => {
             if std::env::args_os()
+                .nth(1)
+                .is_some_and(|v| v == "probe-namespace")
+            {
+                eprintln!("namespace probe refused; no effects authorized");
+            } else if std::env::args_os()
                 .nth(1)
                 .is_some_and(|v| v == "check-bundle")
             {
