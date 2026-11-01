@@ -42,8 +42,9 @@ review packet without adopting authority. [M5.6](docs/M5_UPDATER_NAMESPACE.md),
 issue40, freezes a proposed protected boot-data anchor and Btrfs capabilities for
 the actual writable Unraid ancestry. The anchor/state paths remain unallocated.
 [Issue41](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/41) implements the
-[fixed read-only Rust probe](docs/M5_NAMESPACE_PROBE.md), with pinned package and
-fresh actual-root/Btrfs evidence. Exact-head/main CI remains a source gate.
+[fixed read-only Rust probe](docs/M5_NAMESPACE_PROBE.md), accepted as source0.1.25
+with final-headCI111/mainCI112 and actual-root/Btrfs evidence fully qualified.
+[Exact source/native receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6536740651).
 This precedes a separately qualified capability/journal caller,
 authority-origin transaction and executor. Full current-data rollback, reboot,
 uninstall and exact installation approval gates stay open.
@@ -67,8 +68,10 @@ preserved; Original still owns wake-on-join and game operations.
 
 The concrete order now is:
 
-1. Finish issue41's namespace-probe source qualification and eventual-head/main CI.
-2. Continue M5 with the private capability/journal caller, authority origin, then
+1. Qualify this [Jellyfin full-library paging and count-scope](docs/M3_MEDIA.md)
+   slice with its finite new-current/24/18 browser window. Real owner/Jellyfin
+   scope and paging acceptance remain distinct from source/fixture evidence.
+2. Continue M5 with [issue48's private capability/journal caller](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/48), authority origin, then
    controlled update execution and interrupted/current-data recovery. The full
    exact installation/activation packet needs separate approval.
 3. Alongside M5, close real phone/login/refresh, provider/Jellyfin paging and
@@ -78,6 +81,12 @@ The concrete order now is:
 5. M7 adds the optional room/avatar while preserving the useful 2D dashboard.
 6. M8 is an owner-approved replacement decision after required workflow and
    recovery acceptance; no primary-hostname switch is automatic.
+
+The owner-authorized [76-container closeout](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6551667332)
+retired completed helpers, four rehearsal PG shells and obsolete17/18 shells.
+Keep live24/production PG/compatible23 and the unresolved tmpfs old43 fixture;
+images and matched recovery archives remain preserved. Future one-shot work
+closes out its containers after logs/results are captured.
 
 ## Delivery order
 

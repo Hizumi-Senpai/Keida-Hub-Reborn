@@ -22,12 +22,14 @@ struct Container(String);
 fn asset_manifest(schema: u64, assets: &[Value]) -> Result<()> {
     // Historical CURRENT18 qualification remains available. New schema14 images
     // ship only the current generation and the two reviewed predecessor pairs.
-    let expected = match schema {
-        13 => 24,
-        14 => 6,
+    let (expected_scripts, minimum_styles, maximum_styles) = match schema {
+        13 => (12, 12, 12),
+        14 => (3, 2, 3),
         _ => return Err("packaged interface mismatch"),
     };
-    if assets.len() != expected {
+    if !(expected_scripts + minimum_styles..=expected_scripts + maximum_styles)
+        .contains(&assets.len())
+    {
         return Err("packaged asset manifest rejected");
     }
     let mut unique = BTreeSet::new();
@@ -48,7 +50,7 @@ fn asset_manifest(schema: u64, assets: &[Value]) -> Result<()> {
             _ => return Err("packaged asset manifest rejected"),
         }
     }
-    if scripts != expected / 2 || styles != expected / 2 {
+    if scripts != expected_scripts || !(minimum_styles..=maximum_styles).contains(&styles) {
         return Err("packaged asset manifest rejected");
     }
     Ok(())
@@ -222,6 +224,12 @@ mod tests {
     #[test]
     fn schema14_shipping_window_preserves_historical18_inspection() {
         assert!(asset_manifest(14, &assets(3)).is_ok());
+        let mut shared_style = assets(3);
+        shared_style.remove(5);
+        assert!(asset_manifest(14, &shared_style).is_ok());
+        assert!(asset_manifest(13, &shared_style).is_err());
+        shared_style.pop();
+        assert!(asset_manifest(14, &shared_style).is_err());
         assert!(asset_manifest(13, &assets(12)).is_ok());
         assert!(asset_manifest(14, &assets(12)).is_err());
         assert!(asset_manifest(13, &assets(3)).is_err());
@@ -243,5 +251,8 @@ mod tests {
             .map(|n| json!(format!("/assets/workspace/{n:064x}.js")))
             .collect::<Vec<_>>();
         assert!(asset_manifest(14, &scripts_only).is_err());
+        let mut too_many_styles = assets(3);
+        too_many_styles[4] = json!(format!("/assets/workspace/{:064x}.css", 6));
+        assert!(asset_manifest(14, &too_many_styles).is_err());
     }
 }

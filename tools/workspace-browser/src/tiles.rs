@@ -600,6 +600,18 @@ async fn resources_and_native_recovery() -> Check<()> {
     b.click(".startup a[href='/account']").await?;
     b.wait("return location.pathname==='/account'&&!!document.querySelector('form[action=\"/account/sign-out\"]');",json!([])).await?;
     b.cdp("Network.setBlockedURLs", json!({"urls":[]})).await?;
+    step("exact retired23 bootstrap offers native recovery without submitting the saved draft");
+    const RETIRED23_SCRIPT: &str =
+        "/assets/workspace/8a20b75c96a3e13db593acefe75b9bccae89a825c5a8a7bffa4dc1f730958ab3.js";
+    b.navigate(&format!("{}{}", f.origin, RETIRED23_SCRIPT))
+        .await?;
+    check(b.evaluate("return location.pathname===arguments[0]&&document.querySelector('h1')?.textContent==='This workspace version has retired'&&!!document.querySelector('a[href=\"/workspace\"]')&&!!document.querySelector('a[href=\"/account\"]')&&!document.querySelector('script,form,meta[http-equiv=refresh]')&&!document.body.textContent.includes(arguments[1])&&!document.body.textContent.includes(arguments[2]);",json!([RETIRED23_SCRIPT,&f.username,draft])).await?==true,"exact retired23 asset is a private-free native recovery document with no automatic navigation or submission")?;
+    check(
+        f.writes() == writes,
+        "retired asset recovery does not submit or replay the unfinished note",
+    )?;
+    b.click("a[href='/account']").await?;
+    b.wait("return location.pathname==='/account'&&!!document.querySelector('form[action=\"/account/sign-out\"]');",json!([])).await?;
     b.cdp("Network.setCacheDisabled", json!({"cacheDisabled":false}))
         .await?;
     b.click("a[href='/workspace']").await?;

@@ -1,3 +1,39 @@
+## Active daily-use continuation — November1,2026 UTC
+
+The same CORE continues. M5.7/PR47 is accepted source0.1.25 at
+`108f7ca29edc574426f2a233660b7174c5774d9a`, tree
+`14212167e3a6fb7974a16cef9a965671b0881a0f`; final-headCI111/mainCI112 are fully
+green. [Exact source/native/live24 receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6536740651).
+Live remains0.1.24/schema14; this source adds negotiated Jellyfin browsing beyond
+sixty entries, honest library-count scope and finite new-current/24/18 assets.
+Legacy preview clients/Seerr retain their contract. Qualify exact head/main,
+artifact/recovery and installation before claiming this slice is live.
+
+The owner asked to progress Jellyfin, desktop/phone Home/refresh, normal intended
+join/wake, Discord acceptance and M5.8. Existing Home/game/Discord source workflows
+are not missing merely because real acceptance is open. Use current normal owner
+UI and deliberate consent; no synthetic game wake/restart, session/key/header
+replay, forced draft clearing or repeated enrollment. M5.8 issue48 has a separately
+frozen private capability/journal caller and remains distinct from updater
+origin/executor/bootstrap installation. Full updater activation still needs its
+separate complete concrete packet.
+
+The owner's verified-unused [76-container cleanup](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6551667332)
+supersedes historical17/18-shell preservation below. Exactly live24, production
+PostgreSQL, compatible stopped23 and old43 remain. All four rehearsal PG shells
+and obsolete17/18 shells are gone; their images/private bind data and actual
+final13/current14 archives are preserved. Old43's only PG data is tmpfs: do not
+stop/remove it before safe archival/reconciliation. Every future one-shot helper
+closes out after results/logs are captured; no broad prune.
+
+Current source/artifact/live evidence stays in issue1; provider/owner gaps in39;
+bounded Rust caller in48. Follow fresh self-hosted Commander ownership, sealed
+hash/inode-verified execution and the actual permanent operation lock. Never
+replay old packets, retired containers or historical browser grants. The dated
+records below retain their history and do not require repeating old work.
+
+---
+
 # CORE continuation checkpoints and historical handoffs
 
 ## Installed24 and M5.7 source qualification — October30,2026 UTC

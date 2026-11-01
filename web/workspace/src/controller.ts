@@ -225,6 +225,9 @@ function gamesValue(v: Record<string, unknown>): GamesValue {
     } })) };
 }
 const mediaOffset = (v: unknown): v is number => boundedNumber(v, 48) && v % 12 === 0;
+const JELLYFIN_PAGING_PROFILE = 'jellyfin-pages-v1';
+const mediaPageOffset = (v: unknown, provider: MediaProvider): v is number =>
+  boundedNumber(v, provider === 'jellyfin' ? 999_999_996 : 48) && v % 12 === 0;
 function agedMediaObservation(value: MediaObservation, at = Math.floor(Date.now() / 1000)): MediaObservation {
   const collected = value.checked_at;
   const freshness = !Number.isFinite(at) || at < 0 || collected === null || collected > at + 5 ? 'unknown'
@@ -234,7 +237,7 @@ function agedMediaObservation(value: MediaObservation, at = Math.floor(Date.now(
 function mediaObservation(v: unknown, provider: MediaProvider, offset: number): MediaObservation {
   if (!record(v) || !decimal(v.revision) || typeof v.configured !== 'boolean' || !(v.checked_at === null || boundedNumber(v.checked_at, 253402300799))
       || !['fresh', 'stale', 'unknown'].includes(String(v.freshness)) || !mediaError(v.error) || typeof v.complete !== 'boolean'
-      || v.offset !== offset || !mediaOffset(v.offset) || !(v.next_offset === null || (mediaOffset(v.next_offset) && v.next_offset === offset + 12))
+      || v.offset !== offset || !mediaPageOffset(v.offset, provider) || !(v.next_offset === null || (mediaPageOffset(v.next_offset, provider) && v.next_offset === offset + 12))
       || !(v.total === null || boundedNumber(v.total, 1_000_000_000)) || typeof v.truncated !== 'boolean'
       || !Array.isArray(v.items) || v.items.length > 12 || new Set(v.items.map(i => record(i) ? i.id : null)).size !== v.items.length
       || v.items.some((i: unknown) => !record(i) || typeof i.id !== 'string' || !/^[a-f0-9]{64}$/.test(i.id)
@@ -429,7 +432,7 @@ export function workspace(binding: string) {
     try {
       const response = await fetch(path, {
         method, credentials: 'same-origin', cache: 'no-store', redirect: 'error', signal: controller.signal,
-        headers: { 'X-Reborn-Product': PRODUCT, 'X-Reborn-Contract': CONTRACT, 'X-CSRF-Token': binding, ...(path === '/api/workspace/guide' ? { 'X-Reborn-Guide': 'home-tiles-v1' } : {}), ...(path === '/api/workspace/tiles' ? { 'X-Reborn-Tiles-Contract': 'reborn-tiles-v1' } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
+        headers: { 'X-Reborn-Product': PRODUCT, 'X-Reborn-Contract': CONTRACT, 'X-CSRF-Token': binding, ...(path === '/api/workspace/guide' ? { 'X-Reborn-Guide': 'home-tiles-v1' } : {}), ...(path === '/api/workspace/tiles' ? { 'X-Reborn-Tiles-Contract': 'reborn-tiles-v1' } : {}), ...(method === 'GET' && path.split('?')[0] === '/api/workspace/media/jellyfin' ? { 'X-Reborn-Media': JELLYFIN_PAGING_PROFILE } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
         body: body ? JSON.stringify(body) : undefined,
       });
       const value: unknown = response.ok ? await response.json() : undefined;
@@ -883,7 +886,7 @@ export function workspace(binding: string) {
     mediaActive = true; await Promise.all(mediaProviders.map(provider => checkMedia(provider)));
   }
   async function loadMedia(provider: MediaProvider, offset = 0): Promise<void> {
-    const captured = ownerSnapshot(); if (!captured || !mediaOffset(offset) || mediaSaving[provider]) return;
+    const captured = ownerSnapshot(); if (!captured || !mediaPageOffset(offset, provider) || mediaSaving[provider]) return;
     mediaActive = true; clearMediaRead(provider);
     const controller = new AbortController(); mediaReading[provider] = controller;
     const serial = mediaSerial[provider], current = epoch, prior = state().media[provider];
@@ -899,6 +902,10 @@ export function workspace(binding: string) {
       if (response.status !== 200) throw new Error('Media unavailable');
       if (!scoped(response.value, captured)) { invalidate('Your account scope changed. Open a fresh workspace.', true); return; }
       if (response.value.provider !== provider) throw new Error('Wrong media provider');
+      if (provider === 'jellyfin' && response.value.paging_profile !== JELLYFIN_PAGING_PROFILE) {
+        setMedia(provider, { ...state().media[provider], phase: 'error', observation: undefined, message: 'This server does not support this library browser. Review refresh to load a compatible workspace.' }, true);
+        return;
+      }
       const observation = mediaObservation(response.value.observation, provider, offset), status = state().media[provider].status;
       if (status && BigInt(observation.revision) < BigInt(status.revision)) throw new Error('Older media scope');
       // A separately opened tab can replace enrollment. The current response is

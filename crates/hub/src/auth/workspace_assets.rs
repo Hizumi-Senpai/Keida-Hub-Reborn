@@ -9,8 +9,8 @@ const STYLE: &[u8] = include_bytes!("../../static/workspace/workspace.css");
 // plus these two explicitly reviewed predecessors is the complete shipping set.
 const COMPATIBILITY: [(&[u8], &[u8]); 2] = [
     (
-        include_bytes!("../../static/workspace-compat/0.1.23.js"),
-        include_bytes!("../../static/workspace-compat/0.1.23.css"),
+        include_bytes!("../../static/workspace-compat/0.1.24.js"),
+        include_bytes!("../../static/workspace-compat/0.1.24.css"),
     ),
     (
         include_bytes!("../../static/workspace-compat/0.1.18.js"),
@@ -18,9 +18,10 @@ const COMPATIBILITY: [(&[u8], &[u8]); 2] = [
     ),
 ];
 
-// Exact retired 0.1.6–0.1.17 bootstrap URLs remain recognizable without shipping
-// their bundles. This is asset retirement, not selective v1 API admission.
-const RETIRED: [&str; 22] = [
+// Exact retired 0.1.6–0.1.17 and0.1.23 bootstrap URLs remain recognizable
+// without shipping their bundles. This is asset retirement, not selective v1
+// API admission.
+const RETIRED: [&str; 24] = [
     "/assets/workspace/c7c1eb39825396b76fc6c74bf982b072f8872a9c5303ef92ae9eb5b5ee51618c.js",
     "/assets/workspace/bfd9c23272f6750691cef66ddf2962ea00bc36c98c0e09610c6f0e7a20085b98.css",
     "/assets/workspace/2ed55c5caecd26c1cf60ea605da31f0ec60c3546228ce3ecd0e8d9a672785727.js",
@@ -43,6 +44,8 @@ const RETIRED: [&str; 22] = [
     "/assets/workspace/253bcb1f4ea53702e36c55addc8dfd158c6859104659f578a57c0337a874bde1.css",
     "/assets/workspace/958c92cab42d8855d9c084618279adf31de08eaf9bbf1edabfaff2713f11e74d.js",
     "/assets/workspace/d1c2fe64aafc3376063502c4f6be5348d8f9e67c2ff692d269b45d6bb6691626.css",
+    "/assets/workspace/8a20b75c96a3e13db593acefe75b9bccae89a825c5a8a7bffa4dc1f730958ab3.js",
+    "/assets/workspace/d5608ad2a1333a42b738e6a6ffc07955f88252f6b177dc7b639db647caf6f826.css",
 ];
 
 fn url(bytes: &[u8], extension: &str) -> String {
@@ -75,10 +78,14 @@ pub fn retired(path: &str) -> bool {
     RETIRED.contains(&path)
 }
 pub fn manifest() -> Vec<String> {
+    // A generation may share exact stylesheet bytes with a predecessor. Keep
+    // three explicit pairs, but publish each immutable URL only once.
+    let mut seen = std::collections::BTreeSet::new();
     [(SCRIPT, STYLE)]
         .into_iter()
         .chain(COMPATIBILITY)
         .flat_map(|(script, style)| [url(script, "js"), url(style, "css")])
+        .filter(|path| seen.insert(path.clone()))
         .collect()
 }
 
@@ -90,8 +97,22 @@ mod tests {
     #[test]
     fn shipping_window_is_three_exact_generations_without_retired_bytes() {
         let manifest = manifest();
-        assert_eq!(manifest.len(), 6);
-        assert_eq!(manifest.iter().collect::<BTreeSet<_>>().len(), 6);
+        assert!(matches!(manifest.len(), 5 | 6));
+        assert_eq!(
+            manifest.iter().collect::<BTreeSet<_>>().len(),
+            manifest.len()
+        );
+        assert_eq!(
+            manifest.iter().filter(|path| path.ends_with(".js")).count(),
+            3
+        );
+        assert!(matches!(
+            manifest
+                .iter()
+                .filter(|path| path.ends_with(".css"))
+                .count(),
+            2 | 3
+        ));
         for path in manifest {
             let (media, bytes) = find(&path).expect("retained exact bytes");
             let extension = if media.starts_with("text/javascript") {
@@ -103,7 +124,7 @@ mod tests {
             assert_eq!(path, url(bytes, extension));
             assert!(!retired(&path));
         }
-        assert_eq!(RETIRED.iter().collect::<BTreeSet<_>>().len(), 22);
+        assert_eq!(RETIRED.iter().collect::<BTreeSet<_>>().len(), 24);
         for path in RETIRED {
             assert!(retired(path));
             assert!(find(path).is_none());
@@ -113,11 +134,11 @@ mod tests {
     }
 
     #[test]
-    fn prior23_and_18_compatibility_bytes_remain_immutable() {
+    fn prior24_and_18_compatibility_bytes_remain_immutable() {
         for ((script, style), expected) in COMPATIBILITY.into_iter().zip([
             [
-                "/assets/workspace/8a20b75c96a3e13db593acefe75b9bccae89a825c5a8a7bffa4dc1f730958ab3.js",
-                "/assets/workspace/d5608ad2a1333a42b738e6a6ffc07955f88252f6b177dc7b639db647caf6f826.css",
+                "/assets/workspace/87a84ee5feaefa4a27634e0260539a6b186691d651ec826a186bbfe87a4854e1.js",
+                "/assets/workspace/a7e5f962b369082d96599eff35c04c2ffb5ddf852fc74d932bc61e0fd161bae5.css",
             ],
             [
                 "/assets/workspace/669fbfd32bccda4c9e26262c75813f456a466a7ac5102fdd77cf1bbbb4d9bcd5.js",
