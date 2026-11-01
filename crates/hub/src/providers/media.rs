@@ -13,9 +13,32 @@ use zeroize::{Zeroize, Zeroizing};
 
 const PAGE: u32 = 12;
 const LAST_OFFSET: u32 = 48;
+const LAST_LIBRARY_OFFSET: u32 = 999_999_996;
+const CACHED_PAGES: usize = 5;
 const BODY_LIMIT: usize = 262144;
 const MAX_TOTAL: u64 = 1_000_000_000;
+pub const JELLYFIN_PAGING_PROFILE: &str = "jellyfin-pages-v1";
 type ProviderResult<T> = Result<T, &'static str>;
+
+pub fn jellyfin_offset(value: &str) -> Option<u32> {
+    let offset = value.parse::<u32>().ok()?;
+    (offset.to_string() == value && offset <= LAST_LIBRARY_OFFSET && offset.is_multiple_of(PAGE))
+        .then_some(offset)
+}
+
+#[derive(Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
+enum Paging {
+    Preview,
+    JellyfinPages,
+}
+impl Paging {
+    fn last_offset(self) -> u32 {
+        match self {
+            Self::Preview => LAST_OFFSET,
+            Self::JellyfinPages => LAST_LIBRARY_OFFSET,
+        }
+    }
+}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Provider {
@@ -306,12 +329,12 @@ fn endpoint(config: &Enrollment, path: &str) -> ProviderResult<Url> {
         .and_then(|base| base.join(path))
         .map_err(|_| "invalid_configuration")
 }
-fn pagination(out: &mut Observation, rows: usize, total: u64) {
+fn pagination(out: &mut Observation, rows: usize, total: u64, last_offset: u32) {
     out.total = Some(total);
     let next = out.offset + PAGE;
     let has_more = u64::from(out.offset) + (rows as u64) < total;
-    out.next_offset = (has_more && next <= LAST_OFFSET).then_some(next);
-    out.truncated = has_more && next > LAST_OFFSET;
+    out.next_offset = (has_more && next <= last_offset).then_some(next);
+    out.truncated = has_more && next > last_offset;
     if rows < PAGE as usize && has_more {
         // An unexpectedly short page cannot silently skip unseen rows.
         out.complete = false;
@@ -381,6 +404,7 @@ async fn jellyfin(
     client: &Client,
     revision: i64,
     offset: u32,
+    profile: Paging,
     deadline: tokio::time::Instant,
 ) -> Observation {
     let mut url = match endpoint(config, "/Items") {
@@ -492,7 +516,16 @@ async fn jellyfin(
             detail_error,
         });
     }
-    pagination(&mut out, row_count, page.total_record_count);
+    pagination(
+        &mut out,
+        row_count,
+        page.total_record_count,
+        profile.last_offset(),
+    );
+    if profile == Paging::JellyfinPages && out.error.is_some() {
+        out.next_offset = None;
+        out.truncated = u64::from(offset) + (row_count as u64) < page.total_record_count;
+    }
     out
 }
 
@@ -669,7 +702,7 @@ async fn seerr(
             }
         }
     }
-    pagination(&mut out, row_count, page.page_info.results);
+    pagination(&mut out, row_count, page.page_info.results, LAST_OFFSET);
     out
 }
 
@@ -680,7 +713,7 @@ struct Cached {
 #[derive(Default)]
 struct ProviderCache {
     revision: i64,
-    pages: BTreeMap<u32, Cached>,
+    pages: BTreeMap<(Paging, u32), Cached>,
 }
 pub struct Observer {
     cache: Mutex<[ProviderCache; 2]>,
@@ -705,9 +738,38 @@ impl Observer {
         revision: i64,
         offset: u32,
     ) -> Observation {
-        if revision <= 0 || offset > LAST_OFFSET || !offset.is_multiple_of(PAGE) {
+        self.observe_profile(provider, config, revision, offset, Paging::Preview)
+            .await
+    }
+
+    pub async fn browse_jellyfin(
+        self: &Arc<Self>,
+        config: Arc<Enrollment>,
+        revision: i64,
+        offset: u32,
+    ) -> Observation {
+        self.observe_profile(
+            Provider::Jellyfin,
+            config,
+            revision,
+            offset,
+            Paging::JellyfinPages,
+        )
+        .await
+    }
+
+    async fn observe_profile(
+        self: &Arc<Self>,
+        provider: Provider,
+        config: Arc<Enrollment>,
+        revision: i64,
+        offset: u32,
+        profile: Paging,
+    ) -> Observation {
+        if revision <= 0 || offset > profile.last_offset() || !offset.is_multiple_of(PAGE) {
             return unavailable(revision, offset);
         }
+        let page_key = (profile, offset);
         let mut cache = self.cache.lock().await;
         let state = &mut cache[provider.index()];
         if revision < state.revision {
@@ -717,7 +779,7 @@ impl Observer {
             state.revision = revision;
             state.pages.clear();
         }
-        let existing = state.pages.get(&offset).map(|cached| {
+        let existing = state.pages.get(&page_key).map(|cached| {
             let mut value = cached.value.clone();
             if value.freshness == "fresh" && cached.at.elapsed() > Duration::from_secs(90) {
                 value.freshness = "stale";
@@ -745,7 +807,7 @@ impl Observer {
                 match config.client(provider) {
                     Ok(client) => match provider {
                         Provider::Jellyfin => {
-                            jellyfin(&config, &client, revision, offset, deadline).await
+                            jellyfin(&config, &client, revision, offset, profile, deadline).await
                         }
                         Provider::Seerr => seerr(config, client, revision, offset, deadline).await,
                     },
@@ -755,8 +817,18 @@ impl Observer {
             let mut cache = observer.cache.lock().await;
             let state = &mut cache[provider.index()];
             if state.revision == revision {
+                if !state.pages.contains_key(&page_key)
+                    && state.pages.len() >= CACHED_PAGES
+                    && let Some(oldest) = state
+                        .pages
+                        .iter()
+                        .min_by_key(|(_, cached)| cached.at)
+                        .map(|(key, _)| *key)
+                {
+                    state.pages.remove(&oldest);
+                }
                 state.pages.insert(
-                    offset,
+                    page_key,
                     Cached {
                         at: Instant::now(),
                         value,
@@ -873,13 +945,13 @@ mod tests {
         );
         assert_ne!(id, opaque_id(Provider::Seerr, "provider-item-id"));
         let mut page = empty(1, 0);
-        pagination(&mut page, 12, 26);
+        pagination(&mut page, 12, 26, LAST_OFFSET);
         assert_eq!(page.next_offset, Some(12));
         page.offset = 48;
-        pagination(&mut page, 12, 100);
+        pagination(&mut page, 12, 100, LAST_OFFSET);
         assert!(page.truncated && page.next_offset.is_none());
         page.offset = 0;
-        pagination(&mut page, 2, 26);
+        pagination(&mut page, 2, 26, LAST_OFFSET);
         assert!(page.truncated && page.next_offset.is_none() && page.error == Some("malformed"));
         assert_eq!(request_status(6), "unknown");
     }

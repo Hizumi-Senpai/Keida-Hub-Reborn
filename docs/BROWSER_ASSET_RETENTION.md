@@ -1,97 +1,101 @@
 # Browser asset support and retirement
 
-Installed23 qualified issue43's finite window. The issue45 candidate rotates it
-to current/23/18. This contract does not establish candidate publication,
-installation or real owner acceptance. [Current receipt](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6527378051).
+Installed24 ships browser generations24/23/18. The next daily-use browser
+candidate rotates that finite set to new-current/24/18. Source-only merges,
+including the M5.7 namespace probe and later M5 operational work, do not create
+browser generations. Publication, installation and real owner acceptance retain
+separate receipts in [issue1](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1).
 
 ## Finite shipping window
 
-Ship at most three distinct browser generations: the current workspace bundle
-and two explicitly reviewed predecessor bundles. Each generation is one immutable
-JavaScript/CSS pair, so the shipping window has at most six unique URLs. This
-Home-convenience candidate changes both outputs and its artifact manifest has exactly six.
-Source-only merges do not create a browser generation or extend this window.
+Ship exactly three reviewed browser generations: one current JavaScript/CSS
+pair and two exact predecessor pairs. The compiled Rust pairs explicitly select
+the generations; the public asset manifest lists each immutable URL only once.
+At most six unique URLs ship: exactly three scripts and two or three styles.
+Identical stylesheet bytes may naturally be shared by two generations, yielding
+five URLs. CSS must not be changed just to manufacture a sixth URL.
 
-The Home-convenience candidate retains the exact0.1.23 and0.1.18 pairs. Rust tests pin their
-four SHA256 URLs independently of the current frontend build. The supported
-native account/recovery assets and historical guide response profiles remain
+The candidate preserves exact24 and18 bytes. Independent Rust pins are:
+
+| Generation | Script SHA256 | Stylesheet SHA256 |
+| --- | --- | --- |
+|24|`87a84ee5feaefa4a27634e0260539a6b186691d651ec826a186bbfe87a4854e1`|`a7e5f962b369082d96599eff35c04c2ffb5ddf852fc74d932bc61e0fd161bae5`|
+|18|`669fbfd32bccda4c9e26262c75813f456a466a7ac5102fdd77cf1bbbb4d9bcd5`|`aa0346c141e1bce1ae356a56b33c121fb090c2534c4374dd5c89586502ea5ec4`|
+
+Native account/recovery assets and historical guide response profiles remain
 available. No runtime asset archive or external asset fetch is introduced.
+The workspace is a monolithic script/style build; unexpected deferred or lazy
+modules require a revised concrete retention contract before shipping.
 
-A later browser change rotates this finite set in its normally reviewed PR.
-Before a predecessor is removed, identify its exact retired URLs, review any
-deferred/lazy modules, preserve the supported recovery artifact and prove the
-startup/draft path. Optional lazy modules require a revised concrete retention
-contract before they can ship. Silently appending every historical bundle or
-removing a supported predecessor is a release failure.
-
-Rust serves and verifies this distribution boundary. The compiled active set,
-public artifact manifest, exact-image inspection and focused HTTP checks must
-agree on six unique URLs containing three scripts and three styles. Current
-schema14 release manifests require six unique asset hashes. Historical release
-manifests through schema13 keep their existing admission bounds, including the
-24-asset CURRENT18 record. Image inspection still admits the historical
-schema13/24-asset shape and the current schema14/six-asset shape, with matching
-container labels and packaged metadata.
-
-A future JavaScript-only generation may reuse an identical stylesheet URL. Its
-review must update the exact candidate-count expectations to allow that natural
-deduplication within the same six-URL ceiling; changing CSS solely to manufacture
-another unique URL is not a valid retention policy.
+The compiled active set, public artifact manifest, exact-image inspection and
+real HTTP body hashes must agree on the unique URL set. Schema14 image inspection
+admits only three scripts and two or three styles, with five or six unique URLs.
+Schema14 release manifests admit only five or six unique asset hashes. Historical
+schema13 image inspection stays exactly twelve scripts plus twelve styles, and
+historical release manifests through schema13 retain their existing bounds,
+including the24-asset CURRENT18 record. Deduplication is not a broader historical
+artifact-admission exception.
 
 ## Retired bootstrap assets and continuing API admission
 
-This candidate retires the eleven browser generations0.1.6,0.1.7,0.1.8,0.1.9,
-0.1.10,0.1.11,0.1.12,0.1.13,0.1.14,0.1.16 and0.1.17. Their twenty-two exact hashed
-bootstrap URLs return410 Gone, no-store and a small fixed native recovery
-document linking to /workspace and /account. Unknown asset URLs return404.
-A retired URL is never redirected to or served with newer module bytes.
+The candidate retires exact23 in addition to the eleven earlier retired
+generations6/7/8/9/10/11/12/13/14/16/17. The newly retired URLs are:
 
-The retired generated files leave the new source/artifact. Their accepted Git
-history and historical release artifacts are not rewritten or deleted. Useful
-stopped17, matched final13 recovery, external work and protected services are
-outside this source-only retirement.
+- `/assets/workspace/8a20b75c96a3e13db593acefe75b9bccae89a825c5a8a7bffa4dc1f730958ab3.js`
+- `/assets/workspace/d5608ad2a1333a42b738e6a6ffc07955f88252f6b177dc7b639db647caf6f826.css`
+
+All24 exact retired bootstrap URLs return410 Gone, no-store and a small fixed
+native recovery document linking to `/workspace` and `/account`. Unknown URLs
+return404. HEAD has the same status and no body. A retired URL is never redirected
+to or served with newer module bytes. The retired23 generated files leave the new
+source/artifact; accepted Git history and historical release artifacts are retained.
 
 This is a bootstrap distribution window, not selective browser-version
-authorization. These historical clients share reborn-workspace-v1. An already
-loaded or browser-cached monolithic old bundle can continue only through the
-same current authentication, session generation, authorization, revision and
-request-contract checks. The server does not claim it can distinguish an old
-0.1.6 page from a0.1.18 page using that shared contract. No grants, CSRF bindings,
-historical commands or credential submissions are replayed.
+authorization. An already loaded or browser-cached old monolithic bundle can
+continue only through the same current authentication, session generation,
+authorization, revision and request-contract checks. The server cannot distinguish
+old generations sharing `reborn-workspace-v1` using that contract alone. No grants,
+CSRF bindings, historical commands or credential submissions are replayed.
+
+Container retention is separate. [Owner-authorized cleanup](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6551667332)
+removed old17/18 container shells while preserving images, archives and matched
+final13/current14 recovery; compatible stopped23 remains. Serving18 browser bytes
+does not depend on an18 container. An18 binary cannot serve current14 data.
 
 ## Startup and drafts
 
 The native bootstrap contains useful account and fresh-workspace links before
-the module runs. A failed/retired module leaves that private-free fallback in
-place. It does not navigate, submit work, clear storage or authorize an effect.
+the module runs. A failed or retired module leaves that private-free fallback in
+place. It does not navigate, submit work, clear storage or authorize effects.
 Refreshing a document remains deliberate.
 
-The note recovery key and schema remain product/account/session-generation
-scoped workspace.v1 and schema1 body/base data. A compatible same-account fresh
-document may offer deliberate recovery after current authorization. Recovery
-does not save automatically. Another account or generation cannot inherit it.
-Provider keys, passwords, cookies and CSRF bindings remain excluded from drafts.
-An in-memory form is not claimed recoverable after arbitrary document loss.
+Note recovery stays product/account/session-generation scoped, with workspace.v1
+and schema1 body/base data. A compatible same-account fresh document may offer
+deliberate recovery after current authorization; it never saves automatically.
+Another account or generation cannot inherit the draft. Provider keys, passwords,
+cookies and CSRF bindings are excluded. An in-memory form is not promised
+recoverable after arbitrary document loss.
 
 Keeping predecessor browser bytes does not make a schema13 server binary
-compatible with schema14 data. Recovery and any installation need the separate
-schema14/newer-write qualification; no old backup may overwrite newer writes.
+compatible with schema14 data. Current14/newer-write recovery qualification is
+separate; an old backup must never overwrite newer writes.
 
 ## Evidence required
 
-- Serve every active URL with immutable cache semantics and verify its body hash,
-  including exact23/18 bytes. Public manifest and packaged asset window agree.
-- Return410 with native recovery and no cookie effects for all twenty exact
-  retired URLs; unknown paths stay404. HEAD has the same status and no body.
-- Keep native Account/sign-out available when workspace startup fails. A fresh
-  document recovers a compatible note draft only after explicit choice, without
-  automatic PUT, navigation or credential replay.
-- Retain current workspace/session/refresh/provider contracts and independently
-  qualify the tile UI, database upgrade and recovery path.
+- Serve every active URL immutably and verify its response body hash, including
+  exact24/18 bytes. Public manifest, compiled pairs and packaged shape agree;
+  duplicate stylesheet URLs appear only once in the manifest.
+- Exercise all24 retired URLs through actual HTTP GET/HEAD:410, native recovery,
+  no cookie effect, no replacement module; unknown paths remain404.
+- Retain the real module-failure startup path, native Account/sign-out and explicit
+  same-account draft recovery. In the same browser workflow, visit the exact
+  retired23 URL and use its native Account/fresh-document recovery without automatic
+  navigation or PUT replay. Preserve the following member-isolation checks.
+- Qualify the existing workspace/session/refresh/provider contracts and candidate
+  daily-use behavior on the eventual head and accepted main. Scope new checks to
+  the changed distribution boundary; fixture success is not real owner acceptance.
 
-GitHub language percentages are not acceptance criteria. This removes obsolete
-shipped compatibility bundles for a declared product support window. Source
-languages remain visible; no Linguist override, binary packing, archive trick or
-replacement backend is used to change the language display. Rust continues to
-own domain rules, permissions, providers, persistence and operations;
-Svelte/TypeScript owns browser presentation and interaction.
+Rust owns the distribution boundary, domain rules, permissions, provider behavior,
+persistence and operations. Svelte/TypeScript owns presentation and interaction;
+native source languages stay visible. No language-statistics masking or archive
+packing is used to disguise obsolete shipped assets.

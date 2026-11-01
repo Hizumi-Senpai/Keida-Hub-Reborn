@@ -1255,7 +1255,68 @@ async fn owner_media_observations() -> Check<()> {
     check(owner.evaluate("return window.__mediaEditor===document.querySelector('#workspace-note') && window.__mediaEditor.selectionStart===4 && window.__mediaEditor.selectionEnd===13;", json!([])).await? == true, "Media paging preserves actual note component, draft and selection")?;
     owner.click(".main-nav button:nth-child(9)").await?;
     check(owner.evaluate("return document.querySelector('#seerr-token').value==='' && document.querySelector('#seerr-endpoint').value==='';", json!([])).await? == true, "leaving Media removes unsubmitted provider secrets from persistent form state")?;
-    step("media phase02i desktop and390px media accessibility");
+    step("media phase02i negotiated library pages beyond60 keep five slots and honest scope");
+    provider.mode(m::MANY);
+    media_enroll(&owner, &provider, "jellyfin").await?;
+    media_observed(&owner, "jellyfin", "Fixture movie").await?;
+    let browse_writes = f.writes();
+    check(owner.evaluate("const s=document.querySelector('[data-media-provider=jellyfin]');return s.dataset.mediaTotal==='80' && s.querySelector('[data-media-range]').textContent.includes('Showing 1–12 of 80 movie and series entries.') && s.querySelector('[data-media-library-scope]').textContent.includes('Counts cover movies and series in the selected server libraries.') && s.querySelector('[data-media-library-scope]').textContent.includes('Episodes and personal watch history are not included.') && !s.textContent.includes('first 60 rows only');",json!([])).await? == true,"library total names the selected movie/series scope rather than claiming personal Home or episode parity")?;
+    for (offset, title) in [
+        (12, "Fixture item 13"),
+        (24, "Fixture item 25"),
+        (36, "Fixture item 37"),
+        (48, "Fixture item 49"),
+        (60, "Fixture item 61"),
+        (72, "Fixture item 73"),
+    ] {
+        owner
+            .click("[data-media-provider=jellyfin] .media-next")
+            .await?;
+        media_observed(&owner, "jellyfin", title).await?;
+        check(owner.evaluate("const s=document.querySelector('[data-media-provider=jellyfin]');return s.dataset.mediaOffset===String(arguments[0]) && s.dataset.mediaTotal==='80';",json!([offset])).await? == true,"explicit Next admits the actual requested library page including beyond60")?;
+    }
+    check(owner.evaluate("const s=document.querySelector('[data-media-provider=jellyfin]');return s.querySelectorAll('[data-media-item]').length===8 && s.querySelector('[data-media-range]').textContent.includes('Showing 73–80 of 80 movie and series entries.') && s.querySelector('.media-next').disabled;",json!([])).await? == true,"seventh library page ends with eight real entries and no invented continuation")?;
+    let collected = provider.requests().len();
+    owner
+        .click("[data-media-provider=jellyfin] .media-previous")
+        .await?;
+    media_observed(&owner, "jellyfin", "Fixture item 61").await?;
+    check(
+        provider.requests().len() == collected,
+        "recent beyond60 page uses its retained bounded cache slot",
+    )?;
+    owner
+        .click("[data-media-provider=jellyfin] .media-first")
+        .await?;
+    media_observed(&owner, "jellyfin", "Fixture movie").await?;
+    check(
+        provider.requests().len() == collected + 2,
+        "after seven pages, First recollects the evicted page using only Items and Sessions GET",
+    )?;
+    check(
+        f.writes() == browse_writes,
+        "full library paging does not save enrollment, notes or arrangement",
+    )?;
+
+    step("media phase02j a stripped paging profile produces explicit incompatibility");
+    check(owner.evaluate("if(window.__mediaProfileFetch)return false;window.__mediaProfileFetch=window.fetch;window.fetch=(input,init={})=>{const url=new URL(typeof input==='string'?input:input.url,location.href);if(url.origin===location.origin&&url.pathname==='/api/workspace/media/jellyfin'&&(init.method??'GET')==='GET'){const headers=new Headers(init.headers);headers.delete('X-Reborn-Media');return window.__mediaProfileFetch(input,{...init,headers})}return window.__mediaProfileFetch(input,init)};return true;",json!([])).await? == true,"install a declared header-removal fault while forwarding to the real application")?;
+    let incompatible = async {
+        owner.click("[data-media-provider=jellyfin] .media-check-observations").await?;
+        owner.wait("const s=document.querySelector('[data-media-provider=jellyfin]');return s?.dataset.mediaPhase==='error' && s.querySelectorAll('[data-media-item]').length===0 && s.textContent.includes('This server does not support this library browser.');",json!([])).await?;
+        check(f.writes()==browse_writes,"missing profile echo cannot trigger an enrollment replay")
+    }.await;
+    let profile_restored=owner.evaluate("if(!window.__mediaProfileFetch)return false;window.fetch=window.__mediaProfileFetch;delete window.__mediaProfileFetch;return true;",json!([])).await;
+    incompatible?;
+    check(
+        profile_restored? == true,
+        "restore the actual fetch function after the profile fault",
+    )?;
+    media_observed(&owner, "jellyfin", "Fixture movie").await?;
+    provider.mode(m::NORMAL);
+    media_enroll(&owner, &provider, "jellyfin").await?;
+    media_observed(&owner, "jellyfin", "Fixture movie").await?;
+    check(owner.evaluate("return window.__mediaEditor===document.querySelector('#workspace-note') && window.__mediaEditor.value===arguments[0];",json!([draft])).await? == true,"library profile changes retain the same private editor and draft")?;
+    step("media phase02k desktop and390px media accessibility");
     accessibility(&owner).await?;
     owner.mobile().await?;
     check(

@@ -19,6 +19,8 @@ pub const HOLD: u8 = 10;
 pub const DETAIL_FAILED: u8 = 11;
 pub const TOO_MANY_SESSIONS: u8 = 12;
 pub const MANY: u8 = 13;
+pub const SHORT_PAGE: u8 = 14;
+pub const DUPLICATE_ITEMS: u8 = 15;
 
 struct MediaData {
     mode: AtomicU8,
@@ -87,13 +89,15 @@ fn page_offset(request: &Request, jellyfin: bool) -> Option<usize> {
         return None;
     }
     let offset = fields.get(if jellyfin { "startIndex" } else { "skip" })?;
-    if !matches!(*offset, "0" | "12" | "24" | "36" | "48") {
+    let parsed = offset.parse::<usize>().ok()?;
+    if parsed.to_string() != *offset
+        || !parsed.is_multiple_of(12)
+        || parsed > if jellyfin { 999_999_996 } else { 48 }
+    {
         return None;
     }
     let expected_count = expected.len() + if jellyfin { 2 } else { 1 };
-    (fields.len() == expected_count)
-        .then(|| offset.parse().ok())
-        .flatten()
+    (fields.len() == expected_count).then_some(parsed)
 }
 
 fn title(index: usize, request: bool) -> String {
@@ -181,12 +185,13 @@ async fn handler(State(data): State<Arc<MediaData>>, request: Request) -> Respon
         };
         let total = if mode == EMPTY {
             0
-        } else if mode == MANY {
+        } else if matches!(mode, MANY | SHORT_PAGE | DUPLICATE_ITEMS) {
             80
         } else {
             26
         };
-        let rows: Vec<_> = (offset..usize::min(total, offset + 12))
+        let page_end = offset + if mode == SHORT_PAGE { 2 } else { 12 };
+        let rows: Vec<_> = (offset..usize::min(total, page_end))
             .map(|index| {
                 let mut row = json!({
                     "Id":format!("{:032x}",index+1),
@@ -199,6 +204,9 @@ async fn handler(State(data): State<Arc<MediaData>>, request: Request) -> Respon
                 });
                 if mode == MISSING && index == offset {
                     row.as_object_mut().unwrap().remove("Name");
+                }
+                if mode == DUPLICATE_ITEMS && index == offset + 1 {
+                    row["Id"] = json!(format!("{:032x}", offset + 1));
                 }
                 row
             })

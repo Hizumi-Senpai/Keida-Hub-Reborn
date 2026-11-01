@@ -89,9 +89,29 @@ async fn observation(
     name: &str,
     offset: u32,
 ) -> Value {
+    observation_profile(server, actor, provider, name, offset, None).await
+}
+
+async fn observation_profile(
+    server: &Server,
+    actor: &Session,
+    provider: &m::Media,
+    name: &str,
+    offset: u32,
+    profile: Option<&str>,
+) -> Value {
     let deadline = Instant::now() + Duration::from_secs(7);
     loop {
-        let response = read(server, actor, name, &format!("?offset={offset}")).await;
+        let mut builder = request(
+            server,
+            actor,
+            Method::GET,
+            &format!("/api/workspace/media/{name}?offset={offset}"),
+        );
+        if let Some(profile) = profile {
+            builder = builder.header("X-Reborn-Media", profile);
+        }
+        let response = builder.send().await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_no_store(&response);
         let value: Value = response.json().await.unwrap();
@@ -101,6 +121,11 @@ async fn observation(
         assert_eq!(value["account"], actor.account);
         assert!(value["session_generation"].as_str().is_some());
         assert_eq!(value["provider"], name);
+        if let Some(profile) = profile {
+            assert_eq!(value["paging_profile"], profile);
+        } else {
+            assert!(value.get("paging_profile").is_none());
+        }
         private(&value, provider, actor);
         if value["observation"]["error"] != "checking" {
             return value["observation"].clone();
@@ -111,6 +136,252 @@ async fn observation(
         );
         tokio::time::sleep(Duration::from_millis(20)).await;
     }
+}
+
+#[tokio::test]
+async fn jellyfin_negotiated_pages_browse_beyond_sixty_with_bounded_cache_and_legacy_privacy() {
+    let fixture = Fixture::new().await;
+    let (server, owner, secret) = claimed(&fixture).await;
+    let member = notification_member(&server, &owner, "library_member").await;
+    let provider = m::Media::start().await.unwrap();
+    provider.mode(m::MANY);
+    let last = observation_profile(
+        &server,
+        &owner,
+        &provider,
+        "jellyfin",
+        999_999_996,
+        Some("jellyfin-pages-v1"),
+    )
+    .await;
+    assert_eq!(last["configured"], false);
+    assert_eq!(last["offset"], 999_999_996);
+    assert!(last["next_offset"].is_null());
+    enroll(
+        &server,
+        &owner,
+        "jellyfin",
+        0,
+        enrollment(&provider, "jellyfin"),
+    )
+    .await;
+    let path = "/api/workspace/media/jellyfin?offset=60";
+    for value in ["", "other", "jellyfin-pages-v1,jellyfin-pages-v1"] {
+        error(
+            request(&server, &owner, Method::GET, path)
+                .header("X-Reborn-Media", value)
+                .send()
+                .await
+                .unwrap(),
+            StatusCode::UPGRADE_REQUIRED,
+            &[m::TOKEN],
+        )
+        .await;
+    }
+    error(
+        request(&server, &owner, Method::GET, path)
+            .header("X-Reborn-Media", "jellyfin-pages-v1")
+            .header("X-Reborn-Media", "jellyfin-pages-v1")
+            .send()
+            .await
+            .unwrap(),
+        StatusCode::UPGRADE_REQUIRED,
+        &[m::TOKEN],
+    )
+    .await;
+    error(
+        request(
+            &server,
+            &owner,
+            Method::GET,
+            "/api/workspace/media/seerr?offset=0",
+        )
+        .header("X-Reborn-Media", "jellyfin-pages-v1")
+        .send()
+        .await
+        .unwrap(),
+        StatusCode::UPGRADE_REQUIRED,
+        &[m::TOKEN],
+    )
+    .await;
+    error(
+        request(&server, &member, Method::GET, path)
+            .header("X-Reborn-Media", "jellyfin-pages-v1")
+            .send()
+            .await
+            .unwrap(),
+        StatusCode::FORBIDDEN,
+        &[m::TOKEN],
+    )
+    .await;
+    for query in [
+        "060",
+        "+60",
+        "%2B60",
+        "1",
+        "1000000000",
+        "1000000008",
+        "4294967296",
+        "60&offset=72",
+    ] {
+        error(
+            request(
+                &server,
+                &owner,
+                Method::GET,
+                &format!("/api/workspace/media/jellyfin?offset={query}"),
+            )
+            .header("X-Reborn-Media", "jellyfin-pages-v1")
+            .send()
+            .await
+            .unwrap(),
+            StatusCode::BAD_REQUEST,
+            &[m::TOKEN],
+        )
+        .await;
+    }
+    assert!(
+        provider.requests().is_empty(),
+        "invalid profile/scope/query started provider work"
+    );
+
+    let preview = observation(&server, &owner, &provider, "jellyfin", 48).await;
+    assert_eq!(preview["total"], 80);
+    assert_eq!(preview["truncated"], true);
+    assert!(preview["next_offset"].is_null());
+    let beyond = observation_profile(
+        &server,
+        &owner,
+        &provider,
+        "jellyfin",
+        48,
+        Some("jellyfin-pages-v1"),
+    )
+    .await;
+    assert_eq!(beyond["next_offset"], 60);
+    assert_eq!(beyond["truncated"], false);
+    let sixth = observation_profile(
+        &server,
+        &owner,
+        &provider,
+        "jellyfin",
+        60,
+        Some("jellyfin-pages-v1"),
+    )
+    .await;
+    assert_eq!(sixth["items"].as_array().unwrap().len(), 12);
+    assert_eq!(sixth["items"][0]["title"], "Fixture item 61");
+    assert_eq!(sixth["next_offset"], 72);
+    let end = observation_profile(
+        &server,
+        &owner,
+        &provider,
+        "jellyfin",
+        72,
+        Some("jellyfin-pages-v1"),
+    )
+    .await;
+    assert_eq!(end["items"].as_array().unwrap().len(), 8);
+    assert_eq!(end["items"][7]["title"], "Fixture item 80");
+    assert!(end["next_offset"].is_null());
+    assert_eq!(end["truncated"], false);
+    error(
+        read(&server, &owner, "jellyfin", "?offset=60").await,
+        StatusCode::BAD_REQUEST,
+        &[m::TOKEN],
+    )
+    .await;
+
+    // A fresh revision removes earlier page/profile slots. Five pages survive;
+    // collecting a sixth evicts the oldest, not a second provider flight.
+    enroll(
+        &server,
+        &owner,
+        "jellyfin",
+        1,
+        enrollment(&provider, "jellyfin"),
+    )
+    .await;
+    let requests = provider.requests().len();
+    for offset in [0, 12, 24, 36, 48, 60] {
+        let value = observation_profile(
+            &server,
+            &owner,
+            &provider,
+            "jellyfin",
+            offset,
+            Some("jellyfin-pages-v1"),
+        )
+        .await;
+        assert_eq!(value["revision"], "2");
+        assert_eq!(value["items"].as_array().unwrap().len(), 12);
+    }
+    assert_eq!(provider.requests().len(), requests + 12);
+    for offset in [12, 24, 36, 48, 60] {
+        observation_profile(
+            &server,
+            &owner,
+            &provider,
+            "jellyfin",
+            offset,
+            Some("jellyfin-pages-v1"),
+        )
+        .await;
+    }
+    assert_eq!(
+        provider.requests().len(),
+        requests + 12,
+        "the five retained pages were recollected"
+    );
+    observation_profile(
+        &server,
+        &owner,
+        &provider,
+        "jellyfin",
+        0,
+        Some("jellyfin-pages-v1"),
+    )
+    .await;
+    assert_eq!(
+        provider.requests().len(),
+        requests + 14,
+        "the sixth page did not evict the oldest cache slot"
+    );
+
+    for (revision, (mode, rows)) in (2..).zip([(m::SHORT_PAGE, 2), (m::DUPLICATE_ITEMS, 11)]) {
+        provider.mode(mode);
+        enroll(
+            &server,
+            &owner,
+            "jellyfin",
+            revision,
+            enrollment(&provider, "jellyfin"),
+        )
+        .await;
+        let bad = observation_profile(
+            &server,
+            &owner,
+            &provider,
+            "jellyfin",
+            0,
+            Some("jellyfin-pages-v1"),
+        )
+        .await;
+        assert_eq!(bad["error"], "malformed");
+        assert_eq!(bad["complete"], false);
+        assert_eq!(bad["items"].as_array().unwrap().len(), rows);
+        assert!(bad["next_offset"].is_null());
+        assert_eq!(bad["truncated"], true);
+    }
+    assert!(
+        provider
+            .requests()
+            .iter()
+            .all(|(method, uri)| method == "GET"
+                && !uri.contains("userId")
+                && !uri.contains(m::TOKEN))
+    );
+    server.assert_logs_private(&[m::TOKEN, &secret, &owner.cookie, &provider.origin]);
 }
 
 #[tokio::test]

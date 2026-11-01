@@ -1,5 +1,54 @@
 # M3: owner-only media observations
 
+## Jellyfin library browsing profile
+
+The additive `jellyfin-pages-v1` profile lets the persistent Media view browse
+past the original sixty-entry preview through explicit First/Previous/Next
+actions. It changes no enrollment, credential, schema, provider identity,
+selected parent, permission or provider-write behavior. Each action requests
+one page of at most12 movie/series entries; there is no bulk walk or new timer.
+
+New Jellyfin clients send exactly one `X-Reborn-Media: jellyfin-pages-v1` on
+`GET /api/workspace/media/jellyfin?offset=...`. Offsets are canonical decimal
+multiples of12 from0 through999999996, within the existing provider-total bound
+of1,000,000,000. Unknown, empty, comma-joined or duplicate profile values, and
+this profile on Seerr, receive426 before provider IO. Invalid/duplicate/unknown
+query fields still receive400 after owner admission. Successful negotiated
+envelopes echo top-level `paging_profile:"jellyfin-pages-v1"`. The new client
+requires that echo; an older server or stripped header produces an explicit
+incompatibility state with no accepted library rows, not a silent preview.
+
+Without the header the exact first-slice preview remains: offsets0/12/24/36/48,
+at most60 displayed entries, and a truncated final preview page when more exist.
+Seerr retains that preview contract. This preserves strict loaded18/23/24
+clients and does not depend on removing their browser assets.
+
+The per-provider cache is keyed by enrollment revision, paging profile and
+offset, with **at most five page slots total per provider**. An oldest-collected
+slot is evicted when another distinct page/profile is collected; revisiting it
+may perform another bounded GET collection. Single provider-flight ownership,
+60-second TTL/90-second freshness,4-second total collection deadline,600ms
+connect/1500ms request deadlines,262144-byte response bound and all TLS/privacy
+rules remain unchanged. A malformed/duplicate/short negotiated Jellyfin page
+does not offer Next. Revision/access loss still discards all obsolete results.
+
+The displayed range and total refer only to the enrolled API key's selected
+parent, recursively filtered to Movie/Series, with no Jellyfin userId. Episodes,
+personal watch totals and an individual user's Home view are different scopes.
+No raw parent/provider ID, credential or user identity is disclosed. Each page
+is a separate observation; changes can move entries between pages, and the UI
+does not claim an exhaustive, stable or deduplicated cross-page catalog. An
+empty page with a nonzero total offers a return to First rather than claiming
+an empty library. The historical728/721 values are not expected current totals.
+
+Focused evidence covers old/new negotiation, exact48→60→72 continuation and
+the eight-entry end of a fictional80-entry collection, canonical/role/profile
+refusal before IO, five retained cache slots and eviction, malformed/short/
+duplicate-row refusal, actual browser paging/cache behavior and an actual
+header-stripped request forwarded to the legacy server route. Source/CI,
+installation, current real Jellyfin totals/paging and native phone acceptance
+remain separate; this contract does not claim those unexecuted outcomes.
+
 Scope frozen2026-10-27 America/Chicago. Baseline accepted/installed0.1.12,
 main `ae171b0ef1aef1f2a5ccd486ef9c31b4bda05035`, schema9. This document
 describes the implementation slice; source, artifact, installation and real

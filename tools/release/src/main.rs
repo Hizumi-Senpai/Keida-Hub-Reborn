@@ -61,13 +61,13 @@ impl Manifest {
             || self.assets.is_empty()
             || self.assets.len() > 24
             || (self.database_schema == 14
-                && (self.assets.len() != 6
+                && (!matches!(self.assets.len(), 5 | 6)
                     || self
                         .assets
                         .iter()
                         .collect::<std::collections::BTreeSet<_>>()
                         .len()
-                        != 6))
+                        != self.assets.len()))
             || self.assets.iter().any(|v| !digest(v, 64))
         {
             return Err("invalid release manifest");
@@ -459,7 +459,7 @@ mod tests {
         assert!(manifest.validate().is_ok());
     }
     #[test]
-    fn schema14_manifest_requires_the_six_unique_shipping_assets() {
+    fn schema14_manifest_requires_five_or_six_unique_shipping_assets() {
         let (_root, _archive, mut manifest) = fixture();
         manifest.ordinal = 23;
         manifest.version = "0.1.23".into();
@@ -471,6 +471,8 @@ mod tests {
         manifest.assets.pop();
         manifest.assets[1] = manifest.assets[0].clone();
         assert!(manifest.validate().is_err());
+        manifest.assets = (0..5).map(|value| format!("{value:064x}")).collect();
+        assert!(manifest.validate().is_ok());
         manifest.assets.pop();
         assert!(manifest.validate().is_err());
     }

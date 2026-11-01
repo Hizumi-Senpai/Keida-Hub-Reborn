@@ -107,6 +107,20 @@ struct Filter {
     offset: Option<String>,
 }
 
+fn library_pages(headers: &HeaderMap, provider: Provider) -> Result<bool, ApiError> {
+    let mut values = headers.get_all("x-reborn-media").iter();
+    match (values.next(), values.next()) {
+        (None, None) => Ok(false),
+        (Some(value), None)
+            if provider == Provider::Jellyfin
+                && value.to_str().ok() == Some(media::JELLYFIN_PAGING_PROFILE) =>
+        {
+            Ok(true)
+        }
+        _ => Err(ApiError(StatusCode::UPGRADE_REQUIRED, "upgrade_required")),
+    }
+}
+
 async fn observe(
     State(service): State<Service>,
     headers: HeaderMap,
@@ -120,15 +134,22 @@ async fn observe(
         // commits before demand collection or any provider network IO starts.
         let captured =
             store::media::capture(&service.pool, &service.key_id, &p.hash, provider).await?;
+        let library_pages = library_pages(&headers, provider)?;
         let Query(filter) =
             filter.map_err(|_| ApiError(StatusCode::BAD_REQUEST, "invalid_request"))?;
-        let offset = match filter.offset.as_deref().unwrap_or("0") {
-            "0" => 0,
-            "12" => 12,
-            "24" => 24,
-            "36" => 36,
-            "48" => 48,
-            _ => return Err(ApiError(StatusCode::BAD_REQUEST, "invalid_request")),
+        let raw_offset = filter.offset.as_deref().unwrap_or("0");
+        let offset = if library_pages {
+            media::jellyfin_offset(raw_offset)
+                .ok_or(ApiError(StatusCode::BAD_REQUEST, "invalid_request"))?
+        } else {
+            match raw_offset {
+                "0" => 0,
+                "12" => 12,
+                "24" => 24,
+                "36" => 36,
+                "48" => 48,
+                _ => return Err(ApiError(StatusCode::BAD_REQUEST, "invalid_request")),
+            }
         };
         let configured = captured.sealed.is_some();
         let observation = if let Some(sealed) = captured.sealed {
@@ -138,10 +159,17 @@ async fn observe(
             {
                 Ok(plaintext) => match serde_json::from_slice::<Enrollment>(&plaintext) {
                     Ok(config) if config.validate(provider).is_ok() => {
-                        service
-                            .media_observer
-                            .observe(provider, Arc::new(config), captured.revision, offset)
-                            .await
+                        if library_pages {
+                            service
+                                .media_observer
+                                .browse_jellyfin(Arc::new(config), captured.revision, offset)
+                                .await
+                        } else {
+                            service
+                                .media_observer
+                                .observe(provider, Arc::new(config), captured.revision, offset)
+                                .await
+                        }
                     }
                     _ => media::unavailable(captured.revision, offset),
                 },
@@ -164,14 +192,15 @@ async fn observe(
             captured.revision,
         )
         .await?;
-        Ok::<_, ApiError>(
-            Json(json!({
-                "product":"keida-hub-reborn", "contract":"reborn-workspace-v1", "schema":1,
-                "account":account(current.account), "session_generation":current.generation.to_string(),
-                "provider":provider.as_str(), "observation":observation
-            }))
-            .into_response(),
-        )
+        let mut value = json!({
+            "product":"keida-hub-reborn", "contract":"reborn-workspace-v1", "schema":1,
+            "account":account(current.account), "session_generation":current.generation.to_string(),
+            "provider":provider.as_str(), "observation":observation
+        });
+        if library_pages {
+            value["paging_profile"] = json!(media::JELLYFIN_PAGING_PROFILE);
+        }
+        Ok::<_, ApiError>(Json(value).into_response())
     }
     .await;
     result.unwrap_or_else(private_error)

@@ -92,11 +92,17 @@ The [M5.6 durable namespace/origin contract](docs/M5_UPDATER_NAMESPACE.md),
 [issue40](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/40), selects a proposed protected
 boot data anchor and persistent Btrfs directory/file capabilities without generic
 ancestor exceptions, shared permission changes, mounts or boot hooks. [Issue41](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/41) implements the fixed
-[read-only Rust namespace probe](docs/M5_NAMESPACE_PROBE.md). Its pinned package
-checks and actual-root/Btrfs observation have [fresh evidence](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/41#issuecomment-6535660145);
-normal eventual-head/main CI remains part of source acceptance. Actual origin adoption, executor, crash/reboot,
+[read-only Rust namespace probe](docs/M5_NAMESPACE_PROBE.md). It is accepted as source0.1.25; final-headCI111 and accepted-mainCI112 are fully green,
+with [exact source/native/current-host evidence](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6536740651).
+The next bounded Rust task is [issue48's private validated namespace/journal caller](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/48). Actual origin adoption, executor, crash/reboot,
 current-data rollback and uninstall qualification remain open. Complete the exact
 source/binary/bootstrap packet before asking for separate installation approval.
+This daily-use source slice adds [bounded full-library Jellyfin paging](docs/M3_MEDIA.md)
+with explicit count scope and a new-current/24/18 finite browser window; source/runtime
+qualification and real owner/provider acceptance remain separate. The owner's verified-unused
+[cleanup retired76 containers](https://github.com/Hizumi-Senpai/Keida-Hub-Reborn/issues/1#issuecomment-6551667332),
+retaining live24/production PG/compatible23 and the unresolved tmpfs old43 fixture;
+images and actual final13/current14 recovery remain intact.
 Live remains0.1.24/schema14. All six services are enrolled; preserve them and
 do not replay credentials, rotate keys or repeat earlier installation/cleanup.
 
